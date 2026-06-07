@@ -266,11 +266,11 @@ export default function TemplateMessageModal() {
             : t("enterValue");
 
         return (
-            <div key={`${type}-${num}`} className="flex gap-3 items-start group">
-                <div className="w-[60px] h-10 text-center rounded-xl bg-muted border border-border flex items-center justify-center text-xs font-black text-muted-foreground/60 shrink-0 shadow-sm">
-                    {isButtonType ? <LinkIcon size={14} /> : `{{${num}}}`}
+            <div key={`${type}-${num}`} className="flex gap-2 md:gap-3 items-start group">
+                <div className="w-12 md:w-[60px] h-9 md:h-10 text-center rounded-lg md:rounded-xl bg-muted border border-border flex items-center justify-center text-[10px] md:text-xs font-black text-muted-foreground/60 shrink-0 shadow-sm">
+                    {isButtonType ? <LinkIcon size={12} className="md:size-[14px]" /> : `{{${num}}}`}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                     <Input
                         placeholder={placeholder}
                         value={varData.value || ""}
@@ -281,11 +281,11 @@ export default function TemplateMessageModal() {
                             }
                             handleVariableChange(type, num, { value: val });
                         }}
-                        className="h-10 rounded-xl bg-card border-border px-4 text-sm text-foreground"
+                        className="h-9 md:h-10 rounded-lg md:rounded-xl bg-card border-border px-3 md:px-4 text-xs md:text-sm text-foreground"
                     />
                     {isButtonType && (
                         <div className="space-y-1 mt-1 px-1">
-                            <p className="text-[10px] text-muted-foreground/60 font-medium">{`${badgeLabel} - ${varData.example}`}</p>
+                            <p className="text-[9px] md:text-[10px] text-muted-foreground/60 font-medium truncate">{`${badgeLabel} - ${varData.example}`}</p>
                         </div>
                     )}
                 </div>
@@ -295,138 +295,145 @@ export default function TemplateMessageModal() {
 
     return (
         <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
-            <DialogContent className="sm:max-w-[900px] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
-                <DialogHeader className="px-6 py-4 border-b border-border bg-card shrink-0">
+            <DialogContent className="sm:max-w-[900px] w-full h-[95vh] md:h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
-                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
-                            <MessageSquareQuote size={20} />
+                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+                            <MessageSquareQuote size={18} className="md:size-5" />
                         </div>
-                        {t("templateMessage")}
+                        <span className="text-sm md:text-base">{t("templateMessage")}</span>
                     </DialogTitle>
-                    <DialogDescription className="ps-[52px] -mt-2 text-muted-foreground/60">
+                    <DialogDescription className="ps-[48px] md:ps-[52px] -mt-2 text-[10px] md:text-xs text-muted-foreground/60">
                         {t("templateDescription") || "Choose a template and fill in variables to send."}
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex-1 flex overflow-hidden">
-                    {/* Main Section */}
-                    <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-card">
-                        {!templateMessage.templateId ? (
-                            <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                                <div className="w-20 h-20 rounded-3xl bg-muted flex items-center justify-center text-muted-foreground/40 mb-6">
-                                    <LayoutDashboard size={40} />
-                                </div>
-                                <h3 className="text-lg font-bold text-foreground mb-2">
-                                    {t("noTemplateSelected") || "No Template Selected"}
-                                </h3>
-                                <p className="text-sm text-muted-foreground max-w-[300px] mb-8">
-                                    {t("selectTemplateToStart") || "Select a pre-approved WhatsApp template to send to this customer."}
-                                </p>
-                                <Button_
-                                    onClick={() => setIsTemplateDialogOpen(true)}
-                                    label={t("chooseTemplate") || "Choose Template"}
-                                    className="bg-primary text-primary-foreground px-8"
-                                />
-                            </div>
-                        ) : (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                {/* Selected Template Header */}
-                                <div className="flex items-center justify-between p-4 rounded-2xl border border-primary/20 bg-primary/5">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20">
-                                            <Check size={24} />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-base font-black text-foreground">{templateMessage.templateName}</h4>
-                                            <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">{t("templateSelected") || "Template Selected"}</p>
-                                        </div>
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="flex flex-col lg:flex-row min-h-full">
+                        {/* Main Section */}
+                        <div className="flex-1 p-4 md:p-6 bg-card">
+                            {!templateMessage.templateId ? (
+                                <div className="h-full flex flex-col items-center justify-center text-center p-4 md:p-8">
+                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-muted flex items-center justify-center text-muted-foreground/40 mb-4 md:mb-6">
+                                        <LayoutDashboard size={32} className="md:size-10" />
                                     </div>
+                                    <h3 className="text-base md:text-lg font-bold text-foreground mb-2">
+                                        {t("noTemplateSelected") || "No Template Selected"}
+                                    </h3>
+                                    <p className="text-xs md:text-sm text-muted-foreground max-w-[300px] mb-6 md:mb-8">
+                                        {t("selectTemplateToStart") || "Select a pre-approved WhatsApp template to send to this customer."}
+                                    </p>
                                     <Button_
-                                        variant="outline"
                                         onClick={() => setIsTemplateDialogOpen(true)}
-                                        className="h-10 rounded-xl border-primary/30 text-primary hover:bg-primary/10 font-bold text-xs gap-2"
-                                        label={t("changeTemplate") || "Change Template"}
+                                        label={t("chooseTemplate") || "Choose Template"}
+                                        className="bg-primary text-primary-foreground px-6 md:px-8 w-full md:w-auto"
                                     />
                                 </div>
-
-                                {/* Variables Filling Section */}
-                                {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0 || templateMessage.templateData?.headerType === 'LOCATION') && (
-                                    <div className="space-y-6 p-6 rounded-3xl bg-muted/30 border border-border">
-                                        <div>
-                                            <h4 className="text-xs font-black text-foreground uppercase tracking-widest mb-1">{t("fillVariables") || "Fill Variables"}</h4>
-                                            <p className="text-[10px] text-muted-foreground/60 font-bold">{t("enterValuesManual") || "Enter the values for the template variables below."}</p>
+                            ) : (
+                                <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    {/* Selected Template Header */}
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl border border-primary/20 bg-primary/5 gap-4">
+                                        <div className="flex items-center gap-3 md:gap-4">
+                                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+                                                <Check size={20} className="md:size-6" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="text-sm md:text-base font-black text-foreground truncate">{templateMessage.templateName}</h4>
+                                                <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">{t("templateSelected") || "Template Selected"}</p>
+                                            </div>
                                         </div>
+                                        <Button_
+                                            variant="outline"
+                                            onClick={() => setIsTemplateDialogOpen(true)}
+                                            className="h-9 md:h-10 w-full sm:w-auto rounded-xl border-primary/30 text-primary hover:bg-primary/10 font-bold text-[10px] md:text-xs gap-2"
+                                            label={t("changeTemplate") || "Change Template"}
+                                        />
+                                    </div>
 
-                                        {templateMessage.templateData?.headerType === 'LOCATION' && (
-                                            <div className="space-y-4">
-                                                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
-                                                    <MapPin size={12} /> {t("locationHeader") || "Location Header"}
-                                                </p>
-                                                <div className="flex flex-col gap-6">
-                                                    <div className="w-full  aspect-video rounded-2xl overflow-hidden border border-border relative bg-muted">
-                                                        <MapLocationPicker
-                                                            initialLocation={{
-                                                                lat: templateMessage.locationData?.latitude || 30.0444,
-                                                                lng: templateMessage.locationData?.longitude || 31.2357
-                                                            }}
-                                                            onLocationSelect={handleLocationSelect}
-                                                            height="100%"
-                                                            width="100%"
-                                                        />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <LocationFields
-                                                            values={templateMessage.locationData || {}}
-                                                            onChange={(updates) => setTemplateMessage(prev => ({
-                                                                ...prev,
-                                                                locationData: { ...prev.locationData, ...updates }
-                                                            }))}
-                                                        />
+                                    {/* Variables Filling Section */}
+                                    {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0 || templateMessage.templateData?.headerType === 'LOCATION') && (
+                                        <div className="space-y-6 p-4 md:p-6 rounded-2xl md:rounded-3xl bg-muted/30 border border-border">
+                                            <div>
+                                                <h4 className="text-[10px] md:text-xs font-black text-foreground uppercase tracking-widest mb-1">{t("fillVariables") || "Fill Variables"}</h4>
+                                                <p className="text-[9px] md:text-[10px] text-muted-foreground/60 font-bold">{t("enterValuesManual") || "Enter the values for the template variables below."}</p>
+                                            </div>
+
+                                            {templateMessage.templateData?.headerType === 'LOCATION' && (
+                                                <div className="space-y-4">
+                                                    <p className="text-[9px] md:text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
+                                                        <MapPin size={12} /> {t("locationHeader") || "Location Header"}
+                                                    </p>
+                                                    <div className="flex flex-col gap-4 md:gap-6">
+                                                        <div className="w-full aspect-video rounded-xl md:rounded-2xl overflow-hidden border border-border relative bg-muted">
+                                                            <MapLocationPicker
+                                                                initialLocation={{
+                                                                    lat: templateMessage.locationData?.latitude || 30.0444,
+                                                                    lng: templateMessage.locationData?.longitude || 31.2357
+                                                                }}
+                                                                onLocationSelect={handleLocationSelect}
+                                                                height="100%"
+                                                                width="100%"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <LocationFields
+                                                                values={templateMessage.locationData || {}}
+                                                                onChange={(updates) => setTemplateMessage(prev => ({
+                                                                    ...prev,
+                                                                    locationData: { ...prev.locationData, ...updates }
+                                                                }))}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
 
-                                        {headerVars.length > 0 && (
-                                            <div className="space-y-4">
-                                                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
-                                                    <Layout size={12} /> {t("header")}
-                                                </p>
-                                                {headerVars.map(num => renderVariableInput('header', num))}
-                                            </div>
-                                        )}
+                                            {headerVars.length > 0 && (
+                                                <div className="space-y-4">
+                                                    <p className="text-[9px] md:text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
+                                                        <Layout size={12} /> {t("header")}
+                                                    </p>
+                                                    <div className="grid grid-cols-1 gap-3 md:gap-4">
+                                                        {headerVars.map(num => renderVariableInput('header', num))}
+                                                    </div>
+                                                </div>
+                                            )}
 
-                                        {bodyVars.length > 0 && (
-                                            <div className="space-y-4">
-                                                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
-                                                    <MessageSquare size={12} /> {t("body")}
-                                                </p>
-                                                {bodyVars.map(num => renderVariableInput('body', num))}
-                                            </div>
-                                        )}
+                                            {bodyVars.length > 0 && (
+                                                <div className="space-y-4">
+                                                    <p className="text-[9px] md:text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
+                                                        <MessageSquare size={12} /> {t("body")}
+                                                    </p>
+                                                    <div className="grid grid-cols-1 gap-3 md:gap-4">
+                                                        {bodyVars.map(num => renderVariableInput('body', num))}
+                                                    </div>
+                                                </div>
+                                            )}
 
-                                        {buttonVarsIndices.length > 0 && (
-                                            <div className="space-y-4">
-                                                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
-                                                    <LinkIcon size={12} /> {t("dynamicButtons") || "Dynamic Buttons"}
-                                                </p>
-                                                {buttonVarsIndices.map(idx => renderVariableInput('button', idx, templateMessage.buttonVariables[idx]?.label))}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                                            {buttonVarsIndices.length > 0 && (
+                                                <div className="space-y-4">
+                                                    <p className="text-[9px] md:text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
+                                                        <LinkIcon size={12} /> {t("dynamicButtons") || "Dynamic Buttons"}
+                                                    </p>
+                                                    <div className="grid grid-cols-1 gap-3 md:gap-4">
+                                                        {buttonVarsIndices.map(idx => renderVariableInput('button', idx, templateMessage.buttonVariables[idx]?.label))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
 
-                    {/* Preview Section */}
-                    <div className="w-[300px] bg-muted/30 flex flex-col items-center justify-center p-6 shrink-0 overflow-y-auto border-s border-border">
-                        <div className="sticky top-0 w-full flex flex-col items-center">
-                            <p className="text-xs font-bold text-muted-foreground/40 uppercase tracking-widest mb-6">
+                        {/* Preview Section */}
+                        <div className="w-full lg:w-[320px] bg-muted/30 flex flex-col items-center p-4 md:p-6 border-t lg:border-t-0 lg:border-s border-border shrink-0">
+                        <div className="w-full flex flex-col items-center">
+                            <p className="text-[10px] md:text-xs font-bold text-muted-foreground/40 uppercase tracking-widest mb-4 md:mb-6">
                                 {t("preview")}
                             </p>
-                            {templateMessage.templateData ? (
-                                <div className="scale-90 origin-top transform-gpu w-full">
+                            {templateMessage.templateId ? (
+                                <div className="scale-90 md:scale-95 lg:scale-100 origin-top transform-gpu w-full max-w-[350px] lg:max-w-none">
                                     <TemplatePreview
                                         template={{
                                             ...templateMessage.templateData,
@@ -443,26 +450,28 @@ export default function TemplateMessageModal() {
                                     />
                                 </div>
                             ) : (
-                                <div className="w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-border flex items-center justify-center">
+                                <div className="w-full aspect-[3/4] max-w-[300px] rounded-2xl border-2 border-dashed border-border flex items-center justify-center bg-card/50">
                                     <p className="text-xs font-bold text-muted-foreground/40">{t("noPreviewAvailable") || "No Preview"}</p>
                                 </div>
                             )}
                         </div>
                     </div>
+                    </div>
                 </div>
 
-                <DialogFooter className="px-6 py-4 border-t border-border bg-card shrink-0 gap-2">
+                <DialogFooter className="px-4 md:px-6 py-4 border-t border-border bg-card shrink-0 flex flex-col-reverse sm:flex-row gap-2">
                     <Button_
                         type="button"
                         variant="outline"
                         onClick={() => setShowTemplateModal(false)}
                         label={t("cancel")}
+                        className="w-full sm:w-auto"
                     />
                     <Button_
                         type="button"
                         disabled={!templateMessage.templateId || !isAllFilled}
                         onClick={handleSend}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                         label={t("sendMessage")}
                     />
                 </DialogFooter>

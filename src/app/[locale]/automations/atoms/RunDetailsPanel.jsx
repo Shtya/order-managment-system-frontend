@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Layout,
   ChevronRight,
+  ChevronLeft,
   Zap,
   Activity,
   Clock,
@@ -67,39 +68,54 @@ export default function RunDetailsPanel({
   }, [selectedRun, tBuilder]);
 
   return (
-    <AnimatePresence>
-      {!rightPanelCollapsed && selectedRun && (
-        <motion.div
-          initial={{ width: 0, opacity: 0 }}
-          animate={{ width: 340, opacity: 1 }}
-          exit={{ width: 0, opacity: 0 }}
-          className="h-full bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col relative z-10 overflow-hidden"
-        >
-          <div className="p-6 border-b border-slate-50 dark:border-slate-800/50 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                <Layout size={18} className="text-slate-500" />
-              </div>
-              <h2 className="text-[13px] font-black">{tRunPanel('title')}</h2>
+    <>
+      <AnimatePresence>
+        {!rightPanelCollapsed && selectedRun && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setRightPanelCollapsed(true)}
+            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[45] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <aside
+        className={cn(
+          "flex flex-col h-full bg-white dark:bg-slate-900 border-r dark:border-slate-800 overflow-hidden",
+          "transition-all duration-300 ease-out z-[56]",
+          "fixed inset-y-0 start-0 lg:relative",
+          rightPanelCollapsed || !selectedRun
+            ? "ltr:-translate-x-full rtl:translate-x-full lg:w-0 lg:border-none lg:opacity-0"
+            : "translate-x-0 w-[280px] sm:w-[340px] opacity-100 shadow-2xl lg:shadow-none"
+        )}
+      >
+        <div className="p-6 border-b border-slate-50 dark:border-slate-800/50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
+              <Layout size={18} className="text-slate-500" />
             </div>
-            <div className="flex items-center gap-2">
-              {onStopPreview && (
-                <button
-                  onClick={onStopPreview}
-                  className="text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-500/10 rounded-xl p-2 border border-rose-100 dark:border-rose-500/20 transition-all active:scale-95"
-                  title={tRunPanel('stopPreview')}
-                >
-                  <X size={18} />
-                </button>
-              )}
-              <button
-                onClick={() => setRightPanelCollapsed(true)}
-                className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-900 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all active:scale-95"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
+            <h2 className="text-[13px] font-black">{tRunPanel('title')}</h2>
           </div>
+          <div className="flex items-center gap-2">
+            {onStopPreview && (
+              <button
+                onClick={onStopPreview}
+                className="text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-500/10 rounded-xl p-2 border border-rose-100 dark:border-rose-500/20 transition-all active:scale-95"
+                title={tRunPanel('stopPreview')}
+              >
+                <X size={18} />
+              </button>
+            )}
+            <button
+              onClick={() => setRightPanelCollapsed(true)}
+              className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-900 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all active:scale-95"
+            >
+              <ChevronLeft size={18} />
+            </button>
+          </div>
+        </div>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
             <div className="flex items-center justify-between">
@@ -153,9 +169,8 @@ export default function RunDetailsPanel({
               </div>
             )}
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      </aside>
+    </>
   );
 }
 

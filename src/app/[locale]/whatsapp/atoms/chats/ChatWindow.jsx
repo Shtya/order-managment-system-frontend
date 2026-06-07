@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
     MoreVertical, Phone, Video,
-    Search, Star, Info, MessageCircleOff, X, Edit, UserMinus, UserCheck, Loader2
+    Search, Star, Info, MessageCircleOff, X, Edit, UserMinus, UserCheck, Loader2, ChevronLeft
 } from "lucide-react";
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
@@ -60,8 +60,12 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         handleRetryMessage: onRetry,
         handleReaction: onReaction,
         replyTo,
-        setReplyTo
+        setReplyTo,
+        mobileView,
+        setMobileView
     } = useConversation();
+
+    const locale  = useLocale();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [localSearch, setLocalSearch] = useState("");
 
@@ -136,7 +140,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
     if (!selectedConversation) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center bg-muted/60 text-muted-foreground/60 p-8 text-center">
+            <div className="flex-1 flex flex-col h-full items-center justify-center bg-muted/60 text-muted-foreground/60 p-8 text-center">
                 <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
                     <MessageCircleOff className="w-10 h-10" />
                 </div>
@@ -158,7 +162,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
             {/* Filter Bar (Animated) */}
             {isFilterOpen && (
-                <div className="absolute top-16 left-0 right-0 bg-card border-b border-border p-4 z-20 shadow-md animate-in slide-in-from-top duration-300 flex items-center gap-4">
+                <div className="absolute top-16 left-0 right-0 bg-card border-b border-border p-4 z-20 shadow-md animate-in slide-in-from-top duration-300 flex flex-col md:flex-row items-stretch md:items-center gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                         <input
@@ -169,31 +173,30 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             className="w-full pl-9 pr-4 py-2 bg-muted border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus-visible:outline-none! text-foreground placeholder:text-muted-foreground/50"
                         />
                     </div>
-                    <div className="w-48">
-                        <WhatsAppAccountSelect
-                            label={null}
-                            value={messageAccount}
-                            onChange={setMessageAccount}
-                            allowAll={true}
-                        />
-                    </div>
-                    <div className="w-40">
-                        <Label className="text-sm font-bold text-foreground">
-                            {t("status")}
-                        </Label>
-                        <Select value={messageStatus} onValueChange={setMessageStatus}>
-                            <SelectTrigger className="h-10 bg-muted border-border rounded-lg text-sm text-foreground">
-                                <SelectValue placeholder={t("allStatuses")} />
-                            </SelectTrigger>
-                            <SelectContent className="bg-card border-border">
-                                <SelectItem value="all">{t("allStatuses")}</SelectItem>
-                                {MESSAGE_STATUS_LIST.map(status => (
-                                    <SelectItem key={status.value} value={status.value}>
-                                        {status.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="flex flex-col sm:flex-row gap-4 items-stretch md:items-center">
+                        <div className="w-full md:w-48">
+                            <WhatsAppAccountSelect
+                                label={null}
+                                value={messageAccount}
+                                onChange={setMessageAccount}
+                                allowAll={true}
+                            />
+                        </div>
+                        <div className="w-full md:w-40 flex flex-col">
+                            <Select value={messageStatus} onValueChange={setMessageStatus}>
+                                <SelectTrigger className="h-10 bg-muted border-border rounded-lg text-sm text-foreground">
+                                    <SelectValue placeholder={t("allStatuses")} />
+                                </SelectTrigger>
+                                <SelectContent className="bg-card border-border">
+                                    <SelectItem value="all">{t("allStatuses")}</SelectItem>
+                                    {MESSAGE_STATUS_LIST.map(status => (
+                                        <SelectItem key={status.value} value={status.value}>
+                                            {status.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     <button
                         onClick={() => {
@@ -202,7 +205,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             setMessageStatus("all");
                             setMessageAccount("all");
                         }}
-                        className="p-2 hover:bg-accent/50 rounded-full transition-colors"
+                        className="absolute top-2 right-2 md:relative md:top-auto md:right-auto p-2 hover:bg-accent/50 rounded-full transition-colors"
                     >
                         <X className="w-5 h-5 text-muted-foreground" />
                     </button>
@@ -210,8 +213,14 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             )}
 
             {/* Header */}
-            <div className="h-16 flex-shrink-0 bg-card border-b border-border px-6 flex items-center justify-between z-10">
-                <div className="flex items-center gap-3">
+            <div className="h-16 flex-shrink-0 bg-card border-b border-border px-4 md:px-6 flex items-center justify-between z-10">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <button
+                        onClick={() => setMobileView("list")}
+                        className="p-2 -ms-2 hover:bg-accent/50 rounded-full md:hidden transition-colors"
+                    >
+                        <ChevronLeft className={cn("w-6 h-6 text-muted-foreground", locale === 'ar' ? "rotate-180" : "")} />
+                    </button>
                     <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-muted overflow-hidden border border-border">
                             {customer?.profilePicture ? (
@@ -223,12 +232,12 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             )}
                         </div>
                     </div>
-                    <div>
-                        <h2 className="font-bold text-foreground leading-tight">{customer?.name || customer?.phoneNumber}</h2>
+                    <div className="min-w-0">
+                        <h2 className="font-bold text-foreground leading-tight truncate">{customer?.name || customer?.phoneNumber}</h2>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 md:gap-2">
                     <div className="flex items-center">
                         <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -240,7 +249,12 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             <Search className="w-5 h-5" />
                         </button>
                         <button
-                            onClick={onToggleDetails}
+                            onClick={() => {
+                                onToggleDetails();
+                                if (window.innerWidth < 768) {
+                                    setMobileView("details");
+                                }
+                            }}
                             className="p-2 hover:bg-accent/50 rounded-md transition-all text-muted-foreground"
                         >
                             <Info className="w-5 h-5" />
@@ -269,7 +283,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             {/* Messages Area */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto p-6 space-y-2 scroll-smooth"
+                className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-2 scroll-smooth"
 
             >
                 {hasMoreMessages && (

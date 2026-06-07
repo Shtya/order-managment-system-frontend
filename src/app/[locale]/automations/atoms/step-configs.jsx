@@ -427,22 +427,22 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         const placeholder = isButtonType ? tChats("enterValueFor", { example: varData.url }) : tConfig("enterValue");
 
         return (
-            <div key={`${type}-${num}`} className="flex gap-3 items-start group">
-                <div className="w-[60px] h-10 text-center rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-black text-slate-400 shrink-0 shadow-sm">
-                    {isButtonType ? <LinkIcon size={14} /> : `{{${num}}}`}
+            <div key={`${type}-${num}`} className="flex gap-2 md:gap-3 items-start group">
+                <div className="w-12 md:w-[60px] h-9 md:h-10 text-center rounded-lg md:rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-[10px] md:text-xs font-black text-slate-400 shrink-0 shadow-sm">
+                    {isButtonType ? <LinkIcon size={12} className="md:size-[14px]" /> : `{{${num}}}`}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                      {isDynamic ? (
-                            <div className="h-12 rounded-2xl bg-primary/5 border border-primary/20 px-4 flex items-center justify-between group/var">
+                            <div className="h-9 md:h-12 rounded-lg md:rounded-2xl bg-primary/5 border border-primary/20 px-3 md:px-4 flex items-center justify-between group/var">
                                 <div className="flex flex-col min-w-0">
-                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">{tConfig('dynamicVariable', { type: badgeLabel })}</span>
+                                    <span className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-widest">{tConfig('dynamicVariable', { type: badgeLabel })}</span>
                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{varData.label}</span>
                                 </div>
                                 <button
                                     onClick={() => handleVariableChange(type, num, { type: 'direct', value: '', label: '', variablePath: '' })}
-                                    className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-500 opacity-0 group-hover/var:opacity-100 transition-all"
+                                    className="p-1 md:p-1.5 rounded-lg hover:bg-rose-50 text-rose-500 opacity-0 group-hover/var:opacity-100 transition-all"
                                 >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={12} className="md:size-[14px]" />
                                 </button>
                             </div>
                         ) : (<Input
@@ -455,11 +455,11 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                             }
                             handleVariableChange(type, num, { value: val });
                         }}
-                        className="h-10 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 px-4 text-sm"
+                        className="h-9 md:h-10 rounded-lg md:rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 px-3 md:px-4 text-xs md:text-sm"
                     />)}
                     {isButtonType && (
                         <div className="space-y-1 mt-1 px-1">
-                            <p className="text-[10px] text-slate-400 font-medium">{`${badgeLabel} - ${varData.url}`}</p>
+                            <p className="text-[9px] md:text-[10px] text-slate-400 font-medium truncate">{`${badgeLabel} - ${varData.url}`}</p>
                         </div>
                     )}
                     
@@ -469,12 +469,12 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                             variant="outline"
                             onClick={() => openOrderSelector(type, num)}
                             className={cn(
-                                "h-12 w-12 rounded-2xl p-0 shrink-0 transition-all",
+                                "h-9 md:h-12 w-9 md:w-12 rounded-lg md:rounded-2xl p-0 shrink-0 transition-all",
                                 isDynamic ? "border-primary text-primary bg-primary/5" : "border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50"
                             )}
                             title={tConfig('selectFromOrderData')}
                         >
-                            <Database size={18} />
+                            <Database size={16} className="md:size-[18px]" />
                         </Button>
                     )}
                 
@@ -493,191 +493,193 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
     
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="sm:max-w-[950px] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[30px] border-none shadow-2xl">
-                <DialogHeader className="px-8 py-6 border-b bg-white dark:bg-slate-900 shrink-0">
+            <DialogContent className="sm:max-w-[950px] w-full h-[95vh] md:h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
+                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
                     <div className="flex items-center justify-between">
                         <DialogTitle className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
-                                <MessageSquareQuote size={24} />
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+                                <MessageSquareQuote size={20} className="md:size-6" />
                             </div>
                             <div className="text-right">
-                                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('whatsappTemplateTitle')}</h3>
-                                <p className="text-xs font-bold text-slate-400 mt-0.5">{tConfig('whatsappTemplateDesc')}</p>
+                                <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('whatsappTemplateTitle')}</h3>
+                                <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('whatsappTemplateDesc')}</p>
                             </div>
                         </DialogTitle>
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 flex overflow-hidden">
-                    {/* Main Content Side */}
-                    <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white dark:bg-slate-900">
-                        <div className="space-y-8">
-                            {/* Recipient Number */}
-                            <FormGroup label={tConfig('recipientNumber')} description={tConfig('recipientNumberDesc2')}>
-                                <Input
-                                    placeholder={tConfig('recipientNumberPlaceholder')}
-                                    value={tempValue.recipientNumber || ""}
-                                    onChange={(e) => setTempValue({ ...tempValue, recipientNumber: e.target.value })}
-                                    className="h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6 text-sm"
-                                />
-                            </FormGroup>
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="flex flex-col lg:flex-row min-h-full">
+                        {/* Main Content Side */}
+                        <div className="flex-1 p-4 md:p-8 bg-white dark:bg-slate-900">
+                            <div className="space-y-6 md:space-y-8">
+                                {/* Recipient Number */}
+                                <FormGroup label={tConfig('recipientNumber')} description={tConfig('recipientNumberDesc2')}>
+                                    <Input
+                                        placeholder={tConfig('recipientNumberPlaceholder')}
+                                        value={tempValue.recipientNumber || ""}
+                                        onChange={(e) => setTempValue({ ...tempValue, recipientNumber: e.target.value })}
+                                        className="h-12 md:h-14 rounded-xl md:rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-4 md:px-6 text-xs md:text-sm"
+                                    />
+                                </FormGroup>
 
-                            {/* Template Selection */}
-                            <FormGroup label={tConfig('whatsappTemplate')} error={errors.templateId}>
-                                {!tempValue.templateId ? (
-                                    <button
-                                        onClick={() => setIsTemplateDialogOpen(true)}
-                                        className="w-full h-40 rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-4 hover:border-primary/50 hover:bg-primary/5 transition-all group"
-                                    >
-                                        <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors shadow-sm">
-                                            <LayoutDashboard size={28} />
+                                {/* Template Selection */}
+                                <FormGroup label={tConfig('whatsappTemplate')} error={errors.templateId}>
+                                    {!tempValue.templateId ? (
+                                        <button
+                                            onClick={() => setIsTemplateDialogOpen(true)}
+                                            className="w-full h-32 md:h-40 rounded-2xl md:rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-3 md:gap-4 hover:border-primary/50 hover:bg-primary/5 transition-all group"
+                                        >
+                                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors shadow-sm">
+                                                <LayoutDashboard size={24} className="md:size-7" />
+                                            </div>
+                                            <div className="text-center px-4">
+                                                <p className="text-xs md:text-sm font-black text-slate-700 dark:text-slate-200">{tConfig('clickToSelectTemplate')}</p>
+                                                <p className="text-[10px] md:text-[11px] text-slate-400 font-bold mt-1">{tConfig('metaTemplateRequired')}</p>
+                                            </div>
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-6">
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-5 rounded-2xl md:rounded-[24px] border border-primary/20 bg-primary/5 shadow-sm gap-4">
+                                                <div className="flex items-center gap-3 md:gap-4">
+                                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                                                        <Check size={20} className="md:size-6" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <h4 className="text-sm md:text-base font-black text-slate-800 dark:text-slate-100 truncate">{tempValue.templateName}</h4>
+                                                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">{tConfig('templateSelectedSuccess')}</p>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    onClick={() => setIsTemplateDialogOpen(true)}
+                                                    className="w-full sm:w-auto rounded-xl text-primary hover:bg-primary/10 font-black text-[10px] md:text-xs h-9 md:h-10 px-4 gap-2"
+                                                >
+                                                    <RefreshCw size={14} />
+                                                    {tConfig('changeTemplate')}
+                                                </Button>
+                                            </div>
+
+                                            {/* Variables Section */}
+                                            {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0 || tempValue.templateData?.headerType === 'LOCATION') && (
+                                                <div className="space-y-6 md:space-y-8 p-4 md:p-8 rounded-2xl md:rounded-[32px] bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
+                                                    <div>
+                                                        <h4 className="text-[10px] md:text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">{tConfig('fillVariables')}</h4>
+                                                        <p className="text-[9px] md:text-[10px] text-slate-400 font-bold">{tConfig('fillVariablesDesc')}</p>
+                                                    </div>
+
+                                                    {tempValue.templateData?.headerType === 'LOCATION' && (
+                                                <div className="space-y-4">
+                                                    <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                        <MapPin size={12} /> {tConfig('locationHeader')}
+                                                    </p>
+                                                    <div className="flex flex-col gap-4 md:gap-6">
+                                                        <div className="w-full aspect-video rounded-xl md:rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-100 dark:bg-slate-900">
+                                                            <MapLocationPicker
+                                                                initialLocation={{
+                                                                    lat: tempValue.locationData?.latitude || 30.0444,
+                                                                    lng: tempValue.locationData?.longitude || 31.2357
+                                                                }}
+                                                                onLocationSelect={handleLocationCoordChange}
+                                                                height="100%"
+                                                                width="100%"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-4">
+                                                            {renderVariableInput('location', 'name', tConfig('locationName'))}
+                                                            {renderVariableInput('location', 'address', tConfig('locationAddress'))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {headerVars.length > 0 && (
+                                                        <div className="space-y-4">
+                                                            <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                                <Layout size={12} /> {tConfig('messageHeader')}
+                                                            </p>
+                                                            {headerVars.map(num => renderVariableInput('header', num))}
+                                                        </div>
+                                                    )}
+
+                                                    {bodyVars.length > 0 && (
+                                                        <div className="space-y-4">
+                                                            <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                                <MessageSquare size={12} /> {tConfig('messageBody')}
+                                                            </p>
+                                                            {bodyVars.map(num => renderVariableInput('body', num))}
+                                                        </div>
+                                                    )}
+
+                                                    {buttonVarsIndices.length > 0 && (
+                                                        <div className="space-y-4">
+                                                            <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                                <Link size={12} /> {tConfig('linkButtons')}
+                                                            </p>
+                                                            {buttonVarsIndices.map(idx => renderVariableInput('button', idx, tempValue.templateData.buttons[idx]?.text))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="text-center">
-                                            <p className="text-sm font-black text-slate-700 dark:text-slate-200">{tConfig('clickToSelectTemplate')}</p>
-                                            <p className="text-[11px] text-slate-400 font-bold mt-1">{tConfig('metaTemplateRequired')}</p>
-                                        </div>
-                                    </button>
+                                    )}
+                                </FormGroup>
+                            </div>
+                        </div>
+
+                        {/* Preview Side */}
+                        <div className="w-full lg:w-[340px] bg-slate-50 dark:bg-slate-950 flex flex-col p-6 md:p-8 shrink-0 border-t lg:border-t-0 lg:border-s dark:border-slate-800">
+                            <div className="w-full flex flex-col items-center">
+                                <h4 className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 md:mb-8 flex items-center gap-2 w-full">
+                                    <ExternalLink size={12} />
+                                    {tConfig('livePreview')}
+                                </h4>
+                                
+                                {tempValue.templateData ? (
+                                    <div className="scale-90 md:scale-95 lg:scale-100 origin-top transform-gpu w-full max-w-[350px] lg:max-w-none">
+                                        <TemplatePreview
+                                            template={{
+                                                ...tempValue.templateData,
+                                                preview: {
+                                                    ...tempValue.templateData,
+                                                    examples: {
+                                                        ...Object.keys(tempValue.headerVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.headerVariables[k].value || (tempValue.headerVariables[k].type === 'variable' ? `[${tempValue.headerVariables[k].label}]` : '') }), {}),
+                                                        ...Object.keys(tempValue.bodyVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.bodyVariables[k].value || (tempValue.bodyVariables[k].type === 'variable' ? `[${tempValue.bodyVariables[k].label}]` : '') }), {}),
+                                                    }
+                                                }
+                                            }}
+                                            flat
+                                            forceShowExamples={true}
+                                        />
+                                    </div>
                                 ) : (
-                                    <div className="space-y-6">
-                                        <div className="flex items-center justify-between p-5 rounded-[24px] border border-primary/20 bg-primary/5 shadow-sm">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                                                    <Check size={24} />
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-base font-black text-slate-800 dark:text-slate-100">{tempValue.templateName}</h4>
-                                                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">{tConfig('templateSelectedSuccess')}</p>
-                                                </div>
-                                            </div>
-                                            <Button
-                                                variant="ghost"
-                                                onClick={() => setIsTemplateDialogOpen(true)}
-                                                className="rounded-xl text-primary hover:bg-primary/10 font-black text-xs h-10 px-4 gap-2"
-                                            >
-                                                <RefreshCw size={14} />
-                                                {tConfig('changeTemplate')}
-                                            </Button>
+                                    <div className="w-full aspect-[3/4] max-w-[300px] rounded-2xl md:rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center p-6 md:p-8 text-center gap-3">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-300">
+                                            <Info size={20} className="md:size-6" />
                                         </div>
-
-                                        {/* Variables Section */}
-                                        {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0) && (
-                                            <div className="space-y-8 p-8 rounded-[32px] bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
-                                                <div>
-                                                    <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">{tConfig('fillVariables')}</h4>
-                                                    <p className="text-[10px] text-slate-400 font-bold">{tConfig('fillVariablesDesc')}</p>
-                                                </div>
-
-                                                {tempValue.templateData?.headerType === 'LOCATION' && (
-                                            <div className="space-y-4">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                    <MapPin size={12} /> {tConfig('locationHeader')}
-                                                </p>
-                                                <div className="flex flex-col gap-6">
-                                                    <div className="w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-100 dark:bg-slate-900">
-                                                        <MapLocationPicker
-                                                            initialLocation={{
-                                                                lat: tempValue.locationData?.latitude || 30.0444,
-                                                                lng: tempValue.locationData?.longitude || 31.2357
-                                                            }}
-                                                            onLocationSelect={handleLocationCoordChange}
-                                                            height="100%"
-                                                            width="100%"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-4">
-                                                        {renderVariableInput('location', 'name', tConfig('locationName'))}
-                                                        {renderVariableInput('location', 'address', tConfig('locationAddress'))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {headerVars.length > 0 && (
-                                                    <div className="space-y-4">
-                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                            <Layout size={12} /> {tConfig('messageHeader')}
-                                                        </p>
-                                                        {headerVars.map(num => renderVariableInput('header', num))}
-                                                    </div>
-                                                )}
-
-                                                {bodyVars.length > 0 && (
-                                                    <div className="space-y-4">
-                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                            <MessageSquare size={12} /> {tConfig('messageBody')}
-                                                        </p>
-                                                        {bodyVars.map(num => renderVariableInput('body', num))}
-                                                    </div>
-                                                )}
-
-                                                {buttonVarsIndices.length > 0 && (
-                                                    <div className="space-y-4">
-                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                            <Link size={12} /> {tConfig('linkButtons')}
-                                                        </p>
-                                                        {buttonVarsIndices.map(idx => renderVariableInput('button', idx, tempValue.templateData.buttons[idx]?.text))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                        <p className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest">{tConfig('previewUnavailable')}</p>
+                                        <p className="text-[9px] md:text-[10px] text-slate-400 font-bold">{tConfig('chooseTemplateToPreview')}</p>
                                     </div>
                                 )}
-                            </FormGroup>
-                        </div>
-                    </div>
-
-                    {/* Preview Side */}
-                    <div className="w-[340px] bg-slate-50 dark:bg-slate-950 flex flex-col p-8 shrink-0 overflow-y-auto border-r dark:border-slate-800">
-                        <div className="sticky top-0 w-full flex flex-col items-center">
-                            <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2 w-full">
-                                <ExternalLink size={12} />
-                                {tConfig('livePreview')}
-                            </h4>
-                            
-                            {tempValue.templateData ? (
-                                <div className="scale-95 origin-top transform-gpu w-full">
-                                    <TemplatePreview
-                                        template={{
-                                            ...tempValue.templateData,
-                                            preview: {
-                                                ...tempValue.templateData,
-                                                examples: {
-                                                    ...Object.keys(tempValue.headerVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.headerVariables[k].value || (tempValue.headerVariables[k].type === 'variable' ? `[${tempValue.headerVariables[k].label}]` : '') }), {}),
-                                                    ...Object.keys(tempValue.bodyVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.bodyVariables[k].value || (tempValue.bodyVariables[k].type === 'variable' ? `[${tempValue.bodyVariables[k].label}]` : '') }), {}),
-                                                }
-                                            }
-                                        }}
-                                        flat
-                                        forceShowExamples={true}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="w-full aspect-[3/4] rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center p-8 text-center gap-3">
-                                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-300">
-                                        <Info size={24} />
-                                    </div>
-                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{tConfig('previewUnavailable')}</p>
-                                    <p className="text-[10px] text-slate-400 font-bold">{tConfig('chooseTemplateToPreview')}</p>
-                                </div>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <DialogFooter className="px-8 py-6 border-t bg-white dark:bg-slate-900 shrink-0">
-                    <div className="flex w-full justify-between items-center">
+                <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
+                    <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
                         <Button
                             variant="ghost"
                             onClick={() => onClose(null)}
-                            className="px-8 h-12 rounded-2xl text-slate-600 dark:text-slate-300 text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                            className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                         >
                             {tCommon('cancel')}
                         </Button>
                         <Button
                             disabled={!isAllFilled}
                             onClick={handleSave}
-                            className="px-10 h-12 rounded-2xl bg-primary text-white text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
+                            className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
                         >
                             {mode === "create" ? tConfig('addStep') : tConfig('saveChanges')}
                         </Button>
@@ -886,7 +888,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     const handleUpdateCheck = (index, updates) => {
         const newChecks = [...checks];
         const currentCheck = { ...newChecks[index], ...updates };
-
+        
         if (updates.field) {
             const fieldDef = fields.find(f => f.id === updates.field);
             currentCheck.fieldLabel = fieldDef?.label;
@@ -926,57 +928,51 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="max-w-4xl! p-0 overflow-hidden rounded-[30px] border-none shadow-2xl bg-[#f8f9fc] dark:bg-slate-950">
-                <div className="flex flex-col h-[85vh] overflow-hidden">
+            <DialogContent className="sm:max-w-[900px] w-full h-[95vh] md:h-[85vh] p-0 overflow-hidden rounded-[20px] md:rounded-[30px] border-none shadow-2xl bg-[#f8f9fc] dark:bg-slate-950">
+                <div className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
-                    <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 pe-[60px]">
-                        <div className="flex items-center justify-between">
+                    <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 md:pe-[60px]">
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             {activeIndex !== null ? (
-                                <div className="flex justify-between flex-1">
-                                    <div className="px-6">
-                                        <div className="flex items-center justify-end gap-3">
-                                            <span className="text-[13px] font-black text-slate-900 dark:text-slate-100 ml-2">{tConfig("preview")}</span>
-                                            <div className="px-4 py-2 rounded-xl bg-primary/10 text-primary text-[12px] font-black border border-primary/20 shadow-sm">
+                                <div className="flex flex-col sm:flex-row justify-between flex-1 gap-4 w-full">
+                                    <div className="md:px-6 overflow-x-auto custom-scrollbar pb-2 md:pb-0">
+                                        <div className="flex items-center gap-2 md:gap-3 min-w-max">
+                                            <span className="text-[11px] md:text-[13px] font-black text-slate-900 dark:text-slate-100">{tConfig("preview")}</span>
+                                            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-primary/10 text-primary text-[10px] md:text-[12px] font-black border border-primary/20 shadow-sm">
                                                 {fieldDef?.label}
                                             </div>
-                                            <div className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[12px] font-black border border-slate-200 dark:border-slate-700 shadow-sm">
+                                            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] md:text-[12px] font-black border border-slate-200 dark:border-slate-700 shadow-sm">
                                                 {operators.find(o => o.id === currentCheck?.operator)?.label || "..."}
                                             </div>
-                                            <div className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[12px] font-black border border-slate-200 dark:border-slate-700 shadow-sm">
+                                            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] md:text-[12px] font-black border border-slate-200 dark:border-slate-700 shadow-sm">
                                                 {currentCheck?.targetLabel || currentCheck?.targetValue || "..."}
                                             </div>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setActiveIndex(null)}
-                                        className="px-4 h-10 flex items-center gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 transition-all shrink-0"
+                                        className="px-4 h-9 md:h-10 flex items-center justify-center gap-2 rounded-lg md:rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 transition-all shrink-0 w-full sm:w-auto"
                                     >
-                                        <X size={20} />
-                                        <span className="text-[12px] font-black">{tConfig("backToMain")}</span>
+                                        <X size={18} />
+                                        <span className="text-[11px] md:text-[12px] font-black">{tConfig("backToMain")}</span>
                                     </button>
-                                    {/* <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                                        <GitBranch size={20} />
-                                    </div> */}
                                 </div>
                             ) : (
                                 <>
-                                    <div className="text-right flex-1 px-4">
-                                        <h2 className="text-[17px] font-black text-slate-900 dark:text-slate-100">{tConfig("orderCheckTitle")}</h2>
-                                        <p className="text-[11px] text-slate-400 font-bold mt-0.5">{tConfig("orderCheckDesc")}</p>
+                                    <div className="text-right flex-1 md:px-4">
+                                        <h2 className="text-[15px] md:text-[17px] font-black text-slate-900 dark:text-slate-100">{tConfig("orderCheckTitle")}</h2>
+                                        <p className="text-[10px] md:text-[11px] text-slate-400 font-bold mt-0.5">{tConfig("orderCheckDesc")}</p>
                                     </div>
-                                    {/* <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                        <GitBranch size={20} />
-                                    </div> */}
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2.5 rounded-xl text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                                        <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 dark:border-slate-700 text-center">
                                             {tConfig("conditionsCount", { count: checks.length })}
                                         </div>
                                         <button
                                             onClick={handleAddCheck}
-                                            className="text-sm px-4 py-2.5 flex items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+                                            className="text-xs md:text-sm px-4 py-2 md:py-2.5 flex items-center justify-center gap-2 rounded-lg md:rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 w-full sm:w-auto"
                                         >
-                                            <Plus size={20} />
-                                            <span className="text-[12px] font-black">{tConfig("addNewCondition")}</span>
+                                            <Plus size={18} className="md:size-5" />
+                                            <span className="text-[11px] md:text-[12px] font-black">{tConfig("addNewCondition")}</span>
                                         </button>
                                     </div>
                                 </>
@@ -985,53 +981,53 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto p-6 pb-0 mb-6 custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-0 mb-4 md:mb-6 custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50">
                         {loading ? (
-                            <div className="flex flex-col items-center justify-center py-20 gap-3">
-                                <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                                <p className="text-sm text-slate-400 font-bold">{tConfig("loadingData")}</p>
+                            <div className="flex flex-col items-center justify-center py-10 md:py-20 gap-3">
+                                <Loader2 className="w-8 h-8 md:w-10 md:h-10 animate-spin text-primary" />
+                                <p className="text-xs md:text-sm text-slate-400 font-bold">{tConfig("loadingData")}</p>
                             </div>
                         ) : (
                             <>
                                 {activeIndex === null ? (
                                     <div className="space-y-4 h-full">
                                         {checks.length > 0 ? (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                                                 {checks.map((check, i) => {
                                                     const f = fields.find(fd => fd.id === check.field) || fields[0];
                                                     return (
                                                         <div
                                                             key={i}
                                                             onClick={() => setActiveIndex(i)}
-                                                            className="group relative p-5 rounded-[24px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-xl transition-all cursor-pointer"
+                                                            className="group relative p-4 md:p-5 rounded-xl md:rounded-[24px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-xl transition-all cursor-pointer"
                                                         >
-                                                            <div className="flex items-center justify-between mb-4">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className={cn("w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm", f.bg, f.color)}>
-                                                                        <f.icon size={20} />
+                                                            <div className="flex items-center justify-between mb-3 md:mb-4">
+                                                                <div className="flex items-center gap-2 md:gap-3">
+                                                                    <div className={cn("w-9 h-9 md:w-11 md:h-11 rounded-lg md:rounded-2xl flex items-center justify-center shadow-sm", f.bg, f.color)}>
+                                                                        <f.icon size={16} className="md:size-5" />
                                                                     </div>
                                                                     <div className="text-right">
-                                                                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">{check.fieldLabel || f.label}</p>
-                                                                        <span className="text-[10px] text-slate-400 font-bold">{f.type}</span>
+                                                                        <p className="text-xs md:text-sm font-black text-slate-800 dark:text-slate-100">{check.fieldLabel || f.label}</p>
+                                                                        <span className="text-[9px] md:text-[10px] text-slate-400 font-bold">{f.type}</span>
                                                                     </div>
                                                                 </div>
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); handleRemoveCheck(i); }}
-                                                                    className="w-9 h-9 flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                                                    className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg md:rounded-xl transition-all md:opacity-0 md:group-hover:opacity-100"
                                                                 >
-                                                                    <Trash2 size={16} />
+                                                                    <Trash2 size={14} className="md:size-4" />
                                                                 </button>
                                                             </div>
 
-                                                            <div className="flex items-center gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                                                            <div className="flex items-center gap-2 p-2.5 md:p-3 rounded-lg md:rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
                                                                 <div className="flex-1 text-right">
-                                                                    <p className="text-[10px] text-slate-400 font-black mb-1 uppercase tracking-tighter">{tConfig("condition")}</p>
-                                                                    <p className="text-[11px] font-black text-slate-700 dark:text-slate-200">
+                                                                    <p className="text-[9px] md:text-[10px] text-slate-400 font-black mb-1 uppercase tracking-tighter">{tConfig("condition")}</p>
+                                                                    <p className="text-[10px] md:text-[11px] font-black text-slate-700 dark:text-slate-200">
                                                                         {operatorsByType[f.type]?.find(o => o.id === check.operator)?.label} {check.targetLabel || check.targetValue || '—'}
                                                                     </p>
                                                                 </div>
-                                                                <div className="w-8 h-8 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-primary shadow-sm">
-                                                                    <GitBranch size={14} />
+                                                                <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-primary shadow-sm">
+                                                                    <GitBranch size={12} className="md:size-[14px]" />
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1039,26 +1035,26 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                 })}
                                             </div>
                                         ) : (
-                                            <div className="h-full flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-[30px] border-2 border-dashed border-slate-100 dark:border-slate-800">
-                                                <div className="w-20 h-20 rounded-3xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 mb-6">
-                                                    <GitBranch size={40} />
+                                            <div className="h-full flex flex-col items-center justify-center py-10 md:py-20 bg-white dark:bg-slate-900 rounded-2xl md:rounded-[30px] border-2 border-dashed border-slate-100 dark:border-slate-800 px-4 text-center">
+                                                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 mb-4 md:mb-6">
+                                                    <GitBranch size={32} className="md:size-10" />
                                                 </div>
-                                                <h3 className="text-lg font-black text-slate-700 dark:text-slate-200">{tBuilder("nodes.noConditions")}</h3>
-                                                <p className="text-sm text-slate-400 font-bold mt-2">{tConfig("noConditionsDesc")}</p>
+                                                <h3 className="text-base md:text-lg font-black text-slate-700 dark:text-slate-200">{tBuilder("nodes.noConditions")}</h3>
+                                                <p className="text-xs md:text-sm text-slate-400 font-bold mt-2">{tConfig("noConditionsDesc")}</p>
                                             </div>
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-3xl ">
+                                    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-3xl">
                                         {/* Step 1: Field Selection */}
-                                        <div className="flex gap-6">
+                                        <div className="flex gap-4 md:gap-6">
                                             <div className="flex flex-col items-center gap-2 shrink-0">
-                                                <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center text-sm font-black shadow-lg shadow-primary/20">1</div>
+                                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-2xl bg-primary text-white flex items-center justify-center text-xs md:text-sm font-black shadow-lg shadow-primary/20">1</div>
                                                 <div className="w-0.5 flex-1 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
                                             </div>
-                                            <div className="flex-1 pb-8">
-                                                <h4 className="text-[15px] font-black text-slate-800 dark:text-slate-100 mb-4">{tConfig("chooseField")}</h4>
-                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                            <div className="flex-1 pb-6 md:pb-8">
+                                                <h4 className="text-sm md:text-[15px] font-black text-slate-800 dark:text-slate-100 mb-3 md:mb-4">{tConfig("chooseField")}</h4>
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
                                                     {fields.map(f => {
                                                         const isSelected = currentCheck?.field === f?.id;
                                                         return (
@@ -1066,16 +1062,16 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                                 key={f.id}
                                                                 onClick={() => handleUpdateCheck(activeIndex, { field: f.id })}
                                                                 className={cn(
-                                                                    "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border transition-all relative group h-24",
+                                                                    "flex flex-col items-center justify-center gap-2 md:gap-3 p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all relative group h-20 md:h-24",
                                                                     isSelected
                                                                         ? "bg-white dark:bg-slate-900 border-primary ring-4 ring-primary/5 shadow-md"
                                                                         : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-200"
                                                                 )}
                                                             >
-                                                                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm", f.bg, f.color)}>
-                                                                    <f.icon size={20} />
+                                                                <div className={cn("w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm", f.bg, f.color)}>
+                                                                    <f.icon size={16} className="md:size-5" />
                                                                 </div>
-                                                                <p className="text-[11px] font-black text-slate-700 dark:text-slate-200 text-center leading-tight">{f.label}</p>
+                                                                <p className="text-[10px] md:text-[11px] font-black text-slate-700 dark:text-slate-200 text-center leading-tight truncate w-full px-1">{f.label}</p>
                                                             </button>
                                                         );
                                                     })}
@@ -1084,13 +1080,13 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                         </div>
 
                                         {/* Step 2: Operator Selection */}
-                                        <div className="flex gap-6">
+                                        <div className="flex gap-4 md:gap-6">
                                             <div className="flex flex-col items-center gap-2 shrink-0">
-                                                <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center text-sm font-black shadow-lg shadow-primary/20">2</div>
+                                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-2xl bg-primary text-white flex items-center justify-center text-xs md:text-sm font-black shadow-lg shadow-primary/20">2</div>
                                                 <div className="w-0.5 flex-1 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
                                             </div>
-                                            <div className="flex-1 pb-8">
-                                                <h4 className="text-[15px] font-black text-slate-800 dark:text-slate-100 mb-4">{tConfig("chooseOperator")}</h4>
+                                            <div className="flex-1 pb-6 md:pb-8">
+                                                <h4 className="text-sm md:text-[15px] font-black text-slate-800 dark:text-slate-100 mb-3 md:mb-4">{tConfig("chooseOperator")}</h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {operators.map(o => {
                                                         const isSelected = currentCheck?.operator === o.id;
@@ -1099,7 +1095,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                                 key={o.id}
                                                                 onClick={() => handleUpdateCheck(activeIndex, { operator: o.id })}
                                                                 className={cn(
-                                                                    "px-6 py-3 rounded-xl border text-[13px] font-black transition-all",
+                                                                    "px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl border text-xs md:text-[13px] font-black transition-all",
                                                                     isSelected
                                                                         ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
                                                                         : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300"
@@ -1114,12 +1110,12 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                         </div>
 
                                         {/* Step 3: Value Entry */}
-                                        <div className="flex gap-6">
+                                        <div className="flex gap-4 md:gap-6">
                                             <div className="flex flex-col items-center gap-2 shrink-0">
-                                                <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center text-sm font-black shadow-lg shadow-primary/20">3</div>
+                                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-2xl bg-primary text-white flex items-center justify-center text-xs md:text-sm font-black shadow-lg shadow-primary/20">3</div>
                                             </div>
                                             <div className="flex-1">
-                                                <h4 className="text-[15px] font-black text-slate-800 dark:text-slate-100 mb-4">{tConfig("enterValue")}</h4>
+                                                <h4 className="text-sm md:text-[15px] font-black text-slate-800 dark:text-slate-100 mb-3 md:mb-4">{tConfig("enterValue")}</h4>
                                                 <div className="max-w-xl">
                                                     {fieldDef?.type === "select" || fieldDef?.type === "boolean" ? (
                                                         <Select
@@ -1133,7 +1129,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                                 handleUpdateCheck(activeIndex, { targetValue: v, targetLabel: label });
                                                             }}
                                                         >
-                                                            <SelectTrigger className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm px-6 shadow-sm">
+                                                            <SelectTrigger className="h-12 md:h-14 rounded-xl md:rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs md:text-sm px-4 md:px-6 shadow-sm">
                                                                 <SelectValue placeholder={tConfig("selectValue")} />
                                                             </SelectTrigger>
                                                             <SelectContent>
@@ -1148,7 +1144,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                     ) : (
                                                         <Input
                                                             type={fieldDef?.type === "number" ? "number" : "text"}
-                                                            className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm px-6 shadow-sm rtl"
+                                                            className="h-12 md:h-14 rounded-xl md:rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs md:text-sm px-4 md:px-6 shadow-sm rtl"
                                                             value={currentCheck?.targetValue || ""}
                                                             maxLength={300}
                                                             onChange={(e) => handleUpdateCheck(activeIndex, { targetValue: e.target.value, targetLabel: e.target.value })}
@@ -1166,12 +1162,12 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                     </div>
 
                     {/* Footer - Using DialogFooter structure */}
-                    <DialogFooter className="p-6 bg-white dark:bg-slate-900 border-t dark:border-slate-800">
-                        <div className="flex w-full justify-between items-center">
+                    <DialogFooter className="p-4 md:p-6 bg-white dark:bg-slate-900 border-t dark:border-slate-800 shrink-0">
+                        <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
                             <Button
                                 variant="ghost"
                                 onClick={() => activeIndex !== null ? setActiveIndex(null) : onClose(null)}
-                                className="px-8 h-12 rounded-2xl text-slate-600 dark:text-slate-300 text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                                className="w-full sm:w-auto px-6 md:px-8 h-10 md:h-12 rounded-lg md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                             >
                                 {tCommon("cancel")}
                             </Button>
@@ -1179,7 +1175,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                 <Button
                                     disabled={!currentCheck?.targetValue}
                                     onClick={handleConfirm}
-                                    className="px-8 h-12 rounded-2xl bg-primary text-white text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
+                                    className="w-full sm:w-auto px-6 md:px-8 h-10 md:h-12 rounded-lg md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
                                 >
                                     {tConfig("addCondition")}
                                 </Button>
@@ -1187,7 +1183,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                 <Button
                                     disabled={checks.length === 0}
                                     onClick={handleSaveAll}
-                                    className="px-8 h-12 rounded-2xl bg-primary text-white text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
+                                    className="w-full sm:w-auto px-6 md:px-8 h-10 md:h-12 rounded-lg md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
                                 >
                                     {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
                                 </Button>

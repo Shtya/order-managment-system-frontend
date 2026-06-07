@@ -81,12 +81,16 @@ export default function ChatList() {
         setSearch,
         selectedConversation,
         setSelectedConversation,
+        setMobileView,
         activeTab,
         setActiveTab
     } = useConversation();
 
     const activeId = selectedConversation?.id;
-    const onSelect = setSelectedConversation;
+    const onSelect = (conv) => {
+        setSelectedConversation(conv);
+        setMobileView("chat");
+    };
 
     const formatTime = (date) => {
         if (!date) return "";
@@ -109,7 +113,7 @@ export default function ChatList() {
     ];
 
     return (
-        <div className="flex flex-col h-full border-e border-border bg-card w-80 lg:w-96">
+        <div className="flex flex-col h-full border-e border-border bg-card w-full">
             {/* Header */}
             <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between h-10 overflow-hidden">

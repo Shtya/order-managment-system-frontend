@@ -8,6 +8,7 @@ import {
   TrendingUp, Activity, RefreshCw, Clock, Building2, RotateCcw,
   BadgeCheck, Banknote, StickyNote, Mail, Receipt, Star, Boxes, Hash, ImageIcon,
   Navigation, Plus, Minus, X, Save, Info, Trash2, Truck, MapPin, CreditCard,
+  AlertTriangle,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -18,7 +19,7 @@ import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
@@ -26,6 +27,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
+import { AddressSection } from "../../new/page";
+import { GEO_CONFIG } from "@/utils/order-utils";
+import { Input } from "@/components/ui/input";
+import { alarmToast } from "@/utils/healpers";
+
+
 
 // ─── RAW HEX (for alpha only) ──────────────────────────────────────────────
 const HEX = {
@@ -57,6 +64,7 @@ const mkSchema = t => yup.object({
   phoneNumber: yup.string().trim().required(t("validation.phoneRequired")),
   secondPhoneNumber: yup.string().trim(),
   city: yup.string().trim().required(t("validation.cityRequired")),
+  cityId: yup.string().trim(),
   address: yup.string().trim().required(t("validation.addressRequired")),
   paymentMethod: yup.string().trim().required(t("validation.paymentMethodRequired")),
   shippingCost: yup.number().transform(v => isNaN(v) ? undefined : v).min(0),
@@ -303,12 +311,12 @@ function MetTile({ icon: Icon, label, value, color, delay = 0, plain = false }) 
 function Fld({ label, name, control, error, disabled = false, type = "text", style: st = {} }) {
   const [foc, setFoc] = useState(false);
   return (
-    <div className="field">
+    <div className="">
       <label className={foc ? "on" : ""}>{label}</label>
       <Controller name={name} control={control} render={({ field }) => (
-        <input {...field} value={field.value ?? ""} type={type} disabled={disabled}
+        <Input {...field} value={field.value ?? ""} type={type} disabled={disabled}
           onFocus={() => setFoc(true)} onBlur={() => setFoc(false)}
-          className={error ? "err" : ""} style={{ ...st, opacity: disabled ? .6 : 1 }}
+          className={error ? "err" : ""} style={{ opacity: disabled ? .6 : 1 }}
         />
       )} />
       {error && <p className="emsg">{error.message}</p>}
@@ -316,6 +324,64 @@ function Fld({ label, name, control, error, disabled = false, type = "text", sty
   );
 }
 
+
+function normalize(value) {
+  // Treat all empty values as equal
+  if (
+    value === "" ||
+    value === undefined ||
+    value === null
+  ) {
+    return null;
+  }
+
+  // Normalize arrays
+  if (Array.isArray(value)) {
+    return value.map(normalize);
+  }
+
+  // Normalize objects recursively
+  if (typeof value === "object") {
+    return Object.keys(value).reduce((acc, key) => {
+      acc[key] = normalize(value[key]);
+      return acc;
+    }, {});
+  }
+
+  return value;
+}
+
+function getEditablePart(order) {
+  if (!order) return null;
+  return {
+    customerName: order.customerName,
+    landmark: order.landmark,
+    email: order.email,
+    phoneNumber: order.phoneNumber,
+    secondPhoneNumber: order.secondPhoneNumber,
+    city: order.city,
+    cityId: order.cityId,
+    area: order.area,
+    address: order.address,
+    paymentMethod: order.paymentMethod,
+    shippingCost: order.shippingCost,
+    deposit: order.deposit,
+    allowOpenPackage: order.allowOpenPackage,
+    items: (order.items || []).map(i => ({
+      variantId: i.variant?.id || i.variantId,
+      quantity: Number(i.quantity),
+      unitPrice: i.unitPrice,
+      isAdditional: !!i.isAdditional
+    })),
+    shippingMetadata: {
+      cityId: order.shippingMetadata?.cityId,
+      zoneId: order.shippingMetadata?.zoneId,
+      districtId: order.shippingMetadata?.districtId,
+      locationId: order.shippingMetadata?.locationId,
+      // orderSize: order.shippingMetadata?.orderSize,
+    }
+  };
+}
 
 function diffObjects(
   before,
@@ -343,7 +409,11 @@ function diffObjects(
       continue;
     }
 
-    if (JSON.stringify(b) !== JSON.stringify(a)) {
+    // Treat undefined as null for comparison to match normalize()
+    const valB = b === undefined ? null : b;
+    const valA = a === undefined ? null : a;
+
+    if (JSON.stringify(valB) !== JSON.stringify(valA)) {
       result.push({ path, before: b, after: a });
     }
   }
@@ -352,7 +422,10 @@ function diffObjects(
 }
 
 function logOrderChanges(originalOrder, editedOrder) {
-  const diffs = diffObjects(originalOrder, editedOrder);
+  const diffs = diffObjects(
+    normalize(getEditablePart(originalOrder)),
+    normalize(getEditablePart(editedOrder))
+  );
 
   console.group("Order change diff");
   if (diffs.length === 0) {
@@ -396,6 +469,90 @@ export default function OrderConfirmationWorkPage() {
   const [upsellProd, setUpsellProd] = useState(null);
   const [removedIds, setRemovedIds] = useState([]);
 
+  // ── Geo States ───────────────────────────────────────────────────────────
+  const [normalCities, setNormalCities] = useState([]);
+  const [normalCitiesLoading, setNormalCitiesLoading] = useState(false);
+  const [providerCities, setProviderCities] = useState([]);
+  const [providerZones, setproviderZones] = useState([]);
+  const [providerDistricts, setproviderDistricts] = useState([]);
+  const [providerLoading, setproviderLoading] = useState({ cities: false, zones: false, districts: false, locations: false });
+  const [providerErrors, setProviderErrors] = useState({});
+  const [providerMeta, setProviderMeta] = useState({ cityId: "", zoneId: "", districtId: "", locationId: "" });
+
+  const shippingProvider = useMemo(
+    () => editedOrder?.shippingCompany?.provider?.toLowerCase() || null,
+    [editedOrder?.shippingCompany]
+  );
+
+  const config = useMemo(
+    () => GEO_CONFIG[shippingProvider] || GEO_CONFIG.default,
+    [shippingProvider]
+  );
+
+  const handleMetaChange = (key, val) => setProviderMeta(prev => ({ ...prev, [key]: val }));
+
+  useEffect(() => {
+    const getNormalCities = async () => {
+      setNormalCitiesLoading(true);
+      try {
+        const res = await api.get("/cities", { params: { limit: 500 } });
+        setNormalCities(Array.isArray(res.data) ? res.data : (res.data?.records || []));
+      } catch (e) { console.error(e); }
+      finally { setNormalCitiesLoading(false); }
+    };
+    getNormalCities();
+  }, []);
+
+  // Map unified cities to provider-specific data
+  useEffect(() => {
+    const unifiedCities = normalCities ?? [];
+    const mappedCities = unifiedCities.map(city => {
+      const matched = shippingProvider ? city.providerLocations?.find(pl => pl.provider === shippingProvider) : null;
+      return {
+        uuid: city.id,
+        id: matched?.providerCityId || city.id,
+        nameEn: city.nameEn,
+        nameAr: city.nameAr,
+        dropOff: shippingProvider ? (matched?.dropOff ?? false) : true,
+        pickup: shippingProvider ? (matched?.pickup ?? false) : true,
+      };
+    });
+    setProviderCities(mappedCities);
+
+    if (!config.needsGeo) {
+      setproviderZones([]);
+      setproviderDistricts([]);
+    }
+  }, [config.needsGeo, shippingProvider, normalCities]);
+
+  // Fetch zones
+  useEffect(() => {
+    if (!config.needsGeo || !providerMeta.cityId) { setproviderZones([]); return; }
+    const fetchZones = async () => {
+      setproviderLoading(p => ({ ...p, zones: true }));
+      try {
+        const res = await api.get(`/shipping/zones/${shippingProvider}/${providerMeta.cityId}`);
+        setproviderZones(res.data?.records || []);
+      } catch (e) { console.error(e); }
+      finally { setproviderLoading(p => ({ ...p, zones: false })); }
+    };
+    fetchZones();
+  }, [config.needsGeo, shippingProvider, providerMeta.cityId]);
+
+  // Fetch districts
+  useEffect(() => {
+    if (!config.needsGeo || !config.showDistrict || !providerMeta.cityId) { setproviderDistricts([]); return; }
+    const fetchDistricts = async () => {
+      setproviderLoading(p => ({ ...p, districts: true }));
+      try {
+        const res = await api.get(`/shipping/districts/${shippingProvider}/${providerMeta.cityId}`);
+        setproviderDistricts(res.data?.records || []);
+      } catch (e) { console.error(e); }
+      finally { setproviderLoading(p => ({ ...p, districts: false })); }
+    };
+    fetchDistricts();
+  }, [config.needsGeo, config.showDistrict, shippingProvider, providerMeta.cityId]);
+
   useEffect(() => { fetchNext(); fetchStatuses(); }, []);
 
   const fetchNext = async () => {
@@ -409,54 +566,30 @@ export default function OrderConfirmationWorkPage() {
 
   const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({ resolver: yupResolver(mkSchema(t)), mode: "onChange" });
   const w = watch();
-  console.log(w)
+
   useEffect(() => {
-    if (w && Object.keys(w).length > 0) setEditedOrder(prev => ({ ...prev, ...w }));
-  }, [w?.customerName, w?.phoneNumber, w?.city, w?.address, w?.secondPhoneNumber,
-  w?.paymentMethod, w?.shippingCost, w?.deposit, w?.email, w?.area, w?.allowOpenPackage]);
-
-  const normalize = (value) => {
-    // Treat all empty values as equal
-    if (
-      value === "" ||
-      value === undefined ||
-      value === null
-    ) {
-      return null;
-    }
-
-    // Normalize arrays
-    if (Array.isArray(value)) {
-      return value.map(normalize);
-    }
-
-    // Normalize objects recursively
-    if (typeof value === "object") {
-      return Object.keys(value).reduce((acc, key) => {
-        acc[key] = normalize(value[key]);
-        return acc;
-      }, {});
-    }
-
-    return value;
-  };
+    if (w && Object.keys(w).length > 0) setEditedOrder(prev => ({ ...prev, ...w, shippingMetadata: providerMeta }));
+  }, [w?.customerName, w?.phoneNumber, w?.city, w?.cityId, w?.landmark, w?.address, w?.secondPhoneNumber,
+  w?.paymentMethod, w?.shippingCost, w?.deposit, w?.email, w?.area, w?.allowOpenPackage, providerMeta]);
 
   const hasChanges = useMemo(() => {
-    if (!editedOrder) return false;
+    if (!editedOrder || !originalOrder) return false;
 
-    return (
-      JSON.stringify(normalize(originalOrder)) !==
-      JSON.stringify(normalize(editedOrder))
+    const diffs = diffObjects(
+      normalize(getEditablePart(originalOrder)),
+      normalize(getEditablePart(editedOrder))
     );
+    return diffs.length > 0;
   }, [originalOrder, editedOrder]);
 
-  // useEffect(() => {
-  //   if (!originalOrder || !editedOrder) return;
+  useEffect(() => {
+    if (!originalOrder || !editedOrder) return;
 
-  //   const diffs = logOrderChanges(originalOrder, editedOrder);
+    const diffs = logOrderChanges(originalOrder, editedOrder);
 
-  //   console.log("hasChanges:", diffs.length > 0);
-  // }, [originalOrder, editedOrder]);
+    console.log("has diff:", diffs.length > 0);
+  }, [originalOrder, editedOrder]);
+  console.log("hasChanges", hasChanges)
 
   const wItems = watch("items"), wShip = watch("shippingCost"), wDisc = watch("discount");
   useEffect(() => {
@@ -467,8 +600,9 @@ export default function OrderConfirmationWorkPage() {
     if (!data) return;
     setOriginalOrder(data); setEditedOrder(JSON.parse(JSON.stringify(data)));
     reset({
+      landmark: data.landmark || "",
       customerName: data.customerName || "", email: data.email || "", phoneNumber: data.phoneNumber || "",
-      secondPhoneNumber: data.secondPhoneNumber || "", city: data.city || "", area: data.area || "",
+      secondPhoneNumber: data.secondPhoneNumber || "", city: data.city || "", cityId: data.cityId || "", area: data.area || "",
       address: data.address || "", deposit: data.deposit || 0, shippingCost: data.shippingCost || 0,
       paymentMethod: data.paymentMethod || "cod", allowOpenPackage: data.allowOpenPackage ?? false, items: data.items || []
     });
@@ -477,6 +611,18 @@ export default function OrderConfirmationWorkPage() {
     const asgn = data.assignments?.find(x => x.isAssignmentActive);
     if (asgn?.lockedUntil) { setIsLocked(new Date(asgn.lockedUntil) > new Date()); setLockedUntil(asgn.lockedUntil); }
     else { setIsLocked(false); setLockedUntil(null); }
+
+    if (data.shippingMetadata) {
+      setProviderMeta({
+        cityId: data.shippingMetadata.cityId ?? "",
+        zoneId: data.shippingMetadata.zoneId ?? "",
+        districtId: data.shippingMetadata.districtId ?? "",
+        locationId: data.shippingMetadata.locationId ?? "",
+        // orderSize: data.shippingMetadata.orderSize ?? "MEDIUM",
+      });
+    } else {
+      setProviderMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
+    }
   };
 
   const recalc = o => { const pt = o.items.reduce((s, i) => s + (i.unitPrice * i.quantity), 0); return { ...o, productsTotal: pt, finalTotal: pt + parseFloat(o.shippingCost || 0) - parseFloat(o.discount || 0) }; };
@@ -542,29 +688,45 @@ export default function OrderConfirmationWorkPage() {
     setSelectedSkus(originalOrder.items.map(i => ({ id: i.variant?.id || i.variantId, label: i.variant?.product?.name || i.productName, productName: i.variant?.product?.name || i.productName, sku: i.variant?.sku || i.sku, attributes: i.variant?.attributes || i.attributes || {}, price: i.unitPrice || 0, cost: i.unitCost || i.unitPrice || 0 })));
     reset({
       customerName: originalOrder.customerName || "",
+      landmark: originalOrder.landmark || "",
       email: originalOrder.email || "",
       phoneNumber: originalOrder.phoneNumber || "",
       secondPhoneNumber: originalOrder.secondPhoneNumber || "",
-      city: originalOrder.city || "", area: originalOrder.area || "",
+      city: originalOrder.city || "",
+      cityId: originalOrder.cityId || "",
+      area: originalOrder.area || "",
       address: originalOrder.address || "", paymentMethod: originalOrder.paymentMethod || "cod",
       shippingCost: originalOrder.shippingCost ?? 0,
       deposit: originalOrder.deposit ?? 0, allowOpenPackage:
         originalOrder.allowOpenPackage ?? false
     });
+
+    if (originalOrder.shippingMetadata) {
+      setProviderMeta({
+        cityId: originalOrder.shippingMetadata.cityId ?? "",
+        zoneId: originalOrder.shippingMetadata.zoneId ?? "",
+        districtId: originalOrder.shippingMetadata.districtId ?? "",
+        locationId: originalOrder.shippingMetadata.locationId ?? "",
+        // orderSize: originalOrder.shippingMetadata.orderSize ?? "MEDIUM",
+      });
+    } else {
+      setProviderMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
+    }
   };
+
 
   const changeStatus = async statusId => {
     if (!originalOrder || isLocked || decided) return;
     try {
       setChangingStatus(true); setSelStatusId(statusId);
       const res = await api.put(`/orders/${originalOrder.id}/confirm-status`, { statusId, notes: notes.trim() || undefined });
-      
+
       if (res.data?.success === false) {
-        toast.error(res.data.message || t("messages.errorUpdatingStatus"));
+        alarmToast(res.data.message || t("messages.errorUpdatingStatus"));
       } else {
         toast.success(t("messages.statusUpdated"));
       }
-      
+
       setShowSuccess(true); setRefetching(true);
       const r = await api.get(`/orders/${originalOrder.id}`); initOrder(r.data);
       setDecided(true); setNotes(""); setSelStatusId(null);
@@ -577,7 +739,7 @@ export default function OrderConfirmationWorkPage() {
     setIsLocked(false); setLockedUntil(null); setDecided(false); setShowSuccess(false);
     fetchNext();
   };
-  const { formatCurrency } = usePlatformSettings();
+
   if (loading) return <Skeleton />;
   if (!originalOrder) return <Empty onRetry={fetchNext} onBack={() => router.push("/orders/employee-orders")} t={t} isRtl={isRtl} />;
 
@@ -613,7 +775,23 @@ export default function OrderConfirmationWorkPage() {
 
         {/* RIGHT */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 20, order: isRtl ? 1 : 2 }}>
-          <CustomerSection order={editedOrder} control={control} errors={errors} {...sh} />
+          <CustomerSection
+            order={editedOrder}
+            control={control}
+            errors={errors}
+            {...sh}
+            locale={locale}
+            shippingProvider={shippingProvider}
+            providerMeta={providerMeta}
+            handleMetaChange={handleMetaChange}
+            providerCities={providerCities}
+            providerZones={providerZones}
+            providerDistricts={providerDistricts}
+            providerLoading={providerLoading}
+            normalCitiesLoading={normalCitiesLoading}
+            providerErrors={providerErrors}
+            setValue={setValue}
+          />
           <FinancialSection order={editedOrder} control={control} errors={errors} {...sh} />
           <DecisionSection order={editedOrder} notes={notes} setNotes={setNotes} changingStatus={changingStatus}
             isLocked={isLocked} decided={decided} refetching={refetching} showSuccess={showSuccess} lockedUntil={lockedUntil} {...sh} />
@@ -1250,7 +1428,24 @@ function HistSection({ order, t, isRtl }) {
 }
 
 // ─── CUSTOMER SECTION ──────────────────────────────────────────────────────
-function CustomerSection({ control, errors, t, isRtl }) {
+function CustomerSection({
+  control,
+  errors,
+  t,
+  isRtl,
+  locale,
+  shippingProvider,
+  providerMeta,
+  handleMetaChange,
+  providerCities,
+  providerZones,
+  providerDistricts,
+  providerLoading,
+  normalCitiesLoading,
+  providerErrors,
+  setValue
+}) {
+
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -1261,9 +1456,24 @@ function CustomerSection({ control, errors, t, isRtl }) {
           <Fld name="email" label={t("email")} control={control} error={errors.email} type="email" />
           <Fld name="phoneNumber" label={t("phone")} control={control} error={errors.phoneNumber} />
           <Fld name="secondPhoneNumber" label={t("secondPhone")} control={control} />
-          <Fld name="city" label={t("city")} control={control} error={errors.city} />
-          <Fld name="area" label={t("area")} control={control} />
-          <div style={{ gridColumn: "1/-1" }}><Fld name="address" label={t("address")} control={control} error={errors.address} /></div>
+
+          <div style={{ gridColumn: "1/-1" }}>
+            <AddressSection
+              locale={locale}
+              provider={shippingProvider}
+              control={control}
+              errors={errors}
+              setValue={setValue}
+              providerMeta={providerMeta}
+              onMetaChange={handleMetaChange}
+              cities={providerCities}
+              providerZones={providerZones}
+              providerDistricts={providerDistricts}
+              providerLoading={providerLoading}
+              isLoading={normalCitiesLoading}
+              providerErrors={providerErrors}
+            />
+          </div>
         </div>
       </div>
     </motion.div>

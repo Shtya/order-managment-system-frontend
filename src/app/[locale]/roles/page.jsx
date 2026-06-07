@@ -251,7 +251,6 @@ function PermissionsSelector({ permissions = [], selected = [], onChange, disabl
 	const groups = useMemo(() => {
 		const map = {};
 		permissions.forEach((p) => {
-			console.log(p);
 			const key = p?.split(/[._]/)[0] || "general";
 			if (!map[key]) map[key] = [];
 			map[key].push(p);

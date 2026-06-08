@@ -4870,6 +4870,8 @@
         "shippedDatePlaceholder": "اختر فترة تاريخ الشحن",
         "employee": "الموظف",
         "employeePlaceholder": "اختر الموظف",
+        "minShippingDays": "أقل مدة شحن",
+        "minShippingDaysPlaceholder": "أدخل أقل عدد أيام",
         "all": "الكل",
         "none": "بدون",
         "apply": "تطبيق"
@@ -10954,6 +10956,7 @@
       "maxDays": "أقصى مدة شحن",
       "minDaysPlaceholder": "الحد الأدنى للأيام",
       "maxDaysPlaceholder": "الحد الأقصى للأيام",
+      "all": "الكل",
       "apply": "تطبيق"
     },
     "messages": {

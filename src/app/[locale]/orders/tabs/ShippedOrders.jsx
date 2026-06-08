@@ -16,13 +16,7 @@ import toast from "react-hot-toast";
 import api from "@/utils/api";
 import { cn } from "@/utils/cn";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import UserSelect from "@/components/atoms/UserSelect";
@@ -45,6 +39,7 @@ const DEFAULT_FILTERS = {
   shippedStartDate: null,
   shippedEndDate: null,
   employee: "all",
+  minShippingDays: "",
 };
 
 function formatShipmentDate(dateStr) {
@@ -149,6 +144,10 @@ export default function ShippedOrders({ statuses = [] }) {
         params.userId = filters.employee;
       }
 
+      if (filters.minShippingDays) {
+        params.minShippingDays = filters.minShippingDays;
+      }
+
       if (viewMode === "late") {
         params.lateShipping = true;
       }
@@ -230,7 +229,8 @@ export default function ShippedOrders({ statuses = [] }) {
       (filters.shipmentStatus && filters.shipmentStatus !== "all") ||
       Boolean(filters.shippedStartDate) ||
       Boolean(filters.shippedEndDate) ||
-      (filters.employee && filters.employee !== "all")
+      (filters.employee && filters.employee !== "all") ||
+      Boolean(filters.minShippingDays)
     );
   }, [filters]);
 
@@ -629,6 +629,16 @@ export default function ShippedOrders({ statuses = [] }) {
                 placeholder={ts("filters.employeePlaceholder")}
                 allowAll
                 allLabel={ts("filters.all")}
+              />
+            </FilterField>
+
+            <FilterField label={ts("filters.minShippingDays")}>
+              <Input
+                type="number"
+                value={filters.minShippingDays}
+                onChange={(e) => setFilters((f) => ({ ...f, minShippingDays: e.target.value }))}
+                placeholder={ts("filters.minShippingDaysPlaceholder")}
+                className="h-10 rounded-xl border-border bg-background text-sm"
               />
             </FilterField>
           </>

@@ -355,6 +355,7 @@
   "sidebar": {
     "stores": "المتاجر",
     "syncFailures": "أخطاء مزامنة المنتجات",
+    "cities": "المدن",
     "administration": "المشتريات",
     "synchronization": "المزامنة",
     "upsell": "Upsells",
@@ -411,6 +412,7 @@
     "failedOrders": "طلبات تحتاج مراجعة",
     "ordersUnderReview": "طلبات تحتاج مراجعة",
     "pendingOrders": "طلبات معلقة",
+    "shippedOrders": "الطلبات المشحونة",
     "logout": "تسجيل الخروج",
     "collections": "التحصيلات",
     "collectedOrders": "الطلبات المحصلة",
@@ -4652,6 +4654,15 @@
       "on_hold": "معلق",
       "cancelled": "تم الإلغاء"
     },
+    "shippingDays": {
+      "day": "{count} يوم",
+      "days": "{count} أيام",
+      "beforeMin": "قبل الحد الأدنى للشحن",
+      "inRange": "ضمن مدة الشحن المتوقعة",
+      "nearEnd": "قرب نهاية مدة الشحن",
+      "afterEnd": "تجاوز مدة الشحن",
+      "unknown": "لا يوجد إعداد شحن للمدينة"
+    },
     "trackingStatus": {
       "new": "جديد",
       "in_progress": "قيد التنفيذ",
@@ -4837,7 +4848,52 @@
       "replacementComingSoon": "الاستبدال",
       "comingSoonDesc": "هذا القسم قيد التطوير، سيكون متاحاً قريباً.",
       "rejected": "الطلبات المرفوضة",
-      "pendingOrders": "طلبات معلقة"
+      "pendingOrders": "طلبات معلقة",
+      "shippedOrders": "الطلبات المشحونة"
+    },
+    "shippedOrders": {
+      "breadcrumb": "الطلبات المشحونة",
+      "views": {
+        "normal": "كل المشحون",
+        "late": "طلبات متأخرة"
+      },
+      "stats": {
+        "noCompany": "بدون شركة شحن",
+        "orders": "طلب"
+      },
+      "filters": {
+        "shippingCompany": "شركة الشحن",
+        "shippingCompanyPlaceholder": "اختر شركة الشحن",
+        "shipmentStatus": "حالة الشحنة",
+        "shipmentStatusPlaceholder": "اختر حالة الشحنة",
+        "shippedDate": "تاريخ الشحن",
+        "shippedDatePlaceholder": "اختر فترة تاريخ الشحن",
+        "employee": "الموظف",
+        "employeePlaceholder": "اختر الموظف",
+        "all": "الكل",
+        "none": "بدون",
+        "apply": "تطبيق"
+      },
+      "table": {
+        "orderNumber": "رقم الطلب",
+        "customerName": "اسم العميل",
+        "phoneNumber": "رقم الهاتف",
+        "city": "المدينة",
+        "products": "المنتجات",
+        "status": "حالة الطلب",
+        "shippingDays": "أيام الشحن",
+        "trackingNumber": "رقم التتبع",
+        "shipmentStatus": "حالة الشحنة",
+        "shipmentCreatedAt": "تاريخ الشحنة",
+        "shippingCompany": "شركة الشحن",
+        "assignedEmployee": "الموظف المسؤول"
+      },
+      "empty": "لا توجد طلبات مشحونة",
+      "messages": {
+        "fetchFailed": "فشل تحميل الطلبات المشحونة",
+        "statsFailed": "فشل تحميل إحصائيات الشحن",
+        "exportFailed": "فشل تصدير الطلبات المشحونة"
+      }
     },
     "image": {
       "preview": "معاينة"
@@ -5336,6 +5392,7 @@
       "actions": "الإجراءات",
       "finalTotal": "التكلفة الإجمالية",
       "shipmentStatus": "حالة الشحنه",
+      "shippingDays": "أيام الشحن",
       "postponedDate": "تاريخ التأجيل"
     },
     "bulkUpload": {
@@ -10864,5 +10921,73 @@
   "failedToLoadImage": "فشل تحميل الصورة",
   "failedToLoadVideo": " فشل تحميل الفيديو",
   "uploading": "جاري التحميل...",
-  "document": "ملف"
+  "document": "ملف",
+  "shippingCities": {
+    "title": "إعدادات المدن والشحن",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "cities": "المدن"
+    },
+    "table": {
+      "nameAr": "الاسم (عربي)",
+      "nameEn": "الاسم (إنجليزي)",
+      "minDays": "أقل مدة شحن",
+      "maxDays": "أقصى مدة شحن",
+      "status": "الحالة",
+      "options": "خيارات"
+    },
+    "status": {
+      "configured": "تم الإعداد",
+      "notConfigured": "غير معد"
+    },
+    "common": {
+      "total": "الإجمالي",
+      "limit": "عدد النتائج في الصفحة"
+    },
+    "toolbar": {
+      "searchPlaceholder": "بحث في المدن...",
+      "filter": "تصفية",
+      "export": "تصدير"
+    },
+    "filters": {
+      "minDays": "أقل مدة شحن",
+      "maxDays": "أقصى مدة شحن",
+      "minDaysPlaceholder": "الحد الأدنى للأيام",
+      "maxDaysPlaceholder": "الحد الأقصى للأيام",
+      "apply": "تطبيق"
+    },
+    "messages": {
+      "exportFailed": "فشل تصدير المدن"
+    },
+    "actions": {
+      "add": "إضافة إعداد",
+      "edit": "تعديل الإعداد",
+      "delete": "حذف الإعداد"
+    },
+    "form": {
+      "createTitle": "إضافة إعداد مدينة",
+      "editTitle": "تعديل إعداد مدينة",
+      "minDays": "أقل عدد أيام للشحن",
+      "maxDays": "أقصى عدد أيام للشحن",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "saving": "جاري الحفظ..."
+    },
+    "delete": {
+      "title": "حذف الإعداد",
+      "description": "هل أنت متأكد من حذف إعدادات الشحن لمدينة {name}؟ سيتم استخدام الإعدادات الافتراضية بدلاً منها.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "toast": {
+      "saved": "تم حفظ الإعدادات بنجاح",
+      "deleted": "تم حذف الإعداد بنجاح"
+    },
+    "validation": {
+      "number": "يرجى إدخال رقم صحيح.",
+      "minValue": "يجب أن تكون القيمة {value} أو أكبر.",
+      "maxShippingDaysMustBeGreaterThanMin": "يجب أن يكون الحد الأقصى لأيام الشحن أكبر من أو يساوي الحد الأدنى لأيام الشحن."
+    },
+    "empty": "لا يوجد مدن تطابق البحث"
+  }
 }

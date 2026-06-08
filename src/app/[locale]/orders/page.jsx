@@ -36,6 +36,7 @@ import api from "@/utils/api";
 import OrdersTab, { OrderStatus } from "./tabs/OrderTab";
 import FailedOrdersTab from "./tabs/Failedorderstab";
 import RejectedTab from "./tabs/RejectedTab";
+import ShippedOrders from "./tabs/ShippedOrders";
 // import ReturnsTab from "./ReturnsTab";
 
 
@@ -105,6 +106,7 @@ export default function Orders() {
 			{ id: "orders", label: t("tabs.orders"), icon: ShoppingCart },
 			// { id: "replacement", label: t("tabs.replacement"), icon: ArrowLeftRight },
 			{ id: "failedOrders", label: t("tabs.failedOrders"), icon: XCircle },
+			{ id: "shippedOrders", label: t("tabs.shippedOrders"), icon: Truck },
 			{ id: "rejected", label: t("tabs.rejected"), icon: XCircle },
 			{ id: "ordersUnderReview", label: t("tabs.rejected"), icon: FileSearch },
 		],
@@ -187,6 +189,7 @@ export default function Orders() {
 
 					{/* {activeTab === "replacement" && <ReplacementTab statuses={stats} />} */}
 					{activeTab === "failedOrders" && <FailedOrdersTab statuses={stats} />}
+					{activeTab === "shippedOrders" && <ShippedOrders statuses={stats} />}
 					{activeTab === "rejected" && <RejectedTab />}
 				</motion.div>
 			</AnimatePresence>

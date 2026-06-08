@@ -9,6 +9,8 @@ import {
   Package,
   Truck,
   Eye,
+  LucideMessageCircle,
+  PhoneCall,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
@@ -348,6 +350,37 @@ export default function ShippedOrders({ statuses = [] }) {
         ),
       },
       {
+        key: "shippingDays",
+        header: ts("table.shippingDays"),
+        cell: (row) => {
+          if (!row.shippedAt) {
+            return <span className="text-muted-foreground text-sm">—</span>;
+          }
+
+          const cityConfig = row.cityDetails?.tenantConfigs?.[0];
+          const days = calcShippingDaysElapsed(row.shippedAt);
+          const rangeStatus = getShippingDaysRangeStatus(
+            days,
+            cityConfig?.minShippingDays,
+            cityConfig?.maxShippingDays,
+          );
+          const { className } = getShippingDaysBadgeStyles(rangeStatus);
+          const daysLabel =
+            days === 1
+              ? t("shippingDays.day", { count: days })
+              : t("shippingDays.days", { count: days });
+
+          return (
+            <Badge
+              className={cn("rounded-lg px-2.5 py-1 font-semibold tabular-nums", className)}
+              title={t(`shippingDays.${rangeStatus}`)}
+            >
+              {daysLabel}
+            </Badge>
+          );
+        },
+      },
+      {
         key: "products",
         header: t("table.products"),
         cell: (row) => (
@@ -386,37 +419,7 @@ export default function ShippedOrders({ statuses = [] }) {
           );
         },
       },
-      {
-        key: "shippingDays",
-        header: ts("table.shippingDays"),
-        cell: (row) => {
-          if (!row.shippedAt) {
-            return <span className="text-muted-foreground text-sm">—</span>;
-          }
-
-          const cityConfig = row.cityDetails?.tenantConfigs?.[0];
-          const days = calcShippingDaysElapsed(row.shippedAt);
-          const rangeStatus = getShippingDaysRangeStatus(
-            days,
-            cityConfig?.minShippingDays,
-            cityConfig?.maxShippingDays,
-          );
-          const { className } = getShippingDaysBadgeStyles(rangeStatus);
-          const daysLabel =
-            days === 1
-              ? t("shippingDays.day", { count: days })
-              : t("shippingDays.days", { count: days });
-
-          return (
-            <Badge
-              className={cn("rounded-lg px-2.5 py-1 font-semibold tabular-nums", className)}
-              title={t(`shippingDays.${rangeStatus}`)}
-            >
-              {daysLabel}
-            </Badge>
-          );
-        },
-      },
+     
       {
         key: "trackingNumber",
         header: ts("table.trackingNumber"),
@@ -439,6 +442,44 @@ export default function ShippedOrders({ statuses = [] }) {
             <Badge variant="outline">
               {t(`trackingStatus.${status}`) || status}
             </Badge>
+          );
+        },
+      },
+      {
+        key: "phoneNumber",
+        header: t("table.phoneNumber"),
+        cell: (row) => {
+          const rawNumber = String(row.phoneNumber || "").trim();
+          const cleanNumber = rawNumber.replace(/\D/g, "");
+
+          return (
+            <div className="flex items-center justify-between gap-3 text-sm group">
+
+              {/* Phone */}
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1 transition-opacity duration-200">
+                  <a
+                    href={`tel:${cleanNumber}`}
+                    className="p-1.5 hover:bg-blue-100 text-blue-600 rounded-full transition-all"
+                    title={t("common.call")}
+                  >
+                    <PhoneCall size={15} />
+                  </a>
+
+                  <a
+                    href={`https://wa.me/${cleanNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 hover:bg-green-100 text-green-600 rounded-full transition-all"
+                    title="Whatsapp"
+                  >
+                    <LucideMessageCircle size={15} />
+                  </a>
+                </div>
+                <span className="truncate">{rawNumber}</span>
+              </div>
+
+            </div>
           );
         },
       },

@@ -297,7 +297,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                 }));
             }
         }
-    }, [api]);
+    }, []);
 
     useEffect(() => {
         const initializeCities = async () => {
@@ -313,7 +313,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
     useEffect(() => {
         const initializeFixes = async () => {
             if (!carrier || carrier === "NONE") return;
-
+            
             const config = CARRIER_CONFIG[carrier];
             const latestCities = await fetchCities(config.provider);
 
@@ -336,6 +336,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                 // Trigger geo fetch for existing cityId
                 if (order.cityId) {
                     const city = latestCities.find(c => String(c.id) === String(order.cityId));
+                    
                     if (city?.providerCityId) {
                         fetchZonesAndDistricts(config.provider, city.providerCityId, order.id, config.hasDistrict);
                     }
@@ -373,6 +374,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
 
                 // Find city to get its provider-specific ID
                 const city = cities.find(c => String(c.id) === String(value));
+                
                 if (city?.providerCityId) {
                     fetchZonesAndDistricts(config.provider, city.providerCityId, orderId, config.hasDistrict);
                 }
@@ -406,7 +408,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                 }
             }));
         }
-    }, [carrier, t]);
+    }, [carrier, cities,t]);
 
 
     const validateFixes = useCallback(async (newFixes) => {

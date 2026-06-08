@@ -4875,6 +4875,8 @@
         "shippedDatePlaceholder": "Select shipped date range",
         "employee": "Employee",
         "employeePlaceholder": "Select employee",
+        "minShippingDays": "Min Shipping Days",
+        "minShippingDaysPlaceholder": "Enter min shipping days",
         "all": "All",
         "none": "None",
         "apply": "Apply"
@@ -10957,8 +10959,9 @@
     "filters": {
       "minDays": "Min Shipping Days",
       "maxDays": "Max Shipping Days",
-      "minDaysPlaceholder": "Minimum days",
-      "maxDaysPlaceholder": "Maximum days",
+      "minDaysPlaceholder": "Min days",
+      "maxDaysPlaceholder": "Max days",
+      "all": "All",
       "apply": "Apply"
     },
     "messages": {

@@ -19,6 +19,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -164,6 +171,7 @@ export default function CitiesConfigPage() {
 	const [filters, setFilters] = useState({
 		minDays: "",
 		maxDays: "",
+		isConfigured: "all",
 	});
 	const searchTimer = useRef(null);
 
@@ -187,6 +195,9 @@ export default function CitiesConfigPage() {
 			}
 			if (filters.maxDays !== "" && filters.maxDays != null) {
 				params.maxDays = filters.maxDays;
+			}
+			if (filters.isConfigured !== "all") {
+				params.isConfigured = filters.isConfigured;
 			}
 
 			const res = await api.get(`/cities/my-config`, { params });
@@ -230,7 +241,7 @@ export default function CitiesConfigPage() {
 	const applyFilters = () => fetchCities({ page: 1, per_page: pager.per_page });
 
 	const hasActiveFilters = useMemo(() => {
-		return Boolean(filters.minDays) || Boolean(filters.maxDays);
+		return Boolean(filters.minDays) || Boolean(filters.maxDays) || filters.isConfigured !== "all";
 	}, [filters]);
 
 	const handleExport = async () => {
@@ -244,6 +255,9 @@ export default function CitiesConfigPage() {
 			}
 			if (filters.maxDays !== "" && filters.maxDays != null) {
 				params.maxDays = filters.maxDays;
+			}
+			if (filters.isConfigured !== "all") {
+				params.isConfigured = filters.isConfigured;
 			}
 
 			const res = await api.get("/cities/export", {
@@ -386,6 +400,22 @@ export default function CitiesConfigPage() {
 								placeholder={t("filters.maxDaysPlaceholder")}
 								className="h-10 rounded-xl border-border bg-background text-sm"
 							/>
+						</FilterField>
+
+						<FilterField label={t("table.status")}>
+							<Select
+								value={filters.isConfigured}
+								onValueChange={(v) => setFilters((f) => ({ ...f, isConfigured: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("table.status")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">{t("filters.all")}</SelectItem>
+									<SelectItem value="true">{t("status.configured")}</SelectItem>
+									<SelectItem value="false">{t("status.notConfigured")}</SelectItem>
+								</SelectContent>
+							</Select>
 						</FilterField>
 					</>
 				}

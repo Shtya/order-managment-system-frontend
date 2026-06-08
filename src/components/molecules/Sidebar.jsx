@@ -66,6 +66,7 @@ import {
   Clock,
   Landmark,
   DollarSign,
+  MapPin,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -539,6 +540,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "pendingOrders",
           href: "/orders?tab=failedOrders",
         },
+        {
+          icon:Truck,
+          labelKey: "shippedOrders",
+          href: "/orders?tab=shippedOrders",
+        }
       ],
     },
 
@@ -811,6 +817,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           href: "/roles",
         },
       ],
+    },
+    {
+      icon: MapPin,
+      labelKey: "cities",
+      href: "/cities",
+      permission: "city.read"
     },
     {
       icon: Settings,

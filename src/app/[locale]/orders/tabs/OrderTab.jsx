@@ -98,6 +98,11 @@ import { useAuth } from "@/context/AuthContext";
 
 import AdminFilter from "@/components/atoms/AdminFilter";
 import { Switch } from "@/components/ui/switch";
+import {
+  calcShippingDaysElapsed,
+  getShippingDaysBadgeStyles,
+  getShippingDaysRangeStatus,
+} from "@/utils/order-utils";
 
 //order status flow
 // New => Confirmed => Distrebuted (Assed to shipment company) =>  Printed (Waybills printed) =>  preparing (scanign its items for preparation)
@@ -883,6 +888,35 @@ export default function OrdersTab({
                 </SelectContent>
               </Select>
             </div>
+          );
+        },
+      },
+      {
+        key: "shippingDays",
+        header: t("table.shippingDays"),
+        cell: (row) => {
+          if (row.status?.code !== OrderStatus.SHIPPED || !row.shippedAt) {
+            return <span className="text-muted-foreground text-sm">—</span>;
+          }
+
+          const cityConfig = row.cityDetails?.tenantConfigs?.[0];
+          const minDays = cityConfig?.minShippingDays ?? null;
+          const maxDays = cityConfig?.maxShippingDays ?? null;
+          const days = calcShippingDaysElapsed(row.shippedAt);
+          const rangeStatus = getShippingDaysRangeStatus(days, minDays, maxDays);
+          const { className } = getShippingDaysBadgeStyles(rangeStatus);
+          const statusLabel = t(`shippingDays.${rangeStatus}`);
+          const daysLabel = days === 1
+            ? t("shippingDays.day", { count: days })
+            : t("shippingDays.days", { count: days });
+
+          return (
+            <Badge
+              className={cn("rounded-lg px-2.5 py-1 font-semibold tabular-nums", className)}
+              title={statusLabel}
+            >
+              {daysLabel}
+            </Badge>
           );
         },
       },

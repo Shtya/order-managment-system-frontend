@@ -355,6 +355,7 @@
   "sidebar": {
     "stores": "Stores",
     "syncFailures": "Product Sync Errors",
+    "cities": "Cities",
     "administration": "Purchases",
     "synchronization": "Synchronization",
     "upsell": "Upsells",
@@ -411,6 +412,7 @@
     "failedOrders": "Orders Requiring Review",
     "ordersUnderReview": "Orders Under Review",
     "pendingOrders": "Pending Orders",
+    "shippedOrders": "Shipped Orders",
     "logout": "Log Out",
     "collections": "Collections",
     "collectedOrders": "Collected Orders",
@@ -4657,6 +4659,15 @@
       "cancelled": "Cancelled",
       "on_hold": "hanging"
     },
+    "shippingDays": {
+      "day": "{count} day",
+      "days": "{count} days",
+      "beforeMin": "Before minimum shipping window",
+      "inRange": "Within expected shipping window",
+      "nearEnd": "Near shipping deadline",
+      "afterEnd": "Past shipping deadline",
+      "unknown": "No city shipping config"
+    },
     "postponed": {
       "date": "Postponed Date",
       "datePlaceholder": "Select postponed date",
@@ -4842,7 +4853,52 @@
       "replacementComingSoon": "Replacement Requests",
       "comingSoonDesc": "This section is under development and will be available soon.",
       "rejected": "Rejected Orders",
-      "pendingOrders": "Pending Orders"
+      "pendingOrders": "Pending Orders",
+      "shippedOrders": "Shipped Orders"
+    },
+    "shippedOrders": {
+      "breadcrumb": "Shipped Orders",
+      "views": {
+        "normal": "All Shipped",
+        "late": "Late Orders"
+      },
+      "stats": {
+        "noCompany": "No Shipping Company",
+        "orders": "orders"
+      },
+      "filters": {
+        "shippingCompany": "Shipping Company",
+        "shippingCompanyPlaceholder": "Select shipping company",
+        "shipmentStatus": "Shipment Status",
+        "shipmentStatusPlaceholder": "Select shipment status",
+        "shippedDate": "Shipped Date",
+        "shippedDatePlaceholder": "Select shipped date range",
+        "employee": "Employee",
+        "employeePlaceholder": "Select employee",
+        "all": "All",
+        "none": "None",
+        "apply": "Apply"
+      },
+      "table": {
+        "orderNumber": "Order Number",
+        "customerName": "Customer Name",
+        "phoneNumber": "Phone Number",
+        "city": "City",
+        "products": "Products",
+        "status": "Order Status",
+        "shippingDays": "Shipping Days",
+        "trackingNumber": "Tracking Number",
+        "shipmentStatus": "Shipment Status",
+        "shipmentCreatedAt": "Shipment Date",
+        "shippingCompany": "Shipping Company",
+        "assignedEmployee": "Assigned Employee"
+      },
+      "empty": "No shipped orders found",
+      "messages": {
+        "fetchFailed": "Failed to load shipped orders",
+        "statsFailed": "Failed to load shipping statistics",
+        "exportFailed": "Failed to export shipped orders"
+      }
     },
     "image": {
       "preview": "Preview"
@@ -5341,6 +5397,7 @@
       "actions": "Actions",
       "finalTotal": "Final Total",
       "shipmentStatus": "Shipment status",
+      "shippingDays": "Shipping Days",
       "postponedDate": "Postponed Date"
     },
     "bulkUpload": {
@@ -10869,5 +10926,73 @@
   "failedToLoadImage": "Failed to load image",
   "failedToLoadVideo": "Failed to load video",
   "uploading": "Loading...",
-  "document": "Document"
+  "document": "Document",
+  "shippingCities": {
+    "title": "Cities & Shipping Settings",
+    "breadcrumb": {
+      "home": "Home",
+      "cities": "Cities"
+    },
+    "table": {
+      "nameAr": "Name (Arabic)",
+      "nameEn": "Name (English)",
+      "minDays": "Min Shipping Days",
+      "maxDays": "Max Shipping Days",
+      "status": "Status",
+      "options": "Options"
+    },
+    "status": {
+      "configured": "Configured",
+      "notConfigured": "Not Configured"
+    },
+    "common": {
+      "total": "Total",
+      "limit": "Results per page"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search cities...",
+      "filter": "Filter",
+      "export": "Export"
+    },
+    "filters": {
+      "minDays": "Min Shipping Days",
+      "maxDays": "Max Shipping Days",
+      "minDaysPlaceholder": "Minimum days",
+      "maxDaysPlaceholder": "Maximum days",
+      "apply": "Apply"
+    },
+    "messages": {
+      "exportFailed": "Failed to export cities"
+    },
+    "actions": {
+      "add": "Add Config",
+      "edit": "Edit Config",
+      "delete": "Delete Config"
+    },
+    "form": {
+      "createTitle": "Add City Config",
+      "editTitle": "Edit City Config",
+      "minDays": "Min Shipping Days",
+      "maxDays": "Max Shipping Days",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving..."
+    },
+    "delete": {
+      "title": "Delete Config",
+      "description": "Are you sure you want to delete the shipping settings for {name}? Default settings will be used instead.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "saved": "Settings saved successfully",
+      "deleted": "Settings deleted successfully"
+    },
+    "validation": {
+      "number": "Please enter a valid number.",
+      "minValue": "Value must be at least {value}.",
+      "maxShippingDaysMustBeGreaterThanMin": "Maximum shipping days must be greater than or equal to minimum shipping days."
+    },
+    "empty": "No cities found matching your search"
+  }
 }

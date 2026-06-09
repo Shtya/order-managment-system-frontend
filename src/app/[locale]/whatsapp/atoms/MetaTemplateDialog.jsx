@@ -87,7 +87,7 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
     const [selectedLanguage, setSelectedLanguage] = useState("ar"); // Default Arabic
     const [selectedCategory, setSelectedCategory] = useState("ALL");
     const [selectedUsecase, setSelectedUsecase] = useState(null); // Single active usecase filter
-    const [showFilters, setShowFilters] = useState(false);
+    const [showFilters, setShowFilters] = useState(true);
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
     // Accordion Expansion State

@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 
 export default function WhatsAppAccountSelect({
     label,
+    noLabel = false,
     value,
     onChange,
     allowAll = false
@@ -30,6 +31,8 @@ export default function WhatsAppAccountSelect({
         try {
             const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1, isActive: "true" } });
             const values = Array.isArray(res.data?.records) ? res.data.records : []
+            // desc by createdAt
+            values.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setAccounts(values);
             // Only set default if no value is currently selected and allowAll is false
             if (values.length > 0 && !value && !allowAll) {
@@ -50,7 +53,7 @@ export default function WhatsAppAccountSelect({
 
     return (
         <div className="space-y-2 w-full ">
-            {displayLabel && (
+            {displayLabel && !noLabel && (
                 <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
                     {displayLabel}
                 </Label>

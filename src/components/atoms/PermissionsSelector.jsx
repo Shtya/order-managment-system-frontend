@@ -15,6 +15,7 @@ export default function PermissionsSelector({
 	className,
 	disabled = false,
 }) {
+	
 	const t = useTranslations("permissions");
 	const updateInProgress = useRef(false);
 
@@ -22,7 +23,7 @@ export default function PermissionsSelector({
 	const groupedPermissions = useMemo(() => {
 		const groups = {};
 		permissions.forEach((perm) => {
-			const parts = perm.name.split(".");
+			const parts = perm?.split(".");
 			const moduleName = parts.length > 1 ? parts[0] : "general";
 			if (!groups[moduleName]) {
 				groups[moduleName] = [];
@@ -58,7 +59,7 @@ export default function PermissionsSelector({
 		if (disabled || updateInProgress.current) return;
 		updateInProgress.current = true;
 		try {
-			const modulePerms = groupedPermissions[module].map((p) => p.name);
+			const modulePerms = groupedPermissions[module].map((p) => p);
 			const allSelected = modulePerms.every((p) => selected.includes(p));
 			let newSelected;
 			if (allSelected) {
@@ -86,7 +87,7 @@ export default function PermissionsSelector({
 			if (selected.length === permissions.length) {
 				onChange?.([]);
 			} else {
-				onChange?.(permissions.map((p) => p.name));
+				onChange?.(permissions.map((p) => p));
 			}
 		} finally {
 			setTimeout(() => {
@@ -97,7 +98,7 @@ export default function PermissionsSelector({
 
 	// ✅ Check module selection status
 	const getModuleStatus = useCallback((module) => {
-		const modulePerms = groupedPermissions[module].map((p) => p.name);
+		const modulePerms = groupedPermissions[module].map((p) => p);
 		const selectedCount = modulePerms.filter((p) => selected.includes(p)).length;
 		if (selectedCount === 0) return "none";
 		if (selectedCount === modulePerms.length) return "all";
@@ -317,7 +318,7 @@ export default function PermissionsSelector({
 													</p>
 													<div className="w-1 h-1 rounded-full bg-gray-400" />
 													<p className="text-sm font-medium text-primary">
-														{modulePerms.filter((p) => selected.includes(p.name)).length} محدد
+														{modulePerms.filter((p) => selected.includes(p)).length} محدد
 													</p>
 												</div>
 											</div>
@@ -351,8 +352,8 @@ export default function PermissionsSelector({
 								{/* Permissions Grid */}
 								<div className="p-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 bg-gradient-to-br from-gray-50/50 to-transparent dark:from-slate-900/20 dark:to-transparent">
 									{modulePerms.map((perm, index) => {
-										const action = getPermissionAction(perm.name);
-										const isSelected = selected.includes(perm.name);
+										const action = getPermissionAction(perm);
+										const isSelected = selected.includes(perm);
 
 										return (
 											<motion.div
@@ -368,7 +369,7 @@ export default function PermissionsSelector({
 														? "border-primary/50 bg-gradient-to-br from-primary/10 to-primary/5 shadow-md shadow-primary/10"
 														: "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-primary/30 hover:bg-primary/5"
 												)}
-												onClick={() => togglePermission(perm.name)}
+												onClick={() => togglePermission(perm)}
 											>
 												{/* Shine effect on hover */}
 												<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />

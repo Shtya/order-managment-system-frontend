@@ -397,7 +397,7 @@ export default function WarehouseFlowPage() {
   //                   <span>{tWarning("advancedSettings")}</span>
   //                 </div>
   //               }
-  //               permission="order.readSettings"
+  //               permission="orders.readSettings"
   //             />
 
   //             <button

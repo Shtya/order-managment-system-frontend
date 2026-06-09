@@ -54,6 +54,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
 import { ActionButtons } from "@/components/atoms/Actions";
 import { useAuth } from "@/context/AuthContext";
+import { useRolesApi } from "../../roles/page";
 
 /** ✅ Main Page Component */
 export default function RolesPermissionsPage() {

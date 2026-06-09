@@ -20,6 +20,7 @@ import api from "@/utils/api";
 import { toast } from "react-hot-toast";
 import { useDebounce } from "@/hook/useDebounce";
 import { motion, AnimatePresence } from "framer-motion";
+import WhatsAppAccountSelect from "./WhatsAppAccountSelect";
 
 export function InternalTemplateDialog({ title, open, onOpenChange, defaultAccountId, onSelectTemplate, library }) {
     const tCats = useTranslations("whatsApp.templates.categories");
@@ -33,7 +34,7 @@ export function InternalTemplateDialog({ title, open, onOpenChange, defaultAccou
     const [accounts, setAccounts] = useState([]);
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showFilters, setShowFilters] = useState(false);
+    const [showFilters, setShowFilters] = useState(true);
     const locale = useLocale();
 
     const internalConfig = useMemo(() => ({
@@ -150,22 +151,14 @@ export function InternalTemplateDialog({ title, open, onOpenChange, defaultAccou
                                     <div className="flex flex-wrap gap-3 md:gap-4 items-center pt-2">
                                         {!library && (
                                             <div className="flex-1 min-w-[200px] md:flex-initial md:w-[220px]">
-                                                <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-                                                    <SelectTrigger className="w-full h-[45px] md:h-[50px] rounded-xl bg-muted/50 border-border">
-                                                        <div className="flex items-center gap-2">
-                                                            <Phone className="w-4 h-4 text-muted-foreground/60" />
-                                                            <SelectValue placeholder={t("filterByAccount")} />
-                                                        </div>
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="all">{t("allAccounts")}</SelectItem>
-                                                        {accounts.map(acc => (
-                                                            <SelectItem key={acc.id} value={acc.id}>
-                                                                {acc.name} ({acc.mobileNumber})
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+
+                                                <WhatsAppAccountSelect
+                                                    //   label={""}
+                                                    noLabel={true}
+                                                    value={selectedAccountId}
+                                                    allowAll={true}
+                                                    onChange={setSelectedAccountId}
+                                                />
                                             </div>
                                         )}
 

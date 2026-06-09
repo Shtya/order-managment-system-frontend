@@ -22,6 +22,7 @@ import {
   Archive,
   Mail,
   Copy,
+  Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
@@ -766,6 +767,21 @@ export function GeneralTab({ settings, patch, t }) {
             />
           </div>
         </div>
+      </SectionCard>
+
+      {/* Auto Assignment section */}
+      <SectionCard
+        icon={Users}
+        iconColor="#f59e0b"
+        title={t("retrySettings.autoAssignment.title")}
+        subtitle={t("retrySettings.autoAssignment.subtitle")}
+      >
+        <ToggleRow
+          label={t("retrySettings.autoAssignment.enabled")}
+          description={t("retrySettings.autoAssignment.enabledDesc")}
+          checked={settings.autoAssignmentEnabled}
+          onCheckedChange={(v) => patch({ autoAssignmentEnabled: v })}
+        />
       </SectionCard>
 
       {/* Master on/off */}

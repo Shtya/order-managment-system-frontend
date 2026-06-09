@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Phone } from "lucide-react";
 import api from "@/utils/api";
 import { useTranslations } from "next-intl";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 export default function WhatsAppAccountSelect({
     label,
@@ -21,6 +22,8 @@ export default function WhatsAppAccountSelect({
 }) {
     const t = useTranslations("whatsApp.accounts");
     const [accounts, setAccounts] = useState([]);
+    const { settings } = useOrdersSettings();
+    const defaultWhatsAppAccountId = settings?.defaultWhatsAppAccountId;
     const [accountsLoading, setAccountsLoading] = useState(false);
 
     const displayLabel = label || t("defaultAccountLabel");
@@ -35,15 +38,23 @@ export default function WhatsAppAccountSelect({
             values.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setAccounts(values);
             // Only set default if no value is currently selected and allowAll is false
-            if (values.length > 0 && !value && !allowAll) {
-                onChange?.(values[0].id);
-            }
+            // if (values.length > 0 && !value && !allowAll) {
+            //     onChange?.(values[0].id);
+            // }
         } catch (e) {
             console.error(e);
         } finally {
             setAccountsLoading(false);
         }
     }, [value, allowAll, onChange]);
+
+    // Set default value if it's not already set
+    useEffect(() => {
+        
+        if (!value && defaultWhatsAppAccountId) {
+            onChange?.(defaultWhatsAppAccountId);
+        }
+    }, [value, defaultWhatsAppAccountId]);
 
     useEffect(() => {
         fetchAccounts();

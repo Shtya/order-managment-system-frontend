@@ -653,7 +653,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 		try {
 			const params = { limit: PAGE_SIZE };
 			if (cursor != null) params.cursor = cursor;
-			const { data: res } = await api.get("/orders/employees-by-load", { params });
+			const { data: res } = await api.get("/order-assignment/employees-by-load", { params });
 			const data = res?.data ?? [];
 			setEmpItems(prev => isFirst ? data : [...prev, ...data]);
 			setNextCursor(res?.nextCursor ?? null);
@@ -676,7 +676,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 		(async () => {
 			setFreeOrdersLoading(true);
 			try {
-				const { data } = await api.get("/orders/free-orders", {
+				const { data } = await api.get("/order-assignment/free-orders", {
 					params: { statusIds: selectedStatuses.join(","), startDate: dateRange.from, endDate: dateRange.to, limit: 200 },
 				});
 				if (!cancelled) setFreeOrders(data?.data ?? []);
@@ -710,7 +710,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 			if (!valid.length) { toast.error(t("distribution.selectEmployeeAndOrders")); return; }
 			setAssigning(true);
 			try {
-				await api.post("/orders/assign-manual", {
+				await api.post("/order-assignment/assign-manual", {
 					assignments: valid.map(b => ({ userId: b.employee.user.id, orderIds: b.orderIds })),
 				});
 				toast.success(t("distribution.normalSuccess", { count: valid.reduce((s, b) => s + b.orderIds.length, 0), employees: valid.length }));
@@ -723,7 +723,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 			if (!selectedStatuses.length || seletOpen) { toast.error(t("distribution.selectStatusToLoadOrders")); return; }
 			setAssigning(true); setAutoAssignResult(null);
 			try {
-				const res = await api.post("/orders/assign-auto", {
+				const res = await api.post("/order-assignment/assign-auto", {
 					statusIds: selectedStatuses,
 					employeeCount: Number(employeeCount) || 0,
 					orderCount: Number(orderCount) || 0,
@@ -747,7 +747,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 		(async () => {
 			setAutoEmployeesLoading(true);
 			try {
-				const response = await api.post("/orders/auto-assign-preview", {
+				const response = await api.post("/order-assignment/auto-assign-preview", {
 					statusIds: selectedStatuses.map(s => s),
 					requestedOrderCount: orderCount || 0,
 					requestedEmployeeCount: employeeCount || 0,

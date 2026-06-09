@@ -4582,6 +4582,7 @@
       "en_US": "الإنجليزية (US)"
     },
     "api": {
+      "success": "تمت العملية بنجاح",
       "error": "فشل الطلب",
       "exportStarted": "بدأ التصدير",
       "exportSuccess": "تم التصدير بنجاح",
@@ -4630,6 +4631,8 @@
     "noData": "لا توجد بيانات",
     "actions": "الإجراءات",
     "status": "الحالة",
+    "activate": "تفعيل",
+    "deactivate": "تعطيل",
     "date": "التاريخ",
     "success": "نجح",
     "failed": "فشل",
@@ -5547,6 +5550,12 @@
       "autoMoveSubtitle": "إذا لم يستجب العميل بعد كل المحاولات، ينتقل الطلب تلقائياً إلى حالة أخرى تختارها",
       "autoMoveStatus": "الحالة الجديدة للطلب",
       "autoMoveHint": "مثال: اختر «لم يستجب» أو «قيد المراجعة» ليظهر الطلب في قائمة تحتاج إلى متابعة يدوية",
+      "autoAssignment": {
+        "title": "التوزيع التلقائي",
+        "subtitle": "إعدادات توزيع الطلبات تلقائياً",
+        "enabled": "تفعيل التوزيع التلقائي",
+        "enabledDesc": "عند التفعيل، سيتم توزيع الطلبات الجديدة تلقائياً على الموظفين بناءً على القواعد النشطة."
+      },
       "selectStatus": "اختر حالة…",
       "retryStatusesTitle": "حالات تُطلق إعادة المحاولة",
       "retryStatusesSubtitle": "النظام يُعيد الاتصال تلقائياً فقط عندما يكون الطلب في إحدى هذه الحالات",
@@ -5678,8 +5687,102 @@
     "emptyTitle": "لم يتم العثور على موظفين",
     "emptySubtitle": "لا توجد سجلات تطابق بحثك",
     "tabs": {
-      "createOrder": "إنشاء طلب",
-      "ordersList": "قائمة الطلبات"
+      "manual": "توزيع يدوي",
+      "automatic": "توزيع تلقائي"
+    },
+    "labels": {
+      "searchPlaceholder": "البحث عن طريق اسم القاعدة أو الوصف...",
+      "filter": "تصفية",
+      "apply": "تطبيق",
+      "total": "الإجمالي",
+      "limit": "الحد",
+      "emptyTitle": "لم يتم العثور على قواعد",
+      "emptySubtitle": "حاول إضافة قاعدة جديدة للبدء",
+      "ruleType": "نوع القاعدة",
+      "strategy": "الاستراتيجية",
+      "status": "الحالة",
+      "date": "تاريخ الإنشاء"
+    },
+    "autoAssign": {
+      "toolbar": {
+        "addRole": "إضافة قاعدة",
+        "export": "تصدير"
+      },
+      "strategy": {
+        "roundRobin": "توزيع عادل",
+        "leastActiveOrders": "الأقل ضغطاً"
+      },
+      "form": {
+        "name": "اسم القاعدة",
+        "description": "الوصف",
+        "priority": "الأولوية",
+        "isActive": "نشط",
+        "ruleType": "نوع القاعدة",
+        "strategy": "استراتيجية التوزيع",
+        "products": "اختر المنتجات",
+        "cities": "اختر المدن",
+        "employees": "اختر الموظفين",
+        "shippingCompanies": "اختر شركات الشحن",
+        "paymentStatus": "حالة الدفع",
+        "minAmount": "الحد الأدنى للمبلغ",
+        "maxAmount": "الحد الأقصى للمبلغ",
+        "save": "حفظ القاعدة",
+        "cancel": "إلغاء"
+      },
+      "paymentStatuses": {
+        "pending": "قيد الانتظار",
+        "paid": "تم الدفع",
+        "partial": "جزئي"
+      },
+      "validation": {
+        "nameRequired": "اسم القاعدة مطلوب",
+        "ruleTypeRequired": "نوع القاعدة مطلوب",
+        "strategyRequired": "الاستراتيجية مطلوبة",
+        "priorityRequired": "الأولوية مطلوبة",
+        "priorityMin": "يجب أن تكون الأولوية 1 على الأقل",
+        "employeesRequired": "يجب اختيار موظف واحد على الأقل",
+        "productsRequired": "يجب اختيار منتج واحد على الأقل",
+        "citiesRequired": "يجب اختيار مدينة واحدة على الأقل",
+        "shippingCompaniesRequired": "يجب اختيار شركة شحن واحدة على الأقل",
+        "paymentStatusRequired": "حالة الدفع مطلوبة",
+        "minAmountRequired": "الحد الأدنى للمبلغ مطلوب",
+        "maxAmountRequired": "الحد الأقصى للمبلغ مطلوب",
+        "maxAmountGteMin": "يجب أن يكون الحد الأقصى أكبر من أو يساوي الحد الأدنى",
+        "saveSuccess": "تم حفظ القاعدة بنجاح",
+        "saveError": "فشل في حفظ القاعدة"
+      },
+      "stats": {
+        "total": "إجمالي القواعد",
+        "active": "القواعد النشطة",
+        "manual": "يدوي",
+        "product": "منتج",
+        "city": "مدينة",
+        "amountRange": "نطاق المبلغ",
+        "paymentStatus": "حالة الدفع",
+        "shippingCompany": "شركة الشحن"
+      },
+      "columns": {
+        "name": "اسم القاعدة",
+        "type": "نوع القاعدة",
+        "strategy": "الاستراتيجية",
+        "status": "الحالة",
+        "priority": "الأولوية",
+        "employees": "الموظفون المستهدفون",
+        "actions": "خيارات"
+      },
+      "actions": {
+        "edit": "تعديل",
+        "delete": "حذف",
+        "view": "عرض"
+      },
+      "delete": {
+        "title": "حذف القاعدة",
+        "desc": "هل أنت متأكد من حذف هذه القاعدة؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "حذف",
+        "cancel": "إلغاء",
+        "success": "تم مسح القاعدة",
+        "error": "فشل في حذف القاعدة"
+      }
     },
     "quickStats": {
       "newOrders": "جديد",
@@ -10956,6 +11059,11 @@
       "maxDays": "أقصى مدة شحن",
       "minDaysPlaceholder": "الحد الأدنى للأيام",
       "maxDaysPlaceholder": "الحد الأقصى للأيام",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
+      "isConfigured": "حالة الإعداد",
+      "yes": "تم الإعداد",
+      "no": "لم يتم الإعداد",
       "all": "الكل",
       "apply": "تطبيق"
     },
@@ -10992,5 +11100,6 @@
       "maxShippingDaysMustBeGreaterThanMin": "يجب أن يكون الحد الأقصى لأيام الشحن أكبر من أو يساوي الحد الأدنى لأيام الشحن."
     },
     "empty": "لا يوجد مدن تطابق البحث"
-  }
+  },
+  "description": "الوصف"
 }

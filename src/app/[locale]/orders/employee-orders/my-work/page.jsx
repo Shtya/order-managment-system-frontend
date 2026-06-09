@@ -556,7 +556,7 @@ export default function OrderConfirmationWorkPage() {
   useEffect(() => { fetchNext(); fetchStatuses(); }, []);
 
   const fetchNext = async () => {
-    try { setLoading(true); const r = await api.get("/orders/employee/orders/next"); initOrder(r.data); }
+    try { setLoading(true); const r = await api.get("/order-assignment/employee/orders/next"); initOrder(r.data); }
     catch { toast.error(t("messages.errorFetchingOrder")); }
     finally { setLoading(false); }
   };
@@ -676,7 +676,7 @@ export default function OrderConfirmationWorkPage() {
       const { productsTotal, finalTotal, items: _, assignments, logs, ...rest } = data;
       await api.patch(`/orders/${editedOrder?.id}`, { ...rest, removedItems: removedIds, items: editedOrder?.items.map(i => ({ variantId: i.variant?.id || i.variantId, quantity: Number(i.quantity), unitPrice: i.unitPrice, isAdditional: i.isAdditional })) });
       toast.success(t("messages.updateSuccess"));
-      const r = await api.get(`/orders/employee/orders/next`);
+      const r = await api.get(`/order-assignment/employee/orders/next`);
       initOrder(r.data);
     } catch (e) { toast.error(e.response?.data?.message || "حدث خطأ"); }
     finally { setSaving(false); }

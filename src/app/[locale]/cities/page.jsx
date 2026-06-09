@@ -32,6 +32,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
 import { ActionButtons } from "@/components/atoms/Actions";
 import { Badge } from "@/components/ui/badge";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -376,7 +377,6 @@ export default function CitiesConfigPage() {
 						permission: "city.read",
 					},
 				]}
-				hasActiveFilters={hasActiveFilters}
 				onApplyFilters={applyFilters}
 				filters={
 					<>

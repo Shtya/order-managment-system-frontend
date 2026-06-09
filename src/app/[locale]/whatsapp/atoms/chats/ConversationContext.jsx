@@ -95,8 +95,10 @@ export const ConversationProvider = ({ children }) => {
     useEffect(() => {
         if (accounts.length > 0 && !selectedAccount) {
             const defaultId = settings?.defaultWhatsAppAccountId;
-            const defaultAcc = accounts.find(a => a.id === defaultId) || accounts[0];
-            setSelectedAccount(defaultAcc);
+            const defaultAcc = accounts.find(a => a.id === defaultId);
+            if(defaultAcc) {
+                setSelectedAccount(defaultAcc);
+            }
         }
     }, [accounts, settings?.defaultWhatsAppAccountId, selectedAccount]);
 

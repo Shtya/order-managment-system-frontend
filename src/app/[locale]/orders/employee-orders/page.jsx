@@ -121,7 +121,7 @@ export default function MyAssignedOrdersPage() {
 		try {
 			setLoading(true);
 
-			const response = await api.get("/orders/assigned", {
+			const response = await api.get("/order-assignment/assigned", {
 				params: {
 					limit,
 					page,
@@ -228,7 +228,7 @@ export default function MyAssignedOrdersPage() {
 		};
 
 		await handleExport({
-			endpoint: "/orders/assigned/export",
+			endpoint: "/order-assignment/assigned/export",
 			params,
 			filename: `orders_${Date.now()}.xlsx`,
 		});

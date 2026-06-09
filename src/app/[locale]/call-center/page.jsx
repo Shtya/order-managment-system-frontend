@@ -11,19 +11,508 @@ import {
     ShoppingBag,
     Lock,
     Activity,
+    Plus,
+    FileDown,
+    Edit2,
+    Trash2,
+    Eye,
+    PlusCircle,
+    Layers,
+    MapPin,
+    CreditCard,
+    DollarSign,
+    Power,
+    PowerOff,
+    Settings,
+    Settings2,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useForm, Controller } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import api from "@/utils/api";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 
 // ── Shared Table system ──────────────────────────────────────────────────────
-import Table from "@/components/atoms/Table";
+import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import DistributionModal from "../orders/atoms/DistrubtionModal";
+import ActionButtons from "@/components/atoms/Actions";
+
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
+import ConfirmDialog from "@/components/molecules/ConfirmDialog";
+import Button_ from "@/components/atoms/Button";
+import MultiSelect from "@/components/atoms/MultiSelect";
+
+// ── Form Schema ──────────────────────────────────────────────────────────────
+const ruleSchema = (t) =>
+    yup.object({
+        name: yup.string().required(t("validation.nameRequired")),
+        description: yup.string().optional().nullable(),
+        priority: yup.number().required(t("validation.priorityRequired")).min(1, t("validation.priorityMin")),
+        isActive: yup.boolean().default(true),
+        ruleType: yup.string().required(t("validation.ruleTypeRequired")),
+        strategy: yup.string().required(t("validation.strategyRequired")),
+
+        // Conditional fields
+        employeeIds: yup.array().of(yup.string()).min(1, t("validation.employeesRequired")),
+
+        productIds: yup.array().of(yup.string()).when("ruleType", {
+            is: "product",
+            then: (schema) => schema.min(1, t("validation.productsRequired")),
+            otherwise: (schema) => schema.optional().nullable(),
+        }),
+
+        cityIds: yup.array().of(yup.string()).when("ruleType", {
+            is: "city",
+            then: (schema) => schema.min(1, t("validation.citiesRequired")),
+            otherwise: (schema) => schema.optional().nullable(),
+        }),
+
+
+
+        paymentStatus: yup.string().when("ruleType", {
+            is: "paymentStatus",
+            then: (schema) => schema.required(t("validation.paymentStatusRequired")),
+            otherwise: (schema) => schema.optional().nullable(),
+        }),
+
+        minAmount: yup.number().nullable().when("ruleType", {
+            is: "amountRange",
+            then: (schema) => schema.required(t("validation.minAmountRequired")),
+            otherwise: (schema) => schema.nullable().optional().nullable(),
+        }),
+
+        maxAmount: yup.number().nullable().when("ruleType", {
+            is: "amountRange",
+            then: (schema) => schema.required(t("validation.maxAmountRequired")).test(
+                "max-gte-min",
+                t("validation.maxAmountGteMin"),
+                function (value) {
+                    const { minAmount } = this.parent;
+                    if (value == null || minAmount == null) return true;
+                    return value >= minAmount;
+                }
+            ),
+            otherwise: (schema) => schema.nullable().optional().nullable(),
+        }),
+    });
+
+// ── Form Components ──────────────────────────────────────────────────────────
+function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
+    const t = useTranslations("callCenter.autoAssign");
+    const schema = useMemo(() => ruleSchema(t), [t]);
+    
+    const isEditMode = !!rule;
+    console.log(isEditMode, rule)
+    const {
+        register,
+        handleSubmit,
+        control,
+        watch,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm({
+        resolver: yupResolver(schema),
+        defaultValues: {
+            name: "",
+            description: "",
+            priority: 50,
+            isActive: true,
+            ruleType: "manual",
+            strategy: "roundRobin",
+            employeeIds: [],
+            productIds: [],
+            cityIds: [],
+            paymentStatus: null,
+            minAmount: null,
+            maxAmount: null,
+        },
+    });
+
+    const selectedRuleType = watch("ruleType");
+
+    useEffect(() => {
+        if (rule && open) {
+            reset({
+                name: rule.name || "",
+                description: rule.description || "",
+                priority: rule.priority || 50,
+                isActive: rule.isActive ?? true,
+                ruleType: rule.ruleType || "manual",
+                strategy: rule.strategy || "roundRobin",
+                employeeIds: rule.employees?.map(e => e.id) || [],
+                productIds: rule.products?.map(p => p.id) || [],
+                cityIds: rule.cities?.map(c => c.id) || [],
+                paymentStatus: rule.paymentStatus || null,
+                minAmount: rule.minAmount ?? null,
+                maxAmount: rule.maxAmount ?? null,
+            });
+        } else if (!rule && open) {
+            reset({
+                name: "",
+                description: "",
+                priority: 50,
+                isActive: true,
+                ruleType: "manual",
+                strategy: "roundRobin",
+                employeeIds: [],
+                productIds: [],
+                cityIds: [],
+                paymentStatus: null,
+                minAmount: null,
+                maxAmount: null,
+            });
+        }
+    }, [rule, open, reset]);
+
+    const onSubmit = async (data) => {
+        const {ruleType, ...payload}  = data;
+        try {
+            if (isEditMode) {
+                await api.patch(`/order-assignment/rules/${rule.id}`, payload);
+            } else {
+                await api.post("/order-assignment/rules", {ruleType,...payload});
+            }
+            toast.success(t("validation.saveSuccess"));
+            onSuccess();
+            onOpenChange(false);
+        } catch (e) {
+            console.error(e);
+            toast.error(t("validation.saveError"));
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto!">
+                <DialogHeader className="border-b pb-4">
+                    <DialogTitle>{rule ? t("actions.edit") : t("toolbar.addRole")}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-semibold">{t("form.name")}</Label>
+                            <Input {...register("name")} className="rounded-xl h-[50px]" />
+                            {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-semibold">{t("form.priority")}</Label>
+                            <Input type="number" {...register("priority")} className="rounded-xl h-[50px]" />
+                            {errors.priority && <p className="text-xs text-red-600">{errors.priority.message}</p>}
+                        </div>
+                        <div className="space-y-2 col-span-2">
+                            <Label className="text-sm font-semibold">{t("form.description")}</Label>
+                            <Textarea {...register("description")} className="rounded-xl min-h-[100px]" />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-sm font-semibold">{t("form.ruleType")}</Label>
+                            <Controller
+                                control={control}
+                                name="ruleType"
+                                render={({ field }) => (
+                                    <Select disabled={isEditMode} value={field.value} onValueChange={field.onChange}>
+                                        <SelectTrigger className="h-[50px] rounded-xl">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {RULE_TYPES.map(type => (
+                                                <SelectItem key={type} value={type}>
+                                                    {t(`stats.${type}`)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-sm font-semibold">{t("form.strategy")}</Label>
+                            <Controller
+                                control={control}
+                                name="strategy"
+                                render={({ field }) => (
+                                    <Select value={field.value} onValueChange={field.onChange}>
+                                        <SelectTrigger className="h-[50px] rounded-xl">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="roundRobin">{t("strategy.roundRobin")}</SelectItem>
+                                            <SelectItem value="leastActiveOrders">{t("strategy.leastActiveOrders")}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-3 py-2">
+                            <Controller
+                                control={control}
+                                name="isActive"
+                                render={({ field }) => (
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                )}
+                            />
+                            <Label className="text-sm font-semibold">{t("form.isActive")}</Label>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 border-t pt-4">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-semibold">{t("form.employees")}</Label>
+                            <Controller
+                                control={control}
+                                name="employeeIds"
+                                render={({ field }) => (
+                                    <MultiSelect
+                                        endpoint="/users/list"
+                                        value={field.value}
+                                        initialValues={rule?.employees || []}
+                                        onChange={(newVal) => field.onChange(newVal.map(v => typeof v === 'string' ? v : v.id))}
+                                        placeholder={t("form.employees")}
+                                        labelKey="name"
+                                    />
+                                )}
+                            />
+                            {errors.employeeIds && <p className="text-xs text-red-600">{errors.employeeIds.message}</p>}
+                        </div>
+
+                        {selectedRuleType === "product" && (
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold">{t("form.products")}</Label>
+                                <Controller
+                                    control={control}
+                                    name="productIds"
+                                    render={({ field }) => (
+                                        <MultiSelect
+                                            endpoint="/products"
+                                            params={{ type: "PRODUCT" }}
+                                            value={field.value}
+                                            initialValues={rule?.products || []}
+                                            onChange={(newVal) => field.onChange(newVal.map(v => typeof v === 'string' ? v : v.id))}
+                                            placeholder={t("form.products")}
+                                            labelKey="name"
+                                        />
+                                    )}
+                                />
+                                {errors.productIds && <p className="text-xs text-red-600">{errors.productIds.message}</p>}
+                            </div>
+                        )}
+
+                        {selectedRuleType === "city" && (
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold">{t("form.cities")}</Label>
+                                <Controller
+                                    control={control}
+                                    name="cityIds"
+                                    render={({ field }) => (
+                                        <MultiSelect
+                                            endpoint="/cities"
+                                            value={field.value}
+                                            initialValues={rule?.cities || []}
+                                            onChange={(newVal) => field.onChange(newVal.map(v => typeof v === 'string' ? v : v.id))}
+                                            placeholder={t("form.cities")}
+                                            labelKey="nameEn"
+                                        />
+                                    )}
+                                />
+                                {errors.cityIds && <p className="text-xs text-red-600">{errors.cityIds.message}</p>}
+                            </div>
+                        )}
+
+
+                        {selectedRuleType === "paymentStatus" && (
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold">{t("form.paymentStatus")}</Label>
+                                <Controller
+                                    control={control}
+                                    name="paymentStatus"
+                                    render={({ field }) => (
+                                        <Select value={field.value} onValueChange={field.onChange}>
+                                            <SelectTrigger className="h-[50px] rounded-xl">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="pending">{t("paymentStatuses.pending")}</SelectItem>
+                                                <SelectItem value="paid">{t("paymentStatuses.paid")}</SelectItem>
+                                                <SelectItem value="partial">{t("paymentStatuses.partial")}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                                {errors.paymentStatus && <p className="text-xs text-red-600">{errors.paymentStatus.message}</p>}
+                            </div>
+                        )}
+
+                        {selectedRuleType === "amountRange" && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-semibold">{t("form.minAmount")}</Label>
+                                    <Input type="number" {...register("minAmount")} className="rounded-xl h-[50px]" />
+                                    {errors.minAmount && <p className="text-xs text-red-600">{errors.minAmount.message}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-semibold">{t("form.maxAmount")}</Label>
+                                    <Input type="number" {...register("maxAmount")} className="rounded-xl h-[50px]" />
+                                    {errors.maxAmount && <p className="text-xs text-red-600">{errors.maxAmount.message}</p>}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t">
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+                            {t("form.cancel")}
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : t("form.save")}
+                        </Button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function RuleViewDialog({ open, onOpenChange, rule }) {
+    const t = useTranslations("callCenter.autoAssign");
+    const locale = useLocale();
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-xl">
+                <DialogHeader className="border-b pb-4">
+                    <DialogTitle>{t("actions.view")}</DialogTitle>
+                </DialogHeader>
+                <div className="py-6 space-y-6">
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
+                        <div className="space-y-1">
+                            <span className="text-muted-foreground font-medium block">{t("form.name")}</span>
+                            <span className="font-semibold text-base">{rule?.name}</span>
+                        </div>
+
+                        <div className="space-y-1">
+                            <span className="text-muted-foreground font-medium block">{t("form.ruleType")}</span>
+                            <Badge variant="outline" className="capitalize">{t(`stats.${rule?.ruleType}`)}</Badge>
+                        </div>
+
+                        <div className="space-y-1">
+                            <span className="text-muted-foreground font-medium block">{t("form.strategy")}</span>
+                            <span className="font-semibold">{t(`strategy.${rule?.strategy}`)}</span>
+                        </div>
+
+                        <div className="space-y-1">
+                            <span className="text-muted-foreground font-medium block">{t("form.priority")}</span>
+                            <span className="font-semibold">{rule?.priority}</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 border-t pt-4">
+                        <span className="text-sm text-muted-foreground font-medium block">{t("form.employees")}</span>
+                        <div className="flex flex-wrap gap-2">
+                            {rule?.employees?.map(e => (
+                                <Badge key={e.id} variant="secondary" className="px-3 py-1">
+                                    {e.name}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+
+                    {rule?.description && (
+                        <div className="space-y-2 border-t pt-4">
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.description")}</span>
+                            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap break-words line-clamp-4 hover:line-clamp-none transition-all cursor-pointer" title={rule.description}>
+                                {rule.description}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Show related entities based on type */}
+                    {rule?.ruleType === 'product' && rule.products?.length > 0 && (
+                        <div className="space-y-2 border-t pt-4">
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.products")}</span>
+                            <div className="flex flex-wrap gap-2">
+                                {rule.products.map(p => (
+                                    <Badge key={p.id} variant="outline">
+                                        {locale === 'ar' ? (p.nameAr || p.nameEn || p.name) : (p.nameEn || p.nameAr || p.name)}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {rule?.ruleType === 'city' && rule.cities?.length > 0 && (
+                        <div className="space-y-2 border-t pt-4">
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.cities")}</span>
+                            <div className="flex flex-wrap gap-2">
+                                {rule.cities.map(c => (
+                                    <Badge key={c.id} variant="outline">
+                                        {locale === 'ar' ? (c.nameAr || c.nameEn || c.name) : (c.nameEn || c.nameAr || c.name)}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {rule?.ruleType === 'amountRange' && (
+                        <div className="space-y-2 border-t pt-4">
+                            <span className="text-sm text-muted-foreground font-medium block">{t("stats.amountRange")}</span>
+                            <div className="flex items-center gap-4">
+                                <div className="bg-muted/50 p-3 rounded-xl flex-1 border border-border/50">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">{t("form.minAmount")}</span>
+                                    <span className="font-mono text-lg font-bold">{rule.minAmount ?? 0}</span>
+                                </div>
+                                <div className="bg-muted/50 p-3 rounded-xl flex-1 border border-border/50">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">{t("form.maxAmount")}</span>
+                                    <span className="font-mono text-lg font-bold">{rule.maxAmount ?? '∞'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {rule?.ruleType === 'paymentStatus' && rule.paymentStatus && (
+                        <div className="space-y-2 border-t pt-4">
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.paymentStatus")}</span>
+                            <Badge variant="secondary" className="text-base px-4 py-1 capitalize">
+                                {t(`paymentStatuses.${rule.paymentStatus}`)}
+                            </Badge>
+                        </div>
+                    )}
+
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 // ── Stats Configuration ──────────────────────────────────────────────────────
+const RULE_TYPES = [
+    "manual",
+    "product",
+    "city",
+    "amountRange",
+    "paymentStatus"
+];
+
 const CALL_CENTER_STATS = [
     {
         id: 1,
@@ -51,20 +540,51 @@ const CALL_CENTER_STATS = [
     },
 ];
 
+const DEFAULT_FILTERS = {
+    ruleType: "all",
+    strategy: "all",
+    isActive: "all",
+    startDate: null,
+    endDate: null,
+};
+
+
+
 export default function CallCenterPage() {
-    const t = useTranslations();
+    const tCommon = useTranslations("common");
+    const tOrders = useTranslations("orders");
+     const t = useTranslations();
+     const { settings, patch, saving, handleSave } = useOrdersSettings();
+
+     const [viewMode, setViewMode] = useState("manual"); // "manual" | "automatic"
+     const [settingsOpen, setSettingsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [distributionOpen, setDistributionOpen] = useState(false);
+
+    // Filters state
+    const [filters, setFilters] = useState(DEFAULT_FILTERS);
+
+    // Auto Assign Rules State
+    const [formOpen, setFormOpen] = useState(false);
+    const [viewOpen, setViewViewOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [selectedRule, setSelectedRule] = useState(null);
+
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toLocaleDateString();
     const [stats, setStats] = useState([]);
-    const [statsData, setStatsData] = useState({
+    const [manualStatsData, setManualStatsData] = useState({
         new: 0,
         confirmed: 0,
         cancelled: 0,
+    });
+    const [autoStatsData, setAutoStatsData] = useState({
+        total: 0,
+        active: 0,
+        byType: {},
     });
 
     const [pager, setPager] = useState({
@@ -76,6 +596,43 @@ export default function CallCenterPage() {
 
     const searchTimer = useRef(null);
 
+    const viewModes = useMemo(() => [
+        { id: "manual", label: t("callCenter.tabs.manual"), icon: Users },
+        { id: "automatic", label: t("callCenter.tabs.automatic"), icon: Activity },
+    ], [t]);
+
+    const handleViewModeChange = (mode) => {
+        setViewMode(mode);
+        setSearch("");
+        setDebouncedSearch("");
+        setFilters(DEFAULT_FILTERS);
+        setPager({
+            total_records: 0,
+            current_page: 1,
+            per_page: 12,
+            records: [],
+        });
+    };
+
+    const applyFilters = () => {
+        if (viewMode === "manual") {
+            fetchEmployeeStats(1, pager.per_page);
+        } else {
+            fetchAutoAssignRules(1, pager.per_page);
+        }
+    };
+
+    const hasActiveFilters = useMemo(() => {
+        if (viewMode === "manual") return false;
+        return (
+            filters.ruleType !== "all" ||
+            filters.strategy !== "all" ||
+            filters.isActive !== "all" ||
+            Boolean(filters.startDate) ||
+            Boolean(filters.endDate)
+        );
+    }, [filters, viewMode]);
+
     /* debounce search */
     useEffect(() => {
         clearTimeout(searchTimer.current);
@@ -84,12 +641,20 @@ export default function CallCenterPage() {
     }, [search]);
 
     useEffect(() => {
-        fetchEmployeeStats(1, pager.per_page);
-    }, [debouncedSearch]);
+        if (viewMode === "manual") {
+            fetchEmployeeStats(1, pager.per_page);
+        } else {
+            fetchAutoAssignRules(1, pager.per_page);
+        }
+    }, [debouncedSearch, viewMode]);
 
     useEffect(() => {
-        fetchStatsSummary();
-    }, []);
+        if (viewMode === "manual") {
+            fetchStatsSummary();
+        } else {
+            fetchAutoRulesStats();
+        }
+    }, [viewMode]);
 
     /* build API params */
     const buildParams = useCallback(
@@ -97,13 +662,21 @@ export default function CallCenterPage() {
             const params = {
                 page,
                 limit: per_page,
-                startDate: today,
-                endDate: today
             };
+            if (viewMode === "manual") {
+                params.startDate = today;
+                params.endDate = today;
+            } else {
+                if (filters.ruleType !== "all") params.ruleType = filters.ruleType;
+                if (filters.strategy !== "all") params.strategy = filters.strategy;
+                if (filters.isActive !== "all") params.isActive = filters.isActive;
+                if (filters.startDate) params.startDate = filters.startDate;
+                if (filters.endDate) params.endDate = filters.endDate;
+            }
             if (debouncedSearch) params.search = debouncedSearch;
             return params;
         },
-        [debouncedSearch, pager.current_page, pager.per_page, today],
+        [debouncedSearch, pager.current_page, pager.per_page, today, viewMode, filters],
     );
 
     /* fetch stats summary */
@@ -132,7 +705,7 @@ export default function CallCenterPage() {
                 return item ? Number(item.count) : 0;
             };
 
-            setStatsData({
+            setManualStatsData({
                 new: getOrderCountByCode('new'),
                 confirmed: getCountByCode('confirmed'),
                 cancelled: getCountByCode('cancelled'),
@@ -142,7 +715,17 @@ export default function CallCenterPage() {
             console.error("Error fetching stats summary:", e);
             toast.error(t("common.api.errorEmployee"));
         }
-    }, [t]);
+    }, [t, today]);
+
+    /* fetch auto assign rules stats */
+    const fetchAutoRulesStats = useCallback(async () => {
+        try {
+            const res = await api.get("/order-assignment/rules/stats");
+            setAutoStatsData(res.data);
+        } catch (e) {
+            console.error("Error fetching auto rules stats:", e);
+        }
+    }, []);
 
     /* fetch employee statistics */
     const fetchEmployeeStats = useCallback(
@@ -167,6 +750,28 @@ export default function CallCenterPage() {
         [buildParams, t],
     );
 
+    const fetchAutoAssignRules = useCallback(
+        async (page = pager.current_page, per_page = pager.per_page) => {
+            try {
+                setLoading(true);
+                const res = await api.get("/order-assignment/rules", { params: buildParams(page, per_page) });
+                const data = res.data ?? {};
+                setPager({
+                    total_records: data.total_records ?? 0,
+                    current_page: data.current_page ?? page,
+                    per_page: data.per_page ?? per_page,
+                    records: Array.isArray(data.records) ? data.records : [],
+                });
+            } catch (e) {
+                console.error(e);
+                toast.error(t("common.api.error"));
+            } finally {
+                setLoading(false);
+            }
+        },
+        [buildParams, t],
+    );
+
 
     const fetchStats = async () => {
         try {
@@ -179,8 +784,83 @@ export default function CallCenterPage() {
     useEffect(() => {
         fetchStats();
     }, []);
+
+    const handleExport = async () => {
+        setExportLoading(true);
+        const toastId = toast.loading(t("orders.messages.exportStarted"));
+        try {
+            const endpoint = viewMode === "manual" ? "/dashboard/employees/stats/export" : "/order-assignment/rules/export";
+            const params = buildParams();
+            delete params.page;
+            delete params.limit;
+
+            const res = await api.get(endpoint, {
+                params,
+                responseType: "blob",
+            });
+
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `${viewMode === "manual" ? "employee_stats" : "auto_assign_rules"}_${Date.now()}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success(t("orders.messages.exportSuccess"), { id: toastId });
+        } catch (error) {
+            console.error(error);
+            toast.error(t("orders.messages.exportFailed"), { id: toastId });
+        } finally {
+            setExportLoading(false);
+        }
+    };
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const handleDeleteRule = async () => {
+        try {
+            setDeleteLoading(true);
+            await api.delete(`/order-assignment/rules/${selectedRule.id}`);
+            toast.success(t("callCenter.autoAssign.delete.success"));
+            setDeleteOpen(false);
+            fetchAutoAssignRules(pager.current_page, pager.per_page);
+            fetchAutoRulesStats();
+        } catch (e) {
+            console.error(e);
+            toast.error(t("callCenter.autoAssign.delete.error"));
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    const openEdit = (rule) => {
+        setSelectedRule(rule);
+        setFormOpen(true);
+    };
+
+    const openView = (rule) => {
+        setSelectedRule(rule);
+        setViewViewOpen(true);
+    };
+
+    const openDelete = (rule) => {
+        setSelectedRule(rule);
+        setDeleteOpen(true);
+    };
+
+    const toggleRuleStatus = async (rule) => {
+        try {
+            await api.post(`/order-assignment/rules/${rule.id}/toggle`);
+            toast.success(t("common.api.success"));
+            fetchAutoAssignRules(pager.current_page, pager.per_page);
+            fetchAutoRulesStats();
+        } catch (e) {
+            console.error(e);
+            toast.error(t("common.api.error"));
+        }
+    };
+
     /* ── Columns ── */
-    const columns = useMemo(
+    const employeeColumns = useMemo(
         () => [
             {
                 key: "employeeName",
@@ -252,6 +932,168 @@ export default function CallCenterPage() {
         [t]
     );
 
+    const ruleColumns = useMemo(
+        () => [
+            {
+                key: "name",
+                header: t("callCenter.autoAssign.columns.name"),
+                cell: (row) => (
+                    <span className="font-semibold text-foreground">
+                        {row.name}
+                    </span>
+                ),
+            },
+            {
+                key: "description",
+                header: t("description"),
+                cell: (row) => (
+                    <span
+                        className="max-w-xs truncate text-muted-foreground"
+                        title={row.description}
+                    >
+                        {row.description || "-"}
+                    </span>
+                ),
+            },
+            {
+                key: "ruleType",
+                header: t("callCenter.autoAssign.columns.type"),
+                cell: (row) => <Badge variant="outline" className="capitalize">{t(`callCenter.autoAssign.stats.${row.ruleType}`)}</Badge>,
+            },
+            {
+                key: "strategy",
+                header: t("callCenter.autoAssign.columns.strategy"),
+                cell: (row) => (
+                    <span className="text-sm font-medium text-muted-foreground capitalize">
+                        {t(`callCenter.autoAssign.strategy.${row.strategy}`)}
+                    </span>
+                ),
+            },
+            {
+                key: "isActive",
+                header: t("callCenter.autoAssign.columns.status"),
+                cell: (row) => (
+                    <Badge variant={row.isActive ? "secondary" : "success"}>
+                        {row.isActive ? t("common.statusCodes.active") : t("common.statusCodes.inactive")}
+                    </Badge>
+                ),
+            },
+            {
+                key: "priority",
+                header: t("callCenter.autoAssign.columns.priority"),
+                className: "text-center font-mono",
+            },
+            {
+                key: "employees",
+                header: t("callCenter.autoAssign.columns.employees"),
+                cell: (row) => (
+                    <div className="flex flex-wrap gap-1 max-w-[250px]">
+                        {row.employees?.slice(0, 2).map((emp, i) => (
+                            <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
+                                {emp.name}
+                            </Badge>
+                        ))}
+                        {row.employees?.length > 2 && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                                +{row.employees.length - 2}
+                            </Badge>
+                        )}
+                    </div>
+                ),
+            },
+            {
+                key: "actions",
+                header: t("callCenter.autoAssign.columns.actions"),
+                cell: (row) => (
+                    <ActionButtons
+                        row={row}
+                        actions={[
+                            {
+                                icon: <Eye size={16} />,
+                                tooltip: t("callCenter.autoAssign.actions.view"),
+                                onClick: (r) => openView(r),
+                                variant: "primary",
+                            },
+                            {
+                                icon: row.isActive ? <PowerOff size={16} /> : <Power size={16} />,
+                                tooltip: row.isActive ? t("common.deactivate") : t("common.activate"),
+                                onClick: (r) => toggleRuleStatus(r),
+                                variant: row.isActive ? "orange" : "emerald",
+                                permission: "order.assign",
+                            },
+                            {
+                                icon: <Edit2 size={16} />,
+                                tooltip: t("callCenter.autoAssign.actions.edit"),
+                                onClick: (r) => openEdit(r),
+                                variant: "primary",
+                                permission: "order.assign",
+                            },
+                            {
+                                icon: <Trash2 size={16} />,
+                                tooltip: t("callCenter.autoAssign.actions.delete"),
+                                onClick: (r) => openDelete(r),
+                                variant: "red",
+                                permission: "order.assign",
+                            },
+                        ]}
+                    />
+                ),
+            },
+        ],
+        [t]
+    );
+
+    const headerStats = useMemo(() => {
+        if (viewMode === "manual") {
+            return CALL_CENTER_STATS.map((s) => ({
+                id: s.id,
+                name: t(s.nameKey),
+                value: manualStatsData[s.code] ?? 0,
+                icon: s.icon,
+                color: s.color,
+                sortOrder: s.sortOrder,
+            }));
+        } else {
+            const typeStats = [
+                { id: "manual", icon: Users, color: "#6366f1" },
+                { id: "product", icon: ShoppingBag, color: "#f59e0b" },
+                { id: "city", icon: MapPin, color: "#10b981" },
+                { id: "amountRange", icon: DollarSign, color: "#8b5cf6" },
+                { id: "paymentStatus", icon: CreditCard, color: "#ec4899" },
+            ];
+
+            const baseStats = [
+                {
+                    id: "total",
+                    name: t("callCenter.autoAssign.stats.total"),
+                    value: autoStatsData.total || 0,
+                    icon: Layers,
+                    color: "var(--primary)",
+                    sortOrder: 1,
+                },
+                {
+                    id: "active",
+                    name: t("callCenter.autoAssign.stats.active"),
+                    value: autoStatsData.active || 0,
+                    icon: Activity,
+                    color: "#10b981",
+                    sortOrder: 2,
+                },
+            ];
+
+            const extraStats = typeStats.map((ts, index) => ({
+                id: ts.id,
+                name: t(`callCenter.autoAssign.stats.${ts.id}`),
+                value: autoStatsData.byType?.[ts.id] || 0,
+                icon: ts.icon,
+                color: ts.color,
+                sortOrder: index + 3,
+            }));
+
+            return [...baseStats, ...extraStats];
+        }
+    }, [viewMode, manualStatsData, autoStatsData, t]);
+
     return (
         <div className="min-h-screen p-5">
             <PageHeader
@@ -260,29 +1102,121 @@ export default function CallCenterPage() {
                     { name: t("callCenter.breadcrumb.orders"), href: "/orders" },
                     { name: t("callCenter.title") },
                 ]}
-                statsCount={3}
-                stats={CALL_CENTER_STATS.map((s) => ({
-                    id: s.id,
-                    name: t(s.nameKey),
-                    value: statsData[s.code] ?? 0,
-                    icon: s.icon,
-                    color: s.color,
-                    sortOrder: s.sortOrder,
-                }))}
+                statsCount={viewMode === "manual" ? 3 : 8}
+                stats={headerStats}
+                items={viewModes}
+                active={viewMode}
+                setActive={handleViewModeChange}
+                buttons={viewMode === "automatic" && (
+                    <div className="flex items-center gap-2">
+                        <Button_
+                            size="sm"
+                            label={t("orders.retrySettings.autoAssignment.title")}
+                            variant="outline"
+                            onClick={() => setSettingsOpen(true)}
+                            icon={<Settings size={18} />}
+                        />
+                        <Button_
+                            size="sm"
+                            label={t("callCenter.autoAssign.toolbar.addRole")}
+                            variant="solid"
+                            onClick={() => {
+                                setSelectedRule(null);
+                                setFormOpen(true);
+                            }}
+                            icon={<PlusCircle size={18} />}
+                            permission="orders.assign"
+                        />
+                    </div>
+                )}
             />
 
             <Table
                 searchValue={search}
                 onSearchChange={setSearch}
-                onSearch={() => fetchEmployeeStats(1, pager.per_page)}
+                onSearch={() => (viewMode === "manual" ? fetchEmployeeStats(1, pager.per_page) : fetchAutoAssignRules(1, pager.per_page))}
                 labels={{
-                    searchPlaceholder: t("callCenter.searchPlaceholder") || "Search...",
-                    total: t("orders.pagination.total"),
-                    limit: t("orders.pagination.limit"),
-                    emptyTitle: t("callCenter.emptyTitle") || "No employees found",
-                    emptySubtitle: t("callCenter.emptySubtitle") || "Try adjusting your search",
+                    searchPlaceholder: t(viewMode === "manual" ? "callCenter.searchPlaceholder" : "callCenter.labels.searchPlaceholder"),
+                    filter: t("callCenter.labels.filter"),
+                    apply: t("callCenter.labels.apply"),
+                    total: t("callCenter.labels.total"),
+                    limit: t("callCenter.labels.limit"),
+                    emptyTitle: t(viewMode === "manual" ? "callCenter.emptyTitle" : "callCenter.labels.emptyTitle"),
+                    emptySubtitle: t(viewMode === "manual" ? "callCenter.emptySubtitle" : "callCenter.labels.emptySubtitle"),
                 }}
-                actions={[
+                filters={viewMode === "automatic" && (
+                    <>
+                        <FilterField label={t("callCenter.labels.ruleType")}>
+                            <Select
+                                value={filters.ruleType}
+                                onValueChange={(v) => setFilters((f) => ({ ...f, ruleType: v }))}
+                            >
+                                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                    <SelectValue placeholder={t("callCenter.labels.ruleType")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                                    {RULE_TYPES.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            {t(`callCenter.autoAssign.stats.${type}`)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FilterField>
+
+                        <FilterField label={t("callCenter.labels.strategy")}>
+                            <Select
+                                value={filters.strategy}
+                                onValueChange={(v) => setFilters((f) => ({ ...f, strategy: v }))}
+                            >
+                                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                    <SelectValue placeholder={t("callCenter.labels.strategy")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                                    <SelectItem value="roundRobin">{t("callCenter.autoAssign.strategy.roundRobin")}</SelectItem>
+                                    <SelectItem value="leastActiveOrders">{t("callCenter.autoAssign.strategy.leastActiveOrders")}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FilterField>
+
+                        <FilterField label={t("callCenter.labels.status")}>
+                            <Select
+                                value={filters.isActive}
+                                onValueChange={(v) => setFilters((f) => ({ ...f, isActive: v }))}
+                            >
+                                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                    <SelectValue placeholder={t("callCenter.labels.status")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                                    <SelectItem value="true">{t("common.statusCodes.active")}</SelectItem>
+                                    <SelectItem value="false">{t("common.statusCodes.inactive")}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FilterField>
+
+                        <FilterField label={t("callCenter.labels.date")}>
+                            <DateRangePicker
+                                value={{
+                                    startDate: filters.startDate,
+                                    endDate: filters.endDate,
+                                }}
+                                onChange={(newDates) =>
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        ...newDates,
+                                    }))
+                                }
+                                placeholder={t("callCenter.labels.date")}
+                                dataSize="default"
+                                maxDate="today"
+                            />
+                        </FilterField>
+                    </>
+                )}
+                actions={viewMode === "manual" ? [
                     {
                         key: "distribute",
                         label: t("orders.toolbar.distribute"),
@@ -291,16 +1225,28 @@ export default function CallCenterPage() {
                         onClick: () => setDistributionOpen(true),
                         permission: "order.assign",
                     },
+                ] : [
+                    {
+                        key: "export",
+                        label: t("callCenter.autoAssign.toolbar.export"),
+                        icon: exportLoading ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />,
+                        color: "primary",
+                        onClick: handleExport,
+                        disabled: exportLoading,
+                        permission: "order.assign",
+                    },
                 ]}
-                columns={columns}
+                columns={viewMode === "manual" ? employeeColumns : ruleColumns}
                 data={pager.records}
                 isLoading={loading}
+                hasActiveFilters={hasActiveFilters}
+                onApplyFilters={applyFilters}
                 pagination={{
                     total_records: pager.total_records,
                     current_page: pager.current_page,
                     per_page: pager.per_page,
                 }}
-                onPageChange={({ page, per_page }) => fetchEmployeeStats(page, per_page)}
+                onPageChange={({ page, per_page }) => (viewMode === "manual" ? fetchEmployeeStats(page, per_page) : fetchAutoAssignRules(page, per_page))}
             />
 
             <DistributionModal
@@ -312,6 +1258,78 @@ export default function CallCenterPage() {
                     fetchStatsSummary();
                 }}
             />
+
+            <RuleFormDialog
+                open={formOpen}
+                onOpenChange={setFormOpen}
+                rule={selectedRule}
+                onSuccess={() => fetchAutoAssignRules(pager.current_page, pager.per_page)}
+            />
+
+            <RuleViewDialog
+                open={viewOpen}
+                onOpenChange={setViewViewOpen}
+                rule={selectedRule}
+            />
+
+            <ConfirmDialog
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+                title={t("callCenter.autoAssign.delete.title")}
+                description={t("callCenter.autoAssign.delete.desc")}
+                confirmText={t("callCenter.autoAssign.delete.confirm")}
+                cancelText={t("callCenter.autoAssign.delete.cancel")}
+                loading={deleteLoading}
+                onConfirm={handleDeleteRule}
+            />
+
+            <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
+                    <DialogHeader className="p-6 border-b dark:border-slate-800">
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                            <Settings2 className="text-primary" />
+                            {t("orders.retrySettings.autoAssignment.title")}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="p-6 space-y-6">
+                        <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                        <Users size={20} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-bold">{t("orders.retrySettings.autoAssignment.enabled")}</h3>
+                                        <p className="text-xs text-slate-400">{t("orders.retrySettings.autoAssignment.enabledDesc")}</p>
+                                    </div>
+                                </div>
+                                <Switch
+                                    checked={settings.autoAssignmentEnabled}
+                                    onCheckedChange={(v) => patch({ autoAssignmentEnabled: v })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-4 border-t dark:border-slate-800">
+                            <Button
+                                variant="outline"
+                                onClick={() => setSettingsOpen(false)}
+                                className="rounded-xl"
+                            >
+                                {tCommon("cancel")}
+                            </Button>
+                            <Button
+                                onClick={() => handleSave(() => setSettingsOpen(false))}
+                                disabled={saving}
+                                className="rounded-xl px-8"
+                            >
+                                {saving ? <Loader2 className="animate-spin" /> : tCommon("save")}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

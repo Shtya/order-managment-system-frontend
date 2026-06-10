@@ -42,6 +42,11 @@ import {
   Archive,
   MessageSquare,
   Info,
+  Package,
+  CreditCard,
+  Webhook,
+  Wallet,
+  MoreHorizontal,
 } from "lucide-react";
 
 import { useForm, Controller } from "react-hook-form";
@@ -1094,20 +1099,35 @@ function NotificationsTab() {
     saving,
     handleSave,
   } = useOrdersSettings();
-  const notifications = [
-    { id: 1, key: "orderUpdates", icon: Truck, field: "notifyOrderUpdates" },
-    { id: 2, key: "newProducts", icon: Layers, field: "notifyNewProducts" },
-    { id: 3, key: "lowStock", icon: Archive, field: "notifyLowStock" },
-    { id: 4, key: "marketing", icon: Mail, field: "notifyMarketing" },
+ const notifications = [
+    { id: 1, key: "orderUpdates", icon: Truck, field: "order", isNotificationSettings: true  },
+    { id: 2, key: "products", icon: Layers, field: "product",isNotificationSettings: true },
+    { id: 3, key: "lowStock", icon: Archive, field: "notifyLowStock",isNotificationSettings: false },
+    // { id: 4, key: "marketing", icon: Mail, field: "marketing",isNotificationSettings: true },
+
+    { id: 5, key: "store", icon: Store, field: "store",isNotificationSettings: true },
+    { id: 6, key: "template", icon: FileText, field: "template",isNotificationSettings: true },
+    { id: 7, key: "webhookOrderFailures", icon: Webhook, field: "webhook_order_failures",isNotificationSettings: true },
+    { id: 8, key: "bundle", icon: Package, field: "bundle",isNotificationSettings: true },
+    { id: 9, key: "automationRun", icon: Zap, field: "automation_run",isNotificationSettings: true },
+    { id: 10, key: "subscription", icon: CreditCard, field: "subscription",isNotificationSettings: true },
+    { id: 11, key: "userFeature", icon: User, field: "user_feature",isNotificationSettings: true },
+    { id: 12, key: "wallet", icon: Wallet, field: "wallet",isNotificationSettings: true },
+    { id: 13, key: "other", icon: MoreHorizontal, field: "other",isNotificationSettings: true },
   ];
+
 
   return (
     <div>
       <SectionHead title={t("title")} subtitle={t("subtitle")} />
-      <div className="space-y-3">
+      <div className="space-y-3 grid lg:grid-cols-2 gap-4">
         {notifications.map((n, idx) => {
           const Icon = n.icon;
-          const isChecked = settings?.[n.field];
+          const isNotificationSettings = n.isNotificationSettings;
+          console.log(n.field, isNotificationSettings, settings?.notificationSettings?.[n.field]);
+          const isChecked = isNotificationSettings
+            ? settings?.notificationSettings?.[n.field]
+            : settings?.[n.field];
           return (
             <motion.div
               key={n.id}
@@ -1133,9 +1153,20 @@ function NotificationsTab() {
                   {t(`items.${n.key}.description`)}
                 </p>
               </div>
-              <Switch
+             <Switch
                 checked={isChecked}
-                onCheckedChange={(val) => patch({ [n.field]: val })}
+                onCheckedChange={(val) =>
+                  patch(
+                    isNotificationSettings
+                      ? {
+                          notificationSettings: {
+                            ...settings.notificationSettings,
+                            [n.field]: val,
+                          },
+                        }
+                      : { [n.field]: val }
+                  )
+                }
               />
             </motion.div>
           );
@@ -2231,7 +2262,7 @@ function EmailOtpStep({ email, t, onVerified }) {
       </div>
       <SaveFooter
         onSave={handleVerify}
-        saving={loading || otp.length !== 6}
+        saving={loading }
         label={t("otp_verify")}
       />
     </SettingCard>

@@ -1273,6 +1273,7 @@
       "plans_delete": "حذف الخطط",
       "plans_read": "عرض الخطط",
       "products_getonly": "عرض المنتجات فقط",
+      "orders_readSettings": "قراءة إعدادات الطلبات",
       "plans_update": "تعديل الخطط",
       "products_create": "إنشاء المنتجات",
       "products_delete": "حذف المنتجات",
@@ -1346,6 +1347,45 @@
       "warehouses_scan-preparation": "مسح تجهيز المخزن",
       "warehouses_scan-shipping": "مسح شحن المخزن",
       "warehouses_update": "تعديل المخازن"
+    },
+    "group": {
+     "accounting": "المحاسبة",
+      "admin-settings": "إعدادات الإدارة",
+      "assets": "الأصول",
+      "automation": "الأتمتة",
+      "categories": "التصنيفات",
+      "conversation": "المحادثات",
+      "customer": "العملاء",
+      "dashboard": "لوحة التحكم",
+      "extra-features": "الميزات الإضافية",
+      "notifications": "الإشعارات",
+      "orders-collect": "تجميع الطلبات",
+      "payments": "المدفوعات",
+      "orders": "الطلبات",
+      "plans": "الخطط",
+      "products": "المنتجات",
+      "purchase_returns": "مرتجعات المشتريات",
+      "purchases": "المشتريات",
+      "roles": "الأدوار",
+      "sales_invoice": "فاتورة المبيعات",
+      "shipping-companies": "شركات الشحن",
+      "stores": "المتاجر",
+      "subscriptions": "الاشتراكات",
+      "system_errors": "أخطاء النظام",
+      "suppliers": "الموردين",
+      "return-request": "طلبات الإرجاع",
+      "transactions": "المعاملات",
+      "upsells": "العروض الإضافية",
+      "users": "المستخدمين",
+      "wallet": "المحفظة",
+      "whatsapp": "الواتساب",
+      "warehouses": "المخازن",
+      "safes": "الخزائن",
+      "order": "الطلبات",
+      "purchase": "المشتريات",
+      "sales" :"المبيعات",
+      "permissions": "الصلاحيات",
+      "*": "*"
     },
     "breadcrumb": {
       "home": "الرئيسية",
@@ -6674,7 +6714,8 @@
       "feature": "الميزة المشتراة",
       "subscription": "باقة الاشتراك",
       "amountInDollar": "اللمبلغ بالدولار",
-      "notes": "الملاحظات"
+      "notes": "الملاحظات",
+      "actions": "الإجراءات"
     },
     "purposes": {
       "wallet_top_up": "شحن محفظة",
@@ -8709,19 +8750,55 @@
       "items": {
         "orderUpdates": {
           "title": "تحديثات الطلبات",
-          "description": "احصل على إشعارات عند تغيير حالة الطلبات"
+          "description": "احصل على إشعارات عند تحديث الطلبات"
         },
-        "newProducts": {
-          "title": "المنتجات الجديدة",
-          "description": "احصل على إشعارات عند إضافة منتجات جديدة"
+        "products": {
+          "title": "تحديثات المنتجات",
+          "description": "احصل على إشعارات عند تحديث المنتجات"
         },
         "lowStock": {
           "title": "نقص المخزون",
           "description": "تنبيه عند وصول المنتج لحد المخزون المنخفض"
         },
+        "store": {
+          "title": "تحديثات المتاجر",
+          "description": "إشعارات عند تغيير حالة أو إضافة متجر"
+        },
+        "template": {
+          "title": "قوالب الواتساب",
+          "description": "إشعارات عند إضافة أو تحديث قوالب الواتساب"
+        },
+        "webhookOrderFailures": {
+          "title": "فشل طلبات المتاجر",
+          "description": "إشعارات عند فشل اضافة طلبات المتاجر"
+        },
+        "bundle": {
+          "title": "الباقات",
+          "description": "إشعارات عند إضافة أو تحديث الباقات"
+        },
+        "automationRun": {
+          "title": "تشغيل الأتمتة",
+          "description": "إشعارات عند تشغيل أو إيقاف أو تحديث الأتمتة"
+        },
+        "subscription": {
+          "title": "الاشتراكات",
+          "description": "إشعارات عند تحديث أو تجديد الاشتراك"
+        },
+        "userFeature": {
+          "title": "الميزات الإضافية",
+          "description": "إشعارات عند إضافة أو تحديث ميزات المستخدم"
+        },
+        "wallet": {
+          "title": "المحفظة",
+          "description": "إشعارات عند تحديث رصيد المحفظة أو المعاملات"
+        },
         "marketing": {
           "title": "التسويق والعروض",
           "description": "إشعارات حملات التسويق والعروض الترويجية"
+        },
+        "other": {
+          "title": "أخرى",
+          "description": "إشعارات إضافية"
         }
       }
     },

@@ -22,10 +22,21 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Textarea } from '@/components/ui/textarea';
 import { ProductSkuSearchPopover } from '@/components/molecules/ProductSkuSearchPopover';
 import PageHeader from '@/components/atoms/Pageheader';
+import { FieldStatusInfo } from '@/components/atoms/SlugInput';
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
 	return Array.isArray(msg) ? msg.join(', ') : String(msg);
+}
+
+function Field({ label, error, children, className }) {
+	return (
+		<div className={`space-y-2 ${className || ''}`}>
+			{label && <Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{label}</Label>}
+			{children}
+			{error && <div className="text-xs text-red-600">{error}</div>}
+		</div>
+	);
 }
 
 function slugifyKey(s) {
@@ -42,6 +53,11 @@ function slugifyKey(s) {
 const makeSchema = (t) =>
 	yup.object({
 		name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
+		sku: yup
+			.string()
+			.required(t('validation.skuRequired'))
+			.max(120, t('validation.combinationSkuMax'))
+			.matches(/^[a-zA-Z0-9_-]+$/, t('validation.skuFormat')),
 		wholesalePrice: yup
 			.number()
 			.typeError(t('validation.invalidNumber')) // Handles cases where input isn't a number
@@ -77,6 +93,7 @@ const makeSchema = (t) =>
 function defaultValues() {
 	return {
 		name: '',
+		sku: '',
 		wholesalePrice: '',
 		description: '',
 		storeId: 'none',
@@ -93,6 +110,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 
 	const [stores, setStores] = useState([]);
 	const [storeProviders, setStoreProviders] = useState([]);
+	const [skuStatus, setSkuStatus] = useState(null);
 
 	const schema = React.useMemo(() => makeSchema(t), [t]);
 
@@ -109,6 +127,32 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 		resolver: yupResolver(schema),
 		mode: 'onTouched',
 	});
+
+	const watchSku = watch('sku');
+
+	useEffect(() => {
+		if (!watchSku || errors.sku || isEditMode) {
+			setSkuStatus(null);
+			return;
+		}
+
+		const checkUnique = setTimeout(async () => {
+			setSkuStatus('checking');
+
+			try {
+				const params = new URLSearchParams({ sku: watchSku.trim() });
+				if (bundleId) params.append('bundleId', bundleId);
+
+				const res = await api.get(`/bundles/check-sku?${params.toString()}`);
+				setSkuStatus(res.data.isUnique ? 'unique' : 'takenStore');
+
+			} catch (e) {
+				setSkuStatus(null);
+			}
+		}, 280);
+
+		return () => clearTimeout(checkUnique);
+	}, [watchSku, errors.sku, isEditMode, bundleId]);
 
 	const mainVariant = watch('variant');
 
@@ -152,6 +196,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 		if (!isEditMode || !existingBundle) return;
 		reset({
 			name: existingBundle.name || '',
+			sku: existingBundle.sku || '',
 			wholesalePrice: existingBundle.price || 0,
 			description: existingBundle.description || '',
 			storeId: existingBundle.storeId ? String(existingBundle.storeId) : 'none',
@@ -168,11 +213,13 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 
 	const onSubmit = async (data) => {
 		try {
+			if (skuStatus == 'takenStore' || skuStatus === 'taken') return;
+
 			const bundlePayload = {
 				name: data.name.trim(),
 				price: data.wholesalePrice,
 				description: data.description,
-				sku: `BUNDLE-${slugifyKey(data.name).substring(0, 10).toUpperCase()}-${Date.now()}`,
+			...(isEditMode ? { } : { sku: data.sku.trim().toUpperCase() }),
 				variantId: data.variantId,
 				storeId: data.storeId === 'none' ? null : data.storeId,
 				items: data.bundleItems.map((item) => ({
@@ -197,7 +244,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 
 			navigate.push('/products');
 		} catch (error) {
-			toast.error(normalizeAxiosError(error));
+			// toast.error(normalizeAxiosError(error));
 		}
 	};
 
@@ -246,32 +293,37 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 					</h3>
 
 					<div className="space-y-5 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-						<div className="space-y-2">
-							<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.bundleName')}</Label>
+						<Field label={t('fields.bundleName')} error={errors?.name?.message}>
 							<Input
 								{...register('name')}
 								placeholder={t('placeholders.bundleName')}
-
 							/>
-							{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
-						</div>
+						</Field>
 
-						<div className="space-y-2">
-							<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">
-								{t('fields.totalPrice')} <span className="text-red-500">*</span>
-							</Label>
+						<Field label={t('fields.sku')} error={errors?.sku?.message}>
+							<Input
+								{...register('sku')}
+								placeholder={t('placeholders.sku')}
+								disabled={isEditMode}
+							/>
+							<FieldStatusInfo
+								name="sku"
+								errors={errors}
+								value={watchSku}
+								status={skuStatus}
+								t={t}
+							/>
+						</Field>
+
+						<Field label={t('fields.totalPrice')} error={errors?.wholesalePrice?.message}>
 							<Input
 								type="number"
-
 								{...register('wholesalePrice')}
 								placeholder={t('placeholders.totalPrice')}
-
 							/>
-							{errors?.wholesalePrice?.message && <div className="text-xs text-red-600">{errors.wholesalePrice.message}</div>}
-						</div>
+						</Field>
 
-						<div className="space-y-2">
-							<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.store')}</Label>
+						<Field label={t('fields.store')}>
 							<Controller
 								control={control}
 								name="storeId"
@@ -291,12 +343,9 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 									</Select>
 								)}
 							/>
-						</div>
+						</Field>
 
-						<div className="space-y-2">
-							<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">
-								{t('fields.mainVariant')} <span className="text-red-500">*</span>
-							</Label>
+						<Field label={t('fields.mainVariant')} error={errors?.variantId?.message}>
 							<Controller
 								control={control}
 								name="variantId"
@@ -319,17 +368,15 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 									);
 								}}
 							/>
-							{errors?.variantId?.message && <div className="text-xs text-red-600">{errors.variantId.message}</div>}
-						</div>
+						</Field>
 
-						<div className="space-y-2 col-span-full">
-							<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.description')}</Label>
+						<Field label={t('fields.description')} className="col-span-full">
 							<Textarea
 								{...register('description')}
 								placeholder={t('placeholders.bundleDescription')}
 								className="rounded-xl min-h-[100px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
 							/>
-						</div>
+						</Field>
 					</div>
 				</motion.div>
 

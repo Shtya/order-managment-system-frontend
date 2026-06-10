@@ -3556,6 +3556,7 @@
       "warehouse": "المستودع",
       "productType": "نوع المنتج",
       "description": "الوصف",
+      "sku": "رمز الـ SKU",
       "totalPrice": "السعر الإجمالي",
       "mainVariant": "المتغير الأساسي",
       "salePrice": "سعر البيع"
@@ -3567,6 +3568,7 @@
       "wholesalePrice": "أدخل سعر الجملة",
       "lowestPrice": "أدخل أقل سعر",
       "storageRack": "أدخل رف التخزين",
+      "sku": "أدخل رمز الـ SKU",
       "category": "اختر الفئة",
       "store": "اختر المتجر",
       "warehouse": "اختر المستودع",

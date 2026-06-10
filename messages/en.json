@@ -3561,6 +3561,7 @@
       "warehouse": "Warehouse",
       "productType": "Product Type",
       "description": "Description",
+      "sku": "SKU Code",
       "totalPrice": "Total Price",
       "mainVariant": "Main Variant",
       "salePrice": "Sale Price"
@@ -3572,6 +3573,7 @@
       "wholesalePrice": "Enter wholesale price",
       "lowestPrice": "Enter lowest price",
       "storageRack": "Enter storage rack",
+      "sku": "Enter SKU code",
       "category": "Select category",
       "store": "Select store",
       "warehouse": "Select warehouse",

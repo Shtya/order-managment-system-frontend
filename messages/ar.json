@@ -2409,7 +2409,8 @@
           "noShippedOrders": "لا توجد طلبات مشحونة",
           "errorLoadingFile": "حدث خطأ أثناء تحميل الملف",
           "errorLoadingLogs": "حدث خطأ أثناء تحميل سجل الأخطاء",
-          "manifestCreated": "تم إنشاء الملف بنجاع "
+          "manifestCreated": "تم إنشاء الملف بنجاع ",
+          "manifestCreatedFailed": "فشل إنشاء الملف"
         },
         "labels": {
           "ordersWithCarrier": "{count} طلب جاهزه للإرجاع",
@@ -2447,7 +2448,8 @@
           "city": "المدينة",
           "products": "المنتجات",
           "total": "الإجمالي",
-          "productUnit": "منتج"
+          "productUnit": "منتج",
+          "status": "الحالة"
         },
         "empty": {
           "title": "جاهز لمسح الطلب المرتجع",
@@ -9211,6 +9213,8 @@
         "from": "من حساب",
         "to": "إلى حساب",
         "amount": "مبلغ التحويل",
+        "inTransactionNumber": "رقم عملية الإيداع",
+        "outTransactionNumber": "رقم عملية السحب",
         "commission": "العمولة / الرسوم",
         "date": "التاريخ",
         "notes": "ملاحظات",
@@ -9594,7 +9598,8 @@
       "tax": "الضريبة",
       "totalReturn": "إجمالي المرتجع",
       "takanAmount": "المبلغ المسترد"
-    }
+    },
+    "transactionNumber": "رقم المعاملة"
   },
   "syncFailures": {
     "title": "أخطاء مزامنة المنتجات",

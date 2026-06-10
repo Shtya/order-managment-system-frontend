@@ -225,12 +225,12 @@ export default function SafesTab({ onRefresh }) {
         else if (activeSubTab === 'transfers') await fetchAllTransfers(trPager.current_page, trPager.per_page, true);
         onRefresh?.();
     };
-
+    const [refreshKey, setRefreshKey] = useState(crypto.randomUUID());
     useEffect(() => {
         if (activeSubTab === 'accounts') fetchAccounts(1);
         else if (activeSubTab === 'transactions') fetchAllTransactions(1);
         else if (activeSubTab === 'transfers') fetchAllTransfers(1);
-    }, [activeSubTab, debouncedSearch, debouncedTxSearch, debouncedTrSearch, fetchAccounts, fetchAllTransactions, fetchAllTransfers]);
+    }, [activeSubTab, debouncedSearch, debouncedTxSearch, debouncedTrSearch, fetchAccounts, fetchAllTransactions, fetchAllTransfers,refreshKey]);
 
     useEffect(() => {
         if (activeSubTab === 'transactions' && accounts.length === 0) {
@@ -255,6 +255,7 @@ export default function SafesTab({ onRefresh }) {
     const applyTransactionsFilters = useCallback(() => {
         setTxFilters(txFilterDraft);
         setTxPager((prev) => ({ ...prev, current_page: 1 }));
+        setRefreshKey(crypto.randomUUID());
     }, [txFilterDraft]);
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -616,7 +617,7 @@ export default function SafesTab({ onRefresh }) {
                         }
                         columns={[
                             {
-                                header: "ID",
+                                header: t("transactionNumber"),
                                 key: "number",
                                 cell: (row) => <span className="text-[10px] font-black font-mono text-gray-400 dark:text-slate-500 uppercase">{row.number}</span>
                             },
@@ -827,6 +828,16 @@ export default function SafesTab({ onRefresh }) {
                                 )
                             },
                             {
+                                header: t("safes.transfers.outTransactionNumber"),
+                                key: "outTransactionNumber",
+                                cell: (row) => row.outTransaction?.number ? <span className="text-[10px] font-black font-mono text-gray-400 dark:text-slate-500 uppercase">{row.outTransaction.number}</span> : "-"
+                            },
+                            {
+                                header: t("safes.transfers.inTransactionNumber"),
+                                key: "inTransactionNumber",
+                                cell: (row) => row.inTransaction?.number ? <span className="text-[10px] font-black font-mono text-gray-400 dark:text-slate-500 uppercase">{row.inTransaction.number}</span> : "-"
+                            },
+                            {
                                 header: t("safes.transfers.amount"),
                                 key: "amount",
                                 cell: (row) => (
@@ -1035,7 +1046,7 @@ function TransactionsViewerModal({ open, onOpenChange, account }) {
                             ]}
                             columns={[
                                 {
-                                    header: "ID",
+                                    header: t("transactionNumber"),
                                     key: "number",
                                     cell: (row) => <span className="text-[10px] font-black font-mono text-gray-400 dark:text-slate-500 uppercase">{row.number}</span>
                                 },
@@ -1404,12 +1415,44 @@ function TransactionModal({ open, onOpenChange, direction, initialAccountId, acc
 
     const onSubmit = async (data) => {
         setLoading(true);
+
         try {
-            await api.post(direction === 'IN' ? "/safes/transactions/deposit" : "/safes/transactions/withdraw", data);
-            toast.success(direction === 'IN' ? t("safes.messages.depositSuccess") : t("safes.messages.withdrawSuccess"));
+            const transactionDate = new Date(data.transactionDate);
+            const now = new Date();
+
+            transactionDate.setHours(
+                now.getHours(),
+                now.getMinutes(),
+                now.getSeconds(),
+                now.getMilliseconds()
+            );
+
+            await api.post(
+                direction === 'IN'
+                    ? "/safes/transactions/deposit"
+                    : "/safes/transactions/withdraw",
+                {
+                    ...data,
+                    transactionDate: transactionDate.toISOString(),
+                }
+            );
+
+            toast.success(
+                direction === 'IN'
+                    ? t("safes.messages.depositSuccess")
+                    : t("safes.messages.withdrawSuccess")
+            );
+
             onSave();
             onOpenChange(false);
-        } catch (err) { toast.error(err.response?.data?.message || t("safes.messages.fetchError")); } finally { setLoading(false); }
+        } catch (err) {
+            toast.error(
+                err.response?.data?.message ||
+                t("safes.messages.fetchError")
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

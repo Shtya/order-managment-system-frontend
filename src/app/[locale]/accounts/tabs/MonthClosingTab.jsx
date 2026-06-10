@@ -314,14 +314,14 @@ function NewClosingModal({ open, onClose, onSuccess, t, tCommon, formatCurrency 
             <FilterField label={tCommon("year")} icon={Calendar} className="flex-1">
               <Select value={year} onValueChange={setYear}>
                 <SelectTrigger className="theme-field h-10 w-full mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                <SelectContent>{years.map(y => <SelectItem className="cursor-pointer" key={y} value={y}>{y}</SelectItem>)}</SelectContent>
               </Select>
             </FilterField>
 
             <FilterField label={tCommon("month")} icon={Calendar} className="flex-1">
               <Select value={month} onValueChange={setMonth}>
                 <SelectTrigger className="theme-field h-10 w-full mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                <SelectContent>{months.map(m => <SelectItem className="cursor-pointer" key={m} value={m}>{m}</SelectItem>)}</SelectContent>
               </Select>
             </FilterField>
           </div>
@@ -446,7 +446,7 @@ const handlePrintClosing = (closing, formatCurrency, t, tCommon) => {
           </div>
           <div class="summary-box negative">
             <span class="title">${t("columns.productCost")}</span>
-            <span class="value">-${formatCurrency(closing.productCost || 0)}</span>
+            <span class="value">-${formatCurrency(closing.cogs || 0)}</span>
           </div>
           <div class="summary-box negative">
             <span class="title">${t("columns.operationalExpenses")}</span>
@@ -493,7 +493,7 @@ function ClosingSummaryView({ summary, t, formatCurrency }) {
         />
         <MiniSummaryCard
           title={t("columns.productCost")}
-          value={summary.productCost}
+          value={summary.cogs}
           icon={Package}
           formatCurrency={formatCurrency}
           color="orange"
@@ -675,11 +675,11 @@ function CompareMonthsModal({ open, onClose, t, tCommon, formatCurrency }) {
               <div className="flex gap-2">
                 <Select value={periodA.year} onValueChange={(v) => setPeriodA(p => ({ ...p, year: v }))}>
                   <SelectTrigger className="theme-field h-9 flex-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                  <SelectContent>{years.map(y => <SelectItem className="cursor-pointer" key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={periodA.month} onValueChange={(v) => setPeriodA(p => ({ ...p, month: v }))}>
                   <SelectTrigger className="theme-field h-9 flex-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{allMonths.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  <SelectContent>{allMonths.map(m => <SelectItem className="cursor-pointer" key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
@@ -689,11 +689,11 @@ function CompareMonthsModal({ open, onClose, t, tCommon, formatCurrency }) {
               <div className="flex gap-2">
                 <Select value={periodB.year} onValueChange={(v) => setPeriodB(p => ({ ...p, year: v }))}>
                   <SelectTrigger className="theme-field h-9 flex-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                  <SelectContent>{years.map(y => <SelectItem className="cursor-pointer" key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={periodB.month} onValueChange={(v) => setPeriodB(p => ({ ...p, month: v }))}>
                   <SelectTrigger className="theme-field h-9 flex-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{allMonths.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  <SelectContent>{allMonths.map(m => <SelectItem className="cursor-pointer" key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>

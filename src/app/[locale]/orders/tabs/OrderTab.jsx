@@ -1888,7 +1888,7 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
             />
           </div>
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label className="text-sm text-gray-600 dark:text-slate-300">
               {t("statusForm.color")} *
             </Label>
@@ -1902,7 +1902,7 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
                 {errors.color}
               </p>
             )}
-          </div>
+          </div> */}
 
           <div className="space-y-2">
             <Label className="text-sm text-gray-600 dark:text-slate-300">

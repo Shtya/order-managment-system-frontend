@@ -1,7 +1,7 @@
 import api, { getOnboardingStatus } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useTranslations } from "next-intl";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const OrdersSettingsContext = createContext();
@@ -250,13 +250,21 @@ export function OrdersSettingsProvider({ children }) {
   };
   const isDirectShippingEnabled = savedSettings?.orderFlowPath === "shipping";
 
-  const calculateAvailableStock = (stockOnHand, reserved) => {
+  const calculateAvailableStock = useCallback(
+  (stockOnHand, reserved) => {
     const isReservedEnabled = settings?.reservedEnabled ?? false;
+    
     if (isReservedEnabled) {
-      return Math.max(0, (Number(stockOnHand) ?? 0) - (Number(reserved) ?? 0));
+      return Math.max(
+        0,
+        (Number(stockOnHand) || 0) - (Number(reserved) || 0)
+      );
     }
-    return Math.max(0, Number(stockOnHand) ?? 0);
-  };
+
+    return Math.max(0, Number(stockOnHand) || 0);
+  },
+  [settings?.reservedEnabled]
+);
 
   // القيم التي سيتم مشاركتها
   const value = {

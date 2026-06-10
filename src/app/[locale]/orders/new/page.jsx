@@ -31,6 +31,7 @@ import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { FaInfoCircle } from "react-icons/fa";
 import { GEO_CONFIG } from "@/utils/order-utils";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -148,7 +149,7 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function AddressSection({
-	
+
 	locale,
 	provider,
 	// react-hook-form
@@ -515,7 +516,7 @@ export default function CreateOrderPageComplete({
 
 	// ── Schema ──────────────────────────────────────────────────────────────
 	const schema = useMemo(() => createSchema(t), [t]);
-
+	const { calculateAvailableStock } = useOrdersSettings();
 	// ── Default values ──────────────────────────────────────────────────────
 	const getDefaultValues = useCallback(() => {
 		if ((isEditMode || fromId) && existingOrder) {
@@ -548,7 +549,7 @@ export default function CreateOrderPageComplete({
 						sku: item.variant?.sku || item.sku || "",
 						attributes: item.variant?.attributes || item.attributes || {},
 						quantity: item.quantity || 1,
-						availableQuantity: item.quantity || 0,
+						availableQuantity: calculateAvailableStock(item.variant?.stockOnHand, item.variant?.reserved),
 						unitPrice: item.unitPrice || 0,
 						unitCost: item.unitCost || item.unitPrice || 0,
 					})) || [],
@@ -576,7 +577,7 @@ export default function CreateOrderPageComplete({
 			items: [],
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isEditMode, fromId, existingOrder]);
+	}, [isEditMode, fromId, existingOrder, calculateAvailableStock]);
 
 	// ── RHF ─────────────────────────────────────────────────────────────────
 	const {
@@ -741,7 +742,7 @@ export default function CreateOrderPageComplete({
 				pickup: shippingProvider ? (matched?.pickup ?? false) : true,
 			};
 		});
-		
+
 		setProviderCities(mappedCities);
 		if (!config.needsGeo) {
 			setproviderZones([]);
@@ -750,7 +751,7 @@ export default function CreateOrderPageComplete({
 	}, [config.needsGeo, shippingProvider, normalCities, cityIdValue]);
 
 	useEffect(() => {
-		if (!providerCities || !providerCities?.length ||  initialLoading) return;
+		if (!providerCities || !providerCities?.length || initialLoading) return;
 		console.log("providerCities", providerCities, initialLoading);
 		const newProviderId = providerCities.find(city => city.id === cityIdValue)?.providerCityId || "";
 

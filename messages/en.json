@@ -2414,7 +2414,8 @@
           "noShippedOrders": "No shipped orders found",
           "errorLoadingFile": "An error occurred while loading the file",
           "errorLoadingLogs": "An error occurred while loading the error log",
-          "manifestCreated": "The file was created successfully"
+          "manifestCreated": "The file was created successfully",
+          "manifestCreatedFailed": "File creation failed"
         },
         "labels": {
           "ordersWithCarrier": "{count} Order ready for return",
@@ -2452,7 +2453,8 @@
           "city": "City",
           "products": "Products",
           "total": "Total",
-          "productUnit": "product(s)"
+          "productUnit": "product(s)",
+          "status": "Status"
         },
         "empty": {
           "title": "Ready to Scan Return Order",
@@ -9216,6 +9218,8 @@
         "from": "From Account",
         "to": "To Account",
         "amount": "Transfer Amount",
+        "inTransactionNumber": "In-Transaction No.",
+        "outTransactionNumber": "Out-Transaction No.",
         "commission": "Commission / Fees",
         "amountToTransfer": "Amount to Transfer",
         "date": "Date",
@@ -9563,7 +9567,7 @@
         "netBalance": "Final Net Balance",
         "detailedPurchases": "Purchase Invoices Details",
         "detailedReturns": "Return Invoices Details",
-        "totalTaken": "Collection from purchase returns\t"
+        "totalTaken": "Collection from returns"
       },
       "close": {
         "title": "Supplier Period Settlement",
@@ -9596,8 +9600,11 @@
       "subtotal": "Subtotal",
       "remainingAmount": "Remaining Amount",
       "tax": "Tax",
-      "totalReturn": "Total Return"
-    }
+      "totalReturn": "Total Return",
+      "takanAmount": "Refunded Amount",
+      "paidAmount": "Paid Amount"
+    },
+    "transactionNumber": "Transaction number"
   },
   "syncFailures": {
     "title": "Product Sync Errors",

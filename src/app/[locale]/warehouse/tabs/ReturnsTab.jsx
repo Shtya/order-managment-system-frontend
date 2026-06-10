@@ -49,6 +49,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { playBeep } from "./PreparationTab";
+import { Badge } from "@/components/ui/badge";
 const RETURN_CONDITIONS_KEYS = [
   "intact",
   "opened",
@@ -1584,6 +1585,7 @@ function OrdersList({
   lastHighlight,
   onSelectOrder,
 }) {
+  const tOrder = useTranslations("orders");
   const t = useTranslations("warehouse.returns");
   const [expanded, setExpanded] = useState({});
   const { formatCurrency } = usePlatformSettings();
@@ -1605,12 +1607,13 @@ function OrdersList({
       <div className="min-w-[800px]">
         <div
           className="grid text-[10px] font-extrabold uppercase tracking-[0.07em] text-slate-400 px-5 py-2.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/60 dark:bg-slate-800/30"
-          style={{ gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr 1fr 1fr" }}
+          style={{ gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr 1fr 1fr 1fr" }}
         >
           <span />
           <span>{t("scan.table.orderNumber")}</span>
           <span>{t("scan.table.customer")}</span>
           <span>{t("scan.table.city")}</span>
+          <span>{t("scan.table.status")}</span>
           <span className="text-center">{t("scan.table.products")}</span>
           <span className="text-center">{t("scan.table.total")}</span>
           <span />
@@ -1639,7 +1642,7 @@ function OrdersList({
                       ? "bg-emerald-50/60 dark:bg-emerald-950/10"
                       : "hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
                   )}
-                  style={{ gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr 1fr 1fr" }}
+                  style={{ gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr 1fr 1fr 1fr" }}
                   onClick={() => prodCount > 0 && toggle(code)}
                 >
                   <AnimatePresence>
@@ -1709,6 +1712,12 @@ function OrdersList({
                       {order.phoneNumber || "—"}
                     </div>
                   </div>
+
+                  <Badge className={cn("rounded-xl")}>
+                    {order.status.system
+                      ? tOrder(`statuses.${order.status.code}`)
+                      : order.status.name || order.status.code}
+                  </Badge>
 
                   <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
                     {order.city || "—"}
@@ -2189,7 +2198,7 @@ function ReturnsOrdersSlidePanel({ open, onClose, orders, loading, selectedOrder
       onClose();
     } catch (error) {
       console.error("Failed to create return manifest", error);
-      toast.error(error.response?.data?.message || t("scan.messages.manifestCreated"));
+      toast.error(error.response?.data?.message || t("scan.messages.manifestCreatedFailed"));
     } finally {
       setCreatingManifest(false);
     }

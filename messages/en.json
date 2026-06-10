@@ -2709,6 +2709,7 @@
         "returnOrder": "Receive Return",
         "retryOrder": "Reactivate Order",
         "bulkReject": "Bulk Reject",
+        "returnRequested": "Return Requested",
         "printManifest": "Print Manifest",
         "reprintManifest": "Reprint Manifest",
         "reprintLabel": "Reprint Label",

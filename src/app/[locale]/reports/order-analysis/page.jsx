@@ -1111,6 +1111,7 @@ export default function OrdersStatisticsPage() {
             icon={<Info size={18} />}
           />
         }
+        statsLoading={loading}
         stats={statsCards}
         items={QUICK_RANGES}
         active={quickRange}

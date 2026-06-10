@@ -193,8 +193,8 @@ export default function Accounts() {
             return [
                 { name: t("stats.productPurchases"), value: stats?.totalPurchases?.toLocaleString() || "0", icon: Building2, color: "#3b82f6" },
                 { name: t("stats.totalPaid"), value: stats?.totalPaid?.toLocaleString() || "0", icon: Wallet, color: "#10b981" },
-                { name: t("stats.totalReceived"), value: stats?.totalTaken?.toLocaleString() || "0", icon: Wallet, color: "#10b981" },
                 { name: t("stats.returns"), value: stats?.totalReturns?.toLocaleString() || "0", icon: BarChart2, color: "#ef4444" },
+                { name: t("stats.totalReceived"), value: stats?.totalTaken?.toLocaleString() || "0", icon: Wallet, color: "#10b981" },
                 { name: t("stats.finalBalance"), value: stats?.finalBalance?.toLocaleString() || "0", icon: DollarSign, color: "#f97316" },
             ];
         }

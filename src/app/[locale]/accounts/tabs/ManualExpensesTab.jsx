@@ -148,6 +148,8 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
   const attachment = watch("attachment");
   const safeId = watch("safeId");
   const amountValue = watch("amount");
+  const collectionDateT = watch("collectionDate");
+  console.log(collectionDateT)
   const { selectedAccount: selectedSafe, commissionAmount, finalAmount } = useSafeAmountWithCommission({
     safeId,
     accounts: safes,
@@ -172,7 +174,17 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
       payload.append("categoryId", String(data.categoryId));
       if (data.safeId !== 'none')
         payload.append("safeId", String(data.safeId));
-      payload.append("collectionDate", data.collectionDate?.toISOString());
+      const collectionDate = new Date(data.collectionDate);
+      const now = new Date();
+
+      collectionDate.setHours(
+        now.getHours(),
+        now.getMinutes(),
+        now.getSeconds(),
+        now.getMilliseconds()
+      );
+
+      payload.append("collectionDate", collectionDate?.toISOString());
       payload.append("description", data.description || "");
 
       if (data.attachment instanceof File) {
@@ -483,7 +495,7 @@ export default function ManualExpensesTab({
 }) {
   const tOrders = useTranslations("orders");
   const t = useTranslations("accounts");
-  const {currency} = usePlatformSettings();
+  const { currency } = usePlatformSettings();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();

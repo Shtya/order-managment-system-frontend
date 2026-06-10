@@ -9249,7 +9249,7 @@
       "productPurchases": "Total product purchases",
       "totalPaid": "Total paid to suppliers",
       "manualExpenses": "Operating Expenses",
-      "returns": "Purchase returns",
+      "returns": "Total purchase returns",
       "netResult": "Net Result",
       "shippingCost": "Shipping Cost",
       "totalSuppliers": "Total Suppliers",
@@ -9556,13 +9556,14 @@
         "invoiceRef": "Invoice Ref",
         "date": "Date",
         "amount": "Amount",
-        "totalPurchases": "Total Purchases",
-        "totalReturns": "Total Returns",
+        "totalPurchases": "Total product purchases",
+        "totalReturns": "Total purchase returns",
         "totalPaid": "Total Paid",
         "prevBalance": "Prev. Closing Balance",
         "netBalance": "Final Net Balance",
         "detailedPurchases": "Purchase Invoices Details",
-        "detailedReturns": "Return Invoices Details"
+        "detailedReturns": "Return Invoices Details",
+        "totalTaken": "Collection from purchase returns\t"
       },
       "close": {
         "title": "Supplier Period Settlement",
@@ -9590,7 +9591,13 @@
     },
     "history": "Previous Closes",
     "confirm": "Confirm",
-    "transfer": "Transfer"
+    "transfer": "Transfer",
+    "table": {
+      "subtotal": "Subtotal",
+      "remainingAmount": "Remaining Amount",
+      "tax": "Tax",
+      "totalReturn": "Total Return"
+    }
   },
   "syncFailures": {
     "title": "Product Sync Errors",

@@ -2702,6 +2702,7 @@
         "shipOrder": "شحن طلب",
         "return": "إرجاع الطلب",
         "returnOrder": "استلام مرتجع",
+        "returnRequested": "طلب إرجاع",
         "retryOrder": "إعادة محاولة",
         "bulkReject": "رفض جماعي",
         "printManifest": "طباعة بيان الشحن",

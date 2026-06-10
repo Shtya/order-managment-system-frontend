@@ -649,7 +649,7 @@ export default function FailedOrderDetailsPage() {
                     onClick: () => setExternalModal({ isOpen: true, remoteId, provider: failure?.store?.provider })
                 });
 
-                if (problem?.code === WebhookOrderProblem.PRODUCT_NOT_FOUND) {
+                if (problem?.code === WebhookOrderProblem.PRODUCT_NOT_FOUND && !isSuccess) {
                     actions.push({
                         icon: <Store size={16} />,
                         tooltip: t('actions.createProduct'),
@@ -659,7 +659,7 @@ export default function FailedOrderDetailsPage() {
                     });
                 }
                 const localProductId = row.variant?.localProductId || problem?.productId;
-                if (localProductId) {
+                if (localProductId && !isSuccess) {
                     actions.push({
                         icon: <RefreshCw size={16} />,
                         tooltip: t('actions.chooseDifferentSku'),
@@ -669,7 +669,7 @@ export default function FailedOrderDetailsPage() {
                         onClick: () => handleOpenSkuSelector(localProductId, cartItemIdx, row.variant?.key)
                     });
                 }
-                if (problem?.code === WebhookOrderProblem.SKU_NOT_FOUND || problem?.code === WebhookOrderProblem.SKU_INACTIVE) {
+                if ((problem?.code === WebhookOrderProblem.SKU_NOT_FOUND || problem?.code === WebhookOrderProblem.SKU_INACTIVE)&& !isSuccess) {
                     // Option to choose a different SKU from the same product
 
 
@@ -710,7 +710,7 @@ export default function FailedOrderDetailsPage() {
                         {actions.length > 0 && <ActionButtons row={row} actions={actions} />}
 
                         {/* Render Checkbox manually for INSUFFICIENT_STOCK */}
-                        {problem?.code === WebhookOrderProblem.INSUFFICIENT_STOCK && (
+                        {problem?.code === WebhookOrderProblem.INSUFFICIENT_STOCK && !isSuccess && (
                             <label className="flex items-center gap-2 px-2 py-1.5 rounded-lg border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors">
                                 <Checkbox
                                     checked={selectedSkus.includes(problem.sku)}

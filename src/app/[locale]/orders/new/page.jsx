@@ -752,7 +752,7 @@ export default function CreateOrderPageComplete({
 
 	useEffect(() => {
 		if (!providerCities || !providerCities?.length || initialLoading) return;
-		console.log("providerCities", providerCities, initialLoading);
+		
 		const newProviderId = providerCities.find(city => city.id === cityIdValue)?.providerCityId || "";
 
 		setProviderMeta((prev) => {

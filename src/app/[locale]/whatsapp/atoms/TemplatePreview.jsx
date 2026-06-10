@@ -144,8 +144,7 @@ export function WhatsAppButtonMenu({
                                     )}>
                                         {option.label}
                                     </span>
-                                    <div className={cn(
-                                       className= "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                                    <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
                                         selectedIndex === idx ? "border-[#00a884]" : "border-slate-300 dark:border-slate-600"
                                     )}>
                                         {selectedIndex === idx && <div className="w-2.5 h-2.5 rounded-full bg-[#00a884]" />}

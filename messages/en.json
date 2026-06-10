@@ -5611,7 +5611,7 @@
       "retryStatusesSubtitle": "The system automatically retries contact only when the order is in one of these statuses",
       "retryStatuses": "Select statuses",
       "retryStatusesHint": "Example: choose \"Pending Confirmation\" and \"Pending\" — orders in these statuses are the ones the team contacts",
-      "confirmationStatusesTitle": "Statuses that mean \"successfully confirmed\"",
+      "confirmationStatusesTitle": "Statuses that employees are allowed to update orders to",
       "confirmationStatusesSubtitle": "If the order reaches one of these statuses, the system stops retrying and considers it completed",
       "confirmationStatuses": "Select statuses",
       "confirmationStatusesHint": "Example: choose \"Confirmed\" and \"Paid\" — once the order reaches this status, there is no need to call again",

@@ -18,6 +18,7 @@ import { cn } from "@/utils/cn";
 import { useTranslations } from "use-intl";
 import { useRouter } from "@/i18n/navigation";
 import { getNotificationLink } from "@/app/[locale]/notifications/page";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 const NotificationContext = createContext();
 
@@ -73,9 +74,29 @@ export function NotificationProvider({ children }) {
     fetchNotifications(1, true);
   }, [fetchNotifications]);
 
+  const { settings } = useOrdersSettings();
+
   useEffect(() => {
     const unsubscribe = subscribe("NEW_NOTIFICATION", (payload) => {
-      if (payload) {
+      if (!payload) return;
+
+      const typeMap = {
+        "order": "order",
+        "store": "store",
+        "Template": "template",
+        "webhook_order_failures": "webhook_order_failures",
+        "product": "product",
+        "bundle": "bundle",
+        "automation_run": "automation_run",
+        "subscription": "subscription",
+        "UserFeature": "user_feature",
+        "wallet": "wallet",
+      };
+
+      const key = typeMap[payload.relatedEntityType] || "other";
+      const isEnabled = settings?.notificationSettings?.[key] ?? true;
+
+      if (isEnabled) {
         toast.custom((t) => (
           <NotificationToast toastItem={t} notification={payload} isRtl={isRtl} />
         ), {
@@ -83,12 +104,12 @@ export function NotificationProvider({ children }) {
           duration: 5000,
         });
 
-        setNotifications((prev) => [payload, ...prev]);
-        setTotal((prev) => prev + 1);
       }
+      setNotifications((prev) => [payload, ...prev]);
+      setTotal((prev) => prev + 1);
     });
     return unsubscribe;
-  }, [subscribe, isRtl]);
+  }, [subscribe, isRtl, settings?.notificationSettings]);
 
   const handleMarkAsRead = useCallback(
     async (id) => {

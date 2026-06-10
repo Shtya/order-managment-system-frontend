@@ -5,7 +5,19 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import toast from "react-hot-toast";
 
 const OrdersSettingsContext = createContext();
-
+const DEFAULT_NOTIFICATION_SETTINGS = {
+  order: true,
+  store: true,
+  template: true,
+  webhook_order_failures: true,
+  product: true,
+  bundle: true,
+  automation_run: true,
+  subscription: true,
+  user_feature: true,
+  wallet: true,
+  other: true,
+};
 // 2. إنشاء الـ Provider
 export function OrdersSettingsProvider({ children }) {
   const t = useTranslations("orders");
@@ -24,8 +36,9 @@ export function OrdersSettingsProvider({ children }) {
     confirmationStatuses: [],
     notifyEmployee: true,
     notifyAdmin: false,
-    notifyOrderUpdates: true,
-    notifyNewProducts: false,
+
+    notificationSettings: DEFAULT_NOTIFICATION_SETTINGS,
+
     notifyLowStock: false,
     notifyMarketing: false,
     stockDeductionStrategy: "on_shipment",
@@ -76,6 +89,7 @@ export function OrdersSettingsProvider({ children }) {
     }
     (async () => {
       const data = await fetchSettings();
+      
       setSavedSettings(data);
       if (data)
         setSettings((prev) => ({
@@ -85,14 +99,16 @@ export function OrdersSettingsProvider({ children }) {
           maxRetries: data.maxRetries ?? prev.maxRetries,
           retryInterval: data.retryInterval ?? prev.retryInterval,
           autoMoveStatus: data.autoMoveStatus ?? prev.autoMoveStatus,
+          notificationSettings: {
+            ...DEFAULT_NOTIFICATION_SETTINGS,
+            ...(data.notificationSettings ?? {}),
+          },
           retryStatuses: data.retryStatuses ?? prev.retryStatuses,
           confirmationStatuses:
             data.confirmationStatuses ?? prev.confirmationStatuses,
           notifyEmployee: data.notifyEmployee ?? prev.notifyEmployee,
           notifyAdmin: data.notifyAdmin ?? prev.notifyAdmin,
-          notifyOrderUpdates:
-            data.notifyOrderUpdates ?? prev.notifyOrderUpdates,
-          notifyNewProducts: data.notifyNewProducts ?? prev.notifyNewProducts,
+          
           notifyLowStock: data.notifyLowStock ?? prev.notifyLowStock,
           notifyMarketing: data.notifyMarketing ?? prev.notifyMarketing,
           stockDeductionStrategy:
@@ -217,6 +233,7 @@ export function OrdersSettingsProvider({ children }) {
       if (typeof onSuccess === "function")
         onSuccess?.();
       const data = await fetchSettings();
+      
       setSavedSettings(data);
     } catch (e) {
       toast.error(normalizeAxiosError(e));

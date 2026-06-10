@@ -1,5 +1,6 @@
 
 import Table, { FilterField } from "@/components/atoms/Table";
+import ActionButtons from "@/components/atoms/Actions";
 import {
     Select,
     SelectContent,
@@ -7,7 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Calendar, CreditCard, Download, Loader2, User } from "lucide-react";
+import { Calendar, CreditCard, Download, Loader2, User, Eye } from "lucide-react";
 import Flatpickr from "react-flatpickr";
 
 import { useEffect, useMemo, useState } from "react";
@@ -22,6 +23,7 @@ import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { dollor, dollorSign, platformCurrency } from "@/utils/healpers";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import { useAuth } from "@/context/AuthContext";
 
 
 
@@ -51,6 +53,7 @@ export const PaymentPurposeEnum = {
 export default function TransactionTab({ defaultPurpose, allowedPurposes, showRelations = true, showDollar = false }) {
     const t = useTranslations("plans")
     const router = useRouter()
+    const { isSuperAdmin } = useAuth()
 
     const [pager, setPager] = useState({ records: [], total_records: 0, current_page: 1, per_page: 12 });
     const [loading, setLoading] = useState(false);
@@ -320,9 +323,32 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
                     {row.notes || "—"}
                 </div>
             ),
+        },
+        {
+            key: "actions",
+            header: t("columns.actions"),
+            cell: (row) => row.orderId ? (
+                <ActionButtons
+                    row={row}
+                    actions={[
+                        {
+                            icon: <Eye size={14} />,
+                            tooltip: t("actions.view"),
+                            onClick: (r) => {
+                                if (isSuperAdmin) {
+                                    router.push(`/dashboard/orders/details/${r.orderId}`);
+                                } else {
+                                    router.push(`/orders/details/${r.orderId}`);
+                                }
+                            },
+                            variant: "primary",
+                        }
+                    ]}
+                />
+            ) : null
         }
         ];
-    }, [t, router, formatCurrency]);
+    }, [t, router, formatCurrency, isSuperAdmin]);
 
     return (
         <Table

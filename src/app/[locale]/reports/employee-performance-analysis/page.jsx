@@ -353,15 +353,15 @@ export function EmployeeStatisticsPage() {
                     </span>
                 ),
             },
-            {
-                key: "outgoingFailedCount",
-                header: t("employeeStats.columns.outgoingFailedCount"),
-                cell: (row) => (
-                    <span className="font-bold text-sm tabular-nums">
-                        {row.outgoingFailedRate ?? 0}
-                    </span>
-                ),
-            },
+            // {
+            //     key: "outgoingFailedCount",
+            //     header: t("employeeStats.columns.outgoingFailedCount"),
+            //     cell: (row) => (
+            //         <span className="font-bold text-sm tabular-nums">
+            //             {row.outgoingFailedRate ?? 0}
+            //         </span>
+            //     ),
+            // },
         ],
         [t]
     );

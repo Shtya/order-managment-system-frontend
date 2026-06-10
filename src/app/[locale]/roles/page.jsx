@@ -251,7 +251,7 @@ function PermissionsSelector({ permissions = [], selected = [], onChange, disabl
 	const groups = useMemo(() => {
 		const map = {};
 		permissions.forEach((p) => {
-			const key = p?.split(/[._]/)[0] || "general";
+			const key = p?.split(/[.]/)[0] || "general";
 			if (!map[key]) map[key] = [];
 			map[key].push(p);
 		});
@@ -328,7 +328,7 @@ function PermissionsSelector({ permissions = [], selected = [], onChange, disabl
 									{someOn && <div className="w-1.5 h-0.5 rounded-full" style={{ background: "var(--primary)" }} />}
 								</button>
 
-								<span className="flex-1 text-[12px] font-bold capitalize text-foreground/80">{grp}</span>
+								<span className="flex-1 text-[12px] font-bold capitalize text-foreground/80">{t(`group.${grp}`)}</span>
 								<span className="text-[10px] text-muted-foreground tabular-nums me-1">
 									{ps.filter(p => selected.includes(p)).length}/{ps.length}
 								</span>
@@ -506,7 +506,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 		if (isAll) return { "*": ["*"] };
 		const map = {};
 		perms.forEach(p => {
-			const key = p?.split(/[._]/)[0] || "general";
+			const key = p?.split(/[.]/)[0] || "general";
 			if (!map[key]) map[key] = [];
 			map[key].push(p);
 		});
@@ -564,7 +564,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 										className="px-4 py-2 flex items-center justify-between"
 										style={{ background: "color-mix(in oklab,var(--muted) 55%,var(--card))" }}
 									>
-										<span className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground capitalize">{grp}</span>
+										<span className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground capitalize">{t(`group.${grp}`)}</span>
 										<span className="text-[10px] text-muted-foreground tabular-nums">{ps.length}</span>
 									</div>
 									<div className="px-4 py-3 flex flex-wrap gap-1.5">

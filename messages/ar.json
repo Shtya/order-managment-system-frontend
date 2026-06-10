@@ -9244,7 +9244,7 @@
       "productPurchases": "إجمالي مشتريات المنتجات",
       "totalPaid": "إجمالي المدفوع للموردين",
       "manualExpenses": "مصروفات تشغيلية",
-      "returns": "مرتجع مشتريات",
+      "returns": "إجمالي مرتجع المشتريات ",
       "netResult": "صافي النتيجة",
       "shippingCost": "تكلفة الشحن",
       "totalSuppliers": "إجمالي الموردين",
@@ -9551,13 +9551,14 @@
         "invoiceRef": "رقم الفاتورة",
         "date": "التاريخ",
         "amount": "المبلغ",
-        "totalPurchases": "إجمالي مشتريات",
-        "totalReturns": "إجمالي مرتجعات",
-        "totalPaid": "إجمالي مدفوعات",
+        "totalPurchases": "إجمالي مشتريات المنتجات",
+        "totalReturns": "إجمالي مرتجع المشتريات",
+        "totalPaid": "إجمالي المدفوع",
         "prevBalance": "رصيد مرحل سابق",
         "netBalance": "الرصيد النهائي (الصافي)",
         "detailedPurchases": "تفاصيل فواتير المشتريات",
-        "detailedReturns": "تفاصيل فواتير المرتجعات"
+        "detailedReturns": "تفاصيل فواتير المرتجعات",
+        "totalTaken": "المحصل من مرتجعات المشتريات\t"
       },
       "close": {
         "title": "تقفيل الفترة للمورد",
@@ -9585,7 +9586,15 @@
     },
     "history": "التقفيلات السابقة",
     "confirm": "تأكيد",
-    "transfer": "تحويل"
+    "transfer": "تحويل",
+    "table": {
+      "subtotal": "المجموع الفرعي",
+      "paidAmount": "المبلغ المدفوع",
+      "remainingAmount": "المبلغ المتبقي",
+      "tax": "الضريبة",
+      "totalReturn": "إجمالي المرتجع",
+      "takanAmount": "المبلغ المسترد"
+    }
   },
   "syncFailures": {
     "title": "أخطاء مزامنة المنتجات",

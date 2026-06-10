@@ -39,8 +39,8 @@ export default function ShippingReport() {
     const endOfMonth = new Date();
 
     const [filters, setFilters] = useState({
-        startDate: startOfMonth,
-        endDate: endOfMonth,
+        startDate: null,
+        endDate: null,
     });
 
     const [records, setRecords] = useState([]);

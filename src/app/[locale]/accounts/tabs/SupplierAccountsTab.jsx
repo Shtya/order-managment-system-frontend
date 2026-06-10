@@ -253,7 +253,7 @@ function MiniTable({ columns, data, maxH = "auto", t }) {
         <thead>
           <tr>
             {columns.map((col, idx) => (
-              <th key={idx} className="text-[10px] font-black uppercase tracking-wider text-muted-foreground px-2 py-1">
+              <th key={idx} className="text-[10px] font-black uppercase tracking-wider text-muted-foreground px-2 py-1  text-nowrap">
                 {col.header}
               </th>
             ))}
@@ -263,7 +263,7 @@ function MiniTable({ columns, data, maxH = "auto", t }) {
           {data.map((row, idx) => (
             <tr key={idx} className="bg-muted/30 hover:bg-muted/50 transition-colors">
               {columns.map((col, colIn) => (
-                <td key={colIn} className="px-2 py-2 first:rounded-r-xl last:rounded-l-xl border-y border-border/50 first:border-r last:border-l">
+                <td key={colIn} className="px-2 py-2 first:rounded-r-xl last:rounded-l-xl border-y border-border/50 first:border-r last:border-l text-nowrap text-sm">
                   {col.cell ? col.cell(row) : row[col.key]}
                 </td>
               ))}
@@ -300,21 +300,32 @@ const handlePrintSupplierStatement = (data, supplier, filters, t, tCommon) => {
         <tr>
           <td>${inv.ref || '-'}</td>
           <td>${inv.date}</td>
-          <td style="font-weight: bold;">${inv.amount.toLocaleString()} </td>
+          <td>${Number(inv.subtotal || 0).toLocaleString()}</td>
+          <td style="color: #10b981; font-weight: 500;">${Number(inv.paidAmount || 0).toLocaleString()}</td>
+          <td style="font-weight: 500; color: ${inv.remainingAmount > 0 ? '#ea580c' : '#6b7280'};">${Number(inv.remainingAmount || 0).toLocaleString()}</td>
         </tr>
       `).join('')
-    : `<tr><td colspan="3" style="text-align:center; padding: 15px;">${t("supplierAccounts.noPurchasesPeriod")}</td></tr>`;
+    : `<tr><td colspan="5" style="text-align:center; padding: 15px;">${t("supplierAccounts.noPurchasesPeriod")}</td></tr>`;
 
   // Generate rows for returns
   const returnRows = data.returnInvoices.length > 0
-    ? data.returnInvoices.map(inv => `
-        <tr>
-          <td>${inv.ref || '-'}</td>
-          <td>${inv.date}</td>
-          <td style="font-weight: bold; color: #ef4444;">${inv.amount.toLocaleString()}</td>
-        </tr>
-      `).join('')
-    : `<tr><td colspan="3" style="text-align:center; padding: 15px;">${t("supplierAccounts.noReturnsPeriod")}</td></tr>`;
+    ? data.returnInvoices.map(inv => {
+      const remaining = Number(inv.totalReturn || 0) - Number(inv.paidAmount || 0);
+      return `
+          <tr>
+            <td>${inv.ref || '-'}</td>
+            <td>${inv.date}</td>
+            <td>${Number(inv.subtotal || 0).toLocaleString()}</td>
+            <td>${Number(inv.taxTotal || 0).toLocaleString()}</td>
+            <td style="color: #ef4444; font-weight: bold;">${Number(inv.totalReturn || 0).toLocaleString()}</td>
+            <td style="color: #10b981; font-weight: 600;">${Number(inv.paidAmount || 0).toLocaleString()}</td>
+            <td style="font-weight: bold; color: ${remaining > 0 ? '#ea580c' : '#6b7280'};">${remaining.toLocaleString()}</td>
+          </tr>
+        `;
+    }).join('')
+    : `<tr><td colspan="7" style="text-align:center; padding: 15px;">${t("supplierAccounts.noReturnsPeriod")}</td></tr>`;
+
+  const netBalanceColor = (data.summary.finalBalance || 0) > 0 ? '#ef4444' : '#10b981';
 
   const printContent = `
     <html dir="rtl" lang="ar">
@@ -327,17 +338,20 @@ const handlePrintSupplierStatement = (data, supplier, filters, t, tCommon) => {
           .header p { margin: 0; color: #6b7280; font-size: 14px; }
           
           .summary-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; }
-          .summary-box { flex: 1; min-width: 130px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background-color: #f9fafb; }
-          .summary-box .title { font-size: 13px; color: #6b7280; margin-bottom: 8px; }
-          .summary-box .value { font-size: 20px; font-weight: bold; color: #111827; }
-          .summary-box.final { border-color: #ef4444; background-color: #fef2f2; }
-          .summary-box.final .value { color: #ef4444; }
+          .summary-box { flex: 1; min-width: 120px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background-color: #f9fafb; }
+          .summary-box.purple { background-color: #faf5ff; border-color: #e9d5ff; color: #7c3aed; }
+          .summary-box.emerald { background-color: #f0fdf4; border-color: #d1fae5; color: #059669; }
+          .summary-box.red { background-color: #fef2f2; border-color: #fecaca; color: #dc2626; }
+          .summary-box.final { background-color: ${netBalanceColor}10; border-color: ${netBalanceColor}50; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1); }
+          .summary-box .title { font-size: 14px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 800; }
+          .summary-box .value { font-size: 18px; font-weight: 800; }
+          .summary-box.final .value { color: ${netBalanceColor}; font-size: 20px; }
 
           .section { margin-bottom: 40px; page-break-inside: avoid; }
           .section h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; display: inline-block;}
           
-          table { width: 100%; border-collapse: collapse; font-size: 14px; }
-          th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: right; }
+          table { width: 100%; border-collapse: collapse; font-size: 13px; }
+          th, td { border: 1px solid #e5e7eb; padding: 10px; text-align: right; }
           th { background-color: #f3f4f6; color: #374151; font-weight: bold; }
           tbody tr:nth-child(even) { background-color: #f9fafb; }
           
@@ -357,17 +371,21 @@ const handlePrintSupplierStatement = (data, supplier, filters, t, tCommon) => {
         </div>
 
         <div class="summary-grid">
-          <div class="summary-box">
+          <div class="summary-box purple">
             <div class="title">${t("supplierAccounts.statement.totalPurchases")}</div>
             <div class="value">${data.summary.totalPurchases?.toLocaleString() || 0}</div>
           </div>
-          <div class="summary-box">
+          <div class="summary-box emerald">
+            <div class="title">${t("supplierAccounts.statement.totalPaid")}</div>
+            <div class="value">${data.summary.totalPaid?.toLocaleString() || 0}</div>
+          </div>
+          <div class="summary-box purple">
             <div class="title">${t("supplierAccounts.statement.totalReturns")}</div>
             <div class="value">${data.summary.totalReturns?.toLocaleString() || 0}</div>
           </div>
-          <div class="summary-box">
-            <div class="title">${t("supplierAccounts.statement.totalPaid")}</div>
-            <div class="value">${data.summary.totalPaid?.toLocaleString() || 0}</div>
+          <div class="summary-box red">
+            <div class="title">${t("supplierAccounts.statement.totalTaken")}</div>
+            <div class="value">${data.summary.totalTaken?.toLocaleString() || 0}</div>
           </div>
           <div class="summary-box final">
             <div class="title">${t("supplierAccounts.statement.netBalance")}</div>
@@ -382,7 +400,9 @@ const handlePrintSupplierStatement = (data, supplier, filters, t, tCommon) => {
               <tr>
                 <th>${t("supplierAccounts.statement.invoiceRef")}</th>
                 <th>${t("supplierAccounts.statement.date")}</th>
-                <th>${t("supplierAccounts.statement.amount")}</th>
+                <th>${t("table.subtotal")}</th>
+                <th>${t("table.paidAmount")}</th>
+                <th>${t("table.remainingAmount")}</th>
               </tr>
             </thead>
             <tbody>
@@ -398,7 +418,11 @@ const handlePrintSupplierStatement = (data, supplier, filters, t, tCommon) => {
               <tr>
                 <th>${t("supplierAccounts.statement.invoiceRef")}</th>
                 <th>${t("supplierAccounts.statement.date")}</th>
-                <th>${t("supplierAccounts.statement.amount")}</th>
+                <th>${t("table.subtotal")}</th>
+                <th>${t("table.tax")}</th>
+                <th>${t("table.totalReturn")}</th>
+                <th>${t("table.takanAmount")}</th>
+                <th>${t("table.remainingAmount")}</th>
               </tr>
             </thead>
             <tbody>
@@ -425,11 +449,41 @@ const handlePrintSupplierStatement = (data, supplier, filters, t, tCommon) => {
 };
 
 function SupplierStatementReportView({ data, supplier, filters, onChangeDate, loading, t, tCommon, router, extraActions }) {
-  const { currency } = usePlatformSettings();
-  const miniInvoiceColumns = [
+  const { currency, formatCurrency } = usePlatformSettings();
+  
+  const purchaseMiniColumns = [
     { key: "ref", header: t("supplierAccounts.statement.invoiceRef"), cell: (row) => <span className="font-mono text-xs">{row.ref}</span> },
     { key: "date", header: t("supplierAccounts.statement.date"), cell: (row) => <span className="tabular-nums text-[11px]">{row.date}</span> },
-    { key: "amount", header: t("supplierAccounts.statement.amount"), cell: (row) => <span className="font-black text-xs">{row.amount.toLocaleString()}</span> },
+    {
+      key: "subtotal",
+      header: t("table.subtotal"),
+      cell: (row) => (
+        <span className="text-gray-600 dark:text-slate-200 text-nowrap">
+          {formatCurrency(row.subtotal || 0)}
+        </span>
+      ),
+    },
+    {
+      key: "paidAmount",
+      header: t("table.paidAmount"),
+      cell: (row) => (
+        <span className="text-green-600 dark:text-green-400 font-medium text-nowrap">
+          {formatCurrency(row.paidAmount || 0)}
+        </span>
+      ),
+    },
+    {
+      key: "remainingAmount",
+      header: t("table.remainingAmount"),
+      cell: (row) => (
+        <span className={cn(
+          "font-medium",
+          row.remainingAmount > 0 ? "text-orange-600 dark:text-orange-400 text-nowrap" : "text-gray-500 dark:text-slate-400 text-nowrap"
+        )}>
+          {formatCurrency(row.remainingAmount || 0)}
+        </span>
+      ),
+    },
     {
       key: "actions",
       header: "",
@@ -445,16 +499,90 @@ function SupplierStatementReportView({ data, supplier, filters, onChangeDate, lo
     }
   ];
 
+  const returnsMiniColumns = [
+    { key: "ref", header: t("supplierAccounts.statement.invoiceRef"), cell: (row) => <span className="font-mono text-xs">{row.ref}</span> },
+    { key: "date", header: t("supplierAccounts.statement.date"), cell: (row) => <span className="tabular-nums text-[11px]">{row.date}</span> },
+    {
+      key: "subtotal",
+      header: t("table.subtotal"),
+      cell: (row) => (
+        <span className="text-gray-600 dark:text-slate-200">
+          {formatCurrency(row.subtotal || 0)}
+        </span>
+      ),
+    },
+    {
+      key: "taxTotal",
+      header: t("table.tax"),
+      cell: (row) => (
+        <span className="text-gray-600 dark:text-slate-200 text-nowrap">
+          {formatCurrency(row.taxTotal || 0)}
+        </span>
+      ),
+    },
+    {
+      key: "totalReturn",
+      header: t("table.totalReturn"),
+      cell: (row) => (
+        <span className="text-red-600 dark:text-red-400 font-bold text-nowrap">
+          {formatCurrency(row.totalReturn || 0)}
+        </span>
+      ),
+    },
+    {
+      key: "takanAmount",
+      header: t("table.takanAmount"),
+      cell: (row) => (
+        <span className="text-green-600 dark:text-green-400 font-semibold text-nowrap">
+          {formatCurrency(row.paidAmount || 0)}
+        </span>
+      ),
+    },
+    {
+      key: "remainingAmount",
+      header: t("table.remainingAmount"),
+      cell: (row) => {
+        const remaining = (row.totalReturn || 0) - (row.paidAmount || 0);
+        return (
+          <span className={cn(
+            "font-bold",
+            remaining > 0 ? "text-orange-600 dark:text-orange-400 text-nowrap" : "text-gray-500 text-nowrap"
+          )}>
+            {formatCurrency(remaining)}
+          </span>
+        );
+      },
+    },
+    {
+      key: "actions",
+      header: "",
+      cell: (row) => (
+        <button
+          onClick={() => router.push(row.url)}
+          className="p-1 hover:bg-muted rounded-md transition-colors text-primary text-nowrap"
+          title={t("supplierAccounts.actions.viewInvoice")}
+        >
+          <Eye size={14} />
+        </button>
+      )
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 p-4 border border-border bg-muted/20 rounded-xl my-4">
         <div className="flex items-end gap-3">
           <FilterField label={t("filters.dateRange")} icon={Calendar} className="flex flex-col gap-3">
             <DateRangePicker
-              value={filters}
+              value={{
+                startDate: filters.startDate,
+                endDate: filters.endDate,
+              }}
               closeOnSelect={false}
               staticShow={true}
               onChange={onChangeDate} // Disabled in this view since it's controlled by the modal
+              dataSize="default"
+              maxDate="today"
               className="pointer-events-none"
             />
           </FilterField>
@@ -466,7 +594,7 @@ function SupplierStatementReportView({ data, supplier, filters, onChangeDate, lo
             variant="outline"
             label={t("supplierAccounts.actions.printPdf")}
             icon={<Download size={14} />}
-            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+            className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:border-blue-900 dark:hover:bg-blue-950"
             onClick={() => handlePrintSupplierStatement(data, supplier, filters, t, tCommon)}
             disabled={loading || !data}
           />
@@ -475,24 +603,65 @@ function SupplierStatementReportView({ data, supplier, filters, onChangeDate, lo
       </div>
 
       {loading ? (
-        <div className="h-64 flex items-center justify-center">
-          <Loader2 className="animate-spin text-primary" size={32} />
+        <div className="space-y-6 py-2">
+          {/* Skeleton Summary Grid */}
+          <div className="grid grid-cols-5 gap-3">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="p-3.5 rounded-xl border border-border bg-card flex flex-col items-center text-center gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3.5 h-3.5 rounded-full bg-muted-foreground/20 animate-pulse" />
+                  <div className="h-2.5 w-20 bg-muted-foreground/20 rounded animate-pulse" />
+                </div>
+                <div className="h-4 w-16 bg-muted-foreground/30 rounded animate-pulse mt-1" />
+              </div>
+            ))}
+          </div>
+
+          {/* Skeleton Tables Grid */}
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            {/* Purchase Table Skeleton */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-5 h-5 rounded bg-muted-foreground/20 animate-pulse" />
+                <div className="h-4 w-40 bg-muted-foreground/20 rounded animate-pulse" />
+              </div>
+              <div className="space-y-2">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-8 bg-muted-foreground/10 rounded animate-pulse" />
+                ))}
+              </div>
+            </div>
+
+            {/* Returns Table Skeleton */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-5 h-5 rounded bg-muted-foreground/20 animate-pulse" />
+                <div className="h-4 w-40 bg-muted-foreground/20 rounded animate-pulse" />
+              </div>
+              <div className="space-y-2">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-8 bg-muted-foreground/10 rounded animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       ) : data && (
         <div className="space-y-6 py-2">
           <div className="grid grid-cols-4 gap-3">
             <MiniSummary currency={currency} title={t("supplierAccounts.statement.totalPurchases")} value={data.summary.totalPurchases} icon={Package} color="purple" />
-            <MiniSummary currency={currency} title={t("supplierAccounts.statement.totalReturns")} value={data.summary.totalReturns} icon={RefreshCw} color="red" />
-            <MiniSummary currency={currency} title={t("supplierAccounts.statement.totalPaid")} value={data.summary.totalPaid} icon={DollarSign} color="emerald" />
-            <MiniSummary currency={currency} title={t("supplierAccounts.statement.netBalance")} value={data.summary.finalBalance} icon={CheckCircle2} color="red" isFinal />
+            <MiniSummary currency={currency} title={t("supplierAccounts.statement.totalPaid")} value={data.summary.totalPaid} icon={Package} color="red" />
+            <MiniSummary currency={currency} title={t("supplierAccounts.statement.totalReturns")} value={data.summary.totalReturns} icon={RefreshCw} color="purple" />
+            <MiniSummary currency={currency} title={t("supplierAccounts.statement.totalTaken")} value={data.summary.totalTaken} icon={DollarSign} color="emerald" />
+            <MiniSummary currency={currency} title={t("supplierAccounts.statement.netBalance")} value={data.summary.finalBalance} icon={CheckCircle2} color={data.summary.finalBalance > 0 ? "red" : "emerald"} isFinal />
           </div>
 
           <div className="grid grid-cols-2 gap-4 mt-6">
             <Card title={t("supplierAccounts.statement.detailedPurchases")} icon={Package}>
-              <MiniTable columns={miniInvoiceColumns} data={data.purchaseInvoices} maxH="300px" t={t} />
+              <MiniTable columns={purchaseMiniColumns} data={data.purchaseInvoices} maxH="300px" t={t} />
             </Card>
             <Card title={t("supplierAccounts.statement.detailedReturns")} icon={RefreshCw} color="red">
-              <MiniTable columns={miniInvoiceColumns} data={data.returnInvoices} maxH="300px" t={t} />
+              <MiniTable columns={returnsMiniColumns} data={data.returnInvoices} maxH="300px" t={t} />
             </Card>
           </div>
         </div>
@@ -535,6 +704,9 @@ function AccountStatementModal({ supplier, onClose, t, tCommon, router }) {
           url: `/purchases?detials=${p.id}`,
           ref: p.receiptNumber || p.invoiceNumber, // Fallback if needed
           date: new Date(p.statusUpdateDate).toLocaleDateString(),
+          subtotal: Number(p.subtotal),
+          paidAmount: Number(p.paidAmount),
+          remainingAmount: Number(p.remainingAmount),
           amount: Number(p.total)
         })),
         returnInvoices: (returnsRes.data.records || []).map(r => ({
@@ -542,6 +714,10 @@ function AccountStatementModal({ supplier, onClose, t, tCommon, router }) {
           url: `/purchases-return?detials=${r.id}`,
           ref: r.returnNumber,
           date: new Date(r.statusUpdateDate).toLocaleDateString(),
+          subtotal: Number(r.subtotal),
+          taxTotal: Number(r.taxTotal),
+          totalReturn: Number(r.totalReturn),
+          paidAmount: Number(r.paidAmount),
           amount: Number(r.totalReturn)
         }))
       });
@@ -617,6 +793,9 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, rou
           url: `/purchases?detials=${p.id}`,
           ref: p.receiptNumber || p.invoiceNumber,
           date: new Date(p.statusUpdateDate).toLocaleDateString(),
+          subtotal: Number(p.subtotal),
+          paidAmount: Number(p.paidAmount),
+          remainingAmount: Number(p.remainingAmount),
           amount: Number(p.total)
         })),
         returnInvoices: (returnsRes.data.records || []).map(r => ({
@@ -624,6 +803,10 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, rou
           url: `/purchases-return?detials=${r.id}`,
           ref: r.returnNumber,
           date: new Date(r.statusUpdateDate).toLocaleDateString(),
+          subtotal: Number(r.subtotal),
+          taxTotal: Number(r.taxTotal),
+          totalReturn: Number(r.totalReturn),
+          paidAmount: Number(r.paidAmount),
           amount: Number(r.totalReturn)
         }))
       });

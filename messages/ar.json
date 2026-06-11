@@ -5776,6 +5776,15 @@
         "roundRobin": "توزيع عادل",
         "leastActiveOrders": "الأقل ضغطاً"
       },
+      "days": {
+        "sunday": "الأحد",
+        "monday": "الإثنين",
+        "tuesday": "الثلاثاء",
+        "wednesday": "الأربعاء",
+        "thursday": "الخميس",
+        "friday": "الجمعة",
+        "saturday": "السبت"
+      },
       "form": {
         "name": "اسم القاعدة",
         "description": "الوصف",
@@ -5790,6 +5799,14 @@
         "paymentStatus": "حالة الدفع",
         "minAmount": "الحد الأدنى للمبلغ",
         "maxAmount": "الحد الأقصى للمبلغ",
+        "startTime": "وقت البدء",
+        "endTime": "وقت الانتهاء",
+        "weekDays": "أيام الأسبوع",
+        "weekDaysNote": "إذا لم يتم اختيار أي أيام، سيتم تفعيل جميع الأيام.",
+        "selectAll": "اختيار الكل",
+        "deselectAll": "إلغاء اختيار الكل",
+        "activeFrom": "نشط من",
+        "activeUntil": "نشط حتى",
         "save": "حفظ القاعدة",
         "cancel": "إلغاء"
       },
@@ -5812,6 +5829,8 @@
         "minAmountRequired": "الحد الأدنى للمبلغ مطلوب",
         "maxAmountRequired": "الحد الأقصى للمبلغ مطلوب",
         "maxAmountGteMin": "يجب أن يكون الحد الأقصى أكبر من أو يساوي الحد الأدنى",
+        "endTimeAfterStartTime": "يجب أن يكون وقت الانتهاء بعد وقت البدء",
+        "activeUntilAfterFrom": "يجب أن يكون 'نشط حتى' بعد أو يساوي 'نشط من'",
         "saveSuccess": "تم حفظ القاعدة بنجاح",
         "saveError": "فشل في حفظ القاعدة"
       },

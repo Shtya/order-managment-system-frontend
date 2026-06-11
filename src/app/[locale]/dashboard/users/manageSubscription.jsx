@@ -218,7 +218,8 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                                 render={({ field }) => (
                                     <Select value={String(field.value)} onValueChange={(value) => {
                                         field.onChange(value)
-                                        const plan = plans.find(p => p.id === Number(value));
+                                        const plan = plans.find(p => p.id === value);
+                                        
                                         if (plan) {
                                             applyPlanToForm(plan);
                                         }

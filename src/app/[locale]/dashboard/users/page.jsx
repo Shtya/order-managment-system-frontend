@@ -3,6 +3,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
@@ -24,6 +27,8 @@ import {
 	CreditCard,
 	Sparkles,
 	Wallet,
+	Power,
+	PowerOff,
 } from "lucide-react";
 
 import InfoCard from "@/components/atoms/InfoCard";
@@ -74,12 +79,14 @@ import Table, { FilterField } from "@/components/atoms/Table";
 import { ActionButtons } from "@/components/atoms/Actions";
 import AssignFeatureModal from "./assignFeatureModal";
 import ManageWalletModal from "./ManageWalletModal";
+import AdminFilter from "@/components/atoms/AdminFilter";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import toast from "react-hot-toast";
 
 /** =========================
  * WhatsApp Countries (same pattern)
@@ -128,6 +135,44 @@ export const COUNTRIES = [
 		placeholder: "7xxxxxxxx",
 	},
 ];
+
+const createUserSchema = (t) =>
+	yup.object({
+		name: yup
+			.string()
+			.trim()
+			.max(100, t?.("validation.nameMax", { max: 100 }) || "Name must be at most 100 characters")
+			.required(t?.("validation.nameRequired") || "Name is required"),
+		email: yup
+			.string()
+			.trim()
+			.email(t?.("validation.emailInvalid") || "Invalid email format")
+			.required(t?.("validation.emailRequired") || "Email is required"),
+		roleId: yup.string().required(t?.("validation.roleRequired") || "Role is required"),
+		password: yup
+			.string()
+			.optional()
+			.test("passwordMin", t?.("validation.passwordMin", { min: 6 }) || "Password must be at least 6 characters", (value) =>
+				!value || value.length >= 6
+			),
+		adminId: yup.string().optional(),
+	});
+
+const editUserSchema = (t) =>
+	yup.object({
+		name: yup
+			.string()
+			.trim()
+			.max(100, t?.("validation.nameMax", { max: 100 }) || "Name must be at most 100 characters")
+			.required(t?.("validation.nameRequired") || "Name is required"),
+		email: yup
+			.string()
+			.trim()
+			.email(t?.("validation.emailInvalid") || "Invalid email format")
+			.required(t?.("validation.emailRequired") || "Email is required"),
+		roleId: yup.string().required(t?.("validation.roleRequired") || "Role is required"),
+		isActive: yup.boolean().required(),
+	});
 
 function digitsOnly(v) {
 	return (v || "").replace(/\D/g, "");
@@ -206,6 +251,11 @@ export default function SuperAdminUsersPage() {
 	const [subscriptionId, setSubscriptionId] = useState(false);
 	const [subOpen, setSubOpen] = useState(false);
 	const [waOpen, setWaOpen] = useState(false);
+
+	// Loading states for actions
+	const [createLoading, setCreateLoading] = useState(false);
+	const [editLoading, setEditLoading] = useState(false);
+	const [deactivateLoading, setDeactivateLoading] = useState(false);
 
 	const [selectedUser, setSelectedUser] = useState(null);
 	const [credentials, setCredentials] = useState(null); // {userId,email,password}
@@ -468,7 +518,7 @@ export default function SuperAdminUsersPage() {
 										whileHover={{ scale: 1.06 }}
 										whileTap={{ scale: 0.95 }}
 										onClick={async () => {
-											setLoading(true);
+											// setLoading(true);
 											setError("");
 											setApiMsg("");
 											try {
@@ -483,7 +533,7 @@ export default function SuperAdminUsersPage() {
 											} catch (e) {
 												setError(getApiMsg(e, tCommon));
 											} finally {
-												setLoading(false);
+												// setLoading(false);
 											}
 										}}
 										className="w-9 h-9 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-700 hover:text-white transition-all flex items-center justify-center dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700"
@@ -540,6 +590,7 @@ export default function SuperAdminUsersPage() {
 										setSubscriptionId(null);
 										setSubOpen(true);
 									},
+									disabled: hasSubscription,
 									variant: "primary",
 									hidden: !isAdmin,
 								},
@@ -584,13 +635,29 @@ export default function SuperAdminUsersPage() {
 									variant: "primary",
 								},
 								{
-									icon: <Trash2 />,
-									tooltip: t("actions.deactivate"),
+									icon: <KeyRound size={16} />,
+									tooltip: t("actions.resetAndShow"),
 									onClick: (r) => {
 										setSelectedUser(r);
-										setDeactivateOpen(true);
+										setCredentials(null);
+										setCredOpen(true);
 									},
-									variant: "red",
+									variant: "primary",
+									hidden: !isAdmin,
+								},
+								{
+									icon: row.isActive ? <PowerOff size={16} /> : <Power size={16} />,
+									tooltip: row.isActive ? t("actions.deactivate") : t("actions.activate"),
+									onClick: async (r) => {
+										try {
+											await api.patch(`/users/${r.id}/toggle-active`);
+											setApiMsg(r.isActive ? t("messages.userDeactivated") : t("messages.userActivated"));
+											await fetchUsers({ page: pagination.current_page, per_page: pagination.per_page });
+										} catch (e) {
+											toast.error(getApiMsg(e, tCommon));
+										}
+									},
+									variant: row.isActive ? "orange" : "emerald",
 								},
 							]}
 						/>
@@ -735,8 +802,9 @@ export default function SuperAdminUsersPage() {
 				rolesLoading={rolesLoading}
 				plans={plans}
 				plansLoading={plansLoading}
+				isLoading={createLoading}
 				onCreated={async (payload) => {
-					setLoading(true);
+					setCreateLoading(true);
 					setError("");
 					setApiMsg("");
 					try {
@@ -752,9 +820,9 @@ export default function SuperAdminUsersPage() {
 						setCreateOpen(false);
 						await fetchUsers({ page: 1, per_page: pagination.per_page });
 					} catch (e) {
-						setError(getApiMsg(e, tCommon));
+						toast.error(getApiMsg(e, tCommon));
 					} finally {
-						setLoading(false);
+						setCreateLoading(false);
 					}
 				}}
 			/>
@@ -768,7 +836,7 @@ export default function SuperAdminUsersPage() {
 						</DialogTitle>
 						<DialogDescription>
 							{selectedUser && selectedUser.subscription
-								? `#${selectedUser.id} — ${selectedUser.email} — ${selectedUser.subscription.plan?.name || ""}`
+								? `${selectedUser.email} — ${selectedUser.subscription.plan?.name || ""}`
 								: ""}
 						</DialogDescription>
 					</DialogHeader>
@@ -792,7 +860,7 @@ export default function SuperAdminUsersPage() {
 						user={selectedUser}
 						onSaved={async () => {
 							setAssignOpen(false)
-							await fetchData({ page: 1, per_page: pagination.per_page });
+							await fetchUsers({ page: 1, per_page: pagination.per_page });
 
 						}}
 					/>
@@ -811,7 +879,7 @@ export default function SuperAdminUsersPage() {
 						user={selectedUser}
 						onSaved={async () => {
 							setWalletOpen(false)
-							await fetchData({ page: 1, per_page: pagination.per_page });
+							await fetchUsers({ page: 1, per_page: pagination.per_page });
 
 						}}
 					/>
@@ -829,9 +897,10 @@ export default function SuperAdminUsersPage() {
 				rolesLoading={rolesLoading}
 				plans={plans}
 				plansLoading={plansLoading}
+				isLoading={editLoading}
 				onSaved={async (patch) => {
 					if (!selectedUser?.id) return;
-					setLoading(true);
+					setEditLoading(true);
 					setError("");
 					setApiMsg("");
 					try {
@@ -842,7 +911,7 @@ export default function SuperAdminUsersPage() {
 					} catch (e) {
 						setError(getApiMsg(e, tCommon));
 					} finally {
-						setLoading(false);
+						setEditLoading(false);
 					}
 				}}
 			/>
@@ -852,9 +921,10 @@ export default function SuperAdminUsersPage() {
 				open={deactivateOpen}
 				onOpenChange={setDeactivateOpen}
 				user={selectedUser}
+				isLoading={deactivateLoading}
 				onConfirm={async () => {
 					if (!selectedUser?.id) return;
-					setLoading(true);
+					setDeactivateLoading(true);
 					setError("");
 					setApiMsg("");
 					try {
@@ -863,19 +933,22 @@ export default function SuperAdminUsersPage() {
 						setDeactivateOpen(false);
 						await fetchUsers({ page: pagination.current_page, per_page: pagination.per_page });
 					} catch (e) {
-						setError(getApiMsg(e, tCommon));
+						toast.error(getApiMsg(e, tCommon));
 					} finally {
-						setLoading(false);
+						setDeactivateLoading(false);
 					}
 				}}
 			/>
 
 			<CredentialsDialog
 				t={t}
+				tCommon={tCommon}
 				open={credOpen}
 				onOpenChange={setCredOpen}
 				user={selectedUser}
 				credentials={credentials}
+				setCredentials={setCredentials}
+				setApiMsg={setApiMsg}
 				onSendWhatsapp={() => {
 					setCredOpen(false);
 					setWaOpen(true);
@@ -1088,29 +1161,84 @@ function CreateUserDialog({
 	rolesLoading,
 	plans,
 	plansLoading,
+	isLoading,
 }) {
-	const [form, setForm] = useState({
-		name: "",
-		email: "",
-		roleId: "",
-		// planId: "",
-		password: "",
-	});
+	
 	const [showPassword, setShowPassword] = useState(false);
+	const roleOptions = Array.isArray(roles) ? roles : [];
+
+	const {
+		register,
+		handleSubmit,
+		reset,
+		control,
+		watch,
+		formState: { errors, isSubmitting },
+	} = useForm({
+		defaultValues: { name: "", email: "", roleId: "", password: "", adminId: "" },
+		resolver: (...args) => yupResolver(schema)(...args),
+		mode: "onTouched",
+	});
+
+	const roleId = watch("roleId");
+	const selectedRole = roleOptions.find(r => String(r.id) === String(roleId));
+	const isAdminOrSuper = selectedRole?.name === "admin" || selectedRole?.name === "super_admin";
+
+	// Dynamic schema based on selected role
+	const schema = useMemo(() => {
+		let schema = yup.object({
+			name: yup
+				.string()
+				.trim()
+				.max(100, t?.("validation.nameMax", { max: 100 }) || "Name must be at most 100 characters")
+				.required(t?.("validation.nameRequired") || "Name is required"),
+			email: yup
+				.string()
+				.trim()
+				.email(t?.("validation.emailInvalid") || "Invalid email format")
+				.required(t?.("validation.emailRequired") || "Email is required"),
+			roleId: yup.string().required(t?.("validation.roleRequired") || "Role is required"),
+			password: yup
+				.string()
+				.optional()
+				.test("passwordMin", t?.("validation.passwordMin", { min: 6 }) || "Password must be at least 6 characters", (value) =>
+					!value || value.length >= 6
+				),
+		});
+
+		// Require adminId if role is not admin or super admin
+		if (!isAdminOrSuper && roleId) {
+			schema = schema.shape({
+				adminId: yup.string().required(t?.("validation.adminIdRequired") || "Responsible admin is required"),
+			});
+		}
+
+		return schema;
+	}, [t, isAdminOrSuper, roleId]);
+
+	// Update resolver when schema changes
+	useEffect(() => {
+		// Trigger a re-validation when schema changes
+		reset(undefined, { keepValues: true, keepErrors: false });
+	}, [schema, reset]);
 
 	useEffect(() => {
 		if (!open) {
-			setForm({
-				name: "", email: "", roleId: "",
-				// planId: "", 
-				password: ""
-			});
+			reset({ name: "", email: "", roleId: "", password: "", adminId: "" });
 			setShowPassword(false);
 		}
-	}, [open]);
+	}, [open, reset]);
 
-	const roleOptions = Array.isArray(roles) ? roles : [];
-	const planOptions = Array.isArray(plans) ? plans : [];
+	const onSubmit = async (values) => {
+		const payload = {
+			name: values.name.trim(),
+			email: values.email.trim(),
+			roleId: values.roleId,
+			password: values.password?.trim() || undefined,
+			adminId: !isAdminOrSuper && values.adminId ? values.adminId : undefined,
+		};
+		onCreated?.(payload);
+	};
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -1118,131 +1246,126 @@ function CreateUserDialog({
 				<DialogHeader className="text-right">
 					<DialogTitle>{t.has("create.title") ? t("create.title") : "Create new user"}</DialogTitle>
 				</DialogHeader>
-
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">
-							{t.has("fields.name") ? t("fields.name") : "Name"}
-						</Label>
-						<Input
-							value={form.name}
-							onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-							className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
-							placeholder={t.has("placeholders.name") ? t("placeholders.name") : "Full name"}
-						/>
-					</div>
-
-					<div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">
-							{t.has("fields.email") ? t("fields.email") : "Email"}
-						</Label>
-						<Input
-							value={form.email}
-							onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-							className=" font-en rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
-							placeholder={t.has("placeholders.email") ? t("placeholders.email") : "user@email.com"}
-						/>
-					</div>
-
-					<div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">
-							{t.has("fields.role") ? t("fields.role") : "Role"}
-						</Label>
-						<div className="mt-1">
-							<Select
-								value={form.roleId}
-								onValueChange={(v) => setForm((p) => ({ ...p, roleId: v }))}
-								disabled={rolesLoading}
-							>
-								<SelectTrigger className="rounded-full !w-full !h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
-									<SelectValue placeholder={rolesLoading ? t("loading") : t("placeholders.role")} />
-								</SelectTrigger>
-								<SelectContent className="max-h-72">
-									{roleOptions.map((r) => (
-										<SelectItem key={String(r.id)} value={String(r.id)}>
-											{r.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-
-					{/* <div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">
-							{t.has("fields.plan") ? t("fields.plan") : "Plan"}
-						</Label>
-						<div className="mt-1">
-							<Select
-								value={form.planId}
-								onValueChange={(v) => setForm((p) => ({ ...p, planId: v }))}
-								disabled={plansLoading}
-							>
-								<SelectTrigger className="rounded-full !w-full !h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
-									<SelectValue placeholder={plansLoading ? "Loading plans..." : "Select plan"} />
-								</SelectTrigger>
-								<SelectContent className="max-h-72">
-									<SelectItem value="none">{t.has("fields.noPlan") ? t("fields.noPlan") : "No plan"}</SelectItem>
-									{planOptions.map((p) => (
-										<SelectItem key={String(p.id)} value={String(p.id)}>
-											{p.name}
-											{p.duration ? ` (${p.duration})` : ""}
-											{p.price != null ? ` — ${p.price}` : ""}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</div> */}
-
-					<div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">
-							{t.has("fields.passwordOptional") ? t("fields.passwordOptional") : "Password (optional)"}
-						</Label>
-						<div className="relative mt-1">
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="space-y-1">
+							<Label className="text-xs text-gray-500 dark:text-slate-400">
+								{t.has("fields.name") ? t("fields.name") : "Name"}
+							</Label>
 							<Input
-								type={showPassword ? "text" : "password"}
-								value={form.password}
-								onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-								className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rtl:pr-4 ltr:pl-4"
-								placeholder={t.has("placeholders.passwordOptional") ? t("placeholders.passwordOptional") : "Leave empty to auto-generate"}
+								{...register("name")}
+								className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+								placeholder={t.has("placeholders.name") ? t("placeholders.name") : "Full name"}
 							/>
-							<button
-								type="button"
-								onClick={() => setShowPassword((v) => !v)}
-								className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-								title="Toggle"
-							>
-								{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-							</button>
+							{errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
+						</div>
+
+						<div className="space-y-1">
+							<Label className="text-xs text-gray-500 dark:text-slate-400">
+								{t.has("fields.email") ? t("fields.email") : "Email"}
+							</Label>
+							<Input
+								{...register("email")}
+								className="font-en rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+								placeholder={t.has("placeholders.email") ? t("placeholders.email") : "user@email.com"}
+							/>
+							{errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
+						</div>
+
+						<div className="space-y-1">
+							<Label className="text-xs text-gray-500 dark:text-slate-400">
+								{t.has("fields.role") ? t("fields.role") : "Role"}
+							</Label>
+							<div className="mt-1">
+								<Controller
+									name="roleId"
+									control={control}
+									render={({ field }) => (
+										<Select
+											value={field.value}
+											onValueChange={field.onChange}
+											disabled={rolesLoading}
+										>
+											<SelectTrigger className="rounded-full !w-full !h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
+												<SelectValue placeholder={rolesLoading ? t("loading") : t("placeholders.role")} />
+											</SelectTrigger>
+											<SelectContent className="max-h-72">
+												{roleOptions.map((r) => (
+													<SelectItem key={String(r.id)} value={String(r.id)}>
+														{r.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
+								/>
+							</div>
+							{errors.roleId && <p className="text-xs text-red-600">{errors.roleId.message}</p>}
+						</div>
+
+						{!isAdminOrSuper && (
+							<div className="space-y-1">
+								<Controller
+									name="adminId"
+									control={control}
+									rules={{ required: !isAdminOrSuper ? true : false }}
+									render={({ field }) => (
+										<AdminFilter
+											value={field.value}
+											onChange={field.onChange}
+											showAllOption={false}
+											title={t.has("fields.ownerAdmin") ? t("fields.ownerAdmin") : null}
+										/>
+									)}
+								/>
+								{errors.adminId && <p className="text-xs text-red-600">{errors.adminId.message}</p>}
+							</div>
+						)}
+
+						<div className={!isAdminOrSuper ? "md:col-span-2" : ""}>
+							<div className="space-y-1">
+								<Label className="text-xs text-gray-500 dark:text-slate-400">
+									{t.has("fields.passwordOptional") ? t("fields.passwordOptional") : "Password (optional)"}
+								</Label>
+								<div className="relative mt-1">
+									<Input
+										type={showPassword ? "text" : "password"}
+										{...register("password")}
+										className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rtl:pr-4 ltr:pl-4"
+										placeholder={t.has("placeholders.passwordOptional") ? t("placeholders.passwordOptional") : "Leave empty to auto-generate"}
+									/>
+									<button
+										type="button"
+										onClick={() => setShowPassword((v) => !v)}
+										className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+										title="Toggle"
+									>
+										{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+									</button>
+								</div>
+								{errors.password && <p className="text-xs text-red-600">{errors.password.message}</p>}
+							</div>
 						</div>
 					</div>
-				</div>
 
-				<div className="mt-4 flex items-center justify-end gap-2">
-					<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>
-						{t.has("actions.cancel") ? t("actions.cancel") : "Cancel"}
-					</Button>
-					<Button
-						className="rounded-full btn-primary1"
-						onClick={() => {
-							const payload = {
-								name: form.name.trim(),
-								email: form.email.trim(),
-								roleId: form.roleId,
-								// planId: form.planId && form.planId !== "none" ? form.planId : undefined,
-								password: form.password?.trim() || undefined,
-							};
-							onCreated?.(payload);
-						}}
-						disabled={!form.name.trim() || !form.email.trim() || !form.roleId}
-					>
-						<span className="flex items-center gap-2">
-							<UserPlus size={18} />
-							{t.has("actions.create") ? t("actions.create") : "Create"}
-						</span>
-					</Button>
-				</div>
+					<div className="mt-4 flex items-center justify-end gap-2">
+						<Button type="button" variant="outline" className="rounded-full" onClick={() => onOpenChange(false)} disabled={isLoading}>
+							{t.has("actions.cancel") ? t("actions.cancel") : "Cancel"}
+						</Button>
+						<Button
+							type="submit"
+							className="rounded-full btn-primary1"
+							disabled={isLoading}
+						>
+							<span className="flex items-center gap-2">
+								{isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <UserPlus size={18} />}
+								{isLoading
+									? t.has("actions.saving") ? t("actions.saving") : "Saving..."
+									: t.has("actions.create") ? t("actions.create") : "Create"}
+							</span>
+						</Button>
+					</div>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);
@@ -1258,162 +1381,153 @@ function EditUserDialog({
 	rolesLoading,
 	plans,
 	plansLoading,
+	isLoading,
 }) {
-	const [form, setForm] = useState({
-		name: "",
-		email: "",
-		roleId: "",
-		// planId: "",
-		isActive: true,
-	});
+	const schema = useMemo(() => editUserSchema(t), [t]);
 
-	useEffect(() => {
-		if (open && user) {
-			setForm({
-				name: user.name || "",
-				email: user.email || "",
-				roleId: user.role?.id ? String(user.role.id) : "",
-				// planId: user.subscription?.plan?.id ? String(user.subscription.plan.id) : "",
-				isActive: typeof user.isActive === "boolean" ? user.isActive : true,
-			});
-		}
-		if (!open) setForm({
-			name: "", email: "", roleId: "",
-			// planId: "",
-			isActive: true
-		});
-	}, [open, user]);
+	const {
+		register,
+		handleSubmit,
+		reset,
+		control,
+		formState: { errors, isSubmitting },
+	} = useForm({
+		defaultValues: { name: "", email: "", roleId: "", isActive: true },
+		resolver: yupResolver(schema),
+		mode: "onTouched",
+	});
 
 	const roleOptions = Array.isArray(roles) ? roles : [];
 	const planOptions = Array.isArray(plans) ? plans : [];
+
+	useEffect(() => {
+		if (open && user) {
+			reset({
+				name: user.name || "",
+				email: user.email || "",
+				roleId: user.role?.id ? String(user.role.id) : "",
+				isActive: typeof user.isActive === "boolean" ? user.isActive : true,
+			});
+		}
+		if (!open) {
+			reset({ name: "", email: "", roleId: "", isActive: true });
+		}
+	}, [open, user, reset]);
+
+	const onSubmit = async (values) => {
+		const patch = {};
+		if (values.name.trim()) patch.name = values.name.trim();
+		if (values.email.trim()) patch.email = values.email.trim();
+		if (values.roleId) patch.roleId = values.roleId;
+		patch.isActive = !!values.isActive;
+		onSaved?.(patch);
+	};
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-2xl rounded-xl">
 				<DialogHeader className="text-right">
 					<DialogTitle>{t.has("edit.title") ? t("edit.title") : "Edit user"}</DialogTitle>
-					<DialogDescription>{user ? `#${user.id} — ${user.email}` : ""}</DialogDescription>
+					<DialogDescription>{user ? `${user.email}` : ""}</DialogDescription>
 				</DialogHeader>
-
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">
-							{t.has("fields.name") ? t("fields.name") : "Name"}
-						</Label>
-						<Input
-							value={form.name}
-							onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-							className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
-						/>
-					</div>
-
-					<div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">
-							{t.has("fields.email") ? t("fields.email") : "Email"}
-						</Label>
-						<Input
-							value={form.email}
-							onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-							className="rounded-full font-en h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
-						/>
-					</div>
-
-					<div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">
-							{t.has("fields.role") ? t("fields.role") : "Role"}
-						</Label>
-						<div className="mt-1">
-							<Select
-								value={form.roleId}
-								onValueChange={(v) => setForm((p) => ({ ...p, roleId: v }))}
-								disabled={rolesLoading}
-							>
-								<SelectTrigger className="rounded-full !w-full !h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
-									<SelectValue placeholder={rolesLoading ? t("loading") : t("placeholders.role")} />
-								</SelectTrigger>
-								<SelectContent className="max-h-72">
-									{roleOptions.map((r) => (
-										<SelectItem key={String(r.id)} value={String(r.id)}>
-											{r.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-
-					{/* <div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">
-							{t.has("fields.plan") ? t("fields.plan") : "Plan"}
-						</Label>
-						<div className="mt-1">
-							<Select
-								value={form.planId}
-								onValueChange={(v) => setForm((p) => ({ ...p, planId: v }))}
-								disabled={plansLoading}
-							>
-								<SelectTrigger className="rounded-full !w-full !h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
-									<SelectValue placeholder={plansLoading ? "Loading plans..." : "Select plan"} />
-								</SelectTrigger>
-								<SelectContent className="max-h-72">
-									<SelectItem value="none">{t.has("fields.noPlan") ? t("fields.noPlan") : "No plan"}</SelectItem>
-									{planOptions.map((p) => (
-										<SelectItem key={String(p.id)} value={String(p.id)}>
-											{p.name}
-											{p.duration ? ` (${p.duration})` : ""}
-											{p.price != null ? ` — ${p.price}` : ""}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</div> */}
-
-					<div className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-800 bg-[#fafafa] dark:bg-slate-800/40 p-4 mt-1">
-						<div className="text-right">
-							<Label className="text-sm text-gray-700 dark:text-slate-200">
-								{t.has("fields.isActive") ? t("fields.isActive") : "Active"}
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="space-y-1">
+							<Label className="text-xs text-gray-500 dark:text-slate-400">
+								{t.has("fields.name") ? t("fields.name") : "Name"}
 							</Label>
+							<Input
+								{...register("name")}
+								className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+							/>
+							{errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
 						</div>
 
-						<Switch
-							checked={!!form.isActive}
-							onCheckedChange={(checked) => setForm((p) => ({ ...p, isActive: checked }))}
-						/>
+						<div className="space-y-1">
+							<Label className="text-xs text-gray-500 dark:text-slate-400">
+								{t.has("fields.email") ? t("fields.email") : "Email"}
+							</Label>
+							<Input
+								{...register("email")}
+								className="rounded-full font-en h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+							/>
+							{errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
+						</div>
+
+						<div className="space-y-1">
+							<Label className="text-xs text-gray-500 dark:text-slate-400">
+								{t.has("fields.role") ? t("fields.role") : "Role"}
+							</Label>
+							<div className="mt-1">
+								<Controller
+									name="roleId"
+									control={control}
+									render={({ field }) => (
+										<Select
+											value={field.value}
+											onValueChange={field.onChange}
+											disabled={rolesLoading}
+										>
+											<SelectTrigger className="rounded-full !w-full !h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
+												<SelectValue placeholder={rolesLoading ? t("loading") : t("placeholders.role")} />
+											</SelectTrigger>
+											<SelectContent className="max-h-72">
+												{roleOptions.map((r) => (
+													<SelectItem key={String(r.id)} value={String(r.id)}>
+														{r.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
+								/>
+							</div>
+							{errors.roleId && <p className="text-xs text-red-600">{errors.roleId.message}</p>}
+						</div>
+
+						<div className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-800 bg-[#fafafa] dark:bg-slate-800/40 p-4 mt-1">
+							<div className="text-right">
+								<Label className="text-sm text-gray-700 dark:text-slate-200">
+									{t.has("fields.isActive") ? t("fields.isActive") : "Active"}
+								</Label>
+							</div>
+							<Controller
+								name="isActive"
+								control={control}
+								render={({ field }) => (
+									<Switch
+										checked={!!field.value}
+										onCheckedChange={field.onChange}
+									/>
+								)}
+							/>
+						</div>
 					</div>
-				</div>
 
-				<div className="mt-4 flex items-center justify-end gap-2">
-					<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>
-						{t.has("actions.cancel") ? t("actions.cancel") : "Cancel"}
-					</Button>
-					<Button
-						className="rounded-full btn-primary1"
-						onClick={() => {
-							const patch = {};
-							if (form.name.trim()) patch.name = form.name.trim();
-							if (form.email.trim()) patch.email = form.email.trim();
-							if (form.roleId) patch.roleId = form.roleId;
-
-							// if (!form.planId || form.planId === "none") patch.planId = null;
-							// else patch.planId = Number(form.planId);
-
-							patch.isActive = !!form.isActive;
-							onSaved?.(patch);
-						}}
-					>
-						<span className="flex items-center gap-2">
-							<Pencil size={18} />
-							{t.has("actions.save") ? t("actions.save") : "Save"}
-						</span>
-					</Button>
-				</div>
+					<div className="mt-4 flex items-center justify-end gap-2">
+						<Button type="button" variant="outline" className="rounded-full" onClick={() => onOpenChange(false)} disabled={isLoading}>
+							{t.has("actions.cancel") ? t("actions.cancel") : "Cancel"}
+						</Button>
+						<Button
+							type="submit"
+							className="rounded-full btn-primary1"
+							disabled={isLoading}
+						>
+							<span className="flex items-center gap-2">
+								{isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Pencil size={18} />}
+								{isLoading
+									? t.has("actions.saving") ? t("actions.saving") : "Saving..."
+									: t.has("actions.save") ? t("actions.save") : "Save"}
+							</span>
+						</Button>
+					</div>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);
 }
 
-function DeactivateAlertDialog({ t, open, onOpenChange, user, onConfirm }) {
+function DeactivateAlertDialog({ t, open, onOpenChange, user, onConfirm, isLoading }) {
 	return (
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			<AlertDialogContent className="rounded-xl">
@@ -1428,13 +1542,14 @@ function DeactivateAlertDialog({ t, open, onOpenChange, user, onConfirm }) {
 				</AlertDialogHeader>
 
 				<div className="mt-4 flex items-center justify-end gap-2">
-					<AlertDialogCancel className="rounded-full">{t.has("actions.cancel") ? t("actions.cancel") : "Cancel"}</AlertDialogCancel>
+					<AlertDialogCancel className="rounded-full" disabled={isLoading}>{t.has("actions.cancel") ? t("actions.cancel") : "Cancel"}</AlertDialogCancel>
 					<AlertDialogAction
 						className="rounded-full bg-red-600 hover:bg-red-700 text-white"
 						onClick={onConfirm}
+						disabled={isLoading}
 					>
 						<span className="flex items-center gap-2">
-							<Trash2 size={18} />
+							{isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 size={18} />}
 							{t.has("actions.deactivate") ? t("actions.deactivate") : "Deactivate"}
 						</span>
 					</AlertDialogAction>
@@ -1444,15 +1559,46 @@ function DeactivateAlertDialog({ t, open, onOpenChange, user, onConfirm }) {
 	);
 }
 
-function CredentialsDialog({ t, open, onOpenChange, user, credentials, onSendWhatsapp }) {
+function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, setCredentials, setApiMsg, onSendWhatsapp }) {
 	const [show, setShow] = useState(false);
+	const [newPassword, setNewPassword] = useState("");
+	const [isChangingPassword, setIsChangingPassword] = useState(false);
 
 	useEffect(() => {
-		if (!open) setShow(false);
+		if (!open) {
+			setShow(false);
+			setNewPassword("");
+		}
 	}, [open]);
 
 	const email = credentials?.email || user?.email || "";
-	const password = credentials?.password || "";
+	const isPasswordValid = credentials && credentials.userId === user?.id && credentials.password;
+	const password = isPasswordValid ? credentials.password : "";
+	
+	const handleChangePassword = async () => {
+		if (!user?.id) return;
+
+		setIsChangingPassword(true);
+		try {
+			const res = await api.post(`/users/${user.id}/reset-password`, {
+				newPassword: newPassword.trim() || undefined
+			});
+
+			// Update the credentials state in the parent component
+			setCredentials({
+				userId: res.data.userId,
+				email: res.data.email,
+				password: res.data.password
+			});
+
+			setApiMsg(t("messages.userUpdated"));
+			setNewPassword("");
+		} catch (e) {
+			toast.error(getApiMsg(e, tCommon));
+		} finally {
+			setIsChangingPassword(false);
+		}
+	};
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -1506,16 +1652,43 @@ function CredentialsDialog({ t, open, onOpenChange, user, credentials, onSendWha
 						</div>
 					</div>
 
+					<div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
+						<div className="text-xs text-gray-500 dark:text-slate-400 mb-2">
+							{t.has("fields.passwordOptional") ? t("fields.passwordOptional") : "Set new password (leave empty to auto-generate)"}
+						</div>
+						<div className="flex items-center gap-2">
+							<Input
+								type="text"
+								value={newPassword}
+								onChange={(e) => setNewPassword(e.target.value)}
+								className="rounded-full h-[42px] bg-white dark:bg-slate-800/40 border-gray-200 dark:border-slate-700"
+								placeholder={t.has("placeholders.passwordOptional") ? t("placeholders.passwordOptional") : "Leave empty to auto-generate"}
+							/>
+							<Button
+								className="rounded-full btn-primary1"
+								onClick={handleChangePassword}
+								disabled={isChangingPassword}
+							>
+								<span className="flex items-center gap-2">
+									{isChangingPassword ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
+									{isChangingPassword ? t("actions.saving") : t("actions.resetAndShow")}
+								</span>
+							</Button>
+						</div>
+					</div>
+
 					<div className="flex items-center justify-end gap-2">
 						<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>
 							{t("actions.close")}
 						</Button>
-						<Button className="rounded-full btn-primary1" onClick={onSendWhatsapp} disabled={!email || !password}>
-							<span className="flex items-center gap-2">
-								<Send size={18} />
-								{t("actions.sendWhatsapp")}
-							</span>
-						</Button>
+						{isPasswordValid && (
+							<Button className="rounded-full btn-primary1" onClick={onSendWhatsapp} disabled={!email || !password}>
+								<span className="flex items-center gap-2">
+									<Send size={18} />
+									{t("actions.sendWhatsapp")}
+								</span>
+							</Button>
+						)}
 					</div>
 				</div>
 			</DialogContent>
@@ -1547,7 +1720,8 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 	}, [countryKey]);
 
 	const email = credentials?.email || user?.email || "";
-	const password = credentials?.password || "";
+	const isPasswordValid = credentials && credentials.userId === user?.id && credentials.password;
+	const password = isPasswordValid ? credentials.password : "";
 	const message = useMemo(() => {
 		const lines = [];
 		lines.push(t("whatsapp.messageAccountDetails"));
@@ -1638,7 +1812,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 						)}
 					</div>
 
-					<div className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
+					{password && (<div className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
 						<div className="text-sm text-gray-700 dark:text-slate-200 text-right">
 							{t("whatsapp.includePassword")}
 						</div>
@@ -1658,7 +1832,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 							/>
 						</button>
 					</div>
-
+					)}
 					<div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
 						<div className="text-xs text-gray-500 dark:text-slate-400 mb-2">
 							{t("whatsapp.preview")}

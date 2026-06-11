@@ -961,8 +961,10 @@
       "filter": "Filter",
       "create": "Create",
       "save": "Save",
+      "saving": "Saving...",
       "edit": "Edit",
       "deactivate": "Deactivate",
+      "activate": "Activate",
       "cancel": "Cancel",
       "close": "Close",
       "resetAndShow": "Reset and Show Password",
@@ -973,12 +975,22 @@
       "manageFeatures": "Manage Features",
       "manageWallet": "Manage Wallet"
     },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMax": "Name must be at most {max} characters",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email format",
+      "roleRequired": "Role is required",
+      "passwordMin": "Password must be at least {min} characters",
+      "adminIdRequired": "Responsible admin is required"
+    },
     "loading": "Loading...",
     "empty": "No users found",
     "messages": {
       "userCreated": "User created successfully",
       "userUpdated": "User updated successfully",
-      "userDeactivated": "User deactivated"
+      "userDeactivated": "User deactivated",
+      "userActivated": "User activated"
     },
     "create": {
       "title": "Create New User",
@@ -999,7 +1011,8 @@
       "passwordOptional": "Password (Optional)",
       "isActive": "Status",
       "plan": "Plan",
-      "noPlan": "No Plan"
+      "noPlan": "No Plan",
+      "ownerAdmin": "Admin"
     },
     "placeholders": {
       "name": "Full name",
@@ -1345,7 +1358,12 @@
       "warehouses_read": "View warehouses",
       "warehouses_scan-preparation": "Scan warehouse preparation",
       "warehouses_scan-shipping": "Scan warehouse shipping",
-      "warehouses_update": "Update warehouses"
+      "warehouses_update": "Update warehouses",
+      "warehouses_scan_preparation": "Scan warehouse preparation",
+      "warehouses_scan_shipping": "Scan warehouse shipping",
+      "whatsapp_create": "Create whatsapp",
+      "whatsapp_update": "Update whatsapp",
+      "whatsapp_delete": "delete whatsapp"
     },
     "group": {
       "accounting": "Accounting",
@@ -1382,7 +1400,7 @@
       "purchase": "Purchase",
       "order": "Orders",
       "safes": "Safes",
-      "sales" :"Sales",
+      "sales": "Sales",
       "permissions": "Permissions",
       "*": "*"
     },
@@ -1438,6 +1456,7 @@
       "save": "Save"
     },
     "preview": {
+      "title" :"Preview Permissions",
       "permissions": "Permissions",
       "noDescription": "No description available",
       "noPermissions": "No permissions assigned to this role",
@@ -10108,6 +10127,7 @@
         "language": "Language"
       },
       "form": {
+        "addExpirationTime": "Add Expiration Time",
         "title": "Create WhatsApp Template",
         "editTitle": "Edit WhatsApp Template",
         "templateName": "Template Name",

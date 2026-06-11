@@ -961,8 +961,10 @@
       "filter": "تصفية",
       "create": "إنشاء",
       "save": "حفظ",
+      "saving": "جاري الحفظ...",
       "edit": "تعديل",
       "deactivate": "تعطيل",
+      "activate": "تفعيل",
       "cancel": "إلغاء",
       "close": "إغلاق",
       "resetAndShow": "إعادة تعيين وعرض كلمة المرور",
@@ -973,12 +975,22 @@
       "manageFeatures": "إدارة المميزات",
       "manageWallet": "إدارة المحفظة"
     },
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "nameMax": "الاسم يجب أن لا يتجاوز {max} حرفًا",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "البريد الإلكتروني غير صالح",
+      "roleRequired": "الدور مطلوب",
+      "passwordMin": "كلمة المرور يجب أن تكون على الأقل {min} أحرف",
+      "adminIdRequired": "الادمن المسؤول مطلوب"
+    },
     "loading": "جاري التحميل...",
     "empty": "لا يوجد مستخدمون",
     "messages": {
       "userCreated": "تم إنشاء المستخدم بنجاح",
       "userUpdated": "تم تحديث المستخدم بنجاح",
-      "userDeactivated": "تم تعطيل المستخدم"
+      "userDeactivated": "تم تعطيل المستخدم",
+      "userActivated": "تم تفعيل المستخدم"
     },
     "create": {
       "title": "إنشاء مستخدم جديد",
@@ -999,7 +1011,8 @@
       "passwordOptional": "كلمة المرور (اختياري)",
       "isActive": "الحالة",
       "plan": "الخطة",
-      "noPlan": "بدون خطة"
+      "noPlan": "بدون خطة",
+      "ownerAdmin": "الادمن"
     },
     "placeholders": {
       "name": "الاسم الكامل",
@@ -1346,10 +1359,15 @@
       "warehouses_read": "عرض المخازن",
       "warehouses_scan-preparation": "مسح تجهيز المخزن",
       "warehouses_scan-shipping": "مسح شحن المخزن",
-      "warehouses_update": "تعديل المخازن"
+      "warehouses_update": "تعديل المخازن",
+      "warehouses_scan_preparation": "مسح تجهيز المستودع",
+      "warehouses_scan_shipping": "مسح شحن المستودع",
+      "whatsapp_create": "إنشاء واتساب",
+      "whatsapp_update": "تحديث واتساب",
+      "whatsapp_delete": "حذف واتساب"
     },
     "group": {
-     "accounting": "المحاسبة",
+      "accounting": "المحاسبة",
       "admin-settings": "إعدادات الإدارة",
       "assets": "الأصول",
       "automation": "الأتمتة",
@@ -1383,7 +1401,7 @@
       "safes": "الخزائن",
       "order": "الطلبات",
       "purchase": "المشتريات",
-      "sales" :"المبيعات",
+      "sales": "المبيعات",
       "permissions": "الصلاحيات",
       "*": "*"
     },
@@ -1439,6 +1457,7 @@
       "save": "حفظ"
     },
     "preview": {
+      "title": "عرض الصلاحيات",
       "permissions": "الصلاحيات",
       "noDescription": "لا يوجد وصف",
       "noPermissions": "لا توجد صلاحيات لهذا الدور",
@@ -10139,6 +10158,7 @@
         "language": "اللغة"
       },
       "form": {
+        "addExpirationTime": "إضافة وقت انتهاء صلاحية",
         "title": "إنشاء قالب واتساب",
         "editTitle": "تعديل قالب واتساب",
         "templateName": "اسم القالب",

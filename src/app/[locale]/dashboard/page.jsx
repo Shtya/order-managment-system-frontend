@@ -24,14 +24,6 @@ import {
   Filter,
 } from "lucide-react";
 import api from "@/utils/api";
-import Flatpickr from "react-flatpickr";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import PageHeader from "@/components/atoms/Pageheader";
 import { useFormatter, useTranslations } from "next-intl";
 import {

@@ -72,7 +72,7 @@ function FilterField({ label, icon: FieldIcon, children }) {
 export default function WhatsAppStatisticsPage() {
   const torderAnalysis = useTranslations("orderAnalysis");
   const t = useTranslations("whatsApp");
-  const  locale  = useLocale();
+  const locale = useLocale();
   const { formatTrendLabel } = useTrendLabelFormatter();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -221,35 +221,35 @@ export default function WhatsAppStatisticsPage() {
 
   // Dynamically calculate weekdays with dates
   const WEEKDAYS = useMemo(() => {
-    // Get today and figure out how far back Monday is 
     const today = new Date();
-    const currentDay = today.getDay();
-    const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
+    const days = [];
 
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - distanceToMonday);
+    // Loop backwards from 6 days ago up to 0 (today)
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
 
-    // Create the array with the dynamically calculated dates 
-    return [
-      { key: "mon", index: 1, offset: 0 },
-      { key: "tue", index: 2, offset: 1 },
-      { key: "wed", index: 3, offset: 2 },
-      { key: "thu", index: 4, offset: 3 },
-      { key: "fri", index: 5, offset: 4 },
-      { key: "sat", index: 6, offset: 5 },
-      { key: "sun", index: 0, offset: 6 },
-    ].map(day => {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + day.offset);
+      const jsDay = date.getDay(); // JS returns: 0 (Sun) to 6 (Sat)
 
-      const dayName = t(`overview.heatmap.days.${day.key}`);
-      const dateString = date.toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' });
+      const isoDow = jsDay === 0 ? 7 : jsDay;
 
-      return {
-        ...day,
+      const dayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+      const dayKey = dayKeys[jsDay];
+
+      const dayName = t(`overview.heatmap.days.${dayKey}`);
+      const dateString = date.toLocaleDateString(
+        locale === 'ar' ? 'ar-EG' : 'en-US',
+        { month: 'short', day: 'numeric' }
+      );
+
+      days.push({
+        key: dayKey,
+        index: isoDow,
         fullLabel: `${dayName} - ${dateString}`
-      };
-    });
+      });
+    }
+
+    return days;
   }, [t, locale]);
 
   // Table Columns Definitions
@@ -386,7 +386,7 @@ export default function WhatsAppStatisticsPage() {
                     {WEEKDAYS.map(day => (
                       <span key={day.key} className="whitespace-nowrap h-4">{day.fullLabel}</span>
                     ))}
-                    
+
                   </div>
 
                   {/* Heatmap Grid Area */}
@@ -397,10 +397,14 @@ export default function WhatsAppStatisticsPage() {
                       style={{ gridTemplateColumns: "repeat(24, minmax(0, 1fr))" }}
                     >
                       {Array.from({ length: 7 * 24 }).map((_, i) => {
+                        // Correctly picks the day sequentially from 6 days ago -> today
                         const dayInfo = WEEKDAYS[Math.floor(i / 24)];
                         const hour = i % 24;
+
+                        // dayInfo.index now perfectly aligns with the backend's EXTRACT(ISODOW)
                         const total = heatmapLookup[`${dayInfo.index}-${hour}`] || 0;
                         const intensity = maxTotal > 0 ? Math.min(total / maxTotal, 1) : 0;
+
                         return (
                           <div
                             key={i}
@@ -418,76 +422,77 @@ export default function WhatsAppStatisticsPage() {
                         )
                       })}
                     </div>
+                  
 
-                    {/* Time Footer */}
-                    <div className="flex justify-between text-[10px] text-muted-foreground mt-2 px-1">
-                      <span>{t("overview.heatmap.hours.12am")}</span>
-                      <span>{t("overview.heatmap.hours.4am")}</span>
-                      <span>{t("overview.heatmap.hours.8am")}</span>
-                      <span>{t("overview.heatmap.hours.12pm")}</span>
-                      <span>{t("overview.heatmap.hours.4pm")}</span>
-                      <span>{t("overview.heatmap.hours.8pm")}</span>
-                    </div>
+                  {/* Time Footer */}
+                  <div className="flex justify-between text-[10px] text-muted-foreground mt-2 px-1">
+                    <span>{t("overview.heatmap.hours.12am")}</span>
+                    <span>{t("overview.heatmap.hours.4am")}</span>
+                    <span>{t("overview.heatmap.hours.8am")}</span>
+                    <span>{t("overview.heatmap.hours.12pm")}</span>
+                    <span>{t("overview.heatmap.hours.4pm")}</span>
+                    <span>{t("overview.heatmap.hours.8pm")}</span>
                   </div>
-
                 </div>
-                <div className="flex items-center justify-start gap-2 mt-6 text-[10px] text-muted-foreground">
-                  <span>{t("overview.heatmap.low")}</span>
-                  <div className="flex gap-1 h-2">
-                    <div className="w-4 bg-emerald-50 rounded-[1px]" />
-                    <div className="w-4 bg-emerald-200 rounded-[1px]" />
-                    <div className="w-4 bg-emerald-400 rounded-[1px]" />
-                    <div className="w-4 bg-emerald-600 rounded-[1px]" />
-                  </div>
-                  <span>{t("overview.heatmap.high")}</span>
-                </div>
-              </Card>
-            </motion.div>
-          </div>
 
+              </div>
+              <div className="flex items-center justify-start gap-2 mt-6 text-[10px] text-muted-foreground">
+                <span>{t("overview.heatmap.low")}</span>
+                <div className="flex gap-1 h-2">
+                  <div className="w-4 bg-emerald-50 rounded-[1px]" />
+                  <div className="w-4 bg-emerald-200 rounded-[1px]" />
+                  <div className="w-4 bg-emerald-400 rounded-[1px]" />
+                  <div className="w-4 bg-emerald-600 rounded-[1px]" />
+                </div>
+                <span>{t("overview.heatmap.high")}</span>
+              </div>
+            </Card>
+          </motion.div>
         </div>
-        {/* By Category */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card title={t("overview.cards.type")} icon={PieIcon}>
-            <StatusDonut
-              data={categories}
-              loading={loading}
-              label={t("overview.common.messageLabel")}
-              config={{
-                key: "count",
-                label: "name",
-              }}
-            />
-          </Card>
-        </motion.div>
-      </div>
 
-      {/* Row 3: Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card title={t("overview.cards.templates")} action={<Button_
-            variant="ghost"
-            size="sm"
-            label={t("overview.common.viewAll")}
-            className="text-[10px] h-6"
-            onClick={() => router.push("/whatsapp/templates")}
-          />} icon={MessageSquare}>
-            <MiniTable columns={templatesCols} data={topTemplates} loading={loading} />
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} >
-          <Card title={t("overview.cards.automation")} action={<Button_
-            variant="ghost"
-            size="sm"
-            label={t("overview.common.viewAll")}
-            className="text-[10px] h-6"
-            onClick={() => router.push("/automations")}
-          />} icon={CheckCircle}>
-            <MiniTable columns={automationCols} data={topAutomations} loading={loading} />
-          </Card>
-        </motion.div>
       </div>
+      {/* By Category */}
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <Card title={t("overview.cards.type")} icon={PieIcon}>
+          <StatusDonut
+            data={categories}
+            loading={loading}
+            label={t("overview.common.messageLabel")}
+            config={{
+              key: "count",
+              label: "name",
+            }}
+          />
+        </Card>
+      </motion.div>
     </div>
+
+      {/* Row 3: Tables */ }
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+      <Card title={t("overview.cards.templates")} action={<Button_
+        variant="ghost"
+        size="sm"
+        label={t("overview.common.viewAll")}
+        className="text-[10px] h-6"
+        onClick={() => router.push("/whatsapp/templates")}
+      />} icon={MessageSquare}>
+        <MiniTable columns={templatesCols} data={topTemplates} loading={loading} />
+      </Card>
+    </motion.div>
+
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} >
+      <Card title={t("overview.cards.automation")} action={<Button_
+        variant="ghost"
+        size="sm"
+        label={t("overview.common.viewAll")}
+        className="text-[10px] h-6"
+        onClick={() => router.push("/automations")}
+      />} icon={CheckCircle}>
+        <MiniTable columns={automationCols} data={topAutomations} loading={loading} />
+      </Card>
+    </motion.div>
+  </div>
+    </div >
   );
 }

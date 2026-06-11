@@ -5781,6 +5781,15 @@
         "roundRobin": "Round Robin",
         "leastActiveOrders": "Least Active Orders"
       },
+      "days": {
+        "sunday": "Sunday",
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday"
+      },
       "form": {
         "name": "Rule Name",
         "description": "Description",
@@ -5795,6 +5804,14 @@
         "paymentStatus": "Payment Status",
         "minAmount": "Minimum Amount",
         "maxAmount": "Maximum Amount",
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "weekDays": "Days of Week",
+        "weekDaysNote": "If no days are selected, all days are enabled.",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "activeFrom": "Active From",
+        "activeUntil": "Active Until",
         "save": "Save Rule",
         "cancel": "Cancel"
       },
@@ -5817,6 +5834,8 @@
         "minAmountRequired": "Minimum amount is required",
         "maxAmountRequired": "Maximum amount is required",
         "maxAmountGteMin": "Maximum amount must be greater than or equal to minimum amount",
+        "endTimeAfterStartTime": "End time must be after start time",
+        "activeUntilAfterFrom": "Active until must be after or equal to active from",
         "saveSuccess": "Rule saved successfully",
         "saveError": "Failed to save rule"
       },

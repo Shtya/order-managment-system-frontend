@@ -26,14 +26,94 @@ import {
     Settings,
     Settings2,
 } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
+import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import api from "@/utils/api";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
+import { Checkbox } from "@/components/ui/checkbox";
+
+
+// ── WeekDay Enum & Bitmask Helpers ────────────────────────────────────────────
+const WeekDay = {
+    SUNDAY: 1 << 0,    // 1
+    MONDAY: 1 << 1,    // 2
+    TUESDAY: 1 << 2,   // 4
+    WEDNESDAY: 1 << 3, // 8
+    THURSDAY: 1 << 4,  // 16
+    FRIDAY: 1 << 5,    // 32
+    SATURDAY: 1 << 6,  // 64
+};
+
+const WEEK_DAYS = [
+    { key: 'sunday', value: WeekDay.SUNDAY },
+    { key: 'monday', value: WeekDay.MONDAY },
+    { key: 'tuesday', value: WeekDay.TUESDAY },
+    { key: 'wednesday', value: WeekDay.WEDNESDAY },
+    { key: 'thursday', value: WeekDay.THURSDAY },
+    { key: 'friday', value: WeekDay.FRIDAY },
+    { key: 'saturday', value: WeekDay.SATURDAY },
+];
+
+const WEEKDAY_BITS = [
+    WeekDay.SUNDAY,
+    WeekDay.MONDAY,
+    WeekDay.TUESDAY,
+    WeekDay.WEDNESDAY,
+    WeekDay.THURSDAY,
+    WeekDay.FRIDAY,
+    WeekDay.SATURDAY,
+];
+
+const bitmaskToDays = (mask) => {
+    if (!mask) return [];
+    return WEEK_DAYS.filter(d => (mask & d.value) !== 0).map(d => d.key);
+};
+
+const daysToBitmask = (days) => {
+    if (!days || days.length === 0) return null;
+    return days.reduce((acc, day) => {
+        const dayObj = WEEK_DAYS.find(d => d.key === day);
+        return dayObj ? acc | dayObj.value : acc;
+    }, 0);
+};
+
+const getAvailableWeekdaysBitmask = (activeFromStr, activeUntilStr) => {
+    if (!activeUntilStr) {
+        return WeekDay.SUNDAY | WeekDay.MONDAY | WeekDay.TUESDAY | WeekDay.WEDNESDAY | WeekDay.THURSDAY | WeekDay.FRIDAY | WeekDay.SATURDAY;
+    }
+
+    const start = activeFromStr ? new Date(activeFromStr) : new Date();
+
+    const end = new Date(activeUntilStr);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    const totalDays = Math.floor((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+
+    if (totalDays >= 7) {
+        return WeekDay.SUNDAY | WeekDay.MONDAY | WeekDay.TUESDAY | WeekDay.WEDNESDAY | WeekDay.THURSDAY | WeekDay.FRIDAY | WeekDay.SATURDAY;
+    }
+
+    const startDay = start.getDay();
+    let availableMask = 0;
+
+    for (let i = 0; i < totalDays; i++) {
+        const dayIndex = (startDay + i) % 7;
+        availableMask |= WEEKDAY_BITS[dayIndex];
+    }
+
+    return availableMask;
+};
+
+const isDayAvailable = (dayKey, availableMask) => {
+    const dayObj = WEEK_DAYS.find(d => d.key === dayKey);
+    if (!dayObj) return false;
+    return (availableMask & dayObj.value) !== 0;
+};
 
 
 // ── Shared Table system ──────────────────────────────────────────────────────
@@ -87,7 +167,6 @@ const ruleSchema = (t) =>
         }),
 
 
-
         paymentStatus: yup.string().when("ruleType", {
             is: "paymentStatus",
             then: (schema) => schema.required(t("validation.paymentStatusRequired")),
@@ -113,13 +192,42 @@ const ruleSchema = (t) =>
             ),
             otherwise: (schema) => schema.nullable().optional().nullable(),
         }),
+
+        // New fields
+        startTime: yup.string().nullable().optional(),
+        endTime: yup.string().nullable().optional().test(
+            "end-after-start",
+            t("validation.endTimeAfterStartTime"),
+            function (value) {
+                const { startTime } = this.parent;
+                if (!startTime || !value) return true;
+                return value > startTime;
+            }
+        ),
+
+        weekDays: yup.array().of(yup.string()).nullable().optional(),
+
+        activeFrom: yup.string().nullable().optional(),
+        activeUntil: yup.string().nullable().optional().test(
+            "active-until-after-from",
+            t("validation.activeUntilAfterFrom"),
+            function (value) {
+                const { activeFrom } = this.parent;
+                if (!activeFrom || !value) return true;
+                return new Date(value) >= new Date(activeFrom);
+            }
+        ),
+
+        // Temporary UI fields
+        timeWindowEnabled: yup.boolean().optional(),
+        dateRangeEnabled: yup.boolean().optional(),
     });
 
 // ── Form Components ──────────────────────────────────────────────────────────
 function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
     const t = useTranslations("callCenter.autoAssign");
     const schema = useMemo(() => ruleSchema(t), [t]);
-    
+
     const isEditMode = !!rule;
     console.log(isEditMode, rule)
     const {
@@ -128,6 +236,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
         control,
         watch,
         reset,
+        setValue,
         formState: { errors, isSubmitting },
     } = useForm({
         resolver: yupResolver(schema),
@@ -144,10 +253,53 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
             paymentStatus: null,
             minAmount: null,
             maxAmount: null,
+            startTime: null,
+            endTime: null,
+            weekDays: [],
+            activeFrom: null,
+            activeUntil: null,
+            timeWindowEnabled: false,
+            dateRangeEnabled: false,
         },
     });
 
     const selectedRuleType = watch("ruleType");
+    const activeFrom = watch("activeFrom");
+    const activeUntil = watch("activeUntil");
+    const weekDays = watch("weekDays");
+    const startTime = watch("startTime");
+    const endTime = watch("endTime");
+
+    // Auto-enable switches when user sets values
+    useEffect(() => {
+        if ((startTime || endTime) && !watch("timeWindowEnabled")) {
+            setValue("timeWindowEnabled", true);
+        }
+    }, [startTime, endTime, setValue, watch]);
+
+    useEffect(() => {
+        if ((activeFrom || activeUntil) && !watch("dateRangeEnabled")) {
+            setValue("dateRangeEnabled", true);
+        }
+    }, [activeFrom, activeUntil, setValue, watch]);
+
+    const availableMask = useMemo(() => getAvailableWeekdaysBitmask(activeFrom, activeUntil), [activeFrom, activeUntil]);
+    const allAvailable = useMemo(() => WEEK_DAYS.filter(d => isDayAvailable(d.key, availableMask)).map(d => d.key), [availableMask]);
+    const allAvailableDays = useMemo(() => WEEK_DAYS.filter(d => isDayAvailable(d.key, availableMask)).map(d => d.key), [availableMask]);
+
+    const isAllAvailableDaysSelected = useMemo(() =>
+        allAvailableDays.length > 0 && allAvailableDays.every(day => weekDays?.includes(day)),
+        [allAvailableDays, weekDays]
+    );
+
+
+    useEffect(() => {
+        const currentWeekDays = watch("weekDays");
+        const filteredWeekDays = currentWeekDays.filter(day => isDayAvailable(day, availableMask));
+        if (filteredWeekDays.length !== currentWeekDays.length) {
+            setValue("weekDays", filteredWeekDays);
+        }
+    }, [activeFrom, activeUntil, availableMask]);
 
     useEffect(() => {
         if (rule && open) {
@@ -164,6 +316,13 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                 paymentStatus: rule.paymentStatus || null,
                 minAmount: rule.minAmount ?? null,
                 maxAmount: rule.maxAmount ?? null,
+                startTime: rule.startTime || null,
+                endTime: rule.endTime || null,
+                weekDays: bitmaskToDays(rule.weekDays) || [],
+                activeFrom: rule.activeFrom || null,
+                activeUntil: rule.activeUntil || null,
+                timeWindowEnabled: !!(rule.startTime || rule.endTime),
+                dateRangeEnabled: !!(rule.activeFrom || rule.activeUntil),
             });
         } else if (!rule && open) {
             reset({
@@ -179,18 +338,69 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                 paymentStatus: null,
                 minAmount: null,
                 maxAmount: null,
+                startTime: null,
+                endTime: null,
+                weekDays: [],
+                activeFrom: null,
+                activeUntil: null,
+                timeWindowEnabled: false,
+                dateRangeEnabled: false,
             });
         }
     }, [rule, open, reset]);
 
     const onSubmit = async (data) => {
-        const {ruleType, ...payload}  = data;
+        const {
+            ruleType,
+            weekDays,
+            activeFrom,
+            activeUntil,
+            startTime,
+            endTime,
+            timeWindowEnabled,
+            dateRangeEnabled,
+            ...payload
+        } = data;
+
         try {
+            const timezone =
+                Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            const finalPayload = {
+                ...payload,
+
+                // TIME (KEEP AS STRING ONLY)
+                startTime: startTime || null,
+                endTime: endTime || null,
+
+                // DATES (REAL ISO)
+                activeFrom: activeFrom
+                    ? new Date(activeFrom).toISOString()
+                    : null,
+
+                activeUntil: activeUntil
+                    ? new Date(activeUntil).toISOString()
+                    : null,
+
+                // BITMASK
+                weekDays: daysToBitmask(weekDays),
+
+                // TIMEZONE (IMPORTANT FIX)
+                timezone,
+            };
+
             if (isEditMode) {
-                await api.patch(`/order-assignment/rules/${rule.id}`, payload);
+                await api.patch(
+                    `/order-assignment/rules/${rule.id}`,
+                    finalPayload
+                );
             } else {
-                await api.post("/order-assignment/rules", {ruleType,...payload});
+                await api.post(
+                    "/order-assignment/rules",
+                    { ruleType, ...finalPayload }
+                );
             }
+
             toast.success(t("validation.saveSuccess"));
             onSuccess();
             onOpenChange(false);
@@ -202,7 +412,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto!">
+            <DialogContent className="max-w-4xl! max-h-[90vh] overflow-y-auto!">
                 <DialogHeader className="border-b pb-4">
                     <DialogTitle>{rule ? t("actions.edit") : t("toolbar.addRole")}</DialogTitle>
                 </DialogHeader>
@@ -276,6 +486,166 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                         </div>
                     </div>
 
+                    {/* New Fields */}
+                    <div className="space-y-4 border-t pt-4">
+                        {/* Time Window */}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                                <Controller
+                                    control={control}
+                                    name="timeWindowEnabled"
+                                    render={({ field }) => (
+                                        <Switch 
+                                            checked={field.value || (watch("startTime") || watch("endTime"))} 
+                                            onCheckedChange={(checked) => {
+                                                field.onChange(checked);
+                                                if (!checked) {
+                                                    setValue("startTime", null);
+                                                    setValue("endTime", null);
+                                                }
+                                            }} 
+                                        />
+                                    )}
+                                />
+                                <Label className="text-sm font-semibold">{t("form.startTime")} / {t("form.endTime")}</Label>
+                            </div>
+                            {(watch("timeWindowEnabled") || watch("startTime") || watch("endTime")) && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-semibold">{t("form.startTime")}</Label>
+                                        <Input
+                                            type="time"
+                                            {...register("startTime")}
+                                            className="rounded-xl h-[50px]"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-semibold">{t("form.endTime")}</Label>
+                                        <Input
+                                            type="time"
+                                            {...register("endTime")}
+                                            className="rounded-xl h-[50px]"
+                                        />
+                                        {errors.endTime && <p className="text-xs text-red-600">{errors.endTime.message}</p>}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Date Range */}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                                <Controller
+                                    control={control}
+                                    name="dateRangeEnabled"
+                                    render={({ field }) => (
+                                        <Switch 
+                                            checked={field.value || (watch("activeFrom") || watch("activeUntil"))} 
+                                            onCheckedChange={(checked) => {
+                                                field.onChange(checked);
+                                                if (!checked) {
+                                                    setValue("activeFrom", null);
+                                                    setValue("activeUntil", null);
+                                                }
+                                            }} 
+                                        />
+                                    )}
+                                />
+                                <Label className="text-sm font-semibold">{t("form.activeFrom")} / {t("form.activeUntil")}</Label>
+                            </div>
+                            {(watch("dateRangeEnabled") || watch("activeFrom") || watch("activeUntil")) && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-semibold">{t("form.activeFrom")}</Label>
+                                        <DateRangePicker
+                                            mode="single"
+                                            value={watch("activeFrom")}
+                                            onChange={(date) => {
+                                                setValue("activeFrom", date ? new Date(date) : null);
+                                            }}
+                                            minDate="today"
+                                            maxDate={null}
+                                            dataSize="default"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-semibold">{t("form.activeUntil")}</Label>
+                                        <DateRangePicker
+                                            mode="single"
+                                            value={watch("activeUntil")}
+                                            onChange={(date) => {
+                                                setValue("activeUntil", date ? new Date(date) : null);
+                                            }}
+                                            minDate="today"
+                                            maxDate={null}
+                                            dataSize="default"
+                                        />
+                                        {errors.activeUntil && <p className="text-xs text-red-600">{errors.activeUntil.message}</p>}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        {/* Week Days */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                                <Label className="text-sm font-semibold">{t("form.weekDays")}</Label>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        if (isAllAvailableDaysSelected) {
+                                            setValue("weekDays", []);
+                                        } else {
+                                            setValue("weekDays", allAvailable);
+                                        }
+                                    }}
+                                >
+                                    {(() => {
+                                        return isAllAvailableDaysSelected ? t("form.deselectAll") : t("form.selectAll");
+                                    })()}
+                                </Button>
+                            </div>
+                            <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                                {WEEK_DAYS.map((day) => {
+                                    const isAvailable = isDayAvailable(day.key, availableMask);
+                                    return (
+                                        <div key={day.key} className="flex items-center gap-2">
+                                            <Controller
+                                                control={control}
+                                                name="weekDays"
+                                                render={({ field }) => {
+                                                    const isChecked = field.value?.includes(day.key);
+                                                    return (
+                                                        <Checkbox
+                                                            checked={isChecked}
+                                                            disabled={!isAvailable}
+                                                            onCheckedChange={(checked) => {
+                                                                if (!isAvailable) return;
+                                                                const newVal = checked
+                                                                    ? [...(field.value || []), day.key]
+                                                                    : (field.value || []).filter(d => d !== day.key);
+                                                                field.onChange(newVal);
+                                                            }}
+                                                        />
+                                                    );
+                                                }}
+                                            />
+                                            <Label className={`text-sm ${isAvailable ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}>
+                                                {t(`days.${day.key}`)}
+                                            </Label>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {t("form.weekDaysNote")}
+                            </p>
+                        </div>
+
+                      
+                    </div>
+
                     <div className="space-y-4 border-t pt-4">
                         <div className="space-y-2">
                             <Label className="text-sm font-semibold">{t("form.employees")}</Label>
@@ -285,6 +655,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                 render={({ field }) => (
                                     <MultiSelect
                                         endpoint="/users/list"
+                                        params={{ active: "true" }}
                                         value={field.value}
                                         initialValues={rule?.employees || []}
                                         onChange={(newVal) => field.onChange(newVal.map(v => typeof v === 'string' ? v : v.id))}
@@ -305,7 +676,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                     render={({ field }) => (
                                         <MultiSelect
                                             endpoint="/products"
-                                            params={{ type: "PRODUCT" }}
+                                            params={{ isActive: "true", type: "PRODUCT" }}
                                             value={field.value}
                                             initialValues={rule?.products || []}
                                             onChange={(newVal) => field.onChange(newVal.map(v => typeof v === 'string' ? v : v.id))}
@@ -327,6 +698,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                     render={({ field }) => (
                                         <MultiSelect
                                             endpoint="/cities"
+                                            params={{ isActive: "true" }}
                                             value={field.value}
                                             initialValues={rule?.cities || []}
                                             onChange={(newVal) => field.onChange(newVal.map(v => typeof v === 'string' ? v : v.id))}
@@ -396,6 +768,21 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
 function RuleViewDialog({ open, onOpenChange, rule }) {
     const t = useTranslations("callCenter.autoAssign");
     const locale = useLocale();
+    const formatIntl = useFormatter();
+    const { formatTrendLabel } = useTrendLabelFormatter();
+    const { timezone = "Africa/Cairo" } = rule ?? {};
+    const formatTime = (timeStr) => {
+        if (!timeStr) return "—";
+        const [hours, minutes] = timeStr.split(":").map(Number);
+        const date = new Date();
+        date.setHours(hours, minutes || 0, 0, 0);
+        return formatIntl.dateTime(date, {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: timezone,
+        });
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -498,6 +885,51 @@ function RuleViewDialog({ open, onOpenChange, rule }) {
                         </div>
                     )}
 
+                    {/* New Fields */}
+                    {(rule?.startTime || rule?.endTime) && (
+                        <div className="space-y-2 border-t pt-4">
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.startTime")} / {t("form.endTime")}</span>
+                            <div className="flex items-center gap-4">
+                                <div className="bg-muted/50 p-3 rounded-xl flex-1 border border-border/50">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">{t("form.startTime")}</span>
+                                    <span className="font-mono text-lg font-bold">{formatTime(rule.startTime)}</span>
+                                </div>
+                                <div className="bg-muted/50 p-3 rounded-xl flex-1 border border-border/50">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">{t("form.endTime")}</span>
+                                    <span className="font-mono text-lg font-bold">{formatTime(rule.endTime)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {rule?.weekDays && bitmaskToDays(rule.weekDays).length > 0 && (
+                        <div className="space-y-2 border-t pt-4">
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.weekDays")}</span>
+                            <div className="flex flex-wrap gap-2">
+                                {bitmaskToDays(rule.weekDays).map(day => (
+                                    <Badge key={day} variant="outline" className="px-3 py-1">
+                                        {t(`days.${day}`)}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {(rule?.activeFrom || rule?.activeUntil) && (
+                        <div className="space-y-2 border-t pt-4">
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.activeFrom")} / {t("form.activeUntil")}</span>
+                            <div className="flex items-center gap-4">
+                                <div className="bg-muted/50 p-3 rounded-xl flex-1 border border-border/50">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">{t("form.activeFrom")}</span>
+                                    <span className="font-mono text-lg font-bold">{rule.activeFrom ? formatTrendLabel(rule.activeFrom) : "—"}</span>
+                                </div>
+                                <div className="bg-muted/50 p-3 rounded-xl flex-1 border border-border/50">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">{t("form.activeUntil")}</span>
+                                    <span className="font-mono text-lg font-bold">{rule.activeUntil ? formatTrendLabel(rule.activeUntil) : "—"}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </DialogContent>
         </Dialog>
@@ -553,11 +985,11 @@ const DEFAULT_FILTERS = {
 export default function CallCenterPage() {
     const tCommon = useTranslations("common");
     const tOrders = useTranslations("orders");
-     const t = useTranslations();
-     const { settings, patch, saving, handleSave } = useOrdersSettings();
+    const t = useTranslations();
+    const { settings, patch, saving, handleSave } = useOrdersSettings();
 
-     const [viewMode, setViewMode] = useState("manual"); // "manual" | "automatic"
-     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [viewMode, setViewMode] = useState("manual"); // "manual" | "automatic"
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
     const [search, setSearch] = useState("");

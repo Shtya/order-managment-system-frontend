@@ -15,6 +15,8 @@ import {
 	X,
 	Sparkles,
 	Eye,
+	Loader2,
+	CheckCircle2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -67,7 +69,7 @@ export default function RolesPermissionsPage() {
 	const [roleToDelete, setRoleToDelete] = useState(null);
 	const [previewOpen, setPreviewOpen] = useState(false);
 	const [previewRole, setPreviewRole] = useState(null);
-
+	
 	// ✅ FIX #2: Add pagination state for proper per_page tracking
 	const [currentPage, setCurrentPage] = useState(1);
 	const [perPage, setPerPage] = useState(6);
@@ -84,6 +86,7 @@ export default function RolesPermissionsPage() {
 		fetchRoles();
 		fetchPermissions();
 	}, [fetchRoles, fetchPermissions]);
+
 	const stats = useMemo(
 		() => [
 			{
@@ -241,6 +244,7 @@ export default function RolesPermissionsPage() {
 								icon: <Trash2 />,
 								tooltip: t("actions.delete"),
 								onClick: (r) => handleDeleteClick(r),
+								disabled: row?.name === "super_admin" || row?.name === "admin" || row?.name === "user",
 								variant: "red",
 							},
 						]}
@@ -537,7 +541,7 @@ function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading
 					</div>
 
 					{/* ✅ NEW: Enhanced Permissions Selector */}
-					<div>
+					<div className="">
 						<PermissionsSelector
 							permissions={permissions}
 							selected={formData.permissionNames}
@@ -550,7 +554,8 @@ function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading
 					<div className="flex justify-end gap-2 pt-4">
 						<Button_
 							type="submit"
-							loading={loading}
+							icon={loading ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+							disabled={loading}
 							variant="solid"
 							label={t("dialog.save")}
 						/>
@@ -576,7 +581,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 					<DialogTitle className="flex items-center gap-2">
 						{t("preview.title")}
 					</DialogTitle>
-					<DialogDescription>{t("preview.description")}</DialogDescription>
+					{/* <DialogDescription>{t("preview.description")}</DialogDescription> */}
 				</DialogHeader>
 
 				<div className="space-y-4">
@@ -688,7 +693,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 												"hover:border-primary/40 hover:bg-primary/5"
 											)}
 										>
-											{p}
+											{t(`permissionsItems.${p.replace(/\./g, '_')}`)}
 										</span>
 									))}
 								</div>

@@ -15,7 +15,7 @@ export default function PermissionsSelector({
 	className,
 	disabled = false,
 }) {
-	
+	const tClient = useTranslations("roles-client");
 	const t = useTranslations("permissions");
 	const updateInProgress = useRef(false);
 
@@ -258,13 +258,13 @@ export default function PermissionsSelector({
 			</div>
 
 			{/* ✅ Enhanced Modules Grid */}
-			<div className="max-h-[500px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+			<div className="max-h-[300px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">
 				{Object.keys(groupedPermissions)
 					.sort()
 					.map((module, moduleIndex) => {
 						const status = getModuleStatus(module);
 						const modulePerms = groupedPermissions[module];
-
+						
 						return (
 							<motion.div
 								key={module}
@@ -304,7 +304,7 @@ export default function PermissionsSelector({
 											{/* Module Info */}
 											<div>
 												<h4 className="font-bold text-lg text-gray-900 dark:text-slate-100 capitalize mb-1 flex items-center gap-2">
-													{t.has(`modules.${module}`) ? t(`modules.${module}`) : module}
+													{tClient.has(`group.${module}`) ? tClient(`group.${module}`) : module}
 													{status === "all" && (
 														<span className="px-2 py-0.5 text-xs font-bold rounded-full bg-primary/10 text-primary">
 															✓ محدد بالكامل
@@ -354,7 +354,7 @@ export default function PermissionsSelector({
 									{modulePerms.map((perm, index) => {
 										const action = getPermissionAction(perm);
 										const isSelected = selected.includes(perm);
-
+										
 										return (
 											<motion.div
 												key={perm.id}
@@ -378,8 +378,10 @@ export default function PermissionsSelector({
 													<label
 														htmlFor={`perm-${perm.id}`}
 														className="text-sm font-bold cursor-pointer text-gray-800 dark:text-slate-100 block mb-1"
-													>
-														{t.has(`actions.${action}`) ? t(`actions.${action}`) : action}
+													>	
+													
+														{/* {t.has(`actions.${action}`) ? t(`actions.${action}`) : action} */}
+														{tClient(`permissionsItems.${module}_${action.replace(/[.-]/g, "_")}`)}
 													</label>
 													{perm.description && (
 														<p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-2">

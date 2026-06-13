@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion as m } from "framer-motion";
 import {
-    Download,
     Loader2,
     Users,
     CheckCircle,
@@ -25,6 +23,7 @@ import {
     PowerOff,
     Settings,
     Settings2,
+    Store,
 } from "lucide-react";
 import { useLocale, useTranslations, useFormatter } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
@@ -166,6 +165,12 @@ const ruleSchema = (t) =>
             otherwise: (schema) => schema.optional().nullable(),
         }),
 
+        storeIds: yup.array().of(yup.string()).when("ruleType", {
+            is: "store",
+            then: (schema) => schema.min(1, t("validation.storesRequired")),
+            otherwise: (schema) => schema.optional().nullable(),
+        }),
+
 
         paymentStatus: yup.string().when("ruleType", {
             is: "paymentStatus",
@@ -250,6 +255,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
             employeeIds: [],
             productIds: [],
             cityIds: [],
+            storeIds: [],
             paymentStatus: null,
             minAmount: null,
             maxAmount: null,
@@ -313,6 +319,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                 employeeIds: rule.employees?.map(e => e.id) || [],
                 productIds: rule.products?.map(p => p.id) || [],
                 cityIds: rule.cities?.map(c => c.id) || [],
+                storeIds: rule.stores?.map(s => s.id) || [],
                 paymentStatus: rule.paymentStatus || null,
                 minAmount: rule.minAmount ?? null,
                 maxAmount: rule.maxAmount ?? null,
@@ -335,6 +342,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                 employeeIds: [],
                 productIds: [],
                 cityIds: [],
+                storeIds: [],
                 paymentStatus: null,
                 minAmount: null,
                 maxAmount: null,
@@ -711,6 +719,28 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                             </div>
                         )}
 
+                        {selectedRuleType === "store" && (
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold">{t("form.stores")}</Label>
+                                <Controller
+                                    control={control}
+                                    name="storeIds"
+                                    render={({ field }) => (
+                                        <MultiSelect
+                                            endpoint="/lookups/stores"
+                                            params={{ limit: 200, isActive: "true" }}
+                                            value={field.value}
+                                            initialValues={rule?.stores || []}
+                                            onChange={(newVal) => field.onChange(newVal.map(v => typeof v === 'string' ? v : v.id))}
+                                            placeholder={t("form.stores")}
+                                            labelKey="name"
+                                        />
+                                    )}
+                                />
+                                {errors.storeIds && <p className="text-xs text-red-600">{errors.storeIds.message}</p>}
+                            </div>
+                        )}
+
 
                         {selectedRuleType === "paymentStatus" && (
                             <div className="space-y-2">
@@ -860,6 +890,19 @@ function RuleViewDialog({ open, onOpenChange, rule }) {
                         </div>
                     )}
 
+                    {rule?.ruleType === 'store' && rule.stores?.length > 0 && (
+                        <div className="space-y-2 border-t pt-4">
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.stores")}</span>
+                            <div className="flex flex-wrap gap-2">
+                                {rule.stores.map(s => (
+                                    <Badge key={s.id} variant="outline">
+                                        {locale === 'ar' ? (s.nameAr || s.nameEn || s.name) : (s.nameEn || s.nameAr || s.name)}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {rule?.ruleType === 'amountRange' && (
                         <div className="space-y-2 border-t pt-4">
                             <span className="text-sm text-muted-foreground font-medium block">{t("stats.amountRange")}</span>
@@ -942,7 +985,8 @@ const RULE_TYPES = [
     "product",
     "city",
     "amountRange",
-    "paymentStatus"
+    "paymentStatus",
+    "store"
 ];
 
 const CALL_CENTER_STATS = [
@@ -1091,6 +1135,7 @@ export default function CallCenterPage() {
     /* build API params */
     const buildParams = useCallback(
         (page = pager.current_page, per_page = pager.per_page) => {
+            
             const params = {
                 page,
                 limit: per_page,
@@ -1185,8 +1230,9 @@ export default function CallCenterPage() {
     const fetchAutoAssignRules = useCallback(
         async (page = pager.current_page, per_page = pager.per_page) => {
             try {
+                const params = buildParams(page, per_page);
                 setLoading(true);
-                const res = await api.get("/order-assignment/rules", { params: buildParams(page, per_page) });
+                const res = await api.get("/order-assignment/rules", { params });
                 const data = res.data ?? {};
                 setPager({
                     total_records: data.total_records ?? 0,
@@ -1492,6 +1538,7 @@ export default function CallCenterPage() {
                 { id: "city", icon: MapPin, color: "#10b981" },
                 { id: "amountRange", icon: DollarSign, color: "#8b5cf6" },
                 { id: "paymentStatus", icon: CreditCard, color: "#ec4899" },
+                { id: "store", icon: Store, color: "#0ea5e9" },
             ];
 
             const baseStats = [

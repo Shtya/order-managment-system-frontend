@@ -5811,6 +5811,7 @@
         "strategy": "Assignment Strategy",
         "products": "Select Products",
         "cities": "Select Cities",
+        "stores": "Select Stores",
         "employees": "Select Employees",
         "shippingCompanies": "Select Shipping Companies",
         "paymentStatus": "Payment Status",
@@ -5841,6 +5842,7 @@
         "employeesRequired": "At least one employee must be selected",
         "productsRequired": "At least one product must be selected",
         "citiesRequired": "At least one city must be selected",
+        "storesRequired": "At least one store must be selected",
         "shippingCompaniesRequired": "At least one shipping company must be selected",
         "paymentStatusRequired": "Payment status is required",
         "minAmountRequired": "Minimum amount is required",
@@ -5857,6 +5859,7 @@
         "manual": "Manual",
         "product": "Product",
         "city": "City",
+        "store": "Store",
         "amountRange": "Amount Range",
         "paymentStatus": "Payment Status",
         "shippingCompany": "Shipping Company"

@@ -5806,6 +5806,7 @@
         "strategy": "استراتيجية التوزيع",
         "products": "اختر المنتجات",
         "cities": "اختر المدن",
+        "stores": "اختر المتاجر",
         "employees": "اختر الموظفين",
         "shippingCompanies": "اختر شركات الشحن",
         "paymentStatus": "حالة الدفع",
@@ -5836,6 +5837,7 @@
         "employeesRequired": "يجب اختيار موظف واحد على الأقل",
         "productsRequired": "يجب اختيار منتج واحد على الأقل",
         "citiesRequired": "يجب اختيار مدينة واحدة على الأقل",
+        "storesRequired": "يجب اختيار متجر واحد على الأقل",
         "shippingCompaniesRequired": "يجب اختيار شركة شحن واحدة على الأقل",
         "paymentStatusRequired": "حالة الدفع مطلوبة",
         "minAmountRequired": "الحد الأدنى للمبلغ مطلوب",
@@ -5852,6 +5854,7 @@
         "manual": "يدوي",
         "product": "منتج",
         "city": "مدينة",
+        "store": "متجر",
         "amountRange": "نطاق المبلغ",
         "paymentStatus": "حالة الدفع",
         "shippingCompany": "شركة الشحن"

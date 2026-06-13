@@ -495,15 +495,15 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                     control={control}
                                     name="timeWindowEnabled"
                                     render={({ field }) => (
-                                        <Switch 
-                                            checked={field.value || (watch("startTime") || watch("endTime"))} 
+                                        <Switch
+                                            checked={field.value || (watch("startTime") || watch("endTime"))}
                                             onCheckedChange={(checked) => {
                                                 field.onChange(checked);
                                                 if (!checked) {
                                                     setValue("startTime", null);
                                                     setValue("endTime", null);
                                                 }
-                                            }} 
+                                            }}
                                         />
                                     )}
                                 />
@@ -539,15 +539,15 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                     control={control}
                                     name="dateRangeEnabled"
                                     render={({ field }) => (
-                                        <Switch 
-                                            checked={field.value || (watch("activeFrom") || watch("activeUntil"))} 
+                                        <Switch
+                                            checked={field.value || (watch("activeFrom") || watch("activeUntil"))}
                                             onCheckedChange={(checked) => {
                                                 field.onChange(checked);
                                                 if (!checked) {
                                                     setValue("activeFrom", null);
                                                     setValue("activeUntil", null);
                                                 }
-                                            }} 
+                                            }}
                                         />
                                     )}
                                 />
@@ -643,7 +643,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                             </p>
                         </div>
 
-                      
+
                     </div>
 
                     <div className="space-y-4 border-t pt-4">
@@ -984,7 +984,7 @@ const DEFAULT_FILTERS = {
 
 export default function CallCenterPage() {
     const tCommon = useTranslations("common");
-    const tOrders = useTranslations("orders");
+
     const t = useTranslations();
     const { settings, patch, saving, handleSave } = useOrdersSettings();
 
@@ -1725,22 +1725,88 @@ export default function CallCenterPage() {
                     </DialogHeader>
 
                     <div className="p-6 space-y-6">
-                        <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-                            <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                                        <Users size={20} />
+                        <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                            <h3 className="text-base font-bold flex items-center gap-2">
+                                <Users className="text-primary" size={20} />
+                                {t("orders.retrySettings.autoAssignment.title")}
+                            </h3>
+
+                            <div className="space-y-3">
+                                <div
+                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "disabled"
+                                        ? "border-primary bg-primary/5"
+                                        : "border-slate-200 dark:border-slate-700"
+                                        }`}
+                                    onClick={() => patch({ assignmentMode: "disabled" })}
+                                >
+                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "disabled" ? "#6366f1" : "#d1d5db" }}>
+                                        {settings.assignmentMode === "disabled" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
                                     </div>
-                                    <div>
-                                        <h3 className="text-base font-bold">{t("orders.retrySettings.autoAssignment.enabled")}</h3>
-                                        <p className="text-xs text-slate-400">{t("orders.retrySettings.autoAssignment.enabledDesc")}</p>
+                                    <div className="flex-1">
+                                        <div className="font-medium">{t("orders.retrySettings.autoAssignment.disabled")}</div>
+                                        <div className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.disabledDesc")}</div>
                                     </div>
                                 </div>
-                                <Switch
-                                    checked={settings.autoAssignmentEnabled}
-                                    onCheckedChange={(v) => patch({ autoAssignmentEnabled: v })}
-                                />
+
+                                <div
+                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "immediate"
+                                        ? "border-primary bg-primary/5"
+                                        : "border-slate-200 dark:border-slate-700"
+                                        }`}
+                                    onClick={() => patch({ assignmentMode: "immediate" })}
+                                >
+                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "immediate" ? "#6366f1" : "#d1d5db" }}>
+                                        {settings.assignmentMode === "immediate" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="font-medium">{t("orders.retrySettings.autoAssignment.immediate")}</div>
+                                        <div className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.immediateDesc")}</div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "delayed"
+                                        ? "border-primary bg-primary/5"
+                                        : "border-slate-200 dark:border-slate-700"
+                                        }`}
+                                    onClick={() => patch({ assignmentMode: "delayed" })}
+                                >
+                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "delayed" ? "#6366f1" : "#d1d5db" }}>
+                                        {settings.assignmentMode === "delayed" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="font-medium">{t("orders.retrySettings.autoAssignment.delayed")}</div>
+                                        <div className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.delayedDesc")}</div>
+                                    </div>
+                                </div>
                             </div>
+
+                            {settings.assignmentMode === "delayed" && (
+                                <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 space-y-3">
+                                    <label className="text-sm font-medium">{t("orders.retrySettings.autoAssignment.delayTime")}</label>
+                                    <div className="flex gap-3">
+                                        <div className="flex-1">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={settings.assignmentDelay}
+                                                onChange={(e) => patch({ assignmentDelay: Math.max(1, parseInt(e.target.value) || 1) })}
+                                                className="w-full px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                                            />
+                                        </div>
+                                        <select
+                                            value={settings.assignmentDelayUnit}
+                                            onChange={(e) => patch({ assignmentDelayUnit: e.target.value })}
+                                            className="px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                                        >
+                                            <option value="minutes">{t("orders.retrySettings.autoAssignment.minutes")}</option>
+                                            <option value="hours">{t("orders.retrySettings.autoAssignment.hours")}</option>
+                                            <option value="days">{t("orders.retrySettings.autoAssignment.days")}</option>
+                                        </select>
+                                    </div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.delayTimeDesc")}</p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex justify-end gap-3 pt-4 border-t dark:border-slate-800">

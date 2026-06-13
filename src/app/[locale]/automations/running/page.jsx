@@ -166,7 +166,7 @@ function RunningAutomationsContent() {
   const setCurrentRun = useFlowStore((s) => s.setCurrentRun);
   const [error, setError] = useState(null);
   const clearFlow = useFlowStore((state) => state.clearFlow);
-
+  const runStatus = selectedRun?.status;
   useEffect(() => {
     // سيتم تنفيذ هذه الدالة فقط عند مغادرة المستخدم للصفحة
     return () => {
@@ -375,6 +375,7 @@ function RunningAutomationsContent() {
                   </button>
                   <button
                     onClick={handleRestart}
+                    disabled={runStatus !== "failed"}
                     className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
                   >
                     <RefreshCw size={14} />

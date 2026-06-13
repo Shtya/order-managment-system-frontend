@@ -27,7 +27,9 @@ export function OrdersSettingsProvider({ children }) {
   const [savedSettings, setSavedSettings] = useState(null);
 
   const [settings, setSettings] = useState({
-    autoAssignmentEnabled: true,
+    assignmentMode: "immediate",
+    assignmentDelay: 1,
+    assignmentDelayUnit: "minutes",
     enabled: true,
     maxRetries: 3,
     retryInterval: 30,
@@ -94,7 +96,9 @@ export function OrdersSettingsProvider({ children }) {
       if (data)
         setSettings((prev) => ({
           // تحديث القيم الأساسية يدوياً
-          autoAssignmentEnabled: data.autoAssignmentEnabled ?? prev.autoAssignmentEnabled,
+          assignmentMode: data.assignmentMode ?? prev.assignmentMode,
+          assignmentDelay: data.assignmentDelay ?? prev.assignmentDelay,
+          assignmentDelayUnit: data.assignmentDelayUnit ?? prev.assignmentDelayUnit,
           enabled: data.enabled ?? prev.enabled,
           maxRetries: data.maxRetries ?? prev.maxRetries,
           retryInterval: data.retryInterval ?? prev.retryInterval,

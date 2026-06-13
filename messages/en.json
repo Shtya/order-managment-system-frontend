@@ -5622,8 +5622,17 @@
       "autoAssignment": {
         "title": "Automatic Assignment",
         "subtitle": "Configure automatic order assignment settings",
-        "enabled": "Enable Auto-Assignment",
-        "enabledDesc": "When enabled, new orders will be automatically assigned to employees based on active rules."
+        "disabled": "Disabled",
+        "disabledDesc": "New orders will not be assigned automatically.",
+        "immediate": "Assign Immediately",
+        "immediateDesc": "Run assignment rules as soon as a new order arrives.",
+        "delayed": "Delayed Assignment",
+        "delayedDesc": "Wait before running assignment rules.",
+        "delayTime": "Delay For",
+        "delayTimeDesc": "Choose how long to wait before running the assignment rules.",
+        "minutes": "Minutes",
+        "hours": "Hours",
+        "days": "Days"
       },
       "selectStatus": "Select status…",
       "retryStatusesTitle": "Statuses that trigger retries",

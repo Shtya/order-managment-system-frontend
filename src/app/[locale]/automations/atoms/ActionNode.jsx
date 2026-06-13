@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { Position, useUpdateNodeInternals } from '@xyflow/react';
-import { MessageSquare, RefreshCw, Send, Loader2, Zap } from 'lucide-react';
+import { MessageSquare, RefreshCw, Send, Loader2, Zap, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
@@ -14,6 +14,7 @@ export function ActionNode({ id, data, selected }) {
         'send_whatsapp_template': { label: t('actionTypes.send_whatsapp_template'), subtitle: t('nodes.action.subtitle'), icon: MessageSquare, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'update_order_status': { label: t('actionTypes.update_order_status'), subtitle: t('nodes.action.management'), icon: RefreshCw, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'send_upsell': { label: t('actionTypes.send_upsell'), subtitle: t('nodes.action.upsell'), icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+        'assign_order_to_employee': { label: t('actionTypes.assign_order_to_employee'), subtitle: t('nodes.action.management'), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
     }), [t]);
 
     const updateNodeInternals = useUpdateNodeInternals();
@@ -86,6 +87,14 @@ export function ActionNode({ id, data, selected }) {
                             <div className="flex items-center justify-between">
                                 <span className="opacity-50 font-bold">{t('nodes.sendOffers')}</span>
                                 <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">{t('nodes.proposedForOrder')}</span>
+                            </div>
+                        )}
+                        {data.type === 'assign_order_to_employee' && (
+                            <div className="flex items-center justify-between">
+                                <span className="opacity-50 font-bold">{t('nodes.assignTo')}</span>
+                                <span className="font-black text-blue-700 dark:text-blue-400 truncate">
+                                    {data.config?.employeeName || t('nodes.autoAssign')}
+                                </span>
                             </div>
                         )}
                     </>

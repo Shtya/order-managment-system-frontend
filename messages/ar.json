@@ -4708,7 +4708,10 @@
       "addNewSupplier": "إضافة مورد"
     },
     "searchPlaceholder": "إبحث عن الادمن...",
-    "admin": "الأدمن"
+    "admin": "الأدمن",
+    "common": {
+      "none": "بدون"
+    }
   },
   "orders": {
     "shipmentStatuses": {
@@ -10430,7 +10433,8 @@
         "actionTypes": {
           "send_whatsapp_template": "إرسال قالب واتساب",
           "update_order_status": "تحديث حالة الطلب",
-          "send_upsell": "إرسال عرض"
+          "send_upsell": "إرسال عرض",
+          "assign_order_to_employee": "تعيين الطلب لموظف"
         },
         "conditionTypes": {
           "order_check": "فحص بيانات الطلب",
@@ -10467,6 +10471,13 @@
           "changeStatusTo": "تغيير الحالة الي",
           "sendOffers": "إرسال العروض",
           "proposedForOrder": "المقترحة للطلب",
+          "assignTo": "تعيين إلى",
+          "autoAssign": "تعيين تلقائي",
+          "branches": {
+            "assigned": "تم التعيين",
+            "noRolesMatch": "لا توجد قواعد مطابقة",
+            "notEligible": "غير مؤهل للتعيين"
+          },
           "yes": "نعم",
           "no": "لا",
           "noConditions": "لا توجد شروط",
@@ -10541,6 +10552,7 @@
           },
           "noSettings": "هذه الخطوة لا تتطلب إعدادات إضافية",
           "addStep": "إضافة الخطوة",
+          "save": "حفظ",
           "saveChanges": "حفظ التغييرات",
           "store": "المتجر",
           "storeDesc": "اختر المتجر الذي سيتم مراقبة الطلبات فيه",
@@ -10552,6 +10564,12 @@
           "selectStatus": "اختر الحالة...",
           "newStatus": "الحالة الجديدة",
           "newStatusDesc": "اختر الحالة التي سيتم نقل الطلب إليها",
+          "assignOrderToEmployee": "تعيين الطلب لموظف",
+          "assignOrderToEmployeeDesc": "تعيين الطلب لموظف محدد أو استخدم التعيين التلقائي",
+          "selectEmployee": "اختر موظف",
+          "selectEmployeeDesc": "اختر موظف لتعيين الطلب إليه، أو اتركه فارغاً للتعيين التلقائي",
+          "selectEmployeePlaceholder": "اختر موظف...",
+          "autoAssign": "تعيين تلقائي",
           "template": "القالب",
           "templateDesc": "اختر قالب الرسالة الذي سيتم إرساله",
           "selectTemplate": "اختر القالب...",

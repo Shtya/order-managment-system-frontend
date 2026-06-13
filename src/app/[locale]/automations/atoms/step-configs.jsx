@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
@@ -19,6 +19,8 @@ import { extractVariableNames } from "@/utils/whatsapp-healper";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
+import UserSelect from "@/components/atoms/UserSelect";
+
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -258,6 +260,110 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
             </FormGroup>
         </div>
     );
+}
+
+/**
+ * Action: Assign Order to Employee
+ */
+export function AssignOrderToEmployeeConfig({ value, onChange, errors, setDisabled, onClose, mode }) {
+  const tConfig = useTranslations("whatsApp.automations.builder.config");
+  const tNodes = useTranslations("whatsApp.automations.builder.nodes");
+  const tCommon = useTranslations("common");
+  const [tempValue, setTempValue] = useState({
+    employeeId: value?.employeeId || null,
+    employeeName: value?.employeeName || null,
+    employeeEmail: value?.employeeEmail || null,
+    employeeAvatarUrl: value?.employeeAvatarUrl || null,
+    branches: value?.branches || [
+      { id: 'assigned', label: tNodes('branches.assigned'), condition: 'assigned' },
+      { id: 'not_eligable', label: tNodes('branches.notEligible'), condition: 'not_eligable' }
+    ]
+  });
+
+  useEffect(() => {
+    setDisabled(false);
+  }, [setDisabled]);
+
+  const handleEmployeeChange = (user) => {
+    const newBranches = [
+      { id: 'assigned', label: tNodes('branches.assigned'), condition: 'assigned' },
+      { id: 'not_eligable', label: tNodes('branches.notEligible'), condition: 'not_eligable' }
+    ];
+    
+    if (!user?.id) {
+      // Auto assign mode: add "no roles match" branch
+      newBranches.splice(1, 0, { id: 'no_roles_match', label: tNodes('branches.noRolesMatch'), condition: 'no_roles_match' });
+    }
+
+    setTempValue({
+      ...tempValue,
+      employeeId: user?.id || null,
+      employeeName: user?.name || null,
+      employeeEmail: user?.email || null,
+      employeeAvatarUrl: user?.avatarUrl || null,
+      branches: newBranches
+    });
+  };
+
+  const handleSave = () => {
+    onChange(tempValue);
+    onClose(tempValue);
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={() => onClose(null)}>
+      <DialogContent className="sm:max-w-[550px] w-full flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
+        <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+                <Users size={20} className="md:size-6" />
+              </div>
+              <div className="text-right">
+                <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('assignOrderToEmployee')}</h3>
+                <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('assignOrderToEmployeeDesc')}</p>
+              </div>
+            </DialogTitle>
+          </div>
+        </DialogHeader>
+        
+        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
+          <div className="space-y-4">
+            <FormGroup label={tConfig('selectEmployee')} description={tConfig('selectEmployeeDesc')} error={errors.employee}>
+              <UserSelect
+                value={tempValue.employeeId || "none"}
+                onSelect={handleEmployeeChange}
+                placeholder={tConfig('selectEmployeePlaceholder')}
+                allowNone={true}
+                noneLabel={tConfig('autoAssign')}
+                className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none"
+                contentClassName="bg-card-select"
+              />
+            </FormGroup>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
+          <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => onClose(null)}
+              className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+            >
+              {tCommon('cancel')}
+            </Button>
+            <Button
+              onClick={handleSave}
+              className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+            >
+              {mode === "create" ? tConfig('addStep') : tConfig('saveChanges')}
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 /**

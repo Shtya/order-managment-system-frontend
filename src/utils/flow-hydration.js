@@ -65,6 +65,36 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
                 break;
             }
 
+            case 'assign_order_to_employee': {
+                if (!config.employeeId) break;
+
+                try {
+                    const res = await api.get(`/users/${config.employeeId}`);
+                    const freshUser = res.data;
+
+                    if (!freshUser || !freshUser.isActive) throw new Error("User not found or inActive");
+
+                    // Check user details
+                    if (freshUser.name !== config.employeeName) {
+                        result.changes.push(`تم تحديث اسم الموظف من "${config.employeeName}" إلى "${freshUser.name}"`);
+                        result.newConfig.employeeName = freshUser.name;
+                    }
+
+                    if (freshUser.email !== config.employeeEmail) {
+                        result.changes.push(`تم تحديث بريد الموظف من "${config.employeeEmail}" إلى "${freshUser.email}"`);
+                        result.newConfig.employeeEmail = freshUser.email;
+                    }
+
+                    if (freshUser.avatarUrl !== config.employeeAvatarUrl) {
+                        result.newConfig.employeeAvatarUrl = freshUser.avatarUrl;
+                    }
+                } catch (e) {
+                    result.isValid = false;
+                    result.error = `الموظف المحدد (${config.employeeName || config.employeeId}) لم يعد موجوداً أو غير نشط.`;
+                }
+                break;
+            }
+
             case 'send_whatsapp_template': {
                 if (!config.templateId) break;
 

@@ -1456,7 +1456,7 @@
       "save": "Save"
     },
     "preview": {
-      "title" :"Preview Permissions",
+      "title": "Preview Permissions",
       "permissions": "Permissions",
       "noDescription": "No description available",
       "noPermissions": "No permissions assigned to this role",
@@ -4713,7 +4713,10 @@
       "addNewSupplier": "Add Supplier"
     },
     "searchPlaceholder": "Find an admin...",
-    "admin": "Admin"
+    "admin": "Admin",
+    "common": {
+      "none": "None"
+    }
   },
   "orders": {
     "shipmentStatuses": {
@@ -10399,7 +10402,8 @@
         "actionTypes": {
           "send_whatsapp_template": "Send WhatsApp Template",
           "update_order_status": "Update Order Status",
-          "send_upsell": "Send Upsell"
+          "send_upsell": "Send Upsell",
+          "assign_order_to_employee": "Assign Order to Employee"
         },
         "conditionTypes": {
           "order_check": "Check Order Data",
@@ -10436,6 +10440,13 @@
           "changeStatusTo": "Change status to",
           "sendOffers": "Send Offers",
           "proposedForOrder": "Proposed for order",
+          "assignTo": "Assign to",
+          "autoAssign": "Auto Assign",
+          "branches": {
+            "assigned": "Assigned",
+            "noRolesMatch": "No Rules Match",
+            "notEligible": "Not Eligible"
+          },
           "yes": "Yes",
           "no": "No",
           "noConditions": "No conditions",
@@ -10510,6 +10521,7 @@
           },
           "noSettings": "This step requires no additional settings",
           "addStep": "Add Step",
+          "save": "Save",
           "saveChanges": "Save Changes",
           "store": "Store",
           "storeDesc": "Choose the store to monitor orders in",
@@ -10521,6 +10533,12 @@
           "selectStatus": "Select status...",
           "newStatus": "New Status",
           "newStatusDesc": "Choose the status to move the order to",
+          "assignOrderToEmployee": "Assign Order to Employee",
+          "assignOrderToEmployeeDesc": "Assign the order to a specific employee or use automatic assignment",
+          "selectEmployee": "Select Employee",
+          "selectEmployeeDesc": "Choose an employee to assign the order to, or leave empty for automatic assignment",
+          "selectEmployeePlaceholder": "Select an employee...",
+          "autoAssign": "Auto Assign",
           "template": "Template",
           "templateDesc": "Choose the message template to send",
           "selectTemplate": "Select template...",

@@ -1,4 +1,4 @@
-import { ShoppingCart, UserPlus, Clock, MessageSquare, RefreshCw, Zap, Bell, GitBranch, MousePointerClick } from 'lucide-react';
+import { ShoppingCart, UserPlus, Clock, MessageSquare, RefreshCw, Zap, Bell, GitBranch, MousePointerClick, Users } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -79,6 +79,15 @@ export const AUTOMATION_CONFIG = {
                         noEdit: true,
                         configComponent: "SendUpsellConfig",
                         className: "max-w-xl!"
+                    },
+                    {
+                        id: "assign_order_to_employee",
+                        label: "تعيين الطلب لموظف",
+                        icon: Users,
+                        type: "action",
+                        configComponent: "AssignOrderToEmployeeConfig",
+                        className: "max-w-xl!",
+                        hasCustom: true
                     }
                 ]
             }

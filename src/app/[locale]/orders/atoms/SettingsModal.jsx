@@ -776,12 +776,82 @@ export function GeneralTab({ settings, patch, t }) {
         title={t("retrySettings.autoAssignment.title")}
         subtitle={t("retrySettings.autoAssignment.subtitle")}
       >
-        <ToggleRow
-          label={t("retrySettings.autoAssignment.enabled")}
-          description={t("retrySettings.autoAssignment.enabledDesc")}
-          checked={settings.autoAssignmentEnabled}
-          onCheckedChange={(v) => patch({ autoAssignmentEnabled: v })}
-        />
+        <div className="space-y-3">
+          <div
+            className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "disabled" 
+                ? "border-primary bg-primary/5" 
+                : "border-slate-200 dark:border-slate-700"
+            }`}
+            onClick={() => patch({ assignmentMode: "disabled" })}
+          >
+            <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "disabled" ? "#6366f1" : "#d1d5db" }}>
+              {settings.assignmentMode === "disabled" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
+            </div>
+            <div className="flex-1">
+              <div className="font-medium">{t("retrySettings.autoAssignment.disabled")}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.disabledDesc")}</div>
+            </div>
+          </div>
+          
+          <div
+            className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "immediate" 
+                ? "border-primary bg-primary/5" 
+                : "border-slate-200 dark:border-slate-700"
+            }`}
+            onClick={() => patch({ assignmentMode: "immediate" })}
+          >
+            <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "immediate" ? "#6366f1" : "#d1d5db" }}>
+              {settings.assignmentMode === "immediate" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
+            </div>
+            <div className="flex-1">
+              <div className="font-medium">{t("retrySettings.autoAssignment.immediate")}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.immediateDesc")}</div>
+            </div>
+          </div>
+          
+          <div
+            className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "delayed" 
+                ? "border-primary bg-primary/5" 
+                : "border-slate-200 dark:border-slate-700"
+            }`}
+            onClick={() => patch({ assignmentMode: "delayed" })}
+          >
+            <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "delayed" ? "#6366f1" : "#d1d5db" }}>
+              {settings.assignmentMode === "delayed" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
+            </div>
+            <div className="flex-1">
+              <div className="font-medium">{t("retrySettings.autoAssignment.delayed")}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.delayedDesc")}</div>
+            </div>
+          </div>
+        </div>
+        
+        {settings.assignmentMode === "delayed" && (
+          <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 space-y-3">
+            <label className="text-sm font-medium">{t("retrySettings.autoAssignment.delayTime")}</label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <input
+                  type="number"
+                  min="1"
+                  value={settings.assignmentDelay}
+                  onChange={(e) => patch({ assignmentDelay: Math.max(1, parseInt(e.target.value) || 1) })}
+                  className="w-full px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                />
+              </div>
+              <select
+                value={settings.assignmentDelayUnit}
+                onChange={(e) => patch({ assignmentDelayUnit: e.target.value })}
+                className="px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+              >
+                <option value="minutes">{t("retrySettings.autoAssignment.minutes")}</option>
+                <option value="hours">{t("retrySettings.autoAssignment.hours")}</option>
+                <option value="days">{t("retrySettings.autoAssignment.days")}</option>
+              </select>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.delayTimeDesc")}</p>
+          </div>
+        )}
       </SectionCard>
 
       {/* Master on/off */}

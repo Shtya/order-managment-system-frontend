@@ -7,7 +7,7 @@ import {
     ChevronRight, ChevronLeft
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { AUTOMATION_CONFIG } from './automation-config';
+import { useAutomationConfig } from '@/hook/useAutomationConfig';
 import { useFlowStore } from '@/hook/useFlowStore';
 import { useRouter } from '@/i18n/navigation';
 
@@ -15,6 +15,7 @@ import { useRouter } from '@/i18n/navigation';
 export function LeftSidebar({ onSelectStep }) {
     const [collapsed, onToggle] = useState(false);
     const t = useTranslations("whatsApp.automations.builder");
+    const automationConfig = useAutomationConfig();
     const router = useRouter();
     const [search, setSearch] = useState('');
     const nodes = useFlowStore((s) => s.nodes);
@@ -33,33 +34,16 @@ export function LeftSidebar({ onSelectStep }) {
 
     const hiddenSidebar = hasTrigger && !pendingConnection;
 
-    const getTranslatedLabel = (item) => {
-        if (item.type === 'trigger') return t(`triggerTypes.${item.id}`);
-        if (item.type === 'action') return t(`actionTypes.${item.id}`);
-        if (item.type === 'condition') return t(`conditionTypes.${item.id}`);
-        return item.label;
-    };
-
-    const getCategoryLabel = (catId) => {
-        if (catId === 'INTERNAL') return t('sidebar.internalSystem');
-        if (catId === 'LOGIC') return t('sidebar.logic');
-        return catId;
-    };
-
     const filteredConfig = useMemo(() => {
         const sections = !hasTrigger
-            ? { TRIGGERS: AUTOMATION_CONFIG.TRIGGERS }
-            : { ACTIONS: AUTOMATION_CONFIG.ACTIONS, CONDITIONS: AUTOMATION_CONFIG.CONDITIONS };
+            ? { TRIGGERS: automationConfig.TRIGGERS }
+            : { ACTIONS: automationConfig.ACTIONS, CONDITIONS: automationConfig.CONDITIONS };
 
         const result = {};
         Object.entries(sections).forEach(([key, section]) => {
             const filteredCategories = section.categories.map(cat => ({
                 ...cat,
-                label: getCategoryLabel(cat.id),
-                items: cat.items.map(item => ({
-                    ...item,
-                    label: getTranslatedLabel(item)
-                })).filter(item =>
+                items: cat.items.filter(item =>
                     !search || item.label.toLowerCase().includes(search.toLowerCase())
                 )
             })).filter(cat => cat.items.length > 0);
@@ -67,13 +51,12 @@ export function LeftSidebar({ onSelectStep }) {
             if (filteredCategories.length > 0) {
                 result[key] = {
                     ...section,
-                    label: t(`sidebar.${key.toLowerCase()}`),
                     categories: filteredCategories
                 };
             }
         });
         return result;
-    }, [hasTrigger, search, t]);
+    }, [hasTrigger, search, automationConfig]);
 
     return (
         <div className="contents">

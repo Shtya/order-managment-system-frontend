@@ -10613,7 +10613,32 @@
             "client_reject": "Client Rejected"
           },
           "noConditionsDesc": "Start by adding the first condition to inspect the request data",
-          "addCondition": "Add condition"
+          "addCondition": "Add condition",
+          "hydration": {
+            "storeUpdated": "Store name updated from \"{oldName}\" to \"{newName}\"",
+            "storeNotFound": "The selected store ({store}) no longer exists or is currently inactive.",
+            "statusUpdated": "Status name updated from \"{oldName}\" to \"{newName}\"",
+            "statusNotFound": "The selected order status ({status}) no longer exists.",
+            "employeeNameUpdated": "Employee name updated from \"{oldName}\" to \"{newName}\"",
+            "employeeEmailUpdated": "Employee email updated from \"{oldEmail}\" to \"{newEmail}\"",
+            "employeeNotFound": "The selected employee ({employee}) no longer exists or is inactive.",
+            "templateNameUpdated": "Template name updated from \"{oldName}\" to \"{newName}\"",
+            "templateButtonsChanged": "The number of buttons in template ({template}) has changed. Please reconfigure the branching paths.",
+            "templateButtonTypeChanged": "Button type of \"{label}\" changed to {type}",
+            "templateButtonTextChanged": "Button text updated from \"{oldText}\" to \"{newText}\"",
+            "templateButtonUrlUpdated": "URL updated for button \"{text}\"",
+            "templateButtonPhoneUpdated": "Phone number updated for button \"{text}\"",
+            "templateNotFound": "The selected WhatsApp template ({template}) no longer exists or is not approved.",
+            "shippingCompanyUpdated": "Shipping company updated from \"{oldName}\" to \"{newName}\"",
+            "shippingCompanyNotFound": "The selected shipping company ({company}) no longer exists or is currently inactive.",
+            "orderStatusCheckUpdated": "Order status updated from \"{oldName}\" to \"{newName}\"",
+            "orderStatusCheckNotFound": "The selected order status ({status}) no longer exists.",
+            "generalError": "Failed to validate order conditions. Please try again.",
+            "fieldNames": {
+              "shippingCompany": "Shipping Company",
+              "status": "Order Status"
+            }
+          }
         },
         "orderProperties": {
           "title": "Select field from order",

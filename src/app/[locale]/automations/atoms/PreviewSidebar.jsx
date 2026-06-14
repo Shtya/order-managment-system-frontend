@@ -355,7 +355,7 @@ function buildMockOrder({
 }) {
     faker.seed(seed);
 
-    const id = `mock-order-${faker.string.uuid()}`;
+    const id = `${faker.string.uuid()}`;
     const orderNumber = `PRV-${new Date().getFullYear()}-${String(index + 1).padStart(4, '0')}-${faker.number.int({ min: 100, max: 999 })}`;
 
     const itemsCount = triggerType === 'order_updated'

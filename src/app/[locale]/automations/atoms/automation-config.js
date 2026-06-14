@@ -1,4 +1,4 @@
-import { ShoppingCart, UserPlus, Clock, MessageSquare, RefreshCw, Zap, Bell, GitBranch, MousePointerClick, Users } from 'lucide-react';
+import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -6,17 +6,14 @@ import { ShoppingCart, UserPlus, Clock, MessageSquare, RefreshCw, Zap, Bell, Git
  * Each item can have an optional config component for user input.
  */
 
-export const AUTOMATION_CONFIG = {
+export const BASE_CONFIG = {
     TRIGGERS: {
-        label: 'المحفزات',
         categories: [
             {
                 id: 'INTERNAL',
-                label: 'نظام داخلي',
                 items: [
                     {
                         id: 'order_created',
-                        label: 'إنشاء طلب جديد',
                         icon: ShoppingCart,
                         type: 'trigger',
                         configComponent: 'OrderCreatedConfig',
@@ -24,39 +21,22 @@ export const AUTOMATION_CONFIG = {
                     },
                     {
                         id: 'order_updated',
-                        label: 'تحديث حالة الطلب',
                         icon: RefreshCw,
                         type: 'trigger',
                         configComponent: 'OrderStatusUpdatedConfig',
                         className: 'max-w-xl!'
                     }
                 ]
-            },
-            // {
-            //     id: 'WHATSAPP',
-            //     label: 'واتساب',
-            //     items: [
-            //         {
-            //             id: 'WHATSAPP_INCOMING',
-            //             label: 'رسالة واردة جديدة',
-            //             icon: MessageSquare,
-            //             type: 'trigger',
-            //             configComponent: 'WhatsappIncomingConfig'
-            //         }
-            //     ]
-            // }
+            }
         ]
     },
     ACTIONS: {
-        label: 'الإجراءات',
         categories: [
             {
                 id: 'INTERNAL',
-                label: 'نظام داخلي',
                 items: [
                     {
                         id: 'update_order_status',
-                        label: 'تحديث حالة الطلب',
                         icon: RefreshCw,
                         type: 'action',
                         configComponent: 'UpdateOrderStatusConfig',
@@ -64,59 +44,39 @@ export const AUTOMATION_CONFIG = {
                     },
                     {
                         id: 'send_whatsapp_template',
-                        label: 'إرسال قالب واتساب',
                         icon: MessageSquare,
                         type: 'action',
                         configComponent: 'SendWhatsappTemplateConfig',
                         className: 'max-w-4xl!',
-                        hasCustom: true    
+                        hasCustom: true
                     },
                     {
-                        id: "send_upsell",
-                        label: "إرسال عرض",
+                        id: 'send_upsell',
                         icon: Zap,
-                        type: "action",
+                        type: 'action',
                         noEdit: true,
-                        configComponent: "SendUpsellConfig",
-                        className: "max-w-xl!"
+                        configComponent: 'SendUpsellConfig',
+                        className: 'max-w-xl!'
                     },
                     {
-                        id: "assign_order_to_employee",
-                        label: "تعيين الطلب لموظف",
+                        id: 'assign_order_to_employee',
                         icon: Users,
-                        type: "action",
-                        configComponent: "AssignOrderToEmployeeConfig",
-                        className: "max-w-xl!",
+                        type: 'action',
+                        configComponent: 'AssignOrderToEmployeeConfig',
+                        className: 'max-w-xl!',
                         hasCustom: true
                     }
                 ]
             }
-            // {
-            //     id: 'WHATSAPP',
-            //     label: 'واتساب',
-            //     items: [
-            //         {
-            //             id: 'send_whatsapp_template',
-            //             label: 'إرسال قالب واتساب',
-            //             icon: MessageSquare,
-            //             type: 'action',
-            //             configComponent: 'SendWhatsappTemplateConfig',
-            //             className: 'max-w-2xl!'
-            //         }
-            //     ]
-            // }
         ]
     },
     CONDITIONS: {
-        label: 'الشروط',
         categories: [
             {
                 id: 'LOGIC',
-                label: 'منطق',
                 items: [
                     {
                         id: 'order_check',
-                        label: 'فحص بيانات الطلب',
                         icon: GitBranch,
                         type: 'condition',
                         configComponent: 'OrderCheckConfig',
@@ -125,7 +85,6 @@ export const AUTOMATION_CONFIG = {
                     },
                     {
                         id: 'quick_order_status',
-                        label: 'فحص سريع للحالة',
                         icon: Zap,
                         type: 'condition',
                         configComponent: 'QuickOrderStatusConfig',
@@ -136,3 +95,6 @@ export const AUTOMATION_CONFIG = {
         ]
     }
 };
+
+// Keep AUTOMATION_CONFIG for backwards compatibility (deprecated)
+export const AUTOMATION_CONFIG = BASE_CONFIG;

@@ -6,9 +6,11 @@ import api from "@/utils/api";
  * 
  * @param {string} type - The node type (e.g., 'ORDER_CREATED', 'SEND_WHATSAPP_TEMPLATE')
  * @param {object} config - The current configuration stored in the node
+ * @param {boolean} isSuperAdmin 
+ * @param {function} t - Translate function from next-intl
  * @returns {Promise<{ isValid: boolean, error?: string, changes: string[], newConfig: object }>}
  */
-export async function hydrateNodeConfig(type, config, isSuperAdmin) {
+export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
     const result = {
         isValid: true,
         error: null,
@@ -30,12 +32,12 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
 
                     if (config.store === freshStore.name) return;
 
-                    result.changes.push(`تم تحديث اسم المتجر من "${config.store}" إلى "${freshStore.name}"`);
+                    result.changes.push(t("whatsApp.automations.builder.config.hydration.storeUpdated", { oldName: config.store, newName: freshStore.name }));
                     result.newConfig.storeId = freshStore.id;
                     result.newConfig.store = freshStore.name;
                 } catch (e) {
                     result.isValid = false;
-                    result.error = `المتجر المحدد (${config.store || config.storeId}) لم يعد موجوداً أو غير مفعل حالياً.`;
+                    result.error = t("whatsApp.automations.builder.config.hydration.storeNotFound", { store: config.store || config.storeId });
                 }
                 break;
 
@@ -53,14 +55,14 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
 
                     const currentLabel = config.status || config.newStatus;
                     if (freshStatus.name !== currentLabel) {
-                        result.changes.push(`تم تحديث اسم الحالة من "${currentLabel}" إلى "${freshStatus.name}"`);
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.statusUpdated", { oldName: currentLabel, newName: freshStatus.name }));
 
                         if (config.statusId) result.newConfig.status = freshStatus.name;
                         if (config.newStatusId) result.newConfig.newStatus = freshStatus.name;
                     }
                 } catch (e) {
                     result.isValid = false;
-                    result.error = `حالة الطلب المحددة (${config.status || config.newStatus || statusId}) لم تعد موجودة.`;
+                    result.error = t("whatsApp.automations.builder.config.hydration.statusNotFound", { status: config.status || config.newStatus || statusId });
                 }
                 break;
             }
@@ -76,12 +78,12 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
 
                     // Check user details
                     if (freshUser.name !== config.employeeName) {
-                        result.changes.push(`تم تحديث اسم الموظف من "${config.employeeName}" إلى "${freshUser.name}"`);
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.employeeNameUpdated", { oldName: config.employeeName, newName: freshUser.name }));
                         result.newConfig.employeeName = freshUser.name;
                     }
 
                     if (freshUser.email !== config.employeeEmail) {
-                        result.changes.push(`تم تحديث بريد الموظف من "${config.employeeEmail}" إلى "${freshUser.email}"`);
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.employeeEmailUpdated", { oldEmail: config.employeeEmail, newEmail: freshUser.email }));
                         result.newConfig.employeeEmail = freshUser.email;
                     }
 
@@ -90,7 +92,7 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
                     }
                 } catch (e) {
                     result.isValid = false;
-                    result.error = `الموظف المحدد (${config.employeeName || config.employeeId}) لم يعد موجوداً أو غير نشط.`;
+                    result.error = t("whatsApp.automations.builder.config.hydration.employeeNotFound", { employee: config.employeeName || config.employeeId });
                 }
                 break;
             }
@@ -107,7 +109,7 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
 
                     // 1. Check template name
                     if (freshTemplate.name !== config.templateName) {
-                        result.changes.push(`تم تحديث اسم القالب من "${config.templateName}" إلى "${freshTemplate.name}"`);
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.templateNameUpdated", { oldName: config.templateName, newName: freshTemplate.name }));
                         result.newConfig.templateName = freshTemplate.name;
                     }
 
@@ -117,7 +119,7 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
 
                     if (freshButtons.length !== currentBranches.length) {
                         result.isValid = false;
-                        result.error = `تغير عدد الأزرار في القالب (${config.templateName}). يرجى إعادة ضبط المسارات المتفرعة.`;
+                        result.error = t("whatsApp.automations.builder.config.hydration.templateButtonsChanged", { template: config.templateName });
                     } else {
                         freshButtons.forEach((btn, idx) => {
                             // لتفادي أي خطأ إذا تغير عدد الأزرار
@@ -127,14 +129,14 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
 
                             // 1️⃣ التحقق من نوع الزر (تغيير كاسر - Breaking Change)
                             if (btn.type !== currentBranch.type) {
-                                result.changes.push(`تم تغيير نوع الزر "${currentBranch.label || currentBranch.text}" إلى ${btn.type}`);
+                                result.changes.push(t("whatsApp.automations.builder.config.hydration.templateButtonTypeChanged", { label: currentBranch.label || currentBranch.text, type: btn.type }));
                                 result.newConfig.branches[idx].type = btn.type;
                                 currentBranch.type = btn.type;
                             }
 
                             // 2️⃣ التحقق من النص (تغيير مرئي - Visual Change)
                             if (btn.text !== currentBranch.text) {
-                                result.changes.push(`تم تحديث نص الزر من "${currentBranch.text}" إلى "${btn.text}"`);
+                                result.changes.push(t("whatsApp.automations.builder.config.hydration.templateButtonTextChanged", { oldText: currentBranch.text, newText: btn.text }));
                                 result.newConfig.branches[idx].text = btn.text;
                                 currentBranch.text = btn.text;
                             }
@@ -142,7 +144,7 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
                             // 3️⃣ التحقق من بيانات الرابط (إذا كان الزر من نوع رابط)
                             if (btn.type === 'VISIT_WEBSITE') {
                                 if (btn.url !== currentBranch.url) {
-                                    result.changes.push(`تم تحديث الرابط الخاص بالزر "${btn.text}"`);
+                                    result.changes.push(t("whatsApp.automations.builder.config.hydration.templateButtonUrlUpdated", { text: btn.text }));
                                     currentBranch.url = btn.url;
                                 }
                                 if (btn.urlType !== currentBranch.urlType) {
@@ -153,7 +155,7 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
                             // 4️⃣ التحقق من بيانات رقم الهاتف (إذا كان الزر من نوع اتصال)
                             if (btn.type === 'PHONE_NUMBER') {
                                 if (btn.phoneNumber !== currentBranch.phoneNumber) {
-                                    result.changes.push(`تم تحديث رقم الهاتف للزر "${btn.text}"`);
+                                    result.changes.push(t("whatsApp.automations.builder.config.hydration.templateButtonPhoneUpdated", { text: btn.text }));
                                     currentBranch.phoneNumber = btn.phoneNumber;
                                     currentBranch.countryCode = btn.countryCode;
                                 }
@@ -163,7 +165,7 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
                 } catch (e) {
                     result.isValid = false;
 
-                    result.error = `قالب واتساب المحدد (${config.templateName || config.templateId}) لم يعد موجوداً أو غير مقبول.`;
+                    result.error = t("whatsApp.automations.builder.config.hydration.templateNotFound", { template: config.templateName || config.templateId });
                 }
                 break;
             }
@@ -195,19 +197,19 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
 
                         if (check.field === 'shippingCompany') {
                             freshItem = integrations.find(c => String(c.providerId) === String(check.targetValue));
-                            fieldName = "شركة الشحن";
+                            fieldName = t("whatsApp.automations.builder.config.hydration.fieldNames.shippingCompany");
                         }
 
                         if (check.field === 'status') {
                             freshItem = statuses.find(s => String(s.id) === String(check.targetValue));
-                            fieldName = "حالة الطلب";
+                            fieldName = t("whatsApp.automations.builder.config.hydration.fieldNames.status");
                         }
 
                         if (check.field === 'shippingCompany') {
                             if (!freshItem) {
                                 hasErrors = true;
 
-                                result.error = `شركة الشحن  (${check.targetLabel}) لم تعد موجودة أو غير مفعلة حالياً..`;
+                                result.error = t("whatsApp.automations.builder.config.hydration.shippingCompanyNotFound", { company: check.targetLabel });
                                 break;
                             }
                         }
@@ -215,14 +217,18 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
                         if (check.field === 'status') {
                             if (!freshItem) {
                                 hasErrors = true;
-                                result.error = `حالة الطلب  (${check.targetLabel}) لم تعد موجودة..`;
+                                result.error = t("whatsApp.automations.builder.config.hydration.orderStatusCheckNotFound", { status: check.targetLabel });
                                 break;
                             }
                         }
                         const isStatusCheck = check.field === 'status' || check.field === 'shippingCompany';
                         if (isStatusCheck && freshItem?.name !== check.targetLabel) {
                             hasChanges = true;
-                            result.changes.push(`تم تحديث ${fieldName} من "${check.targetLabel}" إلى "${freshItem.name}"`);
+                            if (check.field === 'shippingCompany') {
+                                result.changes.push(t("whatsApp.automations.builder.config.hydration.shippingCompanyUpdated", { fieldName, oldName: check.targetLabel, newName: freshItem.name }));
+                            } else if (check.field === 'status') {
+                                result.changes.push(t("whatsApp.automations.builder.config.hydration.orderStatusCheckUpdated", { fieldName, oldName: check.targetLabel, newName: freshItem.name }));
+                            }
                             updatedChecks[i] = { ...check, targetLabel: freshItem.name };
                         }
                     }
@@ -236,7 +242,7 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin) {
                 } catch (e) {
                     console.error("Order Check Hydration Error:", e);
                     result.isValid = false;
-                    result.error = "فشل التحقق من صحة شروط الطلب. يرجى المحاولة مرة أخرى.";
+                    result.error = t("whatsApp.automations.builder.config.hydration.generalError");
                 }
                 break;
             }

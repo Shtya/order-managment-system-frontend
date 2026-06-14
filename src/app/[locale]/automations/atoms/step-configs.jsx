@@ -319,7 +319,7 @@ export function AssignOrderToEmployeeConfig({ value, onChange, errors, setDisabl
               <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
                 <Users size={20} className="md:size-6" />
               </div>
-              <div className="text-right">
+              <div className="">
                 <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('assignOrderToEmployee')}</h3>
                 <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('assignOrderToEmployeeDesc')}</p>
               </div>
@@ -606,7 +606,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
                                 <MessageSquareQuote size={20} className="md:size-6" />
                             </div>
-                            <div className="text-right">
+                            <div className="">
                                 <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('whatsappTemplateTitle')}</h3>
                                 <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('whatsappTemplateDesc')}</p>
                             </div>
@@ -1065,7 +1065,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                 </div>
                             ) : (
                                 <>
-                                    <div className="text-right flex-1 md:px-4">
+                                    <div className=" flex-1 md:px-4">
                                         <h2 className="text-[15px] md:text-[17px] font-black text-slate-900 dark:text-slate-100">{tConfig("orderCheckTitle")}</h2>
                                         <p className="text-[10px] md:text-[11px] text-slate-400 font-bold mt-0.5">{tConfig("orderCheckDesc")}</p>
                                     </div>
@@ -1112,7 +1112,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                                     <div className={cn("w-9 h-9 md:w-11 md:h-11 rounded-lg md:rounded-2xl flex items-center justify-center shadow-sm", f.bg, f.color)}>
                                                                         <f.icon size={16} className="md:size-5" />
                                                                     </div>
-                                                                    <div className="text-right">
+                                                                    <div className="">
                                                                         <p className="text-xs md:text-sm font-black text-slate-800 dark:text-slate-100">{check.fieldLabel || f.label}</p>
                                                                         <span className="text-[9px] md:text-[10px] text-slate-400 font-bold">{f.type}</span>
                                                                     </div>
@@ -1126,7 +1126,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                             </div>
 
                                                             <div className="flex items-center gap-2 p-2.5 md:p-3 rounded-lg md:rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
-                                                                <div className="flex-1 text-right">
+                                                                <div className="flex-1 ">
                                                                     <p className="text-[9px] md:text-[10px] text-slate-400 font-black mb-1 uppercase tracking-tighter">{tConfig("condition")}</p>
                                                                     <p className="text-[10px] md:text-[11px] font-black text-slate-700 dark:text-slate-200">
                                                                         {operatorsByType[f.type]?.find(o => o.id === check.operator)?.label} {check.targetLabel || check.targetValue || '—'}

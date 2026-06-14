@@ -34,6 +34,86 @@ const calculatePosition = (sourceNode, handleId) => {
   };
 };
 
+
+// Flag to temporarily prevent saving to localStorage
+let preventStorageSave = false;
+const FLOW_STORAGE_KEY = 'whatsapp-automation-flow';
+const SKIP_DELETE_KEY = 'skip_delete';
+
+// Reusable function to clear flow localStorage while preserving skipDeleteConfirmation
+const clearFlowStorage = () => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const existingItem = localStorage.getItem(FLOW_STORAGE_KEY);
+    const skipDeleteValue = localStorage.getItem(SKIP_DELETE_KEY);
+    const skipDeleteBool = skipDeleteValue === 'true';
+    
+    localStorage.removeItem(FLOW_STORAGE_KEY);
+    
+    if (existingItem) {
+      try {
+        const parsed = JSON.parse(existingItem);
+        // Preserve skipDeleteConfirmation by storing minimal state
+        const minimalState = {
+          state: {
+            skipDeleteConfirmation: parsed?.state?.skipDeleteConfirmation ?? skipDeleteBool
+          },
+          version: parsed?.version
+        };
+        localStorage.setItem(FLOW_STORAGE_KEY, JSON.stringify(minimalState));
+      } catch (e) {
+        // If parsing fails, just set skipDeleteConfirmation from standalone key
+        const minimalState = {
+          state: { skipDeleteConfirmation: skipDeleteBool },
+          version: 0
+        };
+        localStorage.setItem(FLOW_STORAGE_KEY, JSON.stringify(minimalState));
+      }
+    }
+  } catch (e) {
+    // Fallback if anything fails
+    localStorage.removeItem(FLOW_STORAGE_KEY);
+  }
+};
+
+// Custom storage adapter that only saves when we actually want to
+const createCustomStorage = () => {
+  const baseStorage = createJSONStorage(() => localStorage);
+  
+  return {
+    getItem: async (name) => {
+      return baseStorage.getItem(name);
+    },
+    setItem: async (name, value) => {
+      // If preventStorageSave is true, skip saving completely
+      if (preventStorageSave) {
+        return;
+      }
+      // Parse the value to check mode before saving
+      try {
+        const parsedValue = JSON.parse(value);
+        // Only save if mode is create, otherwise just save skipDeleteConfirmation
+        if (parsedValue?.state?.mode !== 'create') {
+          // Only save skipDeleteConfirmation in non-create modes
+          const minimalState = {
+            state: { skipDeleteConfirmation: parsedValue?.state?.skipDeleteConfirmation },
+            version: parsedValue?.version
+          };
+          return baseStorage.setItem(name, JSON.stringify(minimalState));
+        }
+      } catch (e) {
+        // Fall through
+      }
+      // Otherwise proceed normally
+      return baseStorage.setItem(name, value);
+    },
+    removeItem: async (name) => {
+      return baseStorage.removeItem(name);
+    }
+  };
+};
+
 export const useFlowStore = create(
   persist(
     (set, get) => ({
@@ -57,20 +137,35 @@ export const useFlowStore = create(
       setEdges: (edges) => set({ edges }),
       setName: (name) => set({ name, nameError: null }),
       setNameError: (error) => set({ nameError: error }),
-      setMode: (mode) => set({ mode }),
+      setMode: (mode) => set((state) => {
+        // Clear localStorage when switching from create to edit/view modes
+        if (typeof window !== 'undefined' && state.mode === "create" && mode !== "create") {
+          clearFlowStorage();
+        }
+        return { mode };
+      }),
       setCurrentRun: (run) => set({ currentRun: run }),
       setAutomationId: (id) => set({ automationId: id }),
-      setFlowData: ({ nodes, edges, name, id }) => set({
-        nodes: nodes || [],
-        edges: edges || [],
-        name: name || '',
-        automationId: id || null,
-        mode: id ? 'edit' : 'create',
-        nodeErrors: {},
-        nodeHydration: {},
-        nodeLoading: {},
-        previewResumeLoading: false 
-      }),
+      setFlowData: ({ nodes, edges, name, id }) => {
+        // Prevent storage save when setting flow data for existing automation
+        preventStorageSave = true;
+        if (id && typeof window !== 'undefined') {
+          clearFlowStorage();
+        }
+        const result = set({
+          nodes: nodes || [],
+          edges: edges || [],
+          name: name || '',
+          automationId: id || null,
+          mode: id ? 'edit' : 'create',
+          nodeErrors: {},
+          nodeHydration: {},
+          nodeLoading: {},
+          previewResumeLoading: false
+        });
+        setTimeout(() => { preventStorageSave = false; }, 0);
+        return result;
+      },
       setNodeError: (nodeId, error) => set((s) => ({
         nodeErrors: { ...s.nodeErrors, [nodeId]: error }
       })),
@@ -100,24 +195,33 @@ export const useFlowStore = create(
         pendingConnection: snapshot.pendingConnection || null,
         deleteConfirm: snapshot.deleteConfirm || null,
         skipDeleteConfirmation: snapshot.skipDeleteConfirmation ?? false,
-        previewResumeLoading:  false
-      }),
-      
-      resetFlow: () => set({
-        nodes: [],
-        edges: [],
-        name: '',
-        nameError: null,
-        nodeErrors: {},
-        nodeHydration: {},
-        nodeLoading: {},
-        mode: 'create',
-        automationId: null,
-        selectedNodeId: null,
-        pendingConnection: null,
-        deleteConfirm: null,
         previewResumeLoading: false
       }),
+
+      resetFlow: () => {
+        preventStorageSave = true;
+       
+        set({
+          nodes: [],
+          edges: [],
+          name: '',
+          nameError: null,
+          nodeErrors: {},
+          nodeHydration: {},
+          nodeLoading: {},
+          mode: 'create',
+          automationId: null,
+          selectedNodeId: null,
+          pendingConnection: null,
+          deleteConfirm: null,
+          previewResumeLoading: false
+        });
+        // Ensure no save even after set
+        if (typeof window !== 'undefined') {
+          clearFlowStorage();
+        }
+        setTimeout(() => { preventStorageSave = false; }, 100);
+      },
 
       setSkipDeleteConfirmation: (skip) => {
         if (typeof window !== 'undefined') {
@@ -258,12 +362,6 @@ export const useFlowStore = create(
           ),
           edges: updatedEdges
         });
-
-
-        // if (!auto) {
-        //   setNodeError(id, '');
-        //   setNodeHydration(id, { isHydrated: true, changes: [] });
-        // }
       },
 
       disconnectEdge: (edgeId) => {
@@ -388,6 +486,8 @@ export const useFlowStore = create(
       },
 
       clearFlow: () => {
+        preventStorageSave = true;
+
         const { nodes, name, mode } = get();
         const triggerNode = nodes.find(n => n.type === 'trigger');
         const isEditMode = mode === 'edit';
@@ -406,7 +506,13 @@ export const useFlowStore = create(
           mode: 'create', // إرجاع الوضع الافتراضي
           automationId: null,
           deleteConfirm: null,
-          });
+        });
+
+        // Clear again after set to ensure persist middleware doesn't save
+        if (typeof window !== 'undefined') {
+          clearFlowStorage();
+        }
+        setTimeout(() => { preventStorageSave = false; }, 100);
       },
 
       saveDraft: () => {
@@ -428,8 +534,14 @@ export const useFlowStore = create(
     }),
     {
       name: 'whatsapp-automation-flow',
-      storage: createJSONStorage(() => localStorage),
+      storage: createCustomStorage(),
       partialize: (state) => {
+        if (state.mode !== 'create') {
+          return {
+            skipDeleteConfirmation: state.skipDeleteConfirmation,
+          };
+        }
+
         const {
           skipDeleteConfirmation,
           nameError,

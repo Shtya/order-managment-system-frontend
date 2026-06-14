@@ -98,14 +98,14 @@ export default function ViewAutomationPage() {
   const setFlowData = useFlowStore((s) => s.setFlowData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const clearFlow = useFlowStore((state) => state.clearFlow);
+  const resetFlow = useFlowStore((state) => state.resetFlow);
 
   useEffect(() => {
     // سيتم تنفيذ هذه الدالة فقط عند مغادرة المستخدم للصفحة
     return () => {
-      clearFlow();
+      resetFlow();
     };
-  }, [clearFlow]);
+  }, [resetFlow]);
   useEffect(() => {
     if (!automationId) return;
 

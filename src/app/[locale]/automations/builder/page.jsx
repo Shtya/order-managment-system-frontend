@@ -66,12 +66,12 @@ function BuilderCanvas() {
   const selectedNodeId = useFlowStore((s) => s.selectedNodeId);
   const clearFlow = useFlowStore((state) => state.clearFlow);
 
-  useEffect(() => {
-    // سيتم تنفيذ هذه الدالة فقط عند مغادرة المستخدم للصفحة
-    return () => {
-      clearFlow();
-    };
-  }, [clearFlow]);
+  // useEffect(() => {
+  //   // سيتم تنفيذ هذه الدالة فقط عند مغادرة المستخدم للصفحة
+  //   return () => {
+  //     clearFlow();
+  //   };
+  // }, [clearFlow]);
   // Modal State
   const [configModal, setConfigModal] = useState({ open: false, step: null, mode: 'create', initialData: null });
 
@@ -222,14 +222,17 @@ const SidebarBridge = ({ onSelect }) => {
 export default function AutomationBuilderPage() {
   const automationId = useFlowStore((s) => s.automationId);
   const resetFlow = useFlowStore((s) => s.resetFlow);
+  const setMode = useFlowStore((s) => s.setMode);
+  const mode = useFlowStore((s) => s.mode);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
  
-
+  // Reset store completely when builder page loads to ensure no leftover data
   useEffect(() => {
-    if (automationId) {
+    if(mode !== 'create'){
       resetFlow();
     }
-  }, [automationId, resetFlow]);
+    
+  }, [resetFlow, setMode,]);
 
   return (
     <div className="flex h-screen flex-col  overflow-hidden bg-slate-50 dark:bg-[#050505] relative">

@@ -10644,7 +10644,32 @@
             "client_reject": "العميل رفض"
           },
           "noConditionsDesc": "ابدأ بإضافة أول شرط لفحص بيانات الطلب",
-          "addCondition": " إضافة الشرط"
+          "addCondition": " إضافة الشرط",
+          "hydration": {
+            "storeUpdated": "تم تحديث اسم المتجر من \"{oldName}\" إلى \"{newName}\"",
+            "storeNotFound": "المتجر المحدد ({store}) لم يعد موجوداً أو غير مفعل حالياً.",
+            "statusUpdated": "تم تحديث اسم الحالة من \"{oldName}\" إلى \"{newName}\"",
+            "statusNotFound": "حالة الطلب المحددة ({status}) لم تعد موجودة.",
+            "employeeNameUpdated": "تم تحديث اسم الموظف من \"{oldName}\" إلى \"{newName}\"",
+            "employeeEmailUpdated": "تم تحديث بريد الموظف من \"{oldEmail}\" إلى \"{newEmail}\"",
+            "employeeNotFound": "الموظف المحدد ({employee}) لم يعد موجوداً أو غير نشط.",
+            "templateNameUpdated": "تم تحديث اسم القالب من \"{oldName}\" إلى \"{newName}\"",
+            "templateButtonsChanged": "تغير عدد الأزرار في القالب ({template}). يرجى إعادة ضبط المسارات المتفرعة.",
+            "templateButtonTypeChanged": "تم تغيير نوع الزر \"{label}\" إلى {type}",
+            "templateButtonTextChanged": "تم تحديث نص الزر من \"{oldText}\" إلى \"{newText}\"",
+            "templateButtonUrlUpdated": "تم تحديث الرابط الخاص بالزر \"{text}\"",
+            "templateButtonPhoneUpdated": "تم تحديث رقم الهاتف للزر \"{text}\"",
+            "templateNotFound": "قالب واتساب المحدد ({template}) لم يعد موجوداً أو غير مقبول.",
+            "shippingCompanyUpdated": "تم تحديث {fieldName} من \"{oldName}\" إلى \"{newName}\"",
+            "shippingCompanyNotFound": "شركة الشحن  ({company}) لم تعد موجودة أو غير مفعلة حالياً.",
+            "orderStatusCheckUpdated": "تم تحديث {fieldName} من \"{oldName}\" إلى \"{newName}\"",
+            "orderStatusCheckNotFound": "حالة الطلب  ({status}) لم تعد موجودة.",
+            "generalError": "فشل التحقق من صحة شروط الطلب. يرجى المحاولة مرة أخرى.",
+            "fieldNames": {
+              "shippingCompany": "شركة الشحن",
+              "status": "حالة الطلب"
+            }
+          }
         },
         "orderProperties": {
           "title": "اختيار حقل من الطلب",

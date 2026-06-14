@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/utils/cn';
 import { useFlowStore } from '@/hook/useFlowStore';
 import { CustomHandle } from './CustomHandle';
-import { hydrateNodeConfig } from '@/utils/flow-hydration';
+import { useFlowHydration } from '@/hook/useFlowHydration';
 import { useAuth } from '@/context/AuthContext';
 
 export function BaseNode({
@@ -75,6 +75,7 @@ export function BaseNode({
     const t = useTranslations("whatsApp.automations.builder");
     const locale = useLocale();
     const isRtl = locale === 'ar';
+    const { hydrateNodeConfig } = useFlowHydration();
 
     useEffect(() => {
         if (isRunMode) return; // Skip hydration in run mode
@@ -119,7 +120,7 @@ export function BaseNode({
         return () => {
             isMounted = false;
         };
-    }, [data, id, isRunMode]); // يُفضل إضافة id و isRunMode للمصفوفة لضمان عمل React بشكل سليم
+    }, [data, id, isRunMode, hydrateNodeConfig]); // يُفضل إضافة id و isRunMode والمكونات الجديدة للمصفوفة
 
     // Delete node with keyboard when selected
     useEffect(() => {

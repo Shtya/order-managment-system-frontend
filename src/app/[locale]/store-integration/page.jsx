@@ -45,6 +45,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Controller } from "react-hook-form";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ImagePreviewModal } from "@/components/atoms/ImagePreviewModal";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -1191,239 +1192,303 @@ export function StoreGuideModal({ provider, onClose }) {
   const currentStep = currentSteps[activeStep] || {};
   const p = (obj) => pick(obj, locale);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+
+  const handlePrev = useCallback(() => {
+    setActiveStep((v) => Math.max(0, v - 1));
+  }, []);
+
+  const handleNext = useCallback(() => {
+    setActiveStep((v) =>
+      Math.min(currentSteps.length - 1, v + 1)
+    );
+  }, [currentSteps.length]);
+const isAr = locale === "ar";
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e) => {
+      if (previewImage) {
+        return; // Let ImagePreviewModal handle ESC
+      }
+      if (e.key === "ArrowLeft") {
+        if (isAr)
+          handleNext();
+        else
+          handlePrev();
+      } else if (e.key === "ArrowRight") {
+        if (isAr)
+          handlePrev();
+        else
+          handleNext();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, activeStep, previewImage, handlePrev, handleNext, isAr]);
+
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
-          <DialogTitle className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
-              <HelpCircle size={20} />
-            </div>
-            {t("guide.title", { name: meta?.label })}
-          </DialogTitle>
-          <DialogDescription>
-            {t("guide.subtitle", { name: meta?.label })}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+        <DialogContent
+          onEscapeKeyDown={(e) => {
+            if (previewImage) {
+              // 1. Stop Radix from closing the main dialog
+              e.preventDefault();
 
-        {/* Tabs */}
-        <div className="overflow-y-auto max-h-[calc(90vh-110px)] p-6 pt-0!">
-          <div className="flex border-b border-[var(--border)] gap-1 overflow-x-auto scrollbar-none">
-            {tabs.map((tab, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setActiveTab(i);
-                  setActiveStep(0);
-                }}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeTab === i
-                  ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
-                  : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
-                  }`}
-              >
-                {p(tab.label)}
-              </button>
-            ))}
-          </div>
-
-          {/* Steps */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab + "-" + activeStep}
-              initial={{ opacity: 0, x: locale?.startsWith("ar") ? -12 : 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: locale?.startsWith("ar") ? 12 : -12 }}
-              transition={{ duration: 0.2 }}
-              className="p-6 space-y-4"
-            >
-              <div className="flex items-start gap-3">
-                <span
-                  className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
-                  style={{
-                    background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
-                  }}
-                >
-                  {activeStep + 1}
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--card-foreground)]">
-                    {p(currentStep?.title)}
-                  </p>
-                  <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">
-                    {p(currentStep?.desc)}
-                  </p>
-                  {currentStep?.url && (
-                    <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
-                      {(() => {
-                        // If URL is a function, call it with store/admin ID (replace with your param)
-                        console.log(user)
-                        const url =
-                          typeof currentStep.url === "function"
-                            ? currentStep.url(user) // or any param needed
-                            : currentStep.url;
-
-                        return (
-                          <>
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-primary hover:underline break-all"
-                            >
-                              {url}
-                            </a>
-
-                            <button
-                              onClick={() => navigator.clipboard.writeText(url)}
-                              className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition"
-                            >
-                              <Copy size={12} className="text-primary" />
-                            </button>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </div>
+              // 2. Close your image preview instead
+              setPreviewImage(null);
+            }
+          }}
+          onPointerDownOutside={(e) => {
+            if (previewImage) {
+              e.preventDefault();
+            }
+          }}
+          onInteractOutside={(e) => {
+            if (previewImage) {
+              e.preventDefault();
+            }
+          }}
+          className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-slate-10 flex items-center justify-center text-slate-600">
+                <HelpCircle size={20} />
               </div>
+              {t("guide.title", { name: meta?.label })}
+            </DialogTitle>
+            <DialogDescription>
+              {t("guide.subtitle", { name: meta?.label })}
+            </DialogDescription>
+          </DialogHeader>
 
-              {currentStep?.image && (
-                <div
-                  className="rounded-xl  overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative"
-                  // reserve vertical space and cap maximum height to viewport
-                  style={{ minHeight: 160, maxHeight: "60vh" }}
-                >
-                  {/* Skeleton / placeholder shown while image loads */}
-                  {!imgLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center p-4">
-                      <div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
-                    </div>
-                  )}
-
-                  <img
-                    src={currentStep.image}
-                    alt={p(currentStep.title)}
-                    loading="lazy"
-                    // reserve intrinsic size to avoid layout jump (adjust if you know the image size)
-                    width={1200}
-                    height={700}
-                    onLoad={() => setImgLoaded(true)}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                      setImgLoaded(false);
-                      // show fallback (next sibling placeholder already present)
-                    }}
-                    className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
-                    style={{ display: "block" }}
-                  />
-
-                  {/* fallback UI (keeps same shape) */}
-                  <div
-                    style={{ display: "none" }}
-                    className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
-                  >
-                    <ImageIcon size={28} className="opacity-30" />
-                    <p className="text-xs">{t("guide.imagePlaceholder")}</p>
-                  </div>
-                </div>
-              )}
-
-              {currentStep?.tip && (
-                <div className="flex flex-col gap-3 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
-                  <div className="flex gap-2.5">
-                    <Info
-                      size={14}
-                      className="text-[var(--primary)] flex-shrink-0 mt-0.5"
-                    />
-                    <p className="text-xs text-[var(--foreground)] leading-relaxed">
-                      {p(currentStep.tip)}
-                    </p>
-                  </div>
-
-                  {currentStep.copyableTip && (
-                    <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-dashed border-[var(--primary)]/20 ml-6">
-                      <span className="text-[10px] font-mono text-[var(--muted-foreground)] truncate">
-                        {p(currentStep.copyableTip)}
-                      </span>
-
-                      <button
-                        onClick={() => {
-                          const textToCopy = p(currentStep.copyableTip);
-                          navigator.clipboard.writeText(textToCopy);
-                        }}
-                        className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
-                      >
-                        <Copy size={12} className="text-primary" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Step Navigation */}
-          <div className="border-t border-[var(--border)] py-4 flex items-center justify-between gap-3">
-            <GhostBtn
-              onClick={() => setActiveStep((v) => Math.max(0, v - 1))}
-              className={activeStep === 0 ? "opacity-30 pointer-events-none" : ""}
-            >
-              <ChevronLeft
-                size={14}
-                className={
-                  "rtl:-rotate-180 rtl:transition-transform  ltr:transition-transform"
-                }
-              />{" "}
-              {t("guide.prev")}
-            </GhostBtn>
-
-            <div className="flex items-center gap-1.5">
-              {currentSteps.map((_, i) => (
+          {/* Tabs */}
+          <div className="overflow-y-auto max-h-[calc(90vh-110px)] p-6 pt-0!">
+            <div className="flex border-b border-[var(--border)] gap-1 overflow-x-auto scrollbar-none">
+              {tabs.map((tab, i) => (
                 <button
                   key={i}
-                  onClick={() => setActiveStep(i)}
-                  className="rounded-full transition-all duration-200"
-                  style={{
-                    width: i === activeStep ? "16px" : "6px",
-                    height: "6px",
-                    background:
-                      i === activeStep
-                        ? `rgb(var(--primary-from))`
-                        : "var(--border)",
+                  onClick={() => {
+                    setActiveTab(i);
+                    setActiveStep(0);
                   }}
-                />
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeTab === i
+                    ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
+                    : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
+                    }`}
+                >
+                  {p(tab.label)}
+                </button>
               ))}
             </div>
 
-            {activeStep < currentSteps.length - 1 ? (
-              <PrimaryBtn
-                onClick={() =>
-                  setActiveStep((v) => Math.min(currentSteps.length - 1, v + 1))
-                }
+            {/* Steps */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab + "-" + activeStep}
+                initial={{ opacity: 0, x: locale?.startsWith("ar") ? -12 : 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: locale?.startsWith("ar") ? 12 : -12 }}
+                transition={{ duration: 0.2 }}
+                className="p-6 space-y-4"
               >
-                {t("guide.next")}
-                <ChevronRight
+                <div className="flex items-start gap-3">
+                  <span
+                    className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
+                    style={{
+                      background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
+                    }}
+                  >
+                    {activeStep + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--card-foreground)]">
+                      {p(currentStep?.title)}
+                    </p>
+                    <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">
+                      {p(currentStep?.desc)}
+                    </p>
+                    {currentStep?.url && (
+                      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
+                        {(() => {
+                          // If URL is a function, call it with store/admin ID (replace with your param)
+                          console.log(user)
+                          const url =
+                            typeof currentStep.url === "function"
+                              ? currentStep.url(user) // or any param needed
+                              : currentStep.url;
+
+                          return (
+                            <>
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline break-all"
+                              >
+                                {url}
+                              </a>
+
+                              <button
+                                onClick={() => navigator.clipboard.writeText(url)}
+                                className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition"
+                              >
+                                <Copy size={12} className="text-primary" />
+                              </button>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {currentStep?.image && (
+                  <div
+                    className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative cursor-zoom-in hover:ring-2 hover:ring-[var(--primary)]/30 transition-all"
+                    // reserve vertical space and cap maximum height to viewport
+                    style={{ minHeight: 250, maxHeight: "60vh" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewImage(currentStep.image);
+                    }}
+                  >
+                    {/* Skeleton / placeholder shown while image loads */}
+                    {!imgLoaded && (
+                      <div className="absolute inset-0 flex items-center justify-center p-4">
+                        <div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
+                      </div>
+                    )}
+
+                    <img
+                      src={currentStep.image}
+                      alt={p(currentStep.title)}
+                      loading="lazy"
+                      // reserve intrinsic size to avoid layout jump (adjust if you know the image size)
+                      width={1200}
+                      height={700}
+                      onLoad={() => setImgLoaded(true)}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        setImgLoaded(false);
+                        // show fallback (next sibling placeholder already present)
+                      }}
+                      className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                      style={{ display: "block" }}
+                    />
+
+                    {/* fallback UI (keeps same shape) */}
+                    <div
+                      style={{ display: "none" }}
+                      className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
+                    >
+                      <ImageIcon size={28} className="opacity-30" />
+                      <p className="text-xs">{t("guide.imagePlaceholder")}</p>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep?.tip && (
+                  <div className="flex flex-col gap-3 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
+                    <div className="flex gap-2.5">
+                      <Info
+                        size={14}
+                        className="text-[var(--primary)] flex-shrink-0 mt-0.5"
+                      />
+                      <p className="text-xs text-[var(--foreground)] leading-relaxed">
+                        {p(currentStep.tip)}
+                      </p>
+                    </div>
+
+                    {currentStep.copyableTip && (
+                      <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-dashed border-[var(--primary)]/20 ml-6">
+                        <span className="text-[10px] font-mono text-[var(--muted-foreground)] truncate">
+                          {p(currentStep.copyableTip)}
+                        </span>
+
+                        <button
+                          onClick={() => {
+                            const textToCopy = p(currentStep.copyableTip);
+                            navigator.clipboard.writeText(textToCopy);
+                          }}
+                          className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
+                        >
+                          <Copy size={12} className="text-primary" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Step Navigation */}
+            <div className="border-t border-[var(--border)] py-4 flex items-center justify-between gap-3">
+              <GhostBtn
+                onClick={handlePrev}
+                className={activeStep === 0 ? "opacity-30 pointer-events-none" : ""}
+              >
+                <ChevronLeft
                   size={14}
                   className={
-                    "rtl:rotate-180 rtl:transition-transform  ltr:transition-transform"
+                    "rtl:-rotate-180 rtl:transition-transform  ltr:transition-transform"
                   }
-                />
-              </PrimaryBtn>
-            ) : meta?.guide?.docsUrl ? (
-              <a
-                href={meta.guide.docsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <PrimaryBtn>
-                  <ExternalLink size={13} /> {t("guide.docs")}
-                </PrimaryBtn>
-              </a>
-            ) : null}
-          </div>
-        </div>
+                />{" "}
+                {t("guide.prev")}
+              </GhostBtn>
 
-      </DialogContent>
-    </Dialog>
+              <div className="flex items-center gap-1.5">
+                {currentSteps.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveStep(i)}
+                    className="rounded-full transition-all duration-200"
+                    style={{
+                      width: i === activeStep ? "16px" : "6px",
+                      height: "6px",
+                      background:
+                        i === activeStep
+                          ? `rgb(var(--primary-from))`
+                          : "var(--border)",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {activeStep < currentSteps.length - 1 ? (
+                <PrimaryBtn
+                  onClick={handleNext}
+                >
+                  {t("guide.next")}
+                  <ChevronRight
+                    size={14}
+                    className={
+                      "rtl:rotate-180 rtl:transition-transform  ltr:transition-transform"
+                    }
+                  />
+                </PrimaryBtn>
+              ) : meta?.guide?.docsUrl ? (
+                <a
+                  href={meta.guide.docsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <PrimaryBtn>
+                    <ExternalLink size={13} /> {t("guide.docs")}
+                  </PrimaryBtn>
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+        </DialogContent>
+      </Dialog>
+      <ImagePreviewModal
+        src={previewImage}
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+      />
+    </>
   );
 }

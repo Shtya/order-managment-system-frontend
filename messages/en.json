@@ -9049,7 +9049,8 @@
       "refresh": "Refresh"
     },
     "tabs": {
-      "contacts": "Contacts & Socials"
+      "contacts": "Contacts & Socials",
+      "whatsapp": "WhatsApp"
     },
     "contacts": {
       "primaryTitle": "Primary Contact Information",
@@ -9058,6 +9059,24 @@
       "whatsappLabel": "WhatsApp Support Number",
       "socialTitle": "Social Media Links",
       "socialSubtitle": "Manage the platform's official social media presence."
+    },
+    "whatsapp": {
+      "title": "WhatsApp Integration Mode",
+      "subtitle": "Choose how tenants will integrate their WhatsApp Business accounts.",
+      "modes": {
+        "embedded_signup": {
+          "name": "Embedded Signup",
+          "desc": "Users will use Meta's embedded signup flow to connect their WhatsApp accounts (recommended)."
+        },
+        "manual": {
+          "name": "Manual Configuration",
+          "desc": "Users will manually enter their WhatsApp Business API credentials."
+        },
+        "none": {
+          "name": "Disabled",
+          "desc": "WhatsApp integration will be disabled for all tenants."
+        }
+      }
     },
     "socials": {
       "facebook": "Facebook",
@@ -9894,6 +9913,14 @@
         "whatsapp": "WhatsApp",
         "accounts": "Accounts"
       },
+      "guide": {
+        "title": "WhatsApp Integration Guide",
+        "subtitle": "Follow these steps to integrate your WhatsApp Business account",
+        "prev": "Previous",
+        "next": "Next",
+        "docs": "Read Documentation",
+        "imagePlaceholder": "Image preview"
+      },
       "stats": {
         "deliveryRate": "Delivery Rate",
         "readRate": "Read Rate",
@@ -9942,7 +9969,8 @@
         "delete": "Delete Connection",
         "confirmDelete": "Are you sure you want to delete this connection?",
         "openSettings": "Settings",
-        "syncTemplates": "Sync Templates"
+        "syncTemplates": "Sync Templates",
+        "edit": "Edit"
       },
       "delete": {
         "title": "Delete WhatsApp account",
@@ -9991,7 +10019,36 @@
           "general": "Something went wrong during integration."
         },
         "close": "Close"
-      }
+      },
+      "manualAddAccount": {
+        "title": "Add Account Manually",
+        "name": "Account Name",
+        "phoneNumber": "Phone Number",
+        "phoneNumberId": "Phone Number ID",
+        "businessId": "Business ID",
+        "accessToken": "Access Token",
+        "wabaId": "WABA ID",
+        "validation": {
+          "nameRequired": "Account name is required",
+          "phoneNumberRequired": "Phone number is required",
+          "phoneNumberIdRequired": "Phone number ID is required",
+          "businessIdRequired": "Business ID is required",
+          "accessTokenRequired": "Access token is required",
+          "wabaIdRequired": "WABA ID is required",
+          "appIdRequired": "App Id is required",
+          "appSecretRequired": "App Secret is required"
+        },
+        "success": "Account added successfully!",
+        "common": {
+          "cancel": "Cancel"
+        },
+        "updateSuccess": "The account has been updated successfully!",
+        "editTitle": "Edit account",
+        "saveChanges": "save",
+        "appId": "App ID",
+        "appSecret": "App Secret"
+      },
+      "howIntegrate": "How to set up"
     },
     "templates": {
       "dialog": {

@@ -29,6 +29,7 @@ import { cn } from "@/utils/cn";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import { Input } from "@/components/ui/input";
+import { FaWhatsapp } from "react-icons/fa";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const P_04 = "color-mix(in oklab, var(--primary)  4%, transparent)";
@@ -173,6 +174,7 @@ export default function SuperAdminSettingsPage() {
 
   const TABS = [
     { id: "contacts", label: t("tabs.contacts"), icon: Contact },
+    { id: "whatsapp", label: t("tabs.whatsapp"), icon: FaWhatsapp },
     // Add more tabs here in the future (e.g., 'billing', 'security')
   ];
 
@@ -215,6 +217,7 @@ export default function SuperAdminSettingsPage() {
               transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
             >
               {activeTab === "contacts" && <ContactsTab t={t} />}
+              {activeTab === "whatsapp" && <WhatsAppTab t={t} />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -422,5 +425,95 @@ function ContactsTab({ t }) {
         />
       </SettingCard>
     </form>
+  );
+}
+
+
+function WhatsAppTab({ t }) {
+  const [loading, setLoading] = useState(true);
+  const [whatsappIntegrationMode, setWhatsappIntegrationMode] = useState("embedded_signup");
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await api.get("/admin-settings");
+        const data = res.data || {};
+        setWhatsappIntegrationMode(data.whatsappIntegrationMode || "embedded_signup");
+      } catch (err) {
+        toast.error(t("toast.loadError"));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [t]);
+
+  const onSave = async () => {
+    try {
+      await api.patch("/admin-settings", { whatsappIntegrationMode });
+      toast.success(t("toast.saveSuccess"));
+    } catch (err) {
+      const msg = err.response?.data?.message || t("toast.saveError");
+      toast.error(Array.isArray(msg) ? msg[0] : msg);
+    }
+  };
+
+  if (loading)
+    return (
+      <SettingCard>
+        <FormSkeleton rows={3} />
+      </SettingCard>
+    );
+
+  const MODES = [
+    { id: "embedded_signup", name: t("whatsapp.modes.embedded_signup.name"), desc: t("whatsapp.modes.embedded_signup.desc") },
+    { id: "manual", name: t("whatsapp.modes.manual.name"), desc: t("whatsapp.modes.manual.desc") },
+    { id: "none", name: t("whatsapp.modes.none.name"), desc: t("whatsapp.modes.none.desc") },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <SettingCard className="border-0 bg-transparent shadow-none">
+        <SectionHead
+          title={t("whatsapp.title")}
+          subtitle={t("whatsapp.subtitle")}
+        />
+        <div className="space-y-3 p-6 main-card rounded-2xl border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+          {MODES.map((mode) => (
+            <div
+              key={mode.id}
+              className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${whatsappIntegrationMode === mode.id
+                ? "border-primary bg-primary/5"
+                : "border-slate-200 dark:border-slate-700"
+                }`}
+              onClick={() => setWhatsappIntegrationMode(mode.id)}
+            >
+              <div
+                className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all"
+                style={{
+                  borderColor: whatsappIntegrationMode === mode.id ? "#6366f1" : "#d1d5db"
+                }}
+              >
+                {whatsappIntegrationMode === mode.id && (
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: "#6366f1" }}
+                  />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">{mode.name}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">{mode.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <SaveFooter
+          onSave={onSave}
+          saving={false}
+          label={t("common.saveChanges")}
+        />
+      </SettingCard>
+    </div>
   );
 }

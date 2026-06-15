@@ -9080,7 +9080,8 @@
       "refresh": "تحديث"
     },
     "tabs": {
-      "contacts": "جهات الاتصال والتواصل الاجتماعي"
+      "contacts": "جهات الاتصال والتواصل الاجتماعي",
+      "whatsapp": "واتساب"
     },
     "contacts": {
       "primaryTitle": "معلومات الاتصال الأساسية",
@@ -9089,6 +9090,24 @@
       "whatsappLabel": "رقم واتساب للدعم",
       "socialTitle": "روابط التواصل الاجتماعي",
       "socialSubtitle": "إدارة الحسابات الرسمية للمنصة على وسائل التواصل الاجتماعي."
+    },
+    "whatsapp": {
+      "title": "طريقة دمج واتساب",
+      "subtitle": "اختر كيفية دمج حسابات واتساب بيزنس للمستأجرين.",
+      "modes": {
+        "embedded_signup": {
+          "name": "التسجيل المدمج",
+          "desc": "سيستخدم المستخدمين طريقة التسجيل المدمجة من ميتا لربط حسابات واتساب الخاصة بهم (موصى به)."
+        },
+        "manual": {
+          "name": "يدوي",
+          "desc": "سيقوم المستخدمين بإدخال بيانات واجهة واتساب بيزنس يدويًا."
+        },
+        "none": {
+          "name": "معطل",
+          "desc": "سيتم تعطيل دمج واتساب لجميع المستأجرين."
+        }
+      }
     },
     "socials": {
       "facebook": "فيسبوك",
@@ -9925,6 +9944,14 @@
         "whatsapp": "واتساب",
         "accounts": "الحسابات"
       },
+      "guide": {
+        "title": "دليل ربط واتساب",
+        "subtitle": "اتبع هذه الخطوات لربط حساب واتساب بيزنس الخاص بك",
+        "prev": "السابق",
+        "next": "التالي",
+        "docs": "قراءة المستندات",
+        "imagePlaceholder": "معاينة الصورة"
+      },
       "stats": {
         "deliveryRate": "معدل التسليم",
         "readRate": "معدل القراءة",
@@ -9973,7 +10000,8 @@
         "delete": "حذف الربط",
         "confirmDelete": "هل أنت متأكد من حذف هذا الربط؟",
         "openSettings": "الإعدادات",
-        "syncTemplates": "مزامنة القوالب"
+        "syncTemplates": "مزامنة القوالب",
+        "edit": "تعديل"
       },
       "delete": {
         "title": "حذف حساب واتساب",
@@ -10022,7 +10050,36 @@
           "general": "حدث خطأ ما أثناء الربط."
         },
         "close": "إغلاق"
-      }
+      },
+      "manualAddAccount": {
+        "title": "إضافة حساب يدوياً",
+        "name": "اسم الحساب",
+        "phoneNumber": "رقم الهاتف",
+        "phoneNumberId": "معرف رقم الهاتف",
+        "businessId": "معرف الأعمال",
+        "accessToken": "رمز الوصول",
+        "wabaId": "معرف WABA",
+        "validation": {
+          "nameRequired": "اسم الحساب مطلوب",
+          "phoneNumberRequired": "رقم الهاتف مطلوب",
+          "phoneNumberIdRequired": "معرف رقم الهاتف مطلوب",
+          "businessIdRequired": "معرف الأعمال مطلوب",
+          "accessTokenRequired": "رمز الوصول مطلوب",
+          "wabaIdRequired": "معرف WABA مطلوب",
+          "appIdRequired": "سر التطبيق مطلوب",
+          "appSecretRequired": "معرف التطبيق مطلوب"
+        },
+        "success": "تم إضافة الحساب بنجاح!",
+        "common": {
+          "cancel": "إلغاء"
+        },
+        "updateSuccess": "تم تحديث الحساب بنجاح!",
+        "editTitle": "تعديل الحساب",
+        "saveChanges": "حفظ",
+        "appId": "معرف التطبيق",
+        "appSecret": "سر التطبيق"
+      },
+      "howIntegrate": "كيفية الاعداد"
     },
     "templates": {
       "dialog": {

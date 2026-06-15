@@ -1,7 +1,7 @@
 // --- File: page.jsx ---
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -33,12 +33,13 @@ import { useTranslations, useLocale } from "next-intl";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { normalizeAxiosError } from "@/utils/axios";
-import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
 import { PROVIDER_META, useShippingIntegration, useShippingSettings, useShippingUsage, useShippingWebhook } from "@/hook/shipping";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/utils/cn";
+import { ImagePreviewModal } from "@/components/atoms/ImagePreviewModal";
 
 
 function pick(bilingualObj, locale) {
@@ -167,156 +168,236 @@ export function GuideModal({ company, onClose }) {
 	const t = useTranslations("shipping");
 	const locale = useLocale();
 	const [imgLoaded, setImgLoaded] = useState(false);
+	const [previewImage, setPreviewImage] = useState(null);
 	const meta = PROVIDER_META[company.code];
 	const steps = meta?.guide?.steps || [];
 	const [activeStep, setActiveStep] = useState(0);
 	const current = steps[activeStep];
 	const p = (obj) => pick(obj, locale);
 
+
+	const handlePrev = useCallback(() => {
+		setActiveStep((v) => Math.max(0, v - 1));
+	}, []);
+
+	const handleNext = useCallback(() => {
+		setActiveStep((v) =>
+			Math.min(steps.length - 1, v + 1)
+		);
+	}, [steps.length]);
+	const isAr = locale === "ar";
+	useEffect(() => {
+		const handleKeyDown = (e) => {
+			if (previewImage) {
+				return; // Let ImagePreviewModal handle ESC
+			}
+			if (e.key === "ArrowLeft") {
+				if (isAr)
+					handleNext();
+				else
+					handlePrev();
+			} else if (e.key === "ArrowRight") {
+				if (isAr)
+					handlePrev();
+				else
+					handleNext();
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [activeStep, previewImage, handlePrev, handleNext, isAr]);
+
+	const handleBackdropClick = () => {
+		if (!previewImage) {
+			onClose();
+		}
+	};
+
 	return (
-		<ModalShell onClose={onClose} maxWidth="max-w-xl">
-			<ModalHeader icon={HelpCircle} title={t("guide.title")} subtitle={t("guide.subtitle", { name: company.name })} onClose={onClose} />
-
-			<div className="flex flex-col">
-				<div className="flex border-b border-[var(--border)] px-6 gap-1 pt-3 overflow-x-auto scrollbar-none">
-					{steps.map((step, i) => (
-						<button
-							key={i}
-							onClick={() => setActiveStep(i)}
-							className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeStep === i
-								? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
-								: "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
-								}`}
-						>
-							<span
-								className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0"
-								style={{
-									background: activeStep === i ? `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))` : "var(--muted)",
-									color: activeStep === i ? "white" : "var(--muted-foreground)",
-								}}
-							>
-								{i + 1}
-							</span>
-							{p(step.tab)}
-						</button>
-					))}
-				</div>
-
-				<AnimatePresence mode="wait">
-					<motion.div
-						key={activeStep}
-						initial={{ opacity: 0, x: locale?.startsWith("ar") ? -12 : 12 }}
-						animate={{ opacity: 1, x: 0 }}
-						exit={{ opacity: 0, x: locale?.startsWith("ar") ? 12 : -12 }}
-						transition={{ duration: 0.2 }}
-						className="p-6 space-y-4"
-					>
-						<div className="flex items-start gap-3">
-							<span
-								className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
-								style={{ background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))` }}
-							>
-								{activeStep + 1}
-							</span>
-							<div>
-								<p className="text-sm font-semibold text-[var(--card-foreground)]">{p(current?.title)}</p>
-								<p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">{p(current?.desc)}</p>
+		<>
+			<Dialog open={true} onOpenChange={(v) => !v && onClose()}>
+				<DialogContent
+					onEscapeKeyDown={(e) => {
+						if (previewImage) {
+							e.preventDefault();
+							setPreviewImage(null);
+						}
+					}}
+					onPointerDownOutside={(e) => {
+						if (previewImage) {
+							e.preventDefault();
+						}
+					}}
+					onInteractOutside={(e) => {
+						if (previewImage) {
+							e.preventDefault();
+						}
+					}}
+					className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+					<DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+						<DialogTitle className="flex items-center gap-2">
+							<div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+								<HelpCircle size={20} />
 							</div>
+							{t("guide.title")}
+						</DialogTitle>
+						<DialogDescription>
+							{t("guide.subtitle", { name: company.name })}
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="overflow-y-auto max-h-[calc(90vh-110px)] p-6 pt-0!">
+						<div className="flex border-b border-[var(--border)] gap-1 overflow-x-auto scrollbar-none">
+							{steps.map((step, i) => (
+								<button
+									key={i}
+									onClick={() => setActiveStep(i)}
+									className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeStep === i
+										? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
+										: "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
+										}`}
+								>
+									<span
+										className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0"
+										style={{
+											background: activeStep === i ? `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))` : "var(--muted)",
+											color: activeStep === i ? "white" : "var(--muted-foreground)",
+										}}
+									>
+										{i + 1}
+									</span>
+									{p(step.tab)}
+								</button>
+							))}
 						</div>
 
-						{current?.image && (
-							<div
-								className="rounded-xl  overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative"
-								// reserve vertical space and cap maximum height to viewport
-								style={{ minHeight: 160, maxHeight: "60vh" }}
-							>
-								{/* Skeleton / placeholder shown while image loads */}
-								{!imgLoaded && (
-									<div className="absolute inset-0 flex items-center justify-center p-4">
-										<div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
-									</div>
-								)}
-
-								<img
-									src={current.image}
-									alt={p(current.title)}
-									loading="lazy"
-									// reserve intrinsic size to avoid layout jump (adjust if you know the image size)
-									width={1200}
-									height={700}
-									onLoad={() => setImgLoaded(true)}
-									onError={(e) => {
-										e.currentTarget.style.display = "none";
-										setImgLoaded(false);
-										// show fallback (next sibling placeholder already present)
-									}}
-									className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
-									style={{ display: "block" }}
-								/>
-
-								{/* fallback UI (keeps same shape) */}
-								<div
-									style={{ display: "none" }}
-									className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
+					<AnimatePresence mode="wait">
+						<motion.div
+							key={activeStep}
+							initial={{ opacity: 0, x: locale?.startsWith("ar") ? -12 : 12 }}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0, x: locale?.startsWith("ar") ? 12 : -12 }}
+							transition={{ duration: 0.2 }}
+							className="p-6 space-y-4"
+						>
+							<div className="flex items-start gap-3">
+								<span
+									className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
+									style={{ background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))` }}
 								>
-									<ImageIcon size={28} className="opacity-30" />
-									<p className="text-xs">{t("guide.imagePlaceholder")}</p>
+									{activeStep + 1}
+								</span>
+								<div>
+									<p className="text-sm font-semibold text-[var(--card-foreground)]">{p(current?.title)}</p>
+									<p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">{p(current?.desc)}</p>
 								</div>
 							</div>
-						)}
 
-						{current?.tip && p(current.tip) && (
-							<div className="flex gap-2.5 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
-								<Info size={14} className="text-[var(--primary)] flex-shrink-0 mt-0.5" />
-								<p className="text-xs text-[var(--foreground)] leading-relaxed">{p(current.tip)}</p>
-							</div>
-						)}
-					</motion.div>
-				</AnimatePresence>
+							{current?.image && (
+								<div
+									className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative cursor-zoom-in hover:ring-2 hover:ring-[var(--primary)]/30 transition-all"
+									// reserve vertical space and cap maximum height to viewport
+									style={{ minHeight: 250, maxHeight: "60vh" }}
+									onClick={(e) => {
+										e.stopPropagation();
+										setPreviewImage(current.image);
+									}}
+								>
+									{/* Skeleton / placeholder shown while image loads */}
+									{!imgLoaded && (
+										<div className="absolute inset-0 flex items-center justify-center p-4">
+											<div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
+										</div>
+									)}
 
-				<div className="border-t border-[var(--border)] px-6 py-4 flex items-center justify-between gap-3">
-					<GhostBtn onClick={() => setActiveStep((v) => Math.max(0, v - 1))} className={activeStep === 0 ? "opacity-30 pointer-events-none" : ""}>
-						<ChevronLeft size={14} className={"rtl:-rotate-180 rtl:transition-transform  ltr:transition-transform"} /> {t("guide.prev")}
-					</GhostBtn>
+									<img
+										src={current.image}
+										alt={p(current.title)}
+										loading="lazy"
+										// reserve intrinsic size to avoid layout jump (adjust if you know the image size)
+										width={1200}
+										height={700}
+										onLoad={() => setImgLoaded(true)}
+										onError={(e) => {
+											e.currentTarget.style.display = "none";
+											setImgLoaded(false);
+											// show fallback (next sibling placeholder already present)
+										}}
+										className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+										style={{ display: "block" }}
+									/>
 
-					<div className="flex items-center gap-1.5">
-						{steps.map((_, i) => (
-							<button
-								key={i}
-								onClick={() => setActiveStep(i)}
-								className="rounded-full transition-all duration-200"
-								style={{
-									width: i === activeStep ? "16px" : "6px",
-									height: "6px",
-									background: i === activeStep ? `rgb(var(--primary-from))` : "var(--border)",
-								}}
-							/>
-						))}
+									{/* fallback UI (keeps same shape) */}
+									<div
+										style={{ display: "none" }}
+										className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
+									>
+										<ImageIcon size={28} className="opacity-30" />
+										<p className="text-xs">{t("guide.imagePlaceholder")}</p>
+									</div>
+								</div>
+							)}
+
+							{current?.tip && p(current.tip) && (
+								<div className="flex gap-2.5 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
+									<Info size={14} className="text-[var(--primary)] flex-shrink-0 mt-0.5" />
+									<p className="text-xs text-[var(--foreground)] leading-relaxed">{p(current.tip)}</p>
+								</div>
+							)}
+						</motion.div>
+					</AnimatePresence>
+
+					<div className="border-t border-[var(--border)] px-6 py-4 flex items-center justify-between gap-3">
+						<GhostBtn onClick={handlePrev} className={activeStep === 0 ? "opacity-30 pointer-events-none" : ""}>
+							<ChevronLeft size={14} className={"rtl:-rotate-180 rtl:transition-transform  ltr:transition-transform"} /> {t("guide.prev")}
+						</GhostBtn>
+
+						<div className="flex items-center gap-1.5">
+							{steps.map((_, i) => (
+								<button
+									key={i}
+									onClick={() => setActiveStep(i)}
+									className="rounded-full transition-all duration-200"
+									style={{
+										width: i === activeStep ? "16px" : "6px",
+										height: "6px",
+										background: i === activeStep ? `rgb(var(--primary-from))` : "var(--border)",
+									}}
+								/>
+							))}
+						</div>
+
+						{activeStep < steps.length - 1 ? (
+							<PrimaryBtn onClick={handleNext}>
+								{t("guide.next")}<ChevronRight
+									size={14}
+									className={"rtl:rotate-180 rtl:transition-transform  ltr:transition-transform"}
+								/>
+							</PrimaryBtn>
+						) : meta?.guide?.docsUrl ? (
+							<a href={meta?.guide?.docsUrl} target="_blank" rel="noopener noreferrer">
+								<PrimaryBtn onClick={undefined}>
+									<ExternalLink size={13} /> {t("guide.docs")}
+								</PrimaryBtn>
+							</a>
+						) : meta?.guide?.mainUrl ? (
+							<a href={meta?.guide?.mainUrl} target="_blank" rel="noopener noreferrer">
+								<PrimaryBtn onClick={undefined}>
+									<ExternalLink size={13} /> {t("guide.site")}
+								</PrimaryBtn>
+							</a>
+						) : null}
 					</div>
-
-					{activeStep < steps.length - 1 ? (
-						<PrimaryBtn onClick={() => setActiveStep((v) => Math.min(steps.length - 1, v + 1))}>
-							{t("guide.next")}<ChevronRight
-								size={14}
-								className={"rtl:rotate-180 rtl:transition-transform  ltr:transition-transform"}
-							/>
-						</PrimaryBtn>
-					) : meta?.guide?.docsUrl ? (
-						<a href={meta?.guide?.docsUrl} target="_blank" rel="noopener noreferrer">
-							<PrimaryBtn onClick={undefined}>
-								<ExternalLink size={13} /> {t("guide.docs")}
-							</PrimaryBtn>
-						</a>
-					) : meta?.guide?.mainUrl ? (
-						<a href={meta?.guide?.mainUrl} target="_blank" rel="noopener noreferrer">
-							<PrimaryBtn onClick={undefined}>
-								<ExternalLink size={13} /> {t("guide.site")}
-							</PrimaryBtn>
-						</a>
-					) : null}
 				</div>
-			</div>
-		</ModalShell>
+			</DialogContent>
+		</Dialog>
+		<ImagePreviewModal
+			src={previewImage}
+			isOpen={!!previewImage}
+			onClose={() => setPreviewImage(null)}
+		/>
+		</>
 	);
 }
 

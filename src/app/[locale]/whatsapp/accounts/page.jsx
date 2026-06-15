@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { ImagePreviewModal } from "@/components/atoms/ImagePreviewModal";
 import { useTranslations, useLocale } from "next-intl";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -85,7 +86,8 @@ const WHATSAPP_GUIDE_CONFIG = {
               en: "If you already see 'My Apps', you can skip login/get started and continue directly.",
               ar: "إذا ظهر لديك قسم 'My Apps' يمكنك تخطي تسجيل الدخول أو البدء والمتابعة مباشرة."
             },
-            image: "/whatsapp/prepar/step-1-open-developers.png"
+            image: "/whatsapp/prepar/step-1-open-developers.png",
+            url: "https://developers.facebook.com"
           },
 
           {
@@ -176,7 +178,7 @@ const WHATSAPP_GUIDE_CONFIG = {
               en: "You can complete identity verification anytime later if needed.",
               ar: "يمكنك إكمال التحقق من الهوية في أي وقت لاحق."
             },
-            image: "/whatsapp/portfolio/step-7-id.png"
+            image: "/whatsapp/prepar/step-7-id.png"
           }
 
         ]
@@ -458,19 +460,6 @@ const WHATSAPP_GUIDE_CONFIG = {
             },
             image: "/whatsapp/app/step-5-business-portfolio.png"
           },
-
-          {
-            title: {
-              en: "Continue to Requirements",
-              ar: "المتابعة إلى المتطلبات"
-            },
-            desc: {
-              en: "Click Next to continue.",
-              ar: "اضغط التالي للانتقال."
-            },
-            image: "/whatsapp/app/step-6-next.png"
-          },
-
           {
             title: {
               en: "Review and Create App",
@@ -480,7 +469,7 @@ const WHATSAPP_GUIDE_CONFIG = {
               en: "Review all app details and click 'Create App' to finish.",
               ar: "راجع جميع المعلومات ثم اضغط 'Create App' لإنهاء الإنشاء."
             },
-            image: "/whatsapp/app/step-7-review.png"
+            image: "/whatsapp/app/step-6-review.png"
           }
         ]
       },
@@ -667,26 +656,14 @@ const WHATSAPP_GUIDE_CONFIG = {
 
           {
             title: {
-              en: "Assign Your App",
-              ar: "ربط التطبيق"
+              en: "Assign Your App and Grant Full Control",
+              ar: "ربط التطبيق ومنح التحكم الكامل"
             },
             desc: {
-              en: "Choose Apps, then select the Meta App you created earlier.",
-              ar: "اختر Apps ثم حدد تطبيق Meta الذي أنشأته سابقاً."
+              en: "Click 'Assign Assets', choose Apps, select the Meta App you created earlier, then enable Full Control permissions and save your changes.",
+              ar: "اضغط على 'Assign Assets' ثم اختر Apps وحدد تطبيق Meta الذي أنشأته سابقاً، وبعد ذلك فعّل صلاحية Full Control واحفظ التغييرات."
             },
-            image: "/whatsapp/token/step-5-select-app.png"
-          },
-
-          {
-            title: {
-              en: "Grant Full Control",
-              ar: "منح التحكم الكامل"
-            },
-            desc: {
-              en: "Enable Full Control permissions for the selected app and save your changes.",
-              ar: "فعّل صلاحية Full Control للتطبيق المحدد ثم احفظ التغييرات."
-            },
-            image: "/whatsapp/token/step-6-full-control.png"
+            image: "/whatsapp/token/step-5-assign-app-full-control.png"
           },
 
           {
@@ -698,7 +675,7 @@ const WHATSAPP_GUIDE_CONFIG = {
               en: "Click 'Generate New Token' from the selected System User.",
               ar: "اضغط على 'Generate New Token' من مستخدم النظام المحدد."
             },
-            image: "/whatsapp/token/step-7-generate-token.png"
+            image: "/whatsapp/token/step-6-generate-token.png"
           },
 
           {
@@ -710,7 +687,7 @@ const WHATSAPP_GUIDE_CONFIG = {
               en: "Choose the Meta App you created earlier. The access token will be generated for this app.",
               ar: "اختر تطبيق Meta الذي أنشأته سابقاً. سيتم إنشاء رمز الوصول لهذا التطبيق."
             },
-            image: "/whatsapp/token/step-8-select-app.png"
+            image: "/whatsapp/token/step-7-select-app.png"
           },
           {
             title: {
@@ -725,7 +702,7 @@ const WHATSAPP_GUIDE_CONFIG = {
               en: "A permanent token remains valid until it is manually revoked.",
               ar: "يبقى الرمز الدائم صالحاً حتى يتم إلغاؤه يدوياً."
             },
-            image: "/whatsapp/token/step-9-token-expiration.png"
+            image: "/whatsapp/token/step-8-token-expiration.png"
           },
           {
             title: {
@@ -740,7 +717,7 @@ const WHATSAPP_GUIDE_CONFIG = {
               en: "Required permissions:\nwhatsapp_business_messaging\nwhatsapp_business_management",
               ar: "الصلاحيات المطلوبة:\nwhatsapp_business_messaging\nwhatsapp_business_management"
             },
-            image: "/whatsapp/token/step-10-permissions.png"
+            image: "/whatsapp/token/step-9-permissions.png"
           },
 
           {
@@ -756,6 +733,7 @@ const WHATSAPP_GUIDE_CONFIG = {
           }
         ]
       },
+
       {
         label: {
           en: "Publish App & Connect to MADAR",
@@ -1023,256 +1001,315 @@ function WhatsAppGuideModal({ open, onOpenChange }) {
   const [activeTab, setActiveTab] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const currentSteps = tabs[activeTab]?.steps || [];
   const currentStep = currentSteps[activeStep] || {};
 
   // Handle next step: if current step is last in tab, go to next tab, first step
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (activeStep < currentSteps.length - 1) {
-      setActiveStep(activeStep + 1);
+      setActiveStep((prev) => prev + 1);
     } else if (activeTab < tabs.length - 1) {
-      setActiveTab(activeTab + 1);
+      setActiveTab((prev) => prev + 1);
       setActiveStep(0);
     }
-  };
+  }, [activeStep, activeTab, currentSteps.length, tabs.length]);
 
-  // Handle prev step: if current step is first in tab, go to prev tab, last step
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (activeStep > 0) {
-      setActiveStep(activeStep - 1);
+      setActiveStep((prev) => prev - 1);
     } else if (activeTab > 0) {
-      setActiveTab(activeTab - 1);
       const prevSteps = tabs[activeTab - 1]?.steps || [];
+
+      setActiveTab((prev) => prev - 1);
       setActiveStep(prevSteps.length - 1);
     }
-  };
+  }, [activeStep, activeTab, tabs]);
+
+  const isAr = locale === "ar";
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e) => {
+      if (previewImage) {
+        return; // Let ImagePreviewModal handle ESC
+      }
+      if (e.key === "ArrowLeft") {
+        if (isAr)
+          handleNext();
+        else
+          handlePrev();
+      } else if (e.key === "ArrowRight") {
+        if (isAr)
+          handlePrev();
+        else
+          handleNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, activeTab, activeStep, previewImage, handlePrev, handleNext, isAr]);
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onOpenChange()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
-          <DialogTitle className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
-              <HelpCircle size={20} />
-            </div>
-            {t("title")}
-          </DialogTitle>
-          <DialogDescription>
-            {t("subtitle")}
-          </DialogDescription>
-        </DialogHeader>
-
-        {/* Tabs */}
-        <div className="overflow-y-auto max-h-[calc(90vh-110px)] p-6 pt-0!">
-          <div className="flex border-b border-[var(--border)] gap-1 overflow-x-auto scrollbar-none">
-            {tabs.map((tab, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setActiveTab(i);
-                  setActiveStep(0);
-                }}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeTab === i
-                  ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
-                  : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
-                  }`}
-              >
-                {pick(tab.label, locale)}
-              </button>
-            ))}
-          </div>
-
-          {/* Steps */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab + "-" + activeStep}
-              initial={{ opacity: 0, x: locale?.startsWith("ar") ? -12 : 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: locale?.startsWith("ar") ? 12 : -12 }}
-              transition={{ duration: 0.2 }}
-              className="p-6 space-y-4"
-            >
-              <div className="flex items-start gap-3">
-                <span
-                  className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
-                  style={{
-                    background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
-                  }}
-                >
-                  {activeStep + 1}
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--card-foreground)]">
-                    {pick(currentStep?.title, locale)}
-                  </p>
-                  <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">
-                    {pick(currentStep?.desc, locale)}
-                  </p>
-                  {currentStep?.url && (
-                    <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
-                      {(() => {
-                        // If URL is a function, call it with user (replace with your param)
-                        const url =
-                          typeof currentStep.url === "function"
-                            ? currentStep.url(user)
-                            : currentStep.url;
-
-                        return (
-                          <>
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-primary hover:underline break-all"
-                            >
-                              {url}
-                            </a>
-
-                            <button
-                              onClick={() => navigator.clipboard.writeText(url)}
-                              className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition"
-                            >
-                              <Copy size={12} className="text-primary" />
-                            </button>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </div>
+    <>
+      <Dialog open={open} onOpenChange={(v) => !v && onOpenChange()}>
+        <DialogContent
+         onEscapeKeyDown={(e) => {
+      if (previewImage) {
+        // 1. Stop Radix from closing the main dialog
+        e.preventDefault(); 
+        
+        // 2. Close your image preview instead
+        setPreviewImage(null); 
+      }
+    }}
+          onPointerDownOutside={(e) => {
+            if (previewImage) {
+              e.preventDefault();
+            }
+          }}
+          onInteractOutside={(e) => {
+            if (previewImage) {
+              e.preventDefault();
+            }
+          }}
+          className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                <HelpCircle size={20} />
               </div>
+              {t("title")}
+            </DialogTitle>
+            <DialogDescription>
+              {t("subtitle")}
+            </DialogDescription>
+          </DialogHeader>
 
-              {currentStep?.image && (
-                <div
-                  className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative"
-                  style={{ minHeight: 160, maxHeight: "60vh" }}
-                >
-                  {/* Skeleton / placeholder shown while image loads */}
-                  {!imgLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center p-4">
-                      <div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
-                    </div>
-                  )}
-
-                  <img
-                    src={currentStep.image}
-                    alt={pick(currentStep.title, locale)}
-                    loading="lazy"
-                    width={1200}
-                    height={700}
-                    onLoad={() => setImgLoaded(true)}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                      setImgLoaded(false);
-                    }}
-                    className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
-                    style={{ display: "block" }}
-                  />
-
-                  {/* fallback UI */}
-                  <div
-                    style={{ display: "none" }}
-                    className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
-                  >
-                    <ImageIcon size={28} className="opacity-30" />
-                    <p className="text-xs">{t("imagePlaceholder")}</p>
-                  </div>
-                </div>
-              )}
-
-              {currentStep?.tip && (
-                <div className="flex flex-col gap-3 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
-                  <div className="flex gap-2.5">
-                    <Info
-                      size={14}
-                      className="text-[var(--primary)] flex-shrink-0 mt-0.5"
-                    />
-                    <p className="text-xs text-[var(--foreground)] leading-relaxed">
-                      {pick(currentStep.tip, locale)}
-                    </p>
-                  </div>
-
-                </div>
-              )}
-              {currentStep.copyableTip && (
-                <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-dashed border-[var(--primary)]/20 ml-6">
-                  <span className="text-[10px] font-mono text-[var(--muted-foreground)] truncate">
-                    {pick(currentStep.copyableTip, locale)}
-                  </span>
-
-                  <button
-                    onClick={() => {
-                      const textToCopy = pick(currentStep.copyableTip, locale);
-                      navigator.clipboard.writeText(textToCopy);
-                    }}
-                    className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
-                  >
-                    <Copy size={12} className="text-primary" />
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Step Navigation */}
-          <div className="border-t border-[var(--border)] py-4 flex items-center justify-between gap-3">
-            <GhostBtn
-              onClick={handlePrev}
-              className={activeTab === 0 && activeStep === 0 ? "opacity-30 pointer-events-none" : ""}
-            >
-              <ChevronLeft
-                size={14}
-                className={
-                  "rtl:-rotate-180 rtl:transition-transform ltr:transition-transform"
-                }
-              />{" "}
-              {t("prev")}
-            </GhostBtn>
-
-            <div className="flex items-center gap-1.5">
-              {currentSteps.map((_, i) => (
+          {/* Tabs */}
+          <div className="overflow-y-auto max-h-[calc(90vh-110px)] p-6 pt-0!">
+            <div className="flex border-b border-[var(--border)] gap-1 overflow-x-auto scrollbar-none">
+              {tabs.map((tab, i) => (
                 <button
                   key={i}
-                  onClick={() => setActiveStep(i)}
-                  className="rounded-full transition-all duration-200"
-                  style={{
-                    width: i === activeStep ? "16px" : "6px",
-                    height: "6px",
-                    background:
-                      i === activeStep
-                        ? `rgb(var(--primary-from))`
-                        : "var(--border)",
+                  onClick={() => {
+                    setActiveTab(i);
+                    setActiveStep(0);
                   }}
-                />
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeTab === i
+                    ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
+                    : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
+                    }`}
+                >
+                  {pick(tab.label, locale)}
+                </button>
               ))}
             </div>
 
-            {activeTab < tabs.length - 1 || activeStep < currentSteps.length - 1 ? (
-              <PrimaryBtn onClick={handleNext}>
-                {t("next")}
-                <ChevronRight
+            {/* Steps */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab + "-" + activeStep}
+                initial={{ opacity: 0, x: locale?.startsWith("ar") ? -12 : 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: locale?.startsWith("ar") ? 12 : -12 }}
+                transition={{ duration: 0.2 }}
+                className="p-6 space-y-4"
+              >
+                <div className="flex items-start gap-3">
+                  <span
+                    className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
+                    style={{
+                      background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
+                    }}
+                  >
+                    {activeStep + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--card-foreground)]">
+                      {pick(currentStep?.title, locale)}
+                    </p>
+                    <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">
+                      {pick(currentStep?.desc, locale)}
+                    </p>
+                    {currentStep?.url && (
+                      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
+                        {(() => {
+                          // If URL is a function, call it with user (replace with your param)
+                          const url =
+                            typeof currentStep.url === "function"
+                              ? currentStep.url(user)
+                              : currentStep.url;
+
+                          return (
+                            <>
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline break-all"
+                              >
+                                {url}
+                              </a>
+
+                              <button
+                                onClick={() => navigator.clipboard.writeText(url)}
+                                className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition"
+                              >
+                                <Copy size={12} className="text-primary" />
+                              </button>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {currentStep?.image && (
+                  <div
+                    className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative cursor-zoom-in hover:ring-2 hover:ring-[var(--primary)]/30 transition-all"
+                    style={{ minHeight: 250 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewImage(currentStep.image);
+                    }}
+                  >
+                    {/* Skeleton / placeholder shown while image loads */}
+                    {!imgLoaded && (
+                      <div className="absolute inset-0 flex items-center justify-center p-4">
+                        <div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
+                      </div>
+                    )}
+
+                    <img
+                      src={currentStep.image}
+                      alt={pick(currentStep.title, locale)}
+                      loading="lazy"
+                      width={1200}
+                      height={700}
+                      onLoad={() => setImgLoaded(true)}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        setImgLoaded(false);
+                      }}
+                      className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                      style={{ display: "block" }}
+                    />
+
+                    {/* fallback UI */}
+                    <div
+                      style={{ display: "none" }}
+                      className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
+                    >
+                      <ImageIcon size={28} className="opacity-30" />
+                      <p className="text-xs">{t("imagePlaceholder")}</p>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep?.tip && (
+                  <div className="flex flex-col gap-3 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
+                    <div className="flex gap-2.5">
+                      <Info
+                        size={14}
+                        className="text-[var(--primary)] flex-shrink-0 mt-0.5"
+                      />
+                      <p className="text-xs text-[var(--foreground)] leading-relaxed">
+                        {pick(currentStep.tip, locale)}
+                      </p>
+                    </div>
+
+                  </div>
+                )}
+                {currentStep.copyableTip && (
+                  <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-dashed border-[var(--primary)]/20 ml-6">
+                    <span className="text-[10px] font-mono text-[var(--muted-foreground)] truncate">
+                      {pick(currentStep.copyableTip, locale)}
+                    </span>
+
+                    <button
+                      onClick={() => {
+                        const textToCopy = pick(currentStep.copyableTip, locale);
+                        navigator.clipboard.writeText(textToCopy);
+                      }}
+                      className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
+                    >
+                      <Copy size={12} className="text-primary" />
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Step Navigation */}
+            <div className="border-t border-[var(--border)] py-4 flex items-center justify-between gap-3">
+              <GhostBtn
+                onClick={handlePrev}
+                className={activeTab === 0 && activeStep === 0 ? "opacity-30 pointer-events-none" : ""}
+              >
+                <ChevronLeft
                   size={14}
                   className={
-                    "rtl:rotate-180 rtl:transition-transform ltr:transition-transform"
+                    "rtl:-rotate-180 rtl:transition-transform ltr:transition-transform"
                   }
-                />
-              </PrimaryBtn>
-            ) : meta?.guide?.docsUrl ? (
-              <a
-                href={meta.guide.docsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <PrimaryBtn>
-                  <ExternalLink size={13} /> {t("docs")}
+                />{" "}
+                {t("prev")}
+              </GhostBtn>
+
+              <div className="flex items-center gap-1.5">
+                {currentSteps.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveStep(i)}
+                    className="rounded-full transition-all duration-200"
+                    style={{
+                      width: i === activeStep ? "16px" : "6px",
+                      height: "6px",
+                      background:
+                        i === activeStep
+                          ? `rgb(var(--primary-from))`
+                          : "var(--border)",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {activeTab < tabs.length - 1 || activeStep < currentSteps.length - 1 ? (
+                <PrimaryBtn onClick={handleNext}>
+                  {t("next")}
+                  <ChevronRight
+                    size={14}
+                    className={
+                      "rtl:rotate-180 rtl:transition-transform ltr:transition-transform"
+                    }
+                  />
                 </PrimaryBtn>
-              </a>
-            ) : null}
+              ) : meta?.guide?.docsUrl ? (
+                <a
+                  href={meta.guide.docsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <PrimaryBtn>
+                    <ExternalLink size={13} /> {t("docs")}
+                  </PrimaryBtn>
+                </a>
+              ) : null}
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        src={previewImage}
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+      />
+    </>
   );
 }
 

@@ -53,6 +53,7 @@ import SupplierSelect from '@/components/molecules/SupplierSelect';
 import ProductFilter from '@/components/atoms/ProductFilter';
 import { InvoiceSummary, ReceiptImageUpload } from '../../purchases/new/page';
 import { useOrdersSettings } from '@/hook/useOrdersSettings';
+import { avatarSrc } from '@/components/atoms/UserSelect';
 
 const MAX_RECEIPT_MB = 5;
 const ALLOWED_RECEIPT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -174,7 +175,7 @@ const makeSchema = (t, tValidation) =>
 		hasPurchase: yup.boolean().default(false),
 		// type: yup.string().oneOf(['single', 'variable']).default('variable'),
 		name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
-		slug: yup.string().transform((value) => (value ? value.toLowerCase() : value)).trim().required(t('validation.slugRequired')).matches(/^[a-z0-9-_]+$/, t('validation.slugInvalid')),
+		slug: yup.string().transform((value) => (value ? value.toLowerCase() : value)).trim().required(t('validation.slugRequired')).matches(/^[a-z0-9-_]+$/, t('validation.slugInvalid')).max(2000, t('validation.slugTooLong', { max: 2000 })),
 		// wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
 		wholesalePrice: yup
 			.number()
@@ -187,7 +188,7 @@ const makeSchema = (t, tValidation) =>
 			.notRequired(),
 		salePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
 		lowestPrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
-		storageRack: yup.string().nullable(),
+		storageRack: yup.string().nullable().max(2000, t('validation.storageRackTooLong', { max: 2000 })),
 		categoryId: yup.string().nullable(),
 		storeId: yup.string().nullable(),
 		warehouseId: yup.string().nullable(),
@@ -195,7 +196,11 @@ const makeSchema = (t, tValidation) =>
 		callCenterProductDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 		upsellingEnabled: yup.boolean().default(false),
 		upsellingProducts: yup.array().of(yup.object({ productId: yup.string().trim().required(t('validation.upsellProductRequired')), label: yup.string().nullable(), callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })) })).default([]),
-		attributes: yup.array().of(yup.object({ id: yup.string().required(), name: yup.string().trim().required(t('validation.attributeNameRequired')), values: yup.array().of(yup.string().trim().required(t('validation.attributeValueRequired'))).min(1, t('validation.atLeastOneValue')) })).default([]),
+		attributes: yup.array().of(yup.object({
+			id: yup.string().required(),
+			name: yup.string().trim().required(t('validation.attributeNameRequired')).max(120, t('validation.attributeNameTooLong', { max: 120 })),
+			values: yup.array().of(yup.string().trim().required(t('validation.attributeValueRequired')).max(120, t('validation.attributeValueTooLong', { max: 120 }))).min(1, t('validation.atLeastOneValue')),
+		})).default([]),
 		sku: yup
 			.string()
 			.trim()
@@ -1317,11 +1322,11 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									</Field>
 
 
-									<Field label={t('fields.storageRack')}>
+									<Field label={t('fields.storageRack')} error={errors?.storageRack?.message}>
 										<Input {...register('storageRack')} placeholder={t('placeholders.storageRack')} />
 									</Field>
 
-									<Field label={t('fields.category')}>
+									<Field label={t('fields.category')} error={errors?.categoryId?.message}>
 										<Controller
 											control={control}
 											name="categoryId"
@@ -1370,7 +1375,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										/>
 									</Field>
 
-									<Field label={t('fields.store')}>
+									<Field label={t('fields.store')} error={errors?.storeId?.message}>
 										<Controller
 											control={control}
 											name="storeId"
@@ -1410,7 +1415,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										/>
 									</Field>
 
-									<Field label={t('fields.warehouse')}>
+									<Field label={t('fields.warehouse')} error={errors?.warehouseId?.message}>
 										<Controller
 											control={control}
 											name="warehouseId"
@@ -1448,7 +1453,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									</Field>
 
 
-									<Field label={t('fields.description')} className="col-span-full">
+									<Field label={t('fields.description')} error={errors?.description?.message} className="col-span-full">
 										<Textarea
 											{...register('description')}
 											placeholder={t('placeholders.description')}
@@ -1764,7 +1769,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							<Card>
 								<SectionHeader title={t('sections.upselling')} />
 								<div className="space-y-4">
-									<Field label={t('upsell.callCenterDesc')}>
+									<Field label={t('upsell.callCenterDesc')} error={errors?.callCenterProductDescription?.message}>
 										<Input
 											{...register('callCenterProductDescription')}
 											placeholder={t('placeholders.callCenterDesc')}
@@ -1793,6 +1798,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									{upsellingEnabled && (
 										<UpsellProductSelector
 											t={t}
+											errors={errors}
 											value={watch('upsellingProducts') || []}
 											onChange={(next) => setValue('upsellingProducts', next, { shouldValidate: true, shouldDirty: true })}
 											excludeProductId={isEditMode ? productId : undefined}
@@ -1866,7 +1872,15 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 /** ── Attribute Editor ─────────────────────────────────────────────────────── */
 function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setValue, isDuplicate = false }) {
 	const valuesWatch = useWatch({ control, name: `attributes.${aIndex}.values` }) || [];
+	const firstValueError = useMemo(() => {
+		if (!errors?.values) return undefined;
 
+		if ('message' in errors.values && errors.values.message) {
+			return errors.values.message;
+		}
+
+		return errors.values.find((e) => e?.message)?.message;
+	}, [errors?.values]);
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 8 }}
@@ -1904,18 +1918,18 @@ function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setVa
 					<Input
 						{...register(`attributes.${aIndex}.name`)}
 						placeholder={t('attributes.placeholders.name')}
-
 					/>
 				</Field>
 
 				<div className="space-y-1.5">
 					<TagInput
 						label={t('attributes.values')}
+						errors={errors?.values}
 						tags={valuesWatch}
 						onTagsChange={(newTags) => setValue(`attributes.${aIndex}.values`, newTags, { shouldValidate: true, shouldDirty: true })}
 						placeholder={t('attributes.placeholders.value')}
 					/>
-					{errors?.values?.message && <p className="text-[11px] text-red-500">{errors.values.message}</p>}
+					{(firstValueError) && <p className="text-[11px] text-red-500">{firstValueError}</p>}
 				</div>
 			</div>
 			{isDuplicate && <p className="text-[11px] text-red-500 mt-2">{t('attributes.duplicateName')}</p>}
@@ -1924,7 +1938,7 @@ function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setVa
 }
 
 /** ── Upsell Product Selector ─────────────────────────────────────────────── */
-function UpsellProductSelector({ t, value, onChange, excludeProductId }) {
+function UpsellProductSelector({ t, errors, value, onChange, excludeProductId }) {
 	const selectedIds = (value || []).map((x) => String(x.productId));
 
 	const handleIdsChange = (ids) => {
@@ -1965,6 +1979,7 @@ function UpsellProductSelector({ t, value, onChange, excludeProductId }) {
 		onChange((value || []).map((x) => (String(x.productId) === String(productId) ? { ...x, callCenterDescription: desc } : x)));
 	};
 	const selectedProducts = value || [];
+
 	const getImg = (p) => p?.mainImage || p?.images?.[0]?.url || '';
 	const displayName = (x) => x.label || x.name || `#${x.productId}`;
 
@@ -1983,12 +1998,12 @@ function UpsellProductSelector({ t, value, onChange, excludeProductId }) {
 			{selectedProducts.length > 0 && (
 				<div className="space-y-2">
 					<label className="text-[12px] font-semibold text-slate-500 uppercase tracking-wider">{t('upsell.selectedProducts')}</label>
-					{selectedProducts.map((x) => (
+					{selectedProducts.map((x, idx) => (
 						<div key={x.productId} className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 p-3">
 							<div className="flex items-center justify-between gap-2 mb-3">
 								<div className="flex items-center gap-2.5 min-w-0">
 									<div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 shrink-0">
-										{x.mainImage ? <img src={baseImg + getImg(x)} alt={displayName(x)} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">—</div>}
+										{x.mainImage ? <img src={avatarSrc(getImg(x))} alt={displayName(x)} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">—</div>}
 									</div>
 									<div>
 										<span className="text-[13px] font-semibold text-slate-800 dark:text-white">{displayName(x)}</span>
@@ -2008,6 +2023,7 @@ function UpsellProductSelector({ t, value, onChange, excludeProductId }) {
 								onChange={(e) => updateDesc(x.productId, e.target.value)}
 								placeholder={t('upsell.callCenterItemDescPlaceholder')}
 							/>
+							{errors?.upsellingProducts?.[idx]?.callCenterDescription?.message && <p className="text-[11px] text-red-500 mt-0.5">{errors.upsellingProducts[idx].callCenterDescription.message}</p>}
 						</div>
 					))}
 				</div>

@@ -11,6 +11,7 @@ import LANG from "./LANG"
 export function TagInput({
 	label = "قيمة المتغير",
 	tags,
+	errors,
 	onTagsChange,
 	placeholder = "",
 	dir = "rtl",

@@ -40,6 +40,7 @@ import { PROVIDER_META, useShippingIntegration, useShippingSettings, useShipping
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/utils/cn";
 import { ImagePreviewModal } from "@/components/atoms/ImagePreviewModal";
+import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
 
 
 function pick(bilingualObj, locale) {

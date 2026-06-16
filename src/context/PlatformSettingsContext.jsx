@@ -9,9 +9,9 @@ const PlatformSettingsContext = createContext();
 export function PlatformSettingsProvider({ children }) {
   const [settings, setSettings] = useState(null);
   const [company, setCompany] = useState(null);
-  const { accessToken } = useAuth()
+  const { accessToken,hasPermission } = useAuth()
   const [shippingCompanies, setShippingCompanies] = useState([]);
-
+  
   const [isSettingsLoading, setIsSettingsLoading] = useState(true);
   const [isCompanyLoading, setIsCompanyLoading] = useState(true);
   const [isShippingLoading, setIsShippingLoading] = useState(true);
@@ -29,9 +29,10 @@ export function PlatformSettingsProvider({ children }) {
     }
   }, []);
 
-
+const hasUserReadPermission = hasPermission("users.read");
+  
   const fetchCompany = useCallback(async () => {
-    if (!accessToken) return;
+    if (!accessToken || !hasUserReadPermission) return;
     setIsCompanyLoading(true);
     try {
       const res = await api.get("/users/company");
@@ -41,7 +42,7 @@ export function PlatformSettingsProvider({ children }) {
     } finally {
       setIsCompanyLoading(false);
     }
-  }, [accessToken]);
+  }, [accessToken,hasUserReadPermission]);
 
 
   const fetchShippingCompanies = useCallback(async () => {
@@ -64,6 +65,8 @@ export function PlatformSettingsProvider({ children }) {
       setIsShippingLoading(false);
     }
   }, [accessToken]);
+
+  
 
 
   useEffect(() => {

@@ -816,7 +816,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 
 					{/* Guide — internal steps or external docs */}
 					<button
-						onClick={() => isConfigured && setOpenModal("guide")}
+						onClick={() => setOpenModal("guide")}
 						title={t("card.guideTitle")}
 						className={`cursor-pointer ${fbCls}`}
 						onMouseEnter={onEnter}

@@ -260,6 +260,7 @@ export default function DistributionTab({ subtab, setSubtab }) {
 // ORDER DETAIL MODA
 // ─────────────────────────────────────────────
 export function OrderDetailModal({ open, onClose, order, hideNotes }) {
+  
   const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.distribution");
   const { formatCurrency } = usePlatformSettings()

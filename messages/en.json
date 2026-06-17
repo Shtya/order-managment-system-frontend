@@ -2474,7 +2474,9 @@
           "errorLoadingFile": "An error occurred while loading the file",
           "errorLoadingLogs": "An error occurred while loading the error log",
           "manifestCreated": "The file was created successfully",
-          "manifestCreatedFailed": "File creation failed"
+          "manifestCreatedFailed": "File creation failed",
+          "creatingManifest": "Creating manifest...",
+          "returnManifestCreated": "Return manifest created successfully"
         },
         "labels": {
           "ordersWithCarrier": "{count} Order ready for return",
@@ -2497,7 +2499,8 @@
           "confirmReturn": "Confirm Return",
           "returnReason": "Return Reason",
           "selectReason": "Select return reason...",
-          "saveReturn": "Save Return"
+          "saveReturn": "Save Return",
+          "scan": "Scan"
         },
         "table": {
           "orderNumber": "Order Number",
@@ -2513,7 +2516,9 @@
           "products": "Products",
           "total": "Total",
           "productUnit": "product(s)",
-          "status": "Status"
+          "status": "Status",
+          "carrier": "Shipping company",
+          "date": "Order date"
         },
         "empty": {
           "title": "Ready to Scan Return Order",
@@ -2550,7 +2555,11 @@
           "ALREADY_FULLY_SCANNED": "Already fully scanned",
           "INVALID_STATUS": "Invalid order status",
           "OTHER": "Other"
-        }
+        },
+        "readyToManifest": "Ready to create manifest",
+        "noOrdersSelected": "No orders selected",
+        "createManifest": "Create Manifest",
+        "reviewCreateManifest": "Review and create manifest"
       },
       "files": {
         "searchPlaceholder": "Search return files...",
@@ -2639,7 +2648,16 @@
       "total": "Total",
       "limit": "Results per page",
       "currency": "EGP",
-      "howItWorks": "How it works"
+      "howItWorks": "How it works",
+      "field": {
+        "actions": "Actions"
+      },
+      "tooltip": {
+        "details": "View details\t"
+      },
+      "table": {
+        "status": "Status"
+      }
     },
     "rejected": {
       "breadcrumbs": {

@@ -2469,7 +2469,9 @@
           "errorLoadingFile": "حدث خطأ أثناء تحميل الملف",
           "errorLoadingLogs": "حدث خطأ أثناء تحميل سجل الأخطاء",
           "manifestCreated": "تم إنشاء الملف بنجاع ",
-          "manifestCreatedFailed": "فشل إنشاء الملف"
+          "manifestCreatedFailed": "فشل إنشاء الملف",
+          "creatingManifest": "جاري إنشاء الملف...",
+          "returnManifestCreated": "تم إنشاء ملف المرتجع بنجاح"
         },
         "labels": {
           "ordersWithCarrier": "{count} طلب جاهزه للإرجاع",
@@ -2492,7 +2494,8 @@
           "confirmReturn": "تأكيد الإرجاع",
           "returnReason": "سبب الإرجاع",
           "selectReason": "اختر سبب الإرجاع...",
-          "saveReturn": "حفظ المرتجع"
+          "saveReturn": "حفظ المرتجع",
+          "scan": "مسح"
         },
         "table": {
           "orderNumber": "رقم الطلب",
@@ -2508,7 +2511,9 @@
           "products": "المنتجات",
           "total": "الإجمالي",
           "productUnit": "منتج",
-          "status": "الحالة"
+          "status": "الحالة",
+          "carrier": "شركة الشحن",
+          "date": "تاريخ الطلب"
         },
         "empty": {
           "title": "جاهز لمسح الطلب المرتجع",
@@ -2545,7 +2550,11 @@
           "ALREADY_FULLY_SCANNED": "تم مسح جميع القطع بالفعل",
           "INVALID_STATUS": "حالة الطلب غير صالحة",
           "OTHER": "أخرى"
-        }
+        },
+        "readyToManifest": "جاهز لإنشاء الملف",
+        "noOrdersSelected": "لم يتم اختيار أي طلبات",
+        "createManifest": "إنشاء الملف",
+        "reviewCreateManifest": "مراجعة و إنشاء الملف\t"
       },
       "files": {
         "searchPlaceholder": "ابحث برقم الملف أو شركة الشحن أو الطلب...",
@@ -2634,7 +2643,16 @@
       "total": "الإجمالي",
       "limit": "عدد النتائج في الصفحة",
       "currency": "EGP",
-      "howItWorks": "كيف تعمل"
+      "howItWorks": "كيف تعمل",
+      "field": {
+        "actions": "الإجراءات"
+      },
+      "tooltip": {
+        "details": "عرض التفاصيل\t"
+      },
+      "table": {
+        "status": "الحالة"
+      }
     },
     "rejected": {
       "breadcrumbs": {

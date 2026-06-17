@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
 import {
   Download,
   FileDown,
@@ -25,6 +26,7 @@ import {
   ArchiveRestore,
   Truck,
   DownloadCloud,
+  Trash2,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -36,6 +38,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
@@ -50,6 +60,7 @@ import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { playBeep } from "./PreparationTab";
 import { Badge } from "@/components/ui/badge";
+import { OrderDetailModal } from "./DistributionTab";
 const RETURN_CONDITIONS_KEYS = [
   "intact",
   "opened",
@@ -2165,10 +2176,8 @@ function ReturnsOrdersSlidePanel({ open, onClose, orders, loading, selectedOrder
 
   const [creatingManifest, setCreatingManifest] = useState(false);
 
-
-
   const toggleSelect = (id) => {
-    setSelectedOrderIds(prev =>
+    setSelectedOrderIds?.(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
@@ -2320,19 +2329,46 @@ export function ScanReturnsSubtab({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const tOrder = useTranslations("orders");
   const t = useTranslations("warehouse.returns");
 
   const { shippingCompanies } = usePlatformSettings();
-  const [selectedCarrier, setSelectedCarrier] = useState("all");
+  
 
-  const [scanInput, setInput] = useState("");
+  const [scanInput, setScanInput] = useState("");
+
   const [activeOrder, setActiveOrder] = useState(null);
   const [localProducts, setLocalProducts] = useState([]);
   const [selectedItems, setSelectedItems] = useState({});
   const [returnReason, setReturnReason] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [detailModal, setDetailModal] = useState(null);
 
-  const [availableForCarrier, setAvailableForCarrier] = useState([]);
+  // Popup for create manifest
+  const [manifestPopupOpen, setManifestPopupOpen] = useState(false);
+  const [currentCarrierForManifest, setCurrentCarrierForManifest] = useState(null);
+  const [returnPreparingOrders, setReturnPreparingOrders] = useState([]);
+  const [selectedOrderIdsForManifest, setSelectedOrderIdsForManifest] = useState([]);
+  const [creatingManifest, setCreatingManifest] = useState(false);
+
+  // Table State
+  const [search, setSearch] = useState("");
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 });
+  const [carrierId, setCarrierId] = useState("all");
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 48,
+    records: [],
+  });
+  const [loading, setLoading] = useState(false);
+
+  // Return preparing stats per carrier
+  const [returnPreparingStats, setReturnPreparingStats] = useState([]);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [loadingReturnPreparingOrders, setLoadingReturnPreparingOrders] = useState(false);
+
   const [scannedOrdersCount, setnedOrdersCount] = useState(0);
   const [wrongScans, setWrongScans] = useState(0);
   const [lastHighlight, setLastHighlight] = useState(null);
@@ -2340,54 +2376,209 @@ export function ScanReturnsSubtab({
   const [scanState, setState] = useState("idle");
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isFetchingOrder, setIsFetchingOrder] = useState(false);
-  const [loadingOrders, setLoadingOrders] = useState(false);
   const [panelOpen, setPanelOpen] = useState(() => {
     return !!searchParams.get("manifest");
   });
   const scanRef = useRef(null);
-  const selectedCompany = useMemo(() => {
-    if (!shippingCompanies || selectedCarrier === "all" || selectedCarrier === "none") {
-      return null;
-    }
-
-    return shippingCompanies.find(
-      (c) => c.providerId === selectedCarrier
-    );
-  }, [shippingCompanies, selectedCarrier]);
 
 
-  const fetchAvailableOrders = useCallback(async () => {
+  // Fetch orders: include shipped, delivered, and return_preparing
+  const fetchOrders = useCallback(async (page = pager.current_page, per_page = pager.per_page) => {
     try {
-      setLoadingOrders(true);
+      setLoading(true);
       const res = await api.get('/orders', {
         params: {
+          page,
+          limit: per_page,
+          search: debouncedSearch,
+          shippingCompanyId: carrierId === "all" ? undefined : carrierId,
           status: 'shipped,delivered',
-          shippingCompanyId: selectedCarrier,
+        }
+      });
+      setPager(prev => ({
+        ...prev,
+        total_records: res.data.total_records,
+        current_page: res.data.current_page || page,
+        per_page: res.data.per_page || per_page,
+        records: res.data.records,
+      }));
+    } catch (error) {
+      console.error("Error fetching orders", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedSearch, carrierId, pager.current_page, pager.per_page]);
+
+  useEffect(() => {
+    fetchOrders(1);
+  }, [debouncedSearch, carrierId]);
+
+  // Fetch return preparing stats
+  const fetchReturnPreparingStats = useCallback(async () => {
+    try {
+      setLoadingStats(true);
+      const res = await api.get('/orders/return-preparing/stats');
+      setReturnPreparingStats(res.data || []);
+    } catch (error) {
+      console.error("Failed to fetch return preparing stats", error);
+    } finally {
+      setLoadingStats(false);
+    }
+  }, []);
+
+  // Fetch return preparing orders for a specific carrier
+  const fetchReturnPreparingOrders = useCallback(async (shippingCompanyId) => {
+    try {
+      setLoadingReturnPreparingOrders(true);
+      const res = await api.get('/orders', {
+        params: {
+          // status: 'return_preparing',
+          onlyReturned: "true",
+          shippingCompanyId: shippingCompanyId === "unspecified" ? undefined : shippingCompanyId,
           limit: 100
         }
       });
-      setAvailableForCarrier(res.data?.records || []);
+      const orders = res.data?.records || [];
+      setReturnPreparingOrders(orders);
+      setSelectedOrderIdsForManifest(orders.map(o => o.id));
     } catch (error) {
-      console.error("Failed to fetch available orders", error);
+      console.error("Failed to fetch return preparing orders", error);
     } finally {
-      setLoadingOrders(false);
+      setLoadingReturnPreparingOrders(false);
     }
-  }, [selectedCarrier]);
+  }, []);
+
+  // Open manifest popup for a carrier
+  const handleOpenManifestPopup = useCallback(async (group) => {
+    setCurrentCarrierForManifest(group);
+    setManifestPopupOpen(true);
+    await fetchReturnPreparingOrders(group.companyId);
+  }, [fetchReturnPreparingOrders]);
+
+  // Create manifest
+  const handleCreateManifest = useCallback(async () => {
+    if (selectedOrderIdsForManifest.length === 0) return;
+    try {
+      setCreatingManifest(true);
+      const { data } = await api.post('/orders/manifests/return', {
+        shippingCompanyId: currentCarrierForManifest.companyId === "unspecified" ? null : currentCarrierForManifest.companyId,
+        orderIds: selectedOrderIdsForManifest,
+      });
+      toast.success(t("scan.messages.returnManifestCreated"));
+      setManifestPopupOpen(false);
+      setReturnPreparingOrders([]);
+      setSelectedOrderIdsForManifest([]);
+      // Optimistically update returnPreparingStats
+      setReturnPreparingStats(prev => {
+        const companyId = currentCarrierForManifest.companyId;
+        const existingIndex = prev.findIndex(g => g.companyId === companyId);
+        if (existingIndex !== -1) {
+          const updated = [...prev];
+          const newCount = Math.max(0, updated[existingIndex].count - selectedOrderIdsForManifest.length);
+          if (newCount === 0) {
+            return updated.filter((_, i) => i !== existingIndex);
+          } else {
+            updated[existingIndex] = { ...updated[existingIndex], count: newCount };
+            return updated;
+          }
+        }
+        return prev;
+      });
+      fetchStats?.();
+      setSubtab("files", { manifestId: data?.id || data?.manifestId });
+    } catch (error) {
+      console.error("Failed to create return manifest", error);
+      toast.error(error.response?.data?.message || t("scan.messages.manifestCreatedFailed"));
+    } finally {
+      setCreatingManifest(false);
+    }
+  }, [currentCarrierForManifest, selectedOrderIdsForManifest, t, fetchStats, setSubtab]);
 
   useEffect(() => {
-    fetchAvailableOrders();
-  }, [fetchAvailableOrders]);
+    fetchReturnPreparingStats();
+  }, [fetchReturnPreparingStats]);
 
-  const availableItemsCount = useMemo(
-    () =>
-      availableForCarrier.reduce(
-        (sum, order) =>
-          sum +
-          (order.items?.reduce((itemSum, p) => itemSum + (Number(p.quantity) || 0), 0) || 0),
-        0
-      ),
-    [availableForCarrier]
-  );
+  const handleScan = async (value) => {
+    const val = value?.trim() || scanInput.trim();
+    setScanInput("");
+    if (!val) return;
+    await fetchActiveOrder(val, { addToPager: true });
+  };
+
+  const columns = [
+    {
+      header: t("scan.table.orderNumber"),
+      key: "orderNumber",
+      cell: (row) => <span className="font-mono font-bold text-primary">{row.orderNumber}</span>
+    },
+    {
+      header: t("scan.table.customer"),
+      key: "customerName",
+    },
+    {
+      header: t("scan.table.city"),
+      key: "city",
+    },
+    {
+      header: t("scan.table.products"),
+      key: "items",
+      cell: (row) => row.items?.length || 0
+    },
+    {
+      header: t("scan.table.carrier"),
+      key: "shippingCompany",
+      cell: (row) => (
+        <Badge variant="secondary" className="text-[10px]">
+          {row.shippingCompany?.name || t("common.unspecified")}
+        </Badge>
+      )
+    },
+    {
+        key: "status",
+        header: t("table.status"),
+        cell: (row) => (
+          <Badge className={cn("rounded-xl")}>
+            {row.status.system
+              ? tOrder(`statuses.${row.status.code}`)
+              : row.status.name || row.status.code}
+          </Badge>
+        ),
+    },
+    {
+      header: t("scan.table.date"),
+      key: "created_at",
+      cell: (row) => new Date(row.created_at).toLocaleDateString()
+    },
+    {
+      key: "actions",
+      header: t("field.actions"),
+      cell: (row) => {
+        const isReturnPreparing = row.status?.code === 'return_preparing';
+        return (
+          <ActionButtons
+            row={row}
+            actions={[
+              {
+                icon: <Info />,
+                tooltip: t("tooltip.details"),
+                onClick: (r) => setDetailModal(r),
+                variant: "primary",
+                permission: "orders.read",
+              },
+              {
+                icon: <ScanLine />,
+                tooltip: t("scan.actions.scan"),
+                onClick: (r) => fetchActiveOrder(r.orderNumber, { useIsFetchingOrder: true }),
+                variant: "primary",
+                permission: "orders.read",
+                disabled: isReturnPreparing,
+              },
+            ]}
+          />
+        );
+      },
+    },
+  ];
 
   const showFeedback = useCallback((type, message) => {
     setLastMsg({ success: type === "success", message });
@@ -2398,9 +2589,14 @@ export function ScanReturnsSubtab({
     }, 2200);
   }, []);
 
-  const fetchActiveOrder = useCallback(async (idOrCode) => {
+  const fetchActiveOrder = useCallback(async (idOrCode, options = {}) => {
+    const { addToPager = false, useIsFetchingOrder = false } = options;
     try {
-      setIsFetchingOrder(true);
+      if (useIsFetchingOrder) {
+        setIsFetchingOrder(true);
+      } else {
+        setIsScanning(true);
+      }
       const res = await api.get(`/orders/${idOrCode}`);
       const order = res.data;
 
@@ -2408,9 +2604,22 @@ export function ScanReturnsSubtab({
       if (!order || (order.status?.code !== 'shipped' && order.status?.code !== 'delivered')) {
         if (soundEnabled) playBeep("error");
         showFeedback("error", t("scan.messages.notFound") || "Order not found or not in valid status for return");
-        setInput("");
+        setScanInput("");
         return;
       }
+
+      // Add to pager if needed
+      if (addToPager) {
+        const exists = pager.records.find(o => o.id === order.id);
+        if (!exists) {
+          setPager(prev => ({
+            ...prev,
+            records: [order, ...prev.records],
+            total_records: prev.total_records + 1
+          }));
+        }
+      }
+
       setActiveOrder(order);
       setLocalProducts((order.items || []).map((p) => ({
         id: p.id,
@@ -2423,20 +2632,26 @@ export function ScanReturnsSubtab({
       })));
       setSelectedItems({});
       setReturnReason("");
-      setInput("");
+      setScanInput("");
       if (soundEnabled) playBeep("success");
       showFeedback("success", t("scan.messages.found", { code: order.orderNumber }));
     } catch (error) {
-      if (soundEnabled) playBeep("error");
+      if (soundEnabled) {
+        playBeep("error");
+      }
       showFeedback("error", t("scan.messages.notFound", { code: idOrCode }));
-      setInput("");
+      setScanInput("");
     } finally {
-      setIsFetchingOrder(false);
+      if (useIsFetchingOrder) {
+        setIsFetchingOrder(false);
+      } else {
+        setIsScanning(false);
+      }
     }
-  }, [soundEnabled, showFeedback, t]);
+  }, [soundEnabled, showFeedback, t, pager.records]);
 
   const handleCarrierChange = (val) => {
-    setSelectedCarrier(val);
+    setCarrierId(val);
     setActiveOrder(null);
     setLocalProducts([]);
     setSelectedItems({});
@@ -2447,20 +2662,13 @@ export function ScanReturnsSubtab({
   };
 
   const resetCurrentOrder = useCallback(() => {
-    setInput("");
+    setScanInput("");
     setActiveOrder(null);
     setLocalProducts([]);
     setSelectedItems({});
     setReturnReason("");
     setTimeout(() => scanRef.current?.focus(), 100);
   }, []);
-
-  const handleScan = async (value) => {
-    const val = value?.trim() || scanInput.trim();
-    setInput(val);
-    if (!val) return;
-    await fetchActiveOrder(val);
-  };
 
   const toggleItem = (p) => {
     setSelectedItems(prev => {
@@ -2501,7 +2709,7 @@ export function ScanReturnsSubtab({
 
   const [returnOrders, setReturnOrders] = useState([]);
   const [loadingReturnOrders, setLoadingReturnOrders] = useState(false);
-  const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+  // const [selectedOrderIds, setSelectedOrderIds] = useState([]);
 
   const fetchShippedOrders = useCallback(async () => {
     try {
@@ -2513,7 +2721,7 @@ export function ScanReturnsSubtab({
         }
       });
       setReturnOrders(res.data?.records || []);
-      setSelectedOrderIds([]);
+      // setSelectedOrderIds([]);
     } catch (error) {
       console.error("Failed to fetch shipped orders", error);
     } finally {
@@ -2544,8 +2752,37 @@ export function ScanReturnsSubtab({
       toast.success(t("scan.messages.returnSuccess", { code: activeOrder.orderNumber }));
 
       if (soundEnabled) playBeep("success");
-      fetchAvailableOrders();
-      fetchShippedOrders();
+      // Optimistically update returnPreparingStats
+      setReturnPreparingStats(prev => {
+        const companyId = activeOrder.shippingCompany?.id;
+        if (!companyId) {
+          // Handle unspecified shipping company
+          const unspecifiedIndex = prev.findIndex(g => g.companyId === null);
+          if (unspecifiedIndex !== -1) {
+            const updated = [...prev];
+            updated[unspecifiedIndex] = { ...updated[unspecifiedIndex], count: updated[unspecifiedIndex].count + 1 };
+            return updated;
+          } else {
+            return [...prev, {
+              companyId: null,
+              companyName: t("common.unspecified"),
+              count: 1
+            }];
+          }
+        }
+        const existingIndex = prev.findIndex(g => g.companyId === companyId);
+        if (existingIndex !== -1) {
+          const updated = [...prev];
+          updated[existingIndex] = { ...updated[existingIndex], count: updated[existingIndex].count + 1 };
+          return updated;
+        } else {
+          return [...prev, {
+            companyId: companyId,
+            companyName: activeOrder.shippingCompany?.name || t("common.unspecified"),
+            count: 1
+          }];
+        }
+      });
       fetchStats?.();
 
       setTimeout(() => {
@@ -2572,10 +2809,9 @@ export function ScanReturnsSubtab({
   }, []);
 
   const isItemsMode = !!activeOrder;
-  const meta = selectedCarrier !== "all" ? getCarrierMeta(selectedCarrier) : null;
 
   return (
-    <div className="space-y-4" dir="rtl">
+    <div className="space-y-4">
       <Panel>
         <PanelHeader
           icon={ScanLine}
@@ -2586,7 +2822,7 @@ export function ScanReturnsSubtab({
               <HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
                 {soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
               </HeaderIconBtn>
-              <HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.labels.returnOrders", { count: returnOrders?.length || 0 })}</HeaderBadge>
+              {/* <HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.labels.returnOrders", { count: returnOrders?.length || 0 })}</HeaderBadge> */}
               {isItemsMode && <HeaderBadge onClick={resetCurrentOrder}><X size={12} />{t("scan.actions.cancel")}</HeaderBadge>}
             </>
           }
@@ -2595,11 +2831,7 @@ export function ScanReturnsSubtab({
           <div className="flex items-center gap-2 flex-wrap">
             <HeaderBadge>
               <ClipboardList size={11} />
-              {t("scan.labels.availableOrders")}: {availableForCarrier.length}
-            </HeaderBadge>
-            <HeaderBadge>
-              <Boxes size={11} />
-              {t("scan.labels.totalItems")}: {availableItemsCount}
+              {t("scan.labels.availableOrders")}: {pager.total_records}
             </HeaderBadge>
           </div>
         </PanelHeader>
@@ -2609,12 +2841,12 @@ export function ScanReturnsSubtab({
             <ReturnsScanInputBar
               inputRef={scanRef}
               value={scanInput}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => setScanInput(e.target.value)}
               onScan={handleScan}
               isSuccess={scanState === "success"}
               isError={scanState === "error"}
               placeholder={t("scan.placeholders.scanOrder")}
-              selectedCarrier={selectedCarrier}
+              selectedCarrier={carrierId}
               onCarrierChange={handleCarrierChange}
               soundEnabled={soundEnabled}
               onToggleSound={() => setSoundEnabled((v) => !v)}
@@ -2652,90 +2884,128 @@ export function ScanReturnsSubtab({
             )}
           </AnimatePresence>
 
-          <ReturnsScanLogBoxes successCount={scannedOrdersCount} errorCount={wrongScans} />
+          {/* <ReturnsScanLogBoxes successCount={scannedOrdersCount} errorCount={wrongScans} /> */}
+          {/* Return preparing orders by carrier groups */}
+          {loadingStats ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-800/60 overflow-hidden animate-pulse bg-slate-50/50 dark:bg-slate-800/20">
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1.5">
+                        <div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-700" />
+                        <div className="h-2.5 w-20 rounded bg-slate-200 dark:bg-slate-700" />
+                      </div>
+                      <div className="w-11 h-7 rounded-lg bg-slate-200 dark:bg-slate-700" />
+                    </div>
+                    <div className="h-9 w-full rounded-lg bg-slate-200 dark:bg-slate-700" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : returnPreparingStats.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {returnPreparingStats.map(group => {
+                const hasOrders = group.count > 0;
+
+                return (
+                  <div
+                    key={group.companyId}
+                    className={`relative overflow-hidden p-5 rounded-2xl flex flex-col gap-4 transition-all duration-200 border ${hasOrders
+                      ? "border-[var(--primary)]/20 bg-white dark:bg-slate-900 shadow-sm"
+                      : "border-slate-200 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/20"
+                      }`}
+                  >
+                    {/* Accent line */}
+                    {hasOrders && (
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary),var(--third)]" />
+                    )}
+
+                    <div className="flex items-start justify-between gap-3 mt-1">
+                      <div className="flex flex-col min-w-0">
+                        <span className={`text-sm font-bold truncate ${hasOrders ? "text-slate-800 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"}`}>
+                          {group.companyName}
+                        </span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-1">
+                          {hasOrders ? t("scan.readyToManifest") : t("scan.noOrdersSelected")}
+                        </span>
+                      </div>
+
+                      <div className={`flex shrink-0 items-center justify-center min-w-[28px] h-7 px-2 rounded-lg font-bold text-xs tabular-nums ${hasOrders
+                        ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                        : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-400"
+                        }`}>
+                        {group.count}
+                      </div>
+                    </div>
+
+                    <Button_
+                      size="sm"
+                      tone={hasOrders ? "primary" : "neutral"}
+                      variant={hasOrders ? "solid" : "outline"}
+                      className="w-full mt-auto"
+                      disabled={!hasOrders}
+                      label={t("scan.reviewCreateManifest") || "Create Manifest"}
+                      onClick={() => handleOpenManifestPopup(group)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </Panel>
 
 
-      <>
+
+      {/* Show items mode when activeOrder is set */}
+      {isItemsMode ? (
         <Panel>
-          <div
-            className="relative overflow-hidden px-4 py-3 border-b border-slate-100 dark:border-slate-700/60"
-            style={{ background: DS.cardGradient, ...DS.scanline }}
-          >
-            <div className="relative flex flex-wrap items-center gap-x-4 gap-y-2">
-              <div className="min-w-0">
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-                  {t("common.carrier")}
-                </p>
-                <div className="flex items-center gap-2">
-                  <div
-                    className={cn("w-7 h-7 rounded-lg flex items-center justify-center")}
-                    style={{ background: meta?.color + "15" }}
-                  >
-                    <RotateCcw size={13} style={{ color: meta?.color || DS.primary }} />
-                  </div>
-                  <p className="text-sm font-black text-slate-800 dark:text-slate-100">
-                    {selectedCompany ? selectedCompany?.name : selectedCarrier}
-                  </p>
-                </div>
-              </div>
-
-              <div className="min-w-0">
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-                  {t("scan.labels.orders")}
-                </p>
-                <p className="font-mono font-black text-sm" style={{ color: DS.primary }}>
-                  {availableForCarrier.length}
-                </p>
-              </div>
-
-              <div className="min-w-0">
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-                  {t("scan.labels.items")}
-                </p>
-                <p className="font-mono font-black text-sm text-slate-700 dark:text-slate-200">
-                  {availableItemsCount}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {loadingOrders ? (
-            <div className="flex flex-col items-center justify-center py-20 space-y-4">
-              <Loader2 className="animate-spin text-primary" size={32} />
-              <p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">{t("scan.labels.loadingShippedOrders")}</p>
-            </div>
-          ) : isItemsMode ? (
-            <ScannedOrderTable
-              order={activeOrder}
-              localProducts={localProducts}
-              selectedItems={selectedItems}
-              onToggleItem={toggleItem}
-              onQuantityChange={changeQuantity}
-              onSelectAll={selectAll}
-              onUnselectAll={unselectAll}
-              returnReason={returnReason}
-              onReasonChange={setReturnReason}
-              onSave={handleSaveReturn}
-              isSaving={isSaving}
-            />
-          ) : (
-            <OrdersList
-              orders={availableForCarrier}
-              scannedOrders={[]}
-              lastHighlight={lastHighlight}
-              onSelectOrder={(order) => fetchActiveOrder(order.orderNumber)}
-            />
-          )}
+          <ScannedOrderTable
+            order={activeOrder}
+            localProducts={localProducts}
+            selectedItems={selectedItems}
+            onToggleItem={toggleItem}
+            onQuantityChange={changeQuantity}
+            onSelectAll={selectAll}
+            onUnselectAll={unselectAll}
+            returnReason={returnReason}
+            onReasonChange={setReturnReason}
+            onSave={handleSaveReturn}
+            isSaving={isSaving}
+          />
         </Panel>
-      </>
+      ) : (
+        <Table
+          searchValue={search}
+          onSearchChange={setSearch}
+          data={pager.records}
+          columns={columns}
+          isLoading={loading}
+          pagination={{
+            total_records: pager.total_records,
+            per_page: pager.per_page,
+            current_page: pager.current_page
+          }}
+          onPageChange={({ page: p, per_page }) => fetchOrders(p, per_page)}
+          onSearch={(val) => setSearch(val)}
+          filters={[
+            <div key="carrier" className="w-48">
+              <ShippingCompanyFilter
+                value={carrierId}
+                onChange={setCarrierId}
+                hideLabel
+              />
+            </div>,
+          ]}
+        />
+      )}
 
       <ReturnsOrdersSlidePanel
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
-        selectedOrderIds={selectedOrderIds}
-        setSelectedOrderIds={setSelectedOrderIds}
+        selectedOrderIds={[]}
+        // setSelectedOrderIds={setSelectedOrderIds}
         orders={returnOrders}
         loading={loadingReturnOrders}
         onManifestCreated={(manifest) => {
@@ -2746,6 +3016,115 @@ export function ScanReturnsSubtab({
           });
         }}
       />
+
+      {/* Manifest Creation Popup */}
+      <Dialog open={manifestPopupOpen} onOpenChange={(open) => {
+        if (!open) setManifestPopupOpen(false);
+      }}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                <FileText size={20} />
+              </div>
+              {t("scan.createManifest")}
+            </DialogTitle>
+            <DialogDescription>
+              {t("scan.labels.ordersCount")}: {returnPreparingOrders.length}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="px-6 py-4 space-y-6 overflow-auto max-h-[60vh]">
+            {/* Select All Button */}
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={selectedOrderIdsForManifest.length === returnPreparingOrders.length && returnPreparingOrders.length > 0}
+                onCheckedChange={() => {
+                  if (selectedOrderIdsForManifest.length === returnPreparingOrders.length) {
+                    setSelectedOrderIdsForManifest([]);
+                  } else {
+                    setSelectedOrderIdsForManifest(returnPreparingOrders.map(o => o.id));
+                  }
+                }}
+              />
+              <span className="text-sm font-medium">
+                {t("scan.actions.selectAll")}
+              </span>
+            </div>
+
+            {/* Orders List */}
+            <div className="space-y-2">
+              {loadingReturnPreparingOrders ? (
+                <div className="flex items-center justify-center py-8 text-[var(--muted-foreground)]">
+                  <Loader2 size={22} className="animate-spin" />
+                </div>
+              ) : (
+                returnPreparingOrders.map(order => {
+                  const isSelected = selectedOrderIdsForManifest.includes(order.id);
+                  return (
+                    <div
+                      key={order.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                        isSelected 
+                          ? "bg-primary/10 border-primary/30" 
+                          : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                      }`}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => {
+                          if (isSelected) {
+                            setSelectedOrderIdsForManifest(prev => prev.filter(id => id !== order.id));
+                          } else {
+                            setSelectedOrderIdsForManifest(prev => [...prev, order.id]);
+                          }
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-primary">{order.orderNumber}</span>
+                          <Badge variant="secondary" className="text-[10px]">
+                            {order.shippingCompany?.name || t("common.unspecified")}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                          {order.customerName} · {order.city}
+                        </p>
+                        <div className="text-xs text-slate-500 dark:text-slate-500 mt-1 flex flex-col">
+                          <span>{order.lastReturn?.items?.length} {t("scan.labels.items")}</span>
+                          {order.lastReturn?.items?.map(item => (
+                            <span key={item.id} className="ml-2">
+                              {item.returnedVariant?.sku} x{item.quantity}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="px-6 pb-6">
+            <Button_ type="button" variant="outline" onClick={() => setManifestPopupOpen(false)} label={t("scan.actions.cancel")} />
+            <Button_ type="button" tone="primary" variant="solid" onClick={handleCreateManifest} disabled={selectedOrderIdsForManifest.length === 0 || creatingManifest} label={
+              <div className="flex items-center gap-2">
+                {creatingManifest && <Loader2 size={16} className="animate-spin" />}
+                {t("scan.createManifest")} ({selectedOrderIdsForManifest.length})
+              </div>
+            } />
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {detailModal && (
+        <OrderDetailModal
+          open={!!detailModal}
+          order={detailModal}
+          onClose={() => setDetailModal(null)}
+        />
+      )}
     </div>
   );
 }

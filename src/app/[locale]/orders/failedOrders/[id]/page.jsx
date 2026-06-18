@@ -50,10 +50,10 @@ import { Separator } from "@/components/ui/separator";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
-import { convert } from "html-to-text";
 import { normalizeAxiosError } from "@/utils/axios";
 import Button_ from "@/components/atoms/Button";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import SafeHtmlRenderer from "@/components/atoms/SafeHtmlRenderer";
 
 function toAbsUrl(url) {
     if (!url) return null;
@@ -92,17 +92,7 @@ export function ExternalProductModal({ isOpen, onClose, remoteId, provider, cach
         }
     }, [isOpen, remoteId, provider]);
 
-    const text = useMemo(() => {
-        if (!cache?.data?.description) return '';
-
-        return convert(cache.data.description, {
-            wordwrap: false,
-            selectors: [
-                { selector: 'img', format: 'skip' },
-                { selector: 'a', options: { ignoreHref: true } },
-            ],
-        });
-    }, [cache?.data?.description]);
+    const description = cache?.data?.description;
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl! max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-950">
@@ -150,14 +140,15 @@ export function ExternalProductModal({ isOpen, onClose, remoteId, provider, cach
                                 </div>
                             </div>
 
-                            {text && (
+                            {description && (
                                 <div className="space-y-2">
                                     <Label className="text-xs font-semibold text-muted-foreground uppercase">
                                         {t('labels.description')}
                                     </Label>
-                                    <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-muted/30 p-3 rounded-lg border border-border/40">
-                                        {convert(text || '')}
-                                    </div>
+                                    {/* <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-muted/30 p-3 rounded-lg border border-border/40">
+                                        {description || ''}
+                                    </div> */}
+                                    <SafeHtmlRenderer html={description} />
                                 </div>
                             )}
                             {/* Categories */}

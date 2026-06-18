@@ -13,10 +13,12 @@ export default function Button_({
 	variant = "solid",
 	icon,
 	onClick,
+	onMouseDown,
 	disabled,
 	className = "",
 	type = "button",
 	permission,
+	...props
 }) {
 	const { hasPermission } = useAuth();
 
@@ -26,7 +28,9 @@ export default function Button_({
 
 	const isLink = !!href;
 	const Tag = isLink ? "a" : "button";
-	const extra = isLink ? { href } : { onClick, disabled, type };
+	const extra = isLink 
+		? { href, onClick, onMouseDown, ...props } 
+		: { onClick, onMouseDown, disabled, type, ...props };
 
 	const classes = [
 		"btn",

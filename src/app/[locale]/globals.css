@@ -1198,3 +1198,51 @@ html[dir="ltr"] .date-field {
 .dark .whatsapp-wallpaper {
   background-image: url(/whatsapp/dark.jpg);
 }
+
+/* Rich Text Editor styles - prevent Tailwind reset from affecting content */
+.rich-text-editor {
+  /* Paragraphs */
+
+  /* Lists */
+  & ul, & ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding-inline-start: 1rem;
+  }
+  & ul {
+    list-style-type: disc;
+  }
+  & ol {
+    list-style-type: decimal;
+  }
+  & li {
+    margin-bottom: 0.25rem;
+  }
+
+  /* Blockquotes */
+  & blockquote {
+    border-left: 4px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    padding-inline-start: 1rem;
+    font-style: italic;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: var(--muted-foreground);
+  }
+
+  /* Code */
+  & code {
+    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-family: var(--mono, monospace);
+  }
+
+  /* Dark mode */
+  .dark & {
+    & blockquote {
+      color: var(--muted-foreground);
+    }
+  }
+}

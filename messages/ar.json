@@ -4733,6 +4733,23 @@
     },
     "searchPlaceholder": "إبحث عن الادمن...",
     "admin": "الأدمن",
+    "richTextEditor": {
+      "placeholder": "أدخل نصًا منسقًا...",
+      "normal": "عادي",
+      "heading1": "عنوان 1",
+      "heading2": "عنوان 2",
+      "heading3": "عنوان 3",
+      "heading4": "عنوان 4",
+      "heading5": "عنوان 5",
+      "heading6": "عنوان 6",
+      "quote": "اقتباس",
+      "numberedList": "قائمة مرقمة",
+      "bulletedList": "قائمة نقطية",
+      "common": {
+        "copied": "تم النسخ",
+        "copy": "نسخ"
+      }
+    },
     "common": {
       "none": "بدون"
     }

@@ -54,6 +54,7 @@ import ProductFilter from '@/components/atoms/ProductFilter';
 import { InvoiceSummary, ReceiptImageUpload } from '../../purchases/new/page';
 import { useOrdersSettings } from '@/hook/useOrdersSettings';
 import { avatarSrc } from '@/components/atoms/UserSelect';
+import RichTextEditor from '@/components/atoms/RichTextEditor';
 
 const MAX_RECEIPT_MB = 5;
 const ALLOWED_RECEIPT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -192,7 +193,7 @@ const makeSchema = (t, tValidation) =>
 		categoryId: yup.string().nullable(),
 		storeId: yup.string().nullable(),
 		warehouseId: yup.string().nullable(),
-		description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
+		description: yup.string().nullable().max(7000, t('validation.descriptionTooLong', { max: 7000 })),
 		callCenterProductDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 		upsellingEnabled: yup.boolean().default(false),
 		upsellingProducts: yup.array().of(yup.object({ productId: yup.string().trim().required(t('validation.upsellProductRequired')), label: yup.string().nullable(), callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })) })).default([]),
@@ -659,6 +660,14 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const { control, register, handleSubmit, setValue, reset, watch, clearErrors, formState: { errors, isSubmitting } } = useForm({
 		defaultValues: defaultValues ? defaultValues : getDefaultValues(), resolver: yupResolver(schema), mode: 'onTouched',
 	});
+
+	const description = useWatch({
+		control,
+		name: "description",
+		defaultValue: defaultValues?.description || "",
+	});
+
+
 	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: 'attributes', keyName: 'fieldId' });
 	const { fields: comboFields } = useFieldArray({ control, name: 'combinations', keyName: 'fieldId' });
 	console.log(errors)
@@ -693,12 +702,14 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				if (!mounted) return;
 				let loadedCategories = Array.isArray(catsRes.data) ? catsRes.data : [];
 				const defaultCategoryValue = defaultValues?.categoryName; // هذا الآن يحمل اسم التصنيف
+				const defaultCategorySlug = defaultValues?.categorySlug; // هذا الآن يحمل اسم التصنيف
 
 				if (!isEditMode && defaultCategoryValue) {
 
 					const existingCat = loadedCategories.find(c =>
 						(c.name && c.name.toLowerCase() === defaultCategoryValue.toLowerCase()) ||
-						(c.label && c.label.toLowerCase() === defaultCategoryValue.toLowerCase())
+						(c.label && c.label.toLowerCase() === defaultCategoryValue.toLowerCase()) ||
+						(c.slug && c.slug.toLowerCase() === defaultCategorySlug.toLowerCase())
 					);
 
 					if (existingCat) {
@@ -710,9 +721,11 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							{
 								id: newId,
 								name: defaultCategoryValue,
+								slug: defaultCategorySlug,
 								isExternal: true
 							}
 						];
+						setValue('categoryId', String(newId));
 					}
 				}
 
@@ -978,6 +991,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 				if (selectedCat && selectedCat.isExternal) {
 					fd.append('categoryName', selectedCat.name);
+					fd.append('categorySlug', selectedCat.slug);
+
 				} else {
 					fd.append('categoryId', data.categoryId);
 				}
@@ -998,10 +1013,12 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			const existingImages = (otherFiles || []).filter((f) => f?.isExisting && f?.url && !removedImages.includes(f.url)).map((f) => ({ url: String(f.url) }));
 			const imagesMeta = (otherFiles || []).filter((f) => f?.isFromLibrary && !f?.isExisting && f?.url).map((f) => ({ url: String(f.url) }));
 			const orphanIds = (otherFiles || []).filter((f) => !f?.isExisting && !f?.isFromLibrary && f?.orphanId).map((f) => f.orphanId);
+
+			
 			if (isEditMode) fd.append('imagesMeta', JSON.stringify([...existingImages, ...imagesMeta]));
 			if (!isEditMode) fd.append('sku', data.sku);
-
-			else fd.append('imagesMeta', JSON.stringify(imagesMeta));
+			
+			fd.append('imagesMeta', JSON.stringify(imagesMeta));
 			if (orphanIds.length) fd.append('imagesOrphanIds', JSON.stringify(orphanIds));
 			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
 
@@ -1067,6 +1084,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (!isEditMode && remoteId) {
 				fd.append('remoteId', remoteId);
 			}
+
+			
 			const apiCall = isEditMode
 				? api.patch(`/products/${productId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
 				: api.post('/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -1454,10 +1473,19 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 
 									<Field label={t('fields.description')} error={errors?.description?.message} className="col-span-full">
-										<Textarea
+										{/* <Textarea
 											{...register('description')}
 											placeholder={t('placeholders.description')}
 											className="rounded-xl min-h-[150px] bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 transition-colors"
+										/> */}
+										<RichTextEditor
+											value={description}
+											onChange={(html) =>
+												setValue("description", html, {
+													shouldDirty: true,
+													shouldValidate: true,
+												})
+											}
 										/>
 									</Field>
 								</div>

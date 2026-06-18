@@ -8,7 +8,6 @@ import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import AddProductPage, { canonicalKey, makeId, slugifyKey } from "../../new/page";
 import { normalizeAxiosError } from "@/utils/axios";
-import { convert } from "html-to-text";
 
 export default function ImportExternalProductPage() {
     const t = useTranslations('editProduct'); // نستخدم نفس مفاتيح الترجمة للتحميل
@@ -49,14 +48,13 @@ export default function ImportExternalProductPage() {
 
     // دالة التحويل (Mapping)
     function transformExternalToLocal(ext) {
-
+        
         const remoteImages = (ext.images || []).map(url => ({
             id: crypto.randomUUID(), // معرف مؤقت للمكون
             url: url,
             isRemote: true, // علامة للباك-إند
             isFromLibrary: true // لتجاوز الـ validation المحلي في المكون
         }));
-
         return {
             remoteId: id,
             storeId: ext?.storeId,
@@ -70,16 +68,9 @@ export default function ImportExternalProductPage() {
             lowestPrice: '',
             storageRack: '',
             categoryName: ext.categories?.[0]?.name || '', // نأخذ أول تصنيف
-            // categoryId: ext.categories?.[0]?.name || '', // نأخذ أول تصنيف
+            categorySlug: ext.categories?.[0]?.slug || '', // نأخذ أول تصنيف
             warehouseId: '',
-            description: convert(ext.description, {
-                wordwrap: false,
-                selectors: [
-                    { selector: 'img', format: 'skip' },
-                    { selector: 'a', options: { ignoreHref: true } },
-                ],
-            }).replace(/\n{2,}/g, '\n')   // 👈 collapse multiple newlines into one
-                .trim(),
+            description: ext.description,
             callCenterProductDescription: '',
             upsellingEnabled: ext?.upsellings?.length > 0,
             upsellingProducts: ext?.upsellings?.map(up => ({

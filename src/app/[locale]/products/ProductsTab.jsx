@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import BarcodeCell from "@/components/atoms/BarcodeCell";
 import { renderBarcode } from "@/utils/barcode";
 import { Input } from "@/components/ui/input";
+import SafeHtmlRenderer from "@/components/atoms/SafeHtmlRenderer";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -1026,12 +1027,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 								<div className="rounded-xl border p-4 bg-white dark:bg-slate-900">
 									<div className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">{t("common.description")}</div>
 
-									{product.description ? (
-										<div className="text-sm text-slate-700 dark:text-slate-200">
-											<span className="font-semibold">{t("common.general")}:</span>{" "}
-											<span className="text-slate-600 dark:text-slate-300">{product.description}</span>
-										</div>
-									) : null}
+									<SafeHtmlRenderer html={product.description} />
 
 									{product.callCenterProductDescription ? (
 										<div className="mt-2 text-sm text-slate-700 dark:text-slate-200">

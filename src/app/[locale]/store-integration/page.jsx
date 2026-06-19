@@ -26,20 +26,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-
-import { useRouter } from "@/i18n/navigation";
-import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
 import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import { useSocket } from "@/context/SocketContext";
-import { tenantId } from "@/utils/healpers";
 import PageHeader from "@/components/atoms/Pageheader";
-import { CustomTooltip } from "@/components/atoms/Actions";
 import {
   PROVIDER_CONFIG,
   useStoreConfig,
   useStoreWebhook,
-  generateEasyOrdersInstallUrl,
-} from "@/hook/stores";
+  generateInstallUrl,
+  getCancelIntegrationEndpoint,
+} from '@/hook/stores';
 import { useAuth } from "@/context/AuthContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Controller } from "react-hook-form";
@@ -287,6 +283,7 @@ function StoreCard({
   const isSyncing = store?.syncStatus === "syncing";
   const isActive = store?.isActive ?? false;
   const isIntegrated = store?.isIntegrated ?? false;
+  const autoIntegrated = store?.autoIntegrated ?? false;
   const locale = useLocale();
   const isArabic = locale === "ar";
   const [toggling, setToggling] = useState(false);
@@ -312,7 +309,8 @@ function StoreCard({
     }
   }
 
-  const handleEasyOrderAction = async () => {
+
+  const handleAutoIntegratedAction = async () => {
     if (!hasStore) {
       onConfigure(provider, null);
       return;
@@ -322,7 +320,10 @@ function StoreCard({
       // Cancel integration
       setCancelling(true);
       try {
-        await api.patch("/stores/easyorder/cancel-integration");
+        const cancelEndpoint = getCancelIntegrationEndpoint(provider);
+        if (cancelEndpoint) {
+          await api.patch(cancelEndpoint);
+        }
         await fetchStores();
         toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
       } catch (e) {
@@ -332,7 +333,16 @@ function StoreCard({
       }
     } else {
       // Integrate: redirect to install URL
-      window.location.href = generateEasyOrdersInstallUrl(user?.id);
+      const installUrl = generateInstallUrl({
+        provider,
+        adminId: user?.id,
+        store,
+      });
+      if (installUrl) {
+        window.location.href = installUrl;
+      } else {
+        onConfigure(provider, store);
+      }
     }
   };
 
@@ -515,10 +525,10 @@ function StoreCard({
       <div
         className="px-4 py-3 flex items-center gap-1.5 flex-wrap border-t border-white/50 dark:border-[var(--border)] bg-white/55 dark:bg-[var(--muted)]/80 backdrop-blur-md"
       >
-        {provider === "easyorder" ? (
+        {config.autoIntegrated ? (
           <>
             <button
-              onClick={handleEasyOrderAction}
+              onClick={handleAutoIntegratedAction}
               disabled={cancelling}
               className={fbCls}
               onMouseEnter={onEnter}
@@ -1203,7 +1213,7 @@ export function StoreGuideModal({ provider, onClose }) {
       Math.min(currentSteps.length - 1, v + 1)
     );
   }, [currentSteps.length]);
-const isAr = locale === "ar";
+  const isAr = locale === "ar";
   useEffect(() => {
     if (!open) return;
 

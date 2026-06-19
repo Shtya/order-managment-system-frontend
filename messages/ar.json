@@ -5506,7 +5506,8 @@
       "finalTotal": "المبلغ الإجمالي",
       "shipmentStatus": "حالة الشحنه",
       "shippingDays": "أيام الشحن",
-      "postponedDate": "تاريخ التأجيل"
+      "postponedDate": "تاريخ التأجيل",
+      "store": "المتجر"
     },
     "bulkUpload": {
       "clickToChangeFile": "اضغط لتغيير الملف",

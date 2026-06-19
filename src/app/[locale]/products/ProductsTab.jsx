@@ -486,7 +486,17 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 					</Badge>
 				)
 			},
-			{ key: "store", header: t("table.store"), className: "min-w-[120px]", cell: (row) => row?.store?.name ?? na },
+			{
+				key: "store", header: t("table.store"), className: "min-w-[120px]",
+				cell: (row) => {
+					if (!row.store)
+						return <span className="text-muted-foreground text-sm">—</span>;
+
+					return <Badge variant="outline">
+						{row.store?.name || "-"}
+					</Badge>
+				},
+			},
 			{ key: "warehouse", header: t("table.warehouse"), className: "min-w-[120px]", cell: (row) => row?.warehouse?.name ?? na },
 			{ key: "storageRack", header: t("table.storageRack"), className: "min-w-[100px]", cell: (row) => row.storageRack ?? na },
 			{

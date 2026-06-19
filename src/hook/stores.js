@@ -38,7 +38,7 @@ export const STORE_PROVIDERS = [
     },
 ];
 
-
+const scopes = ["read_all_orders,read_returns,write_returns,  write_locations, read_locations, read_orders, write_fulfillments,read_fulfillments,write_orders, read_products, write_products, read_publications, write_publications, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders"]
 export const PROVIDER_CONFIG = {
     easyorder: {
         autoIntegrated: true,
@@ -213,8 +213,9 @@ export const PROVIDER_CONFIG = {
         },
     },
     shopify: {
-        showWebhook: true,
-        showWebhooksSectionCreate: true,
+        showWebhook: false,
+        autoIntegrated: true,
+        showWebhooksSectionCreate: false,
         label: "Shopify",
         logo: "/integrate/shopify.png",
         website: "shopify.com",
@@ -273,8 +274,8 @@ export const PROVIDER_CONFIG = {
                                 ar: "اضغط على 'Add scopes' وأضف الصلاحيات المطلوبة"
                             },
                             copyableTip: {
-                                ar: "read_all_orders, write_locations, read_locations, read_orders, write_orders, read_products, write_products, read_publications, write_publications, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders",
-                                en: "read_all_orders, write_locations, read_locations, read_orders, write_orders, read_products, write_products, read_publications, write_publications, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders"
+                                ar: scopes.join(","),
+                                en: scopes.join(","),
                             }
                         },
                         {
@@ -307,46 +308,46 @@ export const PROVIDER_CONFIG = {
                         },
                     ]
                 },
-                {
-                    key: "webhooks",
-                    label: { en: "Setup Webhooks", ar: "إعداد Webhooks" },
-                    steps: [
-                        {
-                            title: { en: "Go to Webhooks", ar: "اذهب إلى Webhooks" },
-                            desc: {
-                                en: "From your Shopify dashboard, go to Notifications → Webhooks. Copy the existing Webhook Secret into our system.",
-                                ar: "من لوحة تحكم Shopify، انتقل إلى Notifications → Webhooks. انسخ الـ Webhook Secret الموجود والصقه في نظامنا."
-                            },
-                            image: "/guide/shopify/webhook-step1.png",
-                        },
-                        {
-                            title: { en: "Create Webhook for Order Creation", ar: "إنشاء Webhook لإنشاء الطلبات" },
-                            desc: {
-                                en: "Click 'Create Webhook'. For Event select 'Order Creation', format JSON, then copy the URL shown below into the URL field in Shopify.",
-                                ar: "اضغط على 'Create Webhook'. اختر Event 'Order Creation'، الصيغة JSON، ثم انسخ الرابط المعروض أدناه وألصقه في حقل URL في Shopify."
-                            },
-                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/orders/create`,
-                            image: "/guide/shopify/webhook-step2.png",
-                        },
+                // {
+                //     key: "webhooks",
+                //     label: { en: "Setup Webhooks", ar: "إعداد Webhooks" },
+                //     steps: [
+                //         {
+                //             title: { en: "Go to Webhooks", ar: "اذهب إلى Webhooks" },
+                //             desc: {
+                //                 en: "From your Shopify dashboard, go to Notifications → Webhooks. Copy the existing Webhook Secret into our system.",
+                //                 ar: "من لوحة تحكم Shopify، انتقل إلى Notifications → Webhooks. انسخ الـ Webhook Secret الموجود والصقه في نظامنا."
+                //             },
+                //             image: "/guide/shopify/webhook-step1.png",
+                //         },
+                //         {
+                //             title: { en: "Create Webhook for Order Creation", ar: "إنشاء Webhook لإنشاء الطلبات" },
+                //             desc: {
+                //                 en: "Click 'Create Webhook'. For Event select 'Order Creation', format JSON, then copy the URL shown below into the URL field in Shopify.",
+                //                 ar: "اضغط على 'Create Webhook'. اختر Event 'Order Creation'، الصيغة JSON، ثم انسخ الرابط المعروض أدناه وألصقه في حقل URL في Shopify."
+                //             },
+                //             url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/orders/create`,
+                //             image: "/guide/shopify/webhook-step2.png",
+                //         },
 
-                        {
-                            title: { en: "Create Webhook for Order Status Update", ar: "إنشاء Webhook لتحديث حالة الطلب" },
-                            desc: {
-                                en: "Click 'Create Webhook'. For Event select 'Order Update', format JSON, then copy the URL shown below into the URL field in Shopify.",
-                                ar: "اضغط على 'Create Webhook'. اختر Event 'Order Update'، الصيغة JSON، ثم انسخ الرابط المعروض أدناه وألصقه في حقل URL في Shopify."
-                            },
-                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/orders/status`,
-                            image: "/guide/shopify/webhook-step3.png",
-                        }
-                    ]
-                }
+                //         {
+                //             title: { en: "Create Webhook for Order Status Update", ar: "إنشاء Webhook لتحديث حالة الطلب" },
+                //             desc: {
+                //                 en: "Click 'Create Webhook'. For Event select 'Order Update', format JSON, then copy the URL shown below into the URL field in Shopify.",
+                //                 ar: "اضغط على 'Create Webhook'. اختر Event 'Order Update'، الصيغة JSON، ثم انسخ الرابط المعروض أدناه وألصقه في حقل URL في Shopify."
+                //             },
+                //             url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/orders/status`,
+                //             image: "/guide/shopify/webhook-step3.png",
+                //         }
+                //     ]
+                // }
             ]
         },
-        webhookDocsUrl: "https://help.shopify.com/en/manual/apps/app-types/custom-apps/webhooks",
+        // webhookDocsUrl: "https://help.shopify.com/en/manual/apps/app-types/custom-apps/webhooks",
         fields: {
             apiKey: { requiredCreateMote: true, masked: true },
             clientSecret: { requiredCreateMote: true, masked: true },
-            webhookSecret: { required: true },
+            // webhookSecret: { required: true },
         },
         webhookEndpoints: {
             create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/shopify/orders/create`,
@@ -359,12 +360,12 @@ export const PROVIDER_CONFIG = {
                 "اذهب إلى API credentials",
                 "انسخ API key و API secret key",
             ],
-            webhooks: [
-                "في إعدادات التطبيق، اذهب إلى Webhooks",
-                "أضف webhook subscription لـ orders/create",
-                "استخدم الرابط أدناه كـ Webhook URL",
-                "سيتم إنشاء Webhook secret تلقائيًا - انسخه",
-            ],
+            // webhooks: [
+            //     "في إعدادات التطبيق، اذهب إلى Webhooks",
+            //     "أضف webhook subscription لـ orders/create",
+            //     "استخدم الرابط أدناه كـ Webhook URL",
+            //     "سيتم إنشاء Webhook secret تلقائيًا - انسخه",
+            // ],
         },
     },
     woocommerce: {
@@ -542,6 +543,53 @@ export function generateEasyOrdersInstallUrl(adminId) {
 
     return `${baseUrl}?${params.toString()}`;
 };
+
+export function generateShopifyInstallUrl(shopifyUrl, appId, adminId) {
+    const apiBase = process.env.NEXT_PUBLIC_BASE_URL;
+
+    const scope = scopes.join(",");
+
+    // Remove protocol and trailing slash if provided
+    const shop = shopifyUrl
+        .replace(/^https?:\/\//, "")
+        .replace(/\/$/, "");
+
+    const redirectUri = `${apiBase}/stores/webhooks/${adminId}/shopify/init`;
+
+    const params = new URLSearchParams({
+        client_id: appId,
+        scope: scope,
+        redirect_uri: redirectUri,
+        state: crypto.randomUUID(), // or any nonce you generate/store
+    });
+
+    return `https://${shop}/admin/oauth/authorize?${params.toString()}`;
+}
+
+export function generateInstallUrl({ provider, adminId, store }) {
+    switch (provider) {
+        case 'easyorder':
+            return generateEasyOrdersInstallUrl(adminId);
+        case 'shopify':
+            if (store?.storeUrl && store?.credentials?.apiKey) {
+                return generateShopifyInstallUrl(store.storeUrl, store.credentials.apiKey, adminId);
+            }
+            return null;
+        default:
+            return null;
+    }
+}
+
+export function getCancelIntegrationEndpoint(provider) {
+    switch (provider) {
+        case 'easyorder':
+            return '/stores/easyorder/cancel-integration';
+        case 'shopify':
+            return '/stores/shopify/cancel-integration';
+        default:
+            return null;
+    }
+}
 
 export function useStoreWebhook({ store, provider, onClose, open }) {
     const t = useTranslations("storeIntegrations");
@@ -845,6 +893,25 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 // Redirect to install URL only in create mode
                 if (!isEdit) {
                     window.location.href = generateEasyOrdersInstallUrl(user?.id);
+                } else {
+                    toast.success(t("form.updateSuccess"));
+                }
+                return;
+            }
+
+            if (provider === "shopify") {
+                const credentials = {};
+                Object.keys(config.fields).forEach((fieldName) => {
+                    credentials[fieldName] = data[fieldName]?.trim() || "";
+                });
+                    
+                // EasyOrder uses the upsert endpoint
+                await api.post("/stores/integrations", { ...payload,credentials, provider: "shopify" });
+                onClose();
+                await fetchStores();
+                // Redirect to install URL only in create mode
+                if (!isEdit) {
+                    window.location.href = generateShopifyInstallUrl(payload.storeUrl,credentials.apiKey, user?.id);
                 } else {
                     toast.success(t("form.updateSuccess"));
                 }

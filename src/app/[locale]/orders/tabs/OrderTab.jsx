@@ -948,20 +948,41 @@ export default function OrdersTab({
       {
         key: "paymentStatus",
         header: t("table.paymentStatus"),
-        cell: (row) => (
-          <Badge variant="outline">
+        cell: (row) => {
+          if (!row.paymentStatus)
+            return <span className="text-muted-foreground text-sm">—</span>;
+
+          return <Badge variant="outline">
             {t(`paymentStatuses.${row.paymentStatus}`)}
           </Badge>
-        ),
+        },
       },
 
       {
         key: "shippingCompany",
         header: t("table.shippingCompany"),
-        cell: (row) => (
-          <span className="text-sm">{row.shippingCompany?.name || "-"}</span>
-        ),
+        cell: (row) => {
+          if (!row.shippingCompany)
+            return <span className="text-muted-foreground text-sm">—</span>;
+
+          return <Badge variant="outline">
+            {row.shippingCompany?.name || "-"}
+          </Badge>
+        },
       },
+      {
+        key: "store",
+        header: t("table.store"),
+         cell: (row) => {
+          if (!row.store)
+            return <span className="text-muted-foreground text-sm">—</span>;
+
+          return <Badge variant="outline">
+            {row.store?.name || "-"}
+          </Badge>
+        },
+      },
+
       {
         key: "deposit",
         header: t("table.deposit"),

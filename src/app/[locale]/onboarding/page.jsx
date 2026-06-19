@@ -36,7 +36,11 @@ import {
   STORE_PROVIDERS,
   PROVIDER_CONFIG,
   generateEasyOrdersInstallUrl,
+  generateShopifyInstallUrl,
+  generateInstallUrl,
+  getCancelIntegrationEndpoint,
 } from "@/hook/stores";
+import { normalizeAxiosError } from "@/utils/axios";
 import {
   StoreConfigDialog,
   StoreWebhookModal,
@@ -2677,7 +2681,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
     }
   };
 
-  const handleEasyOrderAction = async (provider, store) => {
+  const handleAutoIntegratedAction = async (provider, store) => {
     const isIntegrated = store?.isIntegrated ?? false;
     const hasStore = !!store;
 
@@ -2687,18 +2691,32 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
     }
 
     if (isIntegrated) {
+      // Cancel integration
       setCancelling(true);
       try {
-        await api.patch("/stores/easyorder/cancel-integration");
+        const cancelEndpoint = getCancelIntegrationEndpoint(provider);
+        if (cancelEndpoint) {
+          await api.patch(cancelEndpoint);
+        }
         await fetchStores();
         toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
       } catch (e) {
-        toast.error(e?.response?.data?.message || e?.message || "Unexpected error");
+        toast.error(normalizeAxiosError(e));
       } finally {
         setCancelling(false);
       }
     } else {
-      window.location.href = generateEasyOrdersInstallUrl(user?.id);
+      // Integrate: redirect to install URL
+      const installUrl = generateInstallUrl({
+        provider,
+        adminId: user?.id,
+        store,
+      });
+      if (installUrl) {
+        window.location.href = installUrl;
+      } else {
+        handleConfigure(provider, store);
+      }
     }
   };
 
@@ -2818,9 +2836,9 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
 
                     {/* Actions Group */}
                     <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto sm:justify-end">
-                      {p.key === "easyorder" && (
+                      {config.autoIntegrated && (
                         <button
-                          onClick={() => handleEasyOrderAction(p.key, store)}
+                          onClick={() => handleAutoIntegratedAction(p.key, store)}
                           disabled={cancelling}
                           className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
                           onMouseEnter={onEnter}

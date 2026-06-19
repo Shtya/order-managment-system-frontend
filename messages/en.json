@@ -5511,7 +5511,8 @@
       "finalTotal": "Final Total",
       "shipmentStatus": "Shipment status",
       "shippingDays": "Shipping Days",
-      "postponedDate": "Postponed Date"
+      "postponedDate": "Postponed Date",
+      "store": "Store"
     },
     "bulkUpload": {
       "clickToChangeFile": "Click to change file",

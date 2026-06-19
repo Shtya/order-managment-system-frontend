@@ -726,7 +726,7 @@ export function StoreConfigDialog({
                       {t("form.storeUrl")}
                     </Label>
                     <Input
-                      type="url"
+                      // type="url"
                       {...register("storeUrl")}
                       placeholder="https://your-store.com"
 
@@ -818,6 +818,7 @@ export function StoreConfigDialog({
                               {t(`form.${fieldKey}`)}
                             </Label>
                             <Input
+                              type={fieldConfig.type || "text"}
                               placeholder={
                                 isEdit && fieldConfig.masked
                                   ? masks[fieldKey] || t("form.maskedPlaceholder")

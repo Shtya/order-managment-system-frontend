@@ -237,6 +237,17 @@ export const PROVIDER_CONFIG = {
                     label: { en: "Create Shopify App", ar: "إنشاء تطبيق Shopify" },
                     steps: [
                         {
+                            title: {
+                                en: "Open Store Settings",
+                                ar: "فتح إعدادات المتجر"
+                            },
+                            desc: {
+                                en: "From the main Shopify store dashboard, click the Settings icon located at the bottom-left corner.",
+                                ar: "من الصفحة الرئيسية لمتجر Shopify، اضغط على أيقونة Settings الموجودة أسفل اليسار."
+                            },
+                            image: "/guide/shopify/step-0.png",
+                        },
+                        {
                             title: { en: "Open Develop Apps", ar: "فتح Develop Apps" },
                             desc: {
                                 en: "From your Shopify store dashboard, click Apps → Develop apps.",
@@ -253,10 +264,21 @@ export const PROVIDER_CONFIG = {
                             image: "/guide/shopify/step2.png",
                         },
                         {
+                            title: {
+                                en: "Click Create App",
+                                ar: "اضغط على Create app"
+                            },
+                            desc: {
+                                en: "On the Develop Apps page, locate and click the 'Create app' button (it may appear in the center of the page or in the top-right corner) to open the app creation form.",
+                                ar: "في صفحة Develop Apps، ابحث عن زر 'Create app' واضغط عليه (قد يظهر في وسط الصفحة أو في أعلى اليمين) لفتح نموذج إنشاء التطبيق."
+                            },
+                            image: "/guide/shopify/step2.5.png",
+                        },
+                        {
                             title: { en: "Create App Name", ar: "إنشاء اسم التطبيق" },
                             desc: {
-                                en: "In the 'Create app' form, write the app name as 'store-integrate', then click Create.",
-                                ar: "في نموذج إنشاء التطبيق، اكتب اسم التطبيق 'store-integrate' ثم اضغط Create."
+                                en: "In the 'Create app' form, write the app name as 'madar', then click Create.",
+                                ar: "في نموذج إنشاء التطبيق، اكتب اسم التطبيق 'madar' ثم اضغط Create."
                             },
                             image: "/guide/shopify/step3.png",
                         },
@@ -299,12 +321,45 @@ export const PROVIDER_CONFIG = {
                             }
                         },
                         {
-                            title: { en: "Install the App", ar: "تثبيت التطبيق" },
-                            desc: {
-                                en: "After releasing the app version, click on 'Install app'",
-                                ar: "بعد إصدار نسخة التطبيق، اضغط على 'Install app'."
+                            title: {
+                                en: "Copy Your Store Domain",
+                                ar: "نسخ رابط المتجر"
                             },
-                            image: "/guide/shopify/install.png",
+                            desc: {
+                                en: "Open Shopify Settings, then go to 'Domains'. Copy your primary store domain and paste it into our store configuration form.",
+                                ar: "افتح إعدادات Shopify، ثم انتقل إلى 'Domains'. انسخ النطاق (الرابط) الأساسي للمتجر والصقه في نموذج إعداد المتجر لدينا."
+                            },
+                            image: "/guide/shopify/step7.png",
+                            tip: {
+                                en: "Make sure to copy the primary domain that customers use to access your store.",
+                                ar: "تأكد من نسخ النطاق الأساسي الذي يستخدمه العملاء للوصول إلى متجرك."
+                            }
+                        },
+                        {
+                            title: {
+                                en: "Fill in the Store Configuration",
+                                ar: "إدخال بيانات إعداد المتجر"
+                            },
+                            desc: {
+                                en: "Return to our website, fill in the required store information including the Client ID, Secret, and Store Domain, then click 'Save' to continue.",
+                                ar: "ارجع إلى موقعنا، وأدخل بيانات المتجر المطلوبة بما في ذلك Client ID و Secret ورابط المتجر، ثم اضغط على 'حفظ' للمتابعة."
+                            },
+                            image: "/guide/shopify/step8.png",
+                            tip: {
+                                en: "Double-check the values before saving to avoid connection issues.",
+                                ar: "تأكد من صحة البيانات قبل الحفظ لتجنب أي مشاكل في الاتصال."
+                            }
+                        },
+                        {
+                            title: {
+                                en: "Install the Application",
+                                ar: "تثبيت التطبيق"
+                            },
+                            desc: {
+                                en: "After saving, you will be redirected to Shopify to review and install the application. Click 'Install app' to grant the required permissions. ",
+                                ar: "بعد الحفظ، سيتم توجيهك إلى Shopify لمراجعة التطبيق وتثبيته. اضغط على 'Install app'"
+                            },
+                            image: "/guide/shopify/step9.png"
                         },
                     ]
                 },
@@ -346,7 +401,7 @@ export const PROVIDER_CONFIG = {
         // webhookDocsUrl: "https://help.shopify.com/en/manual/apps/app-types/custom-apps/webhooks",
         fields: {
             apiKey: { requiredCreateMote: true, masked: true },
-            clientSecret: { requiredCreateMote: true, masked: true },
+            clientSecret: { requiredCreateMote: true, masked: true, type: "password" },
             // webhookSecret: { required: true },
         },
         webhookEndpoints: {
@@ -494,7 +549,7 @@ export const PROVIDER_CONFIG = {
         webhookDocsUrl: "https://woocommerce.github.io/woocommerce-rest-api-docs/#webhooks",
         fields: {
             apiKey: { requiredCreateMote: true, masked: true },
-            clientSecret: { requiredCreateMote: true, masked: true },
+            clientSecret: { requiredCreateMote: true, masked: true,type: "password" },
             webhookCreateOrderSecret: { readonly: true }, // System generates
             webhookUpdateStatusSecret: { readonly: true }, // System generates
         },
@@ -725,7 +780,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
             name: yup.string().trim().required(t("validation.nameRequired")),
             syncNewProducts: yup.boolean().default(false),
             syncRemoteProducts: yup.boolean().default(false),
-            storeUrl: yup.string().trim().url(t("validation.invalidUrl")).required(t("validation.storeUrlRequired")),
+            storeUrl: yup.string().trim().required(t("validation.storeUrlRequired")),
             isActive: yup.boolean().default(true),
         };
 
@@ -904,14 +959,14 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 Object.keys(config.fields).forEach((fieldName) => {
                     credentials[fieldName] = data[fieldName]?.trim() || "";
                 });
-                    
+
                 // EasyOrder uses the upsert endpoint
-                await api.post("/stores/integrations", { ...payload,credentials, provider: "shopify" });
+                await api.post("/stores/integrations", { ...payload, credentials, provider: "shopify" });
                 onClose();
                 await fetchStores();
                 // Redirect to install URL only in create mode
                 if (!isEdit) {
-                    window.location.href = generateShopifyInstallUrl(payload.storeUrl,credentials.apiKey, user?.id);
+                    window.location.href = generateShopifyInstallUrl(payload.storeUrl, credentials.apiKey, user?.id);
                 } else {
                     toast.success(t("form.updateSuccess"));
                 }

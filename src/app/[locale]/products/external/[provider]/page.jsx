@@ -90,7 +90,7 @@ export default function ImportExternalProductPage() {
                 const attrs = v.variation_props.reduce((acc, vp) => {
                     if (vp.variation && vp.variation_prop) {
                         const key = slugifyKey(vp.variation);
-                        const value = slugifyKey(vp.variation_prop);
+                        const value = vp.variation_prop;
                         acc[key] = value;
                     }
                     return acc;

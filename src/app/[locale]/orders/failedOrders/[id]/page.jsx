@@ -580,7 +580,7 @@ export default function FailedOrderDetailsPage() {
         },
         {
             key: "quantity",
-            header: t('table.quantity'),
+            header: t('table.requieredQuantity'),
             cell: (row) => (
                 <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold">
                     {row.quantity}

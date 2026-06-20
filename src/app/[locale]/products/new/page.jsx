@@ -127,7 +127,7 @@ function buildCombinationsFromAttributes(attributes, slug = '', defaultPrice = '
 		.map((attr) => {
 			const key = slugifyKey(attr?.name);
 			const values = (attr?.values || [])
-				.map((v) => ({ value: slugifyKey(v), label: (v || '').trim() }))
+				.map((v) => ({ value: v, label: (v || '').trim() }))
 				.filter((v) => v.value);
 			return { key, name: (attr?.name || '').trim(), values };
 		})

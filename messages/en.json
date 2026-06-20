@@ -5087,7 +5087,8 @@
         "options": "Selected Options",
         "noOptions": "No Options",
         "attributes": "Attributes",
-        "price": "Price"
+        "price": "Price",
+        "requieredQuantity": "Quantity"
       },
       "labels": {
         "product": "Product Name",

@@ -5082,7 +5082,8 @@
         "problem": "المشكلة المكتشفة",
         "actions": "الإجراءات",
         "options": "الخيارات المختارة",
-        "noOptions": "بدون خيارات"
+        "noOptions": "بدون خيارات",
+        "requieredQuantity": "الكمية"
       },
       "labels": {
         "city": "المدينة",

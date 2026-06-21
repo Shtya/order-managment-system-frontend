@@ -2369,9 +2369,7 @@ export function ScanReturnsSubtab({
   const [loadingStats, setLoadingStats] = useState(false);
   const [loadingReturnPreparingOrders, setLoadingReturnPreparingOrders] = useState(false);
 
-  const [scannedOrdersCount, setnedOrdersCount] = useState(0);
-  const [wrongScans, setWrongScans] = useState(0);
-  const [lastHighlight, setLastHighlight] = useState(null);
+
   const [lastMsg, setLastMsg] = useState(null);
   const [scanState, setState] = useState("idle");
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -2603,7 +2601,7 @@ export function ScanReturnsSubtab({
       // Validation: order must be shipped or delivered
       if (!order || (order.status?.code !== 'shipped' && order.status?.code !== 'delivered')) {
         if (soundEnabled) playBeep("error");
-        showFeedback("error", t("scan.messages.notFound") || "Order not found or not in valid status for return");
+        showFeedback("error", t("scan.messages.notFound", {code: idOrCode}) || "Order not found or not in valid status for return");
         setScanInput("");
         return;
       }
@@ -2657,7 +2655,6 @@ export function ScanReturnsSubtab({
     setSelectedItems({});
     setReturnReason("");
     setLastMsg(null);
-    setLastHighlight(null);
     setState("idle");
   };
 
@@ -2748,7 +2745,7 @@ export function ScanReturnsSubtab({
 
       await api.post('/order-returns/return-request', payload);
 
-      setnedOrdersCount(prev => prev + 1);
+      
       toast.success(t("scan.messages.returnSuccess", { code: activeOrder.orderNumber }));
 
       if (soundEnabled) playBeep("success");
@@ -2783,8 +2780,8 @@ export function ScanReturnsSubtab({
           }];
         }
       });
+      fetchOrders(1);
       fetchStats?.();
-
       setTimeout(() => {
         resetCurrentOrder();
       }, 1000);

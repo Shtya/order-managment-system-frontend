@@ -79,10 +79,11 @@ export function useSubscriptionsApi() {
   const [plans, setPlans] = useState([]);
   const [activeSubscription, setActiveSubscription] = useState(null);
   const { user, refreshUser } = useAuth();
-
+  const { accessToken } = useAuth()
 
   // Fetch active subscription
   const fetchActiveSubscription = useCallback(async () => {
+    if(!accessToken) return;
     try {
       const { data } = await api.get("/subscriptions/me/active");
       setActiveSubscription(data);
@@ -96,7 +97,7 @@ export function useSubscriptionsApi() {
       console.error("Failed to fetch active subscription:", error);
       return null;
     }
-  }, []);
+  }, [accessToken]);
 
   // Fetch all plans
   const fetchPlans = useCallback(async () => {

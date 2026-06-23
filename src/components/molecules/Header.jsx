@@ -16,6 +16,7 @@ import {
   Minimize2,
   Globe,
   LogOut,
+  List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -108,11 +109,12 @@ function PulseDot() {
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
+  const { isSuperAdmin } = useAuth();
   const t = useTranslations("header");
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const {  resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 
@@ -189,6 +191,16 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
               </motion.span>
             </AnimatePresence>
           </IconBtn>
+
+          {/* Jobs (Queues) for Super Admin only */}
+          {isSuperAdmin && (
+            <IconBtn
+            onClick={() => window.open("/queues", "_blank")}
+            label={t("queues")}
+          >
+            <List size={14} />
+          </IconBtn>
+          )}
 
           {/* Theme */}
           <IconBtn

@@ -12,6 +12,47 @@ export default function middleware(req) {
   const { pathname } = req.nextUrl;
   const ua = req.headers.get("user-agent") || "";
   const isFacebookBot = ua.includes("facebookexternalhit") || ua.includes("Facebot");
+  const userCookie = req?.cookies?.get("user")?.value;
+  const accessToken = req?.cookies?.get("accessToken")?.value; // your JWT cookie name
+  const locale = pathname?.startsWith("/en") ? "en" : "ar";
+
+  
+  if (pathname.startsWith("/queues")) {
+    let user = null;
+
+    try {
+      if (userCookie) {
+        user = JSON.parse(userCookie);
+      }
+    } catch {
+      return NextResponse.redirect(new URL(`/${locale}/auth`, req.url));
+    }
+
+
+    // Only super admins can access bull-board
+    if (!user || user?.role?.name !== "super_admin") {
+
+      return NextResponse.redirect(new URL(`/${locale}`, req.url));
+    }
+
+    if (!accessToken) {
+      return NextResponse.redirect(new URL(`/${locale}/auth`, req.url));
+    }
+
+    const headers = new Headers(req.headers);
+    headers.set("Authorization", `Bearer ${accessToken}`);
+
+    const target = new URL(
+      `${process.env.NEXT_PUBLIC_BASE_URL}${pathname}${req.nextUrl.search}`,
+    );
+
+    return NextResponse.rewrite(target, {
+      request: {
+        headers,
+      },
+    });
+  }
+
   if (isFacebookBot) {
     // 1. Let robots.txt pass through to the public folder
     if (pathname === "/robots.txt") {
@@ -20,9 +61,6 @@ export default function middleware(req) {
 
     return NextResponse.rewrite(new URL("/og-preview.html", req.url));
   }
-
-  const locale = pathname.startsWith("/en") ? "en" : "ar";
-  const userCookie = req.cookies.get("user")?.value;
 
   if (isPublicRoute(pathname)) {
     return intlMiddleware(req);
@@ -66,5 +104,8 @@ export default function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+  matcher: [
+    "/queues/:path*",
+    "/((?!api|_next|_vercel|.*\\..*).*)"
+  ],
 };

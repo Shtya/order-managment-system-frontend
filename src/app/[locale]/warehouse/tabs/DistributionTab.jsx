@@ -1357,25 +1357,6 @@ function AssignedOrdersSubtab({
                 variant: "primary",
                 permission: "orders.read",
               },
-              // {
-              //   icon: <Truck />,
-              //   tooltip: row.isAssigning
-              //     ? t("tooltip.assigning")
-              //     : t("tooltip.changeAssign"),
-              //   onClick: (r) =>
-              //     setAssignDialog({ open: true, codes: [r.orderNumber] }),
-              //   variant: "primary",
-              //   disabled: row.isAssigning,
-              //   permission: "order.assign",
-              // },
-              // {
-              //   icon: <Ban />,
-              //   tooltip: t("tooltip.reject"),
-              //   onClick: (r) => setCancelModal({ open: true, order: r }),
-              //   variant: "red",
-              //   disabled: row.isAssigning,
-              //   permission: "order.update",
-              // },
             ]}
           />
         ),

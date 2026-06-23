@@ -478,7 +478,8 @@
       "noEmail": "لا يوجد بريد"
     },
     "toggleSidebar": "تبديل القائمة الجانبية",
-    "now": "الآن"
+    "now": "الآن",
+    "queues": "Madar Jobs"
   },
   "employees": {
     "breadcrumb": {

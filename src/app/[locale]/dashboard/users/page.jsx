@@ -70,7 +70,7 @@ import {
 	AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-import api from "@/utils/api";
+import api, { BASE_URL } from "@/utils/api";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "@/i18n/navigation";
 import ManageSubscription from "./manageSubscription";
@@ -668,6 +668,21 @@ export default function SuperAdminUsersPage() {
 		];
 	}, [t]);
 
+	const openQueueBoard = async () => {
+		try {
+			await api.post('/auth/board-access');
+
+			window.open(`${BASE_URL}/queues`, '_blank');
+		} catch (error) {
+			if (error?.response?.status === 403) {
+				alert('Access denied: Admins only');
+				return;
+			}
+
+			alert('Failed to access board');
+		}
+	};
+
 	return (
 		<div className="min-h-screen p-5">
 			{/* Header */}
@@ -695,6 +710,13 @@ export default function SuperAdminUsersPage() {
 							icon={<UserPlus size={15} className="text-white" />}
 							onClick={() => setCreateOpen(true)}
 						/>
+						{/* <Button_
+							size="sm"
+							label={"البورد"}
+							variant="solid"
+							icon={<UserPlus size={15} className="text-white" />}
+							onClick={() => openQueueBoard()}
+						/> */}
 					</>
 				}
 				stats={stats}
@@ -1163,7 +1185,7 @@ function CreateUserDialog({
 	plansLoading,
 	isLoading,
 }) {
-	
+
 	const [showPassword, setShowPassword] = useState(false);
 	const roleOptions = Array.isArray(roles) ? roles : [];
 
@@ -1574,7 +1596,7 @@ function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, 
 	const email = credentials?.email || user?.email || "";
 	const isPasswordValid = credentials && credentials.userId === user?.id && credentials.password;
 	const password = isPasswordValid ? credentials.password : "";
-	
+
 	const handleChangePassword = async () => {
 		if (!user?.id) return;
 

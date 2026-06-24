@@ -63,6 +63,7 @@ import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 import MultiSelect from "@/components/atoms/MultiSelect";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import UserSelect from "@/components/atoms/UserSelect";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 ChartJS.register(
   CategoryScale,
@@ -875,7 +876,7 @@ export default function OrdersStatisticsPage() {
   const tOrders = useTranslations("orders");
   const t = useTranslations("orderAnalysis");
   const locale = useLocale();
-
+  const { formatCurrency } = usePlatformSettings();
   const [quickRange, setQuickRange] = useState();
   const [filters, setFilters] = useState({
     startDate: null,
@@ -1001,17 +1002,20 @@ export default function OrdersStatisticsPage() {
     {
       key: "deliveredFromTotal",
       title: t("kpi.deliveredFromTotal") || "Delivered from Total",
-      icon: TrendingUp
+      icon: TrendingUp,
+      
     },
     {
       key: "totalSales",
       title: t("kpi.totalSales"),
       icon: TrendingUp,
+      money: true,
     },
     {
       key: "deliveredSales",
       title: t("kpi.deliveredSales") || "Delivered Sales",
       icon: Truck,
+      money: true,
     },
     {
       key: "collectedAmount",
@@ -1248,7 +1252,10 @@ export default function OrdersStatisticsPage() {
         } else {
           raw = advancedStats?.[card.key];
         }
-        const val = raw == null ? "0" : card.pct ? pct(raw) : fmt(raw);
+        let val = raw == null ? "0" : card.pct ? pct(raw) : fmt(raw);
+        if(card.money){
+          val = formatCurrency(val);
+        }
         return {
           id: card.key,
           name: card.title,
@@ -1259,7 +1266,7 @@ export default function OrdersStatisticsPage() {
           onClick: () => { },
         };
       }),
-    [advancedStats, KPI],
+    [advancedStats, KPI,formatCurrency],
   );
 
   const statsCards = useMemo(() => {

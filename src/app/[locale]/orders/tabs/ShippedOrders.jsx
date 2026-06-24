@@ -693,7 +693,7 @@ export default function ShippedOrders({ statuses = [] }) {
   const [statsLoading, setStatsLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [companyStats, setCompanyStats] = useState([]);
-  const [unifiedShipmentStatuses, setUnifiedShipmentStatuses] = useState([]);
+  // const [unifiedShipmentStatuses, setUnifiedShipmentStatuses] = useState([]);
   const [pager, setPager] = useState({
     total_records: 0,
     current_page: 1,
@@ -725,20 +725,20 @@ export default function ShippedOrders({ statuses = [] }) {
     return () => clearTimeout(searchTimer.current);
   }, [search]);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const r = await api.get("/shipping/statuses");
-        if (!cancelled) setUnifiedShipmentStatuses(r.data?.statuses ?? []);
-      } catch {
-        if (!cancelled) setUnifiedShipmentStatuses([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // useEffect(() => {
+  //   let cancelled = false;
+  //   (async () => {
+  //     try {
+  //       const r = await api.get("/shipping/statuses");
+  //       if (!cancelled) setUnifiedShipmentStatuses(r.data?.statuses ?? []);
+  //     } catch {
+  //       if (!cancelled) setUnifiedShipmentStatuses([]);
+  //     }
+  //   })();
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, []);
 
   const buildStatsParams = useCallback(() => {
     const params = { status: OrderStatus.SHIPPED };
@@ -913,12 +913,12 @@ export default function ShippedOrders({ statuses = [] }) {
       return {
         id: item.companyId || `none-${index}`,
         name: item.companyName || ts("stats.noCompany"),
-        value: `${item.count} ${ts("stats.orders")}`,
+        value: `${item.count} ${ts("stats.orders")} · ${formatCurrency(item.totalFinalTotal)}`,
         icon: Truck,
         color,
       };
     });
-  }, [companyStats, t, ts]);
+  }, [companyStats, t, ts, formatCurrency]);
   
   const columns = useMemo(
     () => [

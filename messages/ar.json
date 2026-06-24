@@ -412,7 +412,7 @@
     "failedOrders": "طلبات تحتاج مراجعة",
     "ordersUnderReview": "طلبات تحتاج مراجعة",
     "pendingOrders": "طلبات معلقة",
-    "shippedOrders": "الطلبات المشحونة",
+    "shippedOrders": "طلبات مع شركات الشحن",
     "logout": "تسجيل الخروج",
     "collections": "التحصيلات",
     "collectedOrders": "الطلبات المحصلة",
@@ -4962,10 +4962,10 @@
       "comingSoonDesc": "هذا القسم قيد التطوير، سيكون متاحاً قريباً.",
       "rejected": "الطلبات المرفوضة",
       "pendingOrders": "طلبات معلقة",
-      "shippedOrders": "الطلبات المشحونة"
+      "shippedOrders": "طلبات مع شركات الشحن"
     },
     "shippedOrders": {
-      "breadcrumb": "الطلبات المشحونة",
+      "breadcrumb": "طلبات مع شركات الشحن",
       "views": {
         "normal": "كل المشحون",
         "late": "طلبات متأخرة"

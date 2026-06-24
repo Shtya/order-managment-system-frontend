@@ -7220,10 +7220,11 @@
       "shipping": "Shipping",
       "revenue": "Revenue",
       "badge": "#1 E-Commerce Platform",
-      "title1": "Everything you need to sell and scale…",
+      "title1": "Everything you need to manage your orders…",
       "title2": "in one platform.",
-      "subtitle": "We provide product storage, packaging, and shipping anywhere, with secure payments and fast delivery through fulfillment centers in the UAE, Saudi Arabia, and Oman, helping you build a strong, scalable brand.",
-      "trialNote": "30-day free trial, no card or commitment"
+      "subtitle": "We provide full control from the moment an order is created, through the call center, order management, and sending to the shipping company.",
+      "trialNote": "30-day free trial, no card or commitment",
+      "subtitle2": "One system that provides you with control over orders, shipping, the call center, and collections."
     },
     "cta": {
       "button": "Try the Platform Now",
@@ -7411,25 +7412,26 @@
   },
   "howItWorks": {
     "header": {
-      "title": "From order to delivery — all your work perfectly organized",
-      "highlight": "One platform",
-      "subtitle": "Track your orders and inventory easily… everything organized in one place"
+      "title": "One Madar managing the entire order journey.",
+      "highlight": "from start to finish.",
+      "subtitle": "Comprehensive order management… from placement to payment collection.",
+      "subtitle2": "Every order flows in its own dedicated orbit from placement to delivery, without friction."
     },
     "steps": [
       {
-        "stepLabel": "Step One",
-        "title": "Create your account and connect your store",
-        "desc": "Register on the platform easily, and connect your online store in minutes to start syncing orders automatically."
+        "stepLabel": "Step 1",
+        "title": "Log in and Connect Your Store",
+        "desc": "Log into your account seamlessly, and link your online store in minutes to start syncing orders automatically."
       },
       {
         "stepLabel": "Step Two",
-        "title": "Track your products, orders, and reports accurately",
-        "desc": "Monitor every product, every order, and get smart reports that help you manage your business quickly and intelligently."
+        "title": "Connect shipping carriers and activate your store",
+        "desc": "Connect the shipping companies you work with, define coverage areas, shipping rates, and delivery statuses."
       },
       {
         "stepLabel": "Step Three",
-        "title": "Activate shipping companies easily",
-        "desc": "Connect the shipping companies you work with, define coverage areas, shipping rates, and delivery statuses."
+        "title": "Track your products, orders, and reports accurately",
+        "desc": "Monitor every product, every order, and get smart reports that help you manage your business quickly and intelligently."
       }
     ],
     "fields": {
@@ -7438,7 +7440,58 @@
       "store": "Store Link",
       "password": "Password"
     },
-    "signupBtn": "Create Account"
+    "signupBtn": "Create Account",
+    "signinBtn": "Sign In"
+  },
+  "painPointsSection": {
+    "header": {
+      "eyebrow": "Common Challenges",
+      "title": "Still Struggling With",
+      "highlight": "These Problems?",
+      "subtitle": "You're not alone — every e-commerce seller faces these hurdles. Here's how we solve them."
+    },
+    "cards": [
+      {
+        "tag": "Order Management",
+        "title": "Orders Scattered Across Multiple Channels",
+        "pain": "Managing orders from your website, social media, and marketplaces separately leads to missed orders, duplicates, and wasted hours every day.",
+        "solution": "One unified dashboard syncs all your orders in real time — no more switching between tabs or missing a sale."
+      },
+      {
+        "tag": "Shipping & Delivery",
+        "title": "No Visibility on Your Shipments After Dispatch",
+        "pain": "Once a package leaves your hands, you're in the dark. Customers flood your inbox asking \"Where is my order?\" and you have no real answer.",
+        "solution": "Live tracking for every shipment, plus automated customer notifications so you get fewer support requests."
+      },
+      {
+        "tag": "Cash on Delivery",
+        "title": "COD Returns Eating Into Your Profits",
+        "pain": "High return rates on cash-on-delivery orders mean you pay for shipping twice and lose inventory to damaged or rejected packages.",
+        "solution": "Smart COD management with upfront verification and return tracking reduces your loss per rejected order."
+      },
+      {
+        "tag": "Analytics",
+        "title": "Guessing Instead of Knowing Your Numbers",
+        "pain": "Without clear reports, you don't know which products are profitable, which courier is failing you, or where your money actually goes.",
+        "solution": "Real-time analytics on revenue, courier performance, and top-selling SKUs — all in one clean report."
+      },
+      {
+        "tag": "Inventory",
+        "title": "Selling Items You No Longer Have in Stock",
+        "pain": "Overselling because your inventory is updated manually leads to cancelled orders, angry customers, and negative reviews.",
+        "solution": "Automatic stock sync across all channels the moment a sale is made — zero overselling."
+      },
+      {
+        "tag": "Team & Scale",
+        "title": "Doing Everything Manually as You Grow",
+        "pain": "What worked for 20 orders a day breaks at 200. Manually printing labels, copying tracking numbers, and updating spreadsheets doesn't scale.",
+        "solution": "Automate label printing, status updates, and courier assignments — scale without adding headcount."
+      }
+    ],
+    "cta": {
+      "subtext": "Ready to fix these for good? Join thousands of sellers who already ship smarter.",
+      "label": "Start Free Today"
+    }
   },
   "shippingNetwork": {
     "heading": {

@@ -16,6 +16,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { Field } from "@/app/[locale]/auth/tabs/AuthUi";
 
 const BRAND = "#6763AF";
 const BRAND_L = "#8b88c9";
@@ -80,234 +81,7 @@ function StepArrow({ label, side, delay, inView }) {
 	 SHARED: StepCard wrapper
 	 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function SignupCard({ inView, ref, step, t }) {
-  // const [ref, inView] = useInView();
 
-  const fields = [
-    { icon: User, placeholder: t("fields.name") },
-    { icon: Mail, placeholder: t("fields.email") },
-    { icon: Link2, placeholder: t("fields.store") },
-    { icon: Lock, placeholder: t("fields.password") },
-  ];
-
-  return (
-    <div
-      ref={ref}
-      dir="rtl"
-      className="relative w-fit mx-auto p-4 rounded-xl !h-fit"
-      style={{
-        border: "1px solid #E8EBF0",
-        background: "linear-gradient(1.84deg, #FFFFFF 1.1%, #E8E8FF 100%)",
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: 340 }}>
-        <img
-          src={"landing/step-1.png"}
-          className="absolute left-1/2 -translate-1/2 top-[-60px] w-[120px]"
-        />
-
-        {/* ── card ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.12, duration: 0.55, ease }}
-          style={{
-            background: "#fff",
-            borderRadius: 22,
-            padding: "22px 18px 20px",
-            boxShadow:
-              "0 8px 40px rgba(108,99,212,0.10), 0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          {/* form fields */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {fields.map((f, i) => {
-              const Icon = f.icon;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={inView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ delay: 0.28 + i * 0.09, duration: 0.45, ease }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "10px 14px",
-                    borderRadius: 14,
-                    background: "#f0eefb",
-                    border: "1px solid rgba(103,99,175,0.13)",
-                    cursor: "text",
-                  }}
-                >
-                  <Icon
-                    size={14}
-                    color={BRAND}
-                    strokeWidth={2}
-                    style={{ flexShrink: 0 }}
-                  />
-                  <span
-                    style={{ fontSize: 12, color: "#aaa", fontWeight: 500 }}
-                  >
-                    {f.placeholder}
-                  </span>
-                </motion.div>
-              );
-            })}
-
-            <Link href="/auth?mode=signup" passHref legacyBehavior>
-              {/* CTA button */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.68, duration: 0.45, ease }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  marginTop: 4,
-                  borderRadius: 14,
-                  padding: "12px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: `linear-gradient(135deg, ${BRAND} 0%, ${BRAND_L} 100%)`,
-                  cursor: "pointer",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
-                {/* shimmer sweep */}
-                <motion.div
-                  animate={{ x: ["-120%", "220%"] }}
-                  transition={{
-                    duration: 2.8,
-                    repeat: Infinity,
-                    repeatDelay: 1.8,
-                  }}
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "60%",
-                    background:
-                      "linear-gradient(90deg,transparent,rgba(255,255,255,0.32),transparent)",
-                  }}
-                />
-                <span
-                  style={{
-                    position: "relative",
-                    zIndex: 1,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "#fff",
-                    letterSpacing: 0.3,
-                  }}
-                >
-                  {t("signupBtn")}
-                </span>
-              </motion.div>
-            </Link>
-          </div>
-        </motion.div>
-
-        {/* ── title + description below card ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.78, duration: 0.5, ease }}
-          style={{ marginTop: 24, textAlign: "center" }}
-        >
-          <h2
-            style={{
-              fontSize: 19,
-              fontWeight: 800,
-              color: "#1a1535",
-              margin: "0 0 8px",
-              lineHeight: 1.4,
-            }}
-          >
-            {step.title}
-          </h2>
-          <p
-            style={{
-              fontSize: 13,
-              color: "#7b7a95",
-              lineHeight: 1.75,
-              margin: 0,
-              fontWeight: 400,
-            }}
-          >
-            {step.desc}
-          </p>
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-function AnalyticsCard({ ref, inView, step }) {
-  return (
-    <div
-      ref={ref}
-      className="relative w-fit mx-auto p-4 rounded-xl !h-fit"
-      style={{
-        border: "1px solid #E8EBF0",
-        background: "linear-gradient(1.84deg, #FFFFFF 1.1%, #E8E8FF 100%)",
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: 340 }}>
-        <img
-          src={"landing/step-2.png"}
-          className="absolute left-1/2 -translate-1/2 bottom-[-140px] w-[120px]"
-        />
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.08, duration: 0.55, ease }}
-          style={{
-            background: "#fff",
-            borderRadius: 26,
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <img className=" pt-[30px] pl-[30px]" src={"landing/stats.png"} />
-        </motion.div>
-
-        {/* ── title + description ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.7, duration: 0.5, ease }}
-          style={{ textAlign: "center", padding: "20px 8px 4px" }}
-        >
-          <h2
-            style={{
-              fontSize: 20,
-              fontWeight: 800,
-              color: "#1a1535",
-              margin: "0 0 8px",
-              lineHeight: 1.45,
-            }}
-          >
-            {step.title}
-          </h2>
-          <p
-            style={{
-              fontSize: 13,
-              color: "#7b7a95",
-              lineHeight: 1.8,
-              margin: 0,
-              fontWeight: 400,
-            }}
-          >
-            {step.desc}
-          </p>
-        </motion.div>
-      </div>
-    </div>
-  );
-}
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 	 CARD 3 — ShippingCard  (Step 3, left column)
@@ -458,6 +232,351 @@ function ConnectingLines({ inView }) {
   );
 }
 
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	 ROOT EXPORT — HowItWorksSection
+	 Composes the three cards above.
+	 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+export default function HowItWorksSection() {
+  const t = useTranslations("howItWorks");
+  const locale = useLocale();
+  const isRtl = locale === "ar";
+
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const steps = t.raw("steps");
+
+  return (
+    <section
+      ref={ref}
+      className="relative py-20 overflow-hidden"
+      style={{ background: "#faf9ff" }}
+      dir={isRtl ? "rtl" : "ltr"}
+    >
+      {/* ── ambient orbs ── */}
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], opacity: [0.08, 0.18, 0.08] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+        style={{
+          width: 640,
+          height: 300,
+          borderRadius: "50%",
+          background: `radial-gradient(ellipse,${BRAND}18 0%,transparent 70%)`,
+          filter: "blur(55px)",
+        }}
+      />
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.12, 0.05] }}
+        transition={{
+          duration: 11,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 4,
+        }}
+        className="absolute bottom-0 right-0 pointer-events-none"
+        style={{
+          width: 320,
+          height: 320,
+          borderRadius: "50%",
+          background: "radial-gradient(circle,#60a5fa1a 0%,transparent 70%)",
+          filter: "blur(50px)",
+        }}
+      />
+
+      <div className="container mx-auto px-5 relative z-10">
+        {/* ── section header ── */}
+        <div className="text-center mb-14" dir={isRtl ? "rtl" : "ltr"}>
+          <motion.h2
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, ease }}
+            className="text-3xl md:text-[2.1rem] font-extrabold text-gray-900 leading-snug"
+            style={{ fontFamily: "'Cairo','Tajawal',sans-serif" }}
+          >
+            {t("header.title")}{" "}
+            <motion.span
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={inView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ delay: 0.3, type: "spring", stiffness: 260 }}
+              className="inline-block px-4 py-0.5 rounded-xl"
+              style={{ background: `${BRAND}15`, color: BRAND }}
+            >
+              {t("header.highlight")}
+            </motion.span>
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.22 }}
+            className="text-lg text-gray-500 mt-4"
+            style={{ fontFamily: "'Cairo','Tajawal',sans-serif" }}
+          >
+            {t("header.subtitle")}
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.22 }}
+            className="text-lg text-gray-500 mt-4"
+            style={{ fontFamily: "'Cairo','Tajawal',sans-serif" }}
+          >
+            {t("header.subtitle2")}
+          </motion.p>
+        </div>
+
+        {/* ── 3-column grid ── */}
+        <div className="grid mt-[150px] mb-[100px] md:grid-cols-2 lg:grid-cols-3 gap-5 lg:items-start">
+          {/* RIGHT column — Step 1 */}
+          <SignupCard step={steps[0]} inView={inView} t={t} />
+
+          {/* CENTER column — Step 2 */}
+          <ShippingCard step={steps[1]} inView={inView} />
+
+          {/* LEFT column — Step 3 */}
+          <AnalyticsCard step={steps[2]} inView={inView} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+function SignupCard({ inView, ref, step, t }) {
+  // const [ref, inView] = useInView();
+
+  const fields = [
+    // { icon: User, placeholder: t("fields.name") },
+    { icon: Mail, placeholder: "you@example.com", label: t("fields.email") },
+    // { icon: Link2, placeholder: t("fields.store") },
+    { icon: Lock, placeholder: t("fields.password"), label: t("fields.password") },
+  ];
+
+  return (
+    <div
+      ref={ref}
+      dir="rtl"
+      className="relative w-fit mx-auto p-4 rounded-xl !h-fit"
+      style={{
+        border: "1px solid #E8EBF0",
+        background: "linear-gradient(1.84deg, #FFFFFF 1.1%, #E8E8FF 100%)",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: 340 }}>
+        <img
+          src={"landing/step-1.png"}
+          className="absolute left-1/2 -translate-1/2 top-[-60px] w-[120px]"
+        />
+
+        {/* ── card ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.12, duration: 0.55, ease }}
+          style={{
+            background: "#fff",
+            borderRadius: 22,
+            padding: "22px 18px 20px",
+            boxShadow:
+              "0 8px 40px rgba(108,99,212,0.10), 0 1px 4px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* form fields */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {fields.map((f, i) => {
+              const Icon = f.icon;
+                
+              
+              return (
+                <Field label={f.label} style={{marginBottom: "5px"}}>
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={inView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ delay: 0.28 + i * 0.09, duration: 0.45, ease }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 14px",
+                    borderRadius: 14,
+                    background: "#f0eefb",
+                    border: "1px solid rgba(103,99,175,0.13)",
+                    cursor: "text",
+                  }}
+                >
+                  <Icon
+                    size={14}
+                    color={BRAND}
+                    strokeWidth={2}
+                    style={{ flexShrink: 0 }}
+                  />
+                  <span
+                    style={{ fontSize: 12, color: "#aaa", fontWeight: 500 }}
+                  >
+                    {f.placeholder}
+                  </span>
+                </motion.div>
+                </Field>
+              );
+            })}
+
+            <Link href="/auth?mode=signin" passHref legacyBehavior>
+              {/* CTA button */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.68, duration: 0.45, ease }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  marginTop: 4,
+                  borderRadius: 14,
+                  padding: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: `linear-gradient(135deg, ${BRAND} 0%, ${BRAND_L} 100%)`,
+                  cursor: "pointer",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                {/* shimmer sweep */}
+                <motion.div
+                  animate={{ x: ["-120%", "220%"] }}
+                  transition={{
+                    duration: 2.8,
+                    repeat: Infinity,
+                    repeatDelay: 1.8,
+                  }}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "60%",
+                    background:
+                      "linear-gradient(90deg,transparent,rgba(255,255,255,0.32),transparent)",
+                  }}
+                />
+                <span
+                  style={{
+                    position: "relative",
+                    zIndex: 1,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#fff",
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  {t("signinBtn")}
+                </span>
+              </motion.div>
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* ── title + description below card ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.78, duration: 0.5, ease }}
+          style={{ marginTop: 24, textAlign: "center" }}
+        >
+          <h2
+            style={{
+              fontSize: 19,
+              fontWeight: 800,
+              color: "#1a1535",
+              margin: "0 0 8px",
+              lineHeight: 1.4,
+            }}
+          >
+            {step.title}
+          </h2>
+          <p
+            style={{
+              fontSize: 13,
+              color: "#7b7a95",
+              lineHeight: 1.75,
+              margin: 0,
+              fontWeight: 400,
+            }}
+          >
+            {step.desc}
+          </p>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsCard({ ref, inView, step }) {
+  return (
+    <div
+      ref={ref}
+      className="relative w-fit mx-auto p-4 rounded-xl !h-fit"
+      style={{
+        border: "1px solid #E8EBF0",
+        background: "linear-gradient(1.84deg, #FFFFFF 1.1%, #E8E8FF 100%)",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: 340 }}>
+        <img
+          src={"landing/step-2.png"}
+          className="absolute left-1/2 -translate-1/2 top-[-60px] w-[120px]"
+        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.08, duration: 0.55, ease }}
+          style={{
+            background: "#fff",
+            borderRadius: 26,
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <img className=" pt-[30px] pl-[30px]" src={"landing/stats.png"} />
+        </motion.div>
+
+        {/* ── title + description ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.7, duration: 0.5, ease }}
+          style={{ textAlign: "center", padding: "20px 8px 4px" }}
+        >
+          <h2
+            style={{
+              fontSize: 20,
+              fontWeight: 800,
+              color: "#1a1535",
+              margin: "0 0 8px",
+              lineHeight: 1.45,
+            }}
+          >
+            {step.title}
+          </h2>
+          <p
+            style={{
+              fontSize: 13,
+              color: "#7b7a95",
+              lineHeight: 1.8,
+              margin: 0,
+              fontWeight: 400,
+            }}
+          >
+            {step.desc}
+          </p>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
 function ShippingCard({ ref, inView, step }) {
   return (
     <div
@@ -471,7 +590,7 @@ function ShippingCard({ ref, inView, step }) {
     >
       <img
         src={"landing/step-3.png"}
-        className="absolute left-1/2 -translate-1/2 top-[-60px] w-[120px]"
+        className="absolute left-1/2 -translate-1/2 bottom-[-140px] w-[120px]"
       />
 
       <div style={{ width: "100%", maxWidth: 340 }}>
@@ -678,105 +797,5 @@ function ShippingCard({ ref, inView, step }) {
         </motion.div>
       </div>
     </div>
-  );
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-	 ROOT EXPORT — HowItWorksSection
-	 Composes the three cards above.
-	 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-export default function HowItWorksSection() {
-  const t = useTranslations("howItWorks");
-  const locale = useLocale();
-  const isRtl = locale === "ar";
-
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const steps = t.raw("steps");
-
-  return (
-    <section
-      ref={ref}
-      className="relative py-20 overflow-hidden"
-      style={{ background: "#faf9ff" }}
-      dir={isRtl ? "rtl" : "ltr"}
-    >
-      {/* ── ambient orbs ── */}
-      <motion.div
-        animate={{ scale: [1, 1.3, 1], opacity: [0.08, 0.18, 0.08] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-        style={{
-          width: 640,
-          height: 300,
-          borderRadius: "50%",
-          background: `radial-gradient(ellipse,${BRAND}18 0%,transparent 70%)`,
-          filter: "blur(55px)",
-        }}
-      />
-      <motion.div
-        animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.12, 0.05] }}
-        transition={{
-          duration: 11,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 4,
-        }}
-        className="absolute bottom-0 right-0 pointer-events-none"
-        style={{
-          width: 320,
-          height: 320,
-          borderRadius: "50%",
-          background: "radial-gradient(circle,#60a5fa1a 0%,transparent 70%)",
-          filter: "blur(50px)",
-        }}
-      />
-
-      <div className="container mx-auto px-5 relative z-10">
-        {/* ── section header ── */}
-        <div className="text-center mb-14" dir={isRtl ? "rtl" : "ltr"}>
-          <motion.h2
-            initial={{ opacity: 0, y: 24 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, ease }}
-            className="text-3xl md:text-[2.1rem] font-extrabold text-gray-900 leading-snug"
-            style={{ fontFamily: "'Cairo','Tajawal',sans-serif" }}
-          >
-            {t("header.title")}{" "}
-            <motion.span
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ delay: 0.3, type: "spring", stiffness: 260 }}
-              className="inline-block px-4 py-0.5 rounded-xl"
-              style={{ background: `${BRAND}15`, color: BRAND }}
-            >
-              {t("header.highlight")}
-            </motion.span>
-          </motion.h2>
-
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.22 }}
-            className="text-lg text-gray-500 mt-4"
-            style={{ fontFamily: "'Cairo','Tajawal',sans-serif" }}
-          >
-            {t("header.subtitle")}
-          </motion.p>
-        </div>
-
-        {/* ── 3-column grid ── */}
-        <div className="grid mt-[150px] mb-[100px] md:grid-cols-2 lg:grid-cols-3 gap-5 lg:items-start">
-          {/* RIGHT column — Step 1 */}
-          <SignupCard step={steps[0]} inView={inView} t={t} />
-
-          {/* CENTER column — Step 2 */}
-          <AnalyticsCard step={steps[1]} inView={inView} />
-
-          {/* LEFT column — Step 3 */}
-          <ShippingCard step={steps[2]} inView={inView} />
-        </div>
-      </div>
-    </section>
   );
 }

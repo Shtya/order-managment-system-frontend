@@ -137,6 +137,578 @@ export const OrderStatus = {
   RETURNED: "returned",
 };
 
+// // Helper function to generate random order number like ORD77QURTE
+// const generateOrderNumber = () => {
+//   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+//   let suffix = '';
+//   for (let i = 0; i < 7; i++) {
+//     suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+//   }
+//   return `ORD${suffix}`;
+// };
+
+// // Mock Egyptian Orders for Demo
+// const mockOrders = [
+//   {
+//     id: "1",
+//     customerName: "Ahmed Mohamed",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Cairo",
+//     address: "123 Street Name, Nasr City, Cairo",
+//     finalTotal: 350,
+//     shippingCost: 30,
+//     phoneNumber: "01012345678",
+//     status: {
+//       id: "6aa5ba0a-61b5-4a4f-87fb-c7fea5bac389",
+//       code: OrderStatus.NEW,
+//       system: true,
+//       name: "New",
+//       color: "#2196F3",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "T-Shirt" },
+//           sku: "TS-001",
+//         },
+//         quantity: 2,
+//       },
+//     ],
+//   },
+//   {
+//     id: "2",
+//     customerName: "Fatma Ali",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: generateOrderNumber(),
+//     city: "Alexandria",
+//     address: "456 Corniche Road, Alexandria",
+//     finalTotal: 500,
+//     shippingCost: 45,
+//     phoneNumber: "01298765439",
+//     status: {
+//       id: "d6f944e4-103d-48c6-afeb-1a9448bc62c3",
+//       code: OrderStatus.CONFIRMED,
+//       system: true,
+//       name: "Confirmed",
+//       color: "#4CAF50",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 3, maxShippingDays: 5 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Jeans" },
+//           sku: "JN-0022",
+//         },
+//         quantity: 1,
+//       },
+//       {
+//         variant: {
+//           product: { name: "Belt" },
+//           sku: "BL-003",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   {
+//     id: "3",
+//     customerName: "Omar Hassan",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Giza",
+//     address: "789 Pyramids Road, Giza",
+//     finalTotal: 280,
+//     shippingCost: 25,
+//     phoneNumber: "01145678901",
+//     status: {
+//       id: "17f3407e-dc2f-4ec1-94ea-1e43b7353f5f",
+//       code: OrderStatus.PREPARING,
+//       system: true,
+//       name: "Preparing",
+//       color: "#9C27B0",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 1, maxShippingDays: 3 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Shoes" },
+//           sku: "SH-004",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   {
+//     id: "4",
+//     customerName: "Sara Kamal",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Luxor",
+//     address: "321 Karnak Street, Luxor",
+//     finalTotal: 800,
+//     shippingCost: 60,
+//     phoneNumber: "01055556666",
+//     status: {
+//       id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+//       code: OrderStatus.SHIPPED,
+//       system: true,
+//       name: "Shipped",
+//       color: "#03A9F4",
+//     },
+//     postponedDate: null,
+//     shippedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 4, maxShippingDays: 6 }],
+//     },
+//     shipments: [
+//       { id: "1", status: "in_transit" },
+//     ],
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Dress" },
+//           sku: "DR-005",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   {
+//     id: "5",
+//     customerName: "Mohamed Ahmed",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Cairo",
+//     address: "654 Heliopolis Square, Cairo",
+//     finalTotal: 420,
+//     shippingCost: 35,
+//     phoneNumber: "01233334444",
+//     status: {
+//       id: "4c4c203b-c304-4ae2-b22d-9ee108fe2ced",
+//       code: OrderStatus.DELIVERED,
+//       system: true,
+//       name: "Delivered",
+//       color: "#4CAF50",
+//     },
+//     postponedDate: null,
+//     shippedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+//     },
+//     shipments: [
+//       { id: "2", status: "delivered" },
+//     ],
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Watch" },
+//           sku: "WT-006",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   {
+//     id: "6",
+//     customerName: "Hala Hussein",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Port Said",
+//     address: "987 Port Fuad Street, Port Said",
+//     finalTotal: 300,
+//     shippingCost: 40,
+//     phoneNumber: "01177778888",
+//     status: {
+//       id: "d8c6a65d-6682-495d-8658-a4f4a14dee03",
+//       code: OrderStatus.FAILED_DELIVERY,
+//       system: true,
+//       name: "Failed Delivery",
+//       color: "#E91E63",
+//     },
+//     postponedDate: null,
+//     shippedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 3, maxShippingDays: 5 }],
+//     },
+//     shipments: [
+//       { id: "3", status: "failed" },
+//     ],
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Bag" },
+//           sku: "BG-007",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   {
+//     id: "7",
+//     customerName: "Youssef Ibrahim",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Ismailia",
+//     address: "147 Taha Hussein Street, Ismailia",
+//     finalTotal: 550,
+//     shippingCost: 50,
+//     phoneNumber: "01099990000",
+//     status: {
+//       id: "1900816e-59b6-408c-a1ec-41525af685f3",
+//       code: OrderStatus.POSTPONED,
+//       system: true,
+//       name: "PostPoned",
+//       color: "#00BCD4",
+//     },
+//     postponedDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Hat" },
+//           sku: "HT-008",
+//         },
+//         quantity: 2,
+//       },
+//     ],
+//   },
+//   {
+//     id: "8",
+//     customerName: "Nour El-Din",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: generateOrderNumber(),
+//     city: "Mansoura",
+//     address: "258 Mansoura University Street, Mansoura",
+//     finalTotal: 650,
+//     shippingCost: 45,
+//     phoneNumber: "01211112222",
+//     status: {
+//       id: "35e718ea-54d5-40f0-bf93-10ffb87b8461",
+//       code: OrderStatus.PRINTED,
+//       system: true,
+//       name: "Printed",
+//       color: "#3F51B5",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Jacket" },
+//           sku: "JK-009",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   {
+//     id: "9",
+//     customerName: "Lina Samir",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Cairo",
+//     address: "369 Downtown Cairo",
+//     finalTotal: 200,
+//     shippingCost: 25,
+//     phoneNumber: "01133334444",
+//     status: {
+//       id: "ed668cd2-5fc1-4002-abf6-9c84da52ffb7",
+//       code: OrderStatus.CANCELLED,
+//       system: true,
+//       name: "Cancelled",
+//       color: "#F44336",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Socks" },
+//           sku: "SK-010",
+//         },
+//         quantity: 3,
+//       },
+//     ],
+//   },
+//   {
+//     id: "10",
+//     customerName: "Karim Mostafa",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Suez",
+//     address: "741 Suez Canal Street, Suez",
+//     finalTotal: 480,
+//     shippingCost: 40,
+//     phoneNumber: "01066667777",
+//     status: {
+//       id: "9fc00157-582e-46d3-a276-fec76f7f6359",
+//       code: OrderStatus.READY,
+//       system: true,
+//       name: "Ready",
+//       color: "#009688",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Sunglasses" },
+//           sku: "SG-011",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   /*{
+//     id: "11",
+//     customerName: "Mona Farid",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Tanta",
+//     address: "852 Tanta Center, Tanta",
+//     finalTotal: 700,
+//     shippingCost: 55,
+//     phoneNumber: "01288889999",
+//     status: {
+//       id: "6e38513d-0af6-44a3-9973-f2cf9e322835",
+//       code: OrderStatus.PACKED,
+//       system: true,
+//       name: "Packed",
+//       color: "#795548",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 3, maxShippingDays: 5 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Perfume" },
+//           sku: "PF-012",
+//         },
+//         quantity: 1,
+//       },
+//       {
+//         variant: {
+//           product: { name: "Body Lotion" },
+//           sku: "BL-013",
+//         },
+//         quantity: 2,
+//       },
+//     ],
+//   },
+//   {
+//     id: "12",
+//     customerName: "Ali Nasser",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Cairo",
+//     address: "963 Maadi, Cairo",
+//     finalTotal: 320,
+//     shippingCost: 30,
+//     phoneNumber: "01112345678",
+//     status: {
+//       id: "57c48914-fc18-4ad5-8d29-789b73afc52b",
+//       code: OrderStatus.RETURN_PREPARING,
+//       system: true,
+//       name: "Return Preparing",
+//       color: "#FF9800",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Shirt" },
+//           sku: "ST-014",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   {
+//     id: "13",
+//     customerName: "Dina Zaki",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Asyut",
+//     address: "159 Asyut City Center, Asyut",
+//     finalTotal: 450,
+//     shippingCost: 45,
+//     phoneNumber: "01022223333",
+//     status: {
+//       id: "00778a5b-31d7-4b74-8c9b-6b6c60e8f6ce",
+//       code: OrderStatus.RETURNED,
+//       system: true,
+//       name: "Returned",
+//       color: "#607D8B",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 4, maxShippingDays: 6 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Wallet" },
+//           sku: "WL-015",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   {
+//     id: "14",
+//     customerName: "Hassan Youssef",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Sohag",
+//     address: "753 Sohag Downtown, Sohag",
+//     finalTotal: 600,
+//     shippingCost: 50,
+//     phoneNumber: "01244445555",
+//     status: {
+//       id: "8029db59-3618-4e71-8031-970a3c9a9d1c",
+//       code: OrderStatus.NO_ANSWER,
+//       system: true,
+//       name: "No Answer",
+//       color: "#FF5722",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 3, maxShippingDays: 5 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Belt" },
+//           sku: "BL-016",
+//         },
+//         quantity: 1,
+//       },
+//     ],
+//   },
+//   {
+//     id: "15",
+//     customerName: "Yara Adel",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Cairo",
+//     address: "852 New Cairo, Cairo",
+//     finalTotal: 380,
+//     shippingCost: 35,
+//     phoneNumber: "01166667777",
+//     status: {
+//       id: "711db153-884d-44b9-acce-0a6e84ab86cf",
+//       code: OrderStatus.WRONG_NUMBER,
+//       system: true,
+//       name: "Wrong Number",
+//       color: "#795548",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Scarf" },
+//           sku: "SF-017",
+//         },
+//         quantity: 2,
+//       },
+//     ],
+//   },
+//   {
+//     id: "16",
+//     customerName: "Omar Khaled",
+//     orderNumber: generateOrderNumber(),
+//     duplicateCount: 0,
+//     originalOrderNumber: null,
+//     city: "Hurghada",
+//     address: "951 Hurghada Resort, Hurghada",
+//     finalTotal: 900,
+//     shippingCost: 65,
+//     phoneNumber: "01088889999",
+//     status: {
+//       id: "eb0c612c-9ea2-443d-bde2-f3e5bb944012",
+//       code: OrderStatus.OUT_OF_DELIVERY_AREA,
+//       system: true,
+//       name: "Out of Delivery Area",
+//       color: "#673AB7",
+//     },
+//     postponedDate: null,
+//     shippedAt: null,
+//     cityDetails: {
+//       tenantConfigs: [{ minShippingDays: 5, maxShippingDays: 7 }],
+//     },
+//     items: [
+//       {
+//         variant: {
+//           product: { name: "Swimsuit" },
+//           sku: "SW-018",
+//         },
+//         quantity: 1,
+//       },
+//       {
+//         variant: {
+//           product: { name: "Towel" },
+//           sku: "TW-019",
+//         },
+//         quantity: 2,
+//       },
+//     ],
+//   },*/
+// ];
+
 
 
 
@@ -243,7 +815,6 @@ export default function OrdersTab({
   }, [postponedDate, reminderOptions]);
 
 
-  console.log(postponedDate)
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [distributionOpen, setDistributionOpen] = useState(false);

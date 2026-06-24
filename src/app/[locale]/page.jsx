@@ -24,6 +24,7 @@ import FooterSection from "@/components/pages/home/Footersection";
 import Navbar from "@/components/pages/home/Navbar";
 import * as yup from "yup";
 import { useAuth } from "@/context/AuthContext";
+import PainPointsSection from "@/components/pages/home/PainPointsSection";
 const BRAND = "#6763AF";
 
 /* ─── Animation helpers ─── */
@@ -67,6 +68,51 @@ function FloatingOrbs() {
     </div>
   );
 }
+
+/* ─── Root export ─── */
+export default function TalbatiLanding({ heroImage }) {
+  const t = useTranslations("landing");
+  const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const switchLocale = (next) => router.replace(pathname, { locale: next });
+
+  return (
+    <div className="home">
+      <Hero
+        id="home"
+        t={t}
+        heroImage={heroImage}
+        locale={locale}
+        switchLocale={switchLocale}
+        user={user}
+      />
+      <PainPointsSection />   
+      <div id="services">
+        <ServicesSection />
+      </div>
+      {/* <MarqueeTextSection /> */}
+      <div id="how-it-works">
+        <HowItWorksSection />
+      </div>
+      <ShippingSection />
+      <TestimonialsSection />
+      {/* <div id="pricing">
+        <PricingSection />
+      </div> */}
+      <div id="faq">
+        <FaqSection />
+      </div>
+      <div id="contact">
+        <HeroBannerSection />
+      </div>
+      <FooterSection />
+    </div>
+  );
+}
+
 
 /* ─── CTA Input ─── */
 function CTAInput({ t }) {
@@ -199,6 +245,12 @@ function Hero({ t, heroImage, locale, switchLocale, user }) {
           >
             {t("hero.subtitle")}
           </motion.p>
+          <motion.p
+            {...fadeUp(0.22)}
+            className="font-[600] text-[#25456F] text-[1.3rem] leading-relaxed my-8 block"
+          >
+            {t("hero.subtitle2")}
+          </motion.p>
 
           <CTAInput t={t} />
 
@@ -314,48 +366,5 @@ function Hero({ t, heroImage, locale, switchLocale, user }) {
   );
 }
 
-/* ─── Root export ─── */
-export default function TalbatiLanding({ heroImage }) {
-  const t = useTranslations("landing");
-  const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
-  const { user } = useAuth();
-
-  const switchLocale = (next) => router.replace(pathname, { locale: next });
-
-  return (
-    <div className="home">
-      <Hero
-        id="home"
-        t={t}
-        heroImage={heroImage}
-        locale={locale}
-        switchLocale={switchLocale}
-        user={user}
-      />
-
-      <div id="services">
-        <ServicesSection />
-      </div>
-      <MarqueeTextSection />
-      <div id="how-it-works">
-        <HowItWorksSection />
-      </div>
-      <ShippingSection />
-      <TestimonialsSection />
-      <div id="pricing">
-        <PricingSection />
-      </div>
-      <div id="faq">
-        <FaqSection />
-      </div>
-      <div id="contact">
-        <HeroBannerSection />
-      </div>
-      <FooterSection />
-    </div>
-  );
-}
 
 

@@ -10,49 +10,68 @@ const CY = 248;
 
 const COMPANIES = [
   {
-    id: 'smsa', name: 'SMSA', logo: '/landing/companies/smsa.png',
-    bg: '#1e2a6e', beamColor: '#818cf8', beamDelay: 0.0,
-    path: [[CX, CY], [350, CY], [220, 145], [168, 145]], joints: [1, 2],
-  },
-  {
     id: 'aramex', name: 'Aramex', logo: '/landing/companies/aramex.png',
     bg: '#7f1d1d', beamColor: '#f87171', beamDelay: 0.4,
-    path: [[CX, CY], [118, CY]], joints: [],
+    path: [[CX, CY], [882, CY]], joints: [],
   },
   {
     id: 'fedex', name: 'FedEx', logo: '/landing/companies/fedex.png',
     bg: '#312e81', beamColor: '#a78bfa', beamDelay: 0.8,
-    path: [[CX, CY], [310, CY], [155, 350], [90, 350]], joints: [1, 2],
+     path: [[CX, CY], [760, CY], [850, 350], [920, 350]], joints: [1, 2],
   },
   {
-    id: 'imile', name: 'iMile', logo: '/landing/companies/imile.png',
-    bg: '#1e3a8a', beamColor: '#60a5fa', beamDelay: 1.2,
-    path: [[CX, CY], [360, CY], [232, 410], [168, 410]], joints: [1, 2],
+    id: 'turbo',
+    name: 'Turbo',
+    logo: '/landing/companies/turbo.png',
+    bg: '#fff',
+    beamColor: '#fff',
+    beamDelay: 1.4,
+    path: [[CX, CY], [610, CY], [690, 380], [760, 380]],
+    joints: [1, 2],
   },
   {
     id: 'spl', name: 'SPL', logo: '/landing/companies/spl.png',
     bg: '#164e63', beamColor: '#22d3ee', beamDelay: 0.2,
-    path: [[CX, CY], [640, CY], [745, 148], [808, 148]], joints: [1, 2],
+    path: [[CX, CY], [830, CY], [870, 148], [950, 148]], joints: [1, 2],
   },
   {
     id: 'jt', name: 'J&T', logo: '/landing/companies/jt.png',
     bg: '#7f1d1d', beamColor: '#fca5a5', beamDelay: 0.6,
-    path: [[CX, CY], [700, CY], [848, 110], [912, 110]], joints: [1, 2],
+    path: [[CX, CY], [810, CY], [850, 60], [930, 60]], joints: [1, 2],
   },
   {
-    id: 'makane', name: 'MakanE', logo: '/landing/companies/makane.png',
-    bg: '#1e293b', beamColor: '#94a3b8', beamDelay: 1.0,
-    path: [[CX, CY], [790, CY], [870, 200], [932, 200]], joints: [1, 2],
+    id: 'bosta',
+    name: 'Bosta',
+    logo: '/landing/companies/bosta.webp',
+    bg: '#166534',
+    beamColor: '#4ade80',
+    beamDelay: 1.0,
+    // path: [[CX, CY], [720, CY], [860, 450], [930, 450]],
+    path: [[CX, CY], [720, CY], [850, 450], [930, 450]], joints: [1, 2],
+    joints: [1, 2],
   },
   {
-    id: 'thabit', name: 'Thabit', logo: '/landing/companies/thabit.png',
-    bg: '#78350f', beamColor: '#fcd34d', beamDelay: 1.4,
-    path: [[CX, CY], [760, CY], [878, 322], [940, 322]], joints: [1, 2],
+    id: 'imile', name: 'iMile', logo: '/landing/companies/imile.png',
+    bg: '#1e3a8a', beamColor: '#60a5fa', beamDelay: 1.2,
+    path: [[CX, CY], [660, CY], [710, 150], [780, 150]], joints: [1, 2],
+  },
+];
+
+const STORES = [
+  {
+    id: 'woocommerce', name: 'WooCommerce', logo: '/landing/stores/woocommerce.png',
+    bg: '#fff', beamColor: '#f97316', beamDelay: 1.3,
+    path: [[CX, CY], [260, CY], [140, CY - 100], [70, CY - 100]], joints: [1, 2],
   },
   {
-    id: 'naqel', name: 'NAQEL', logo: '/landing/companies/naqel.png',
-    bg: '#14532d', beamColor: '#4ade80', beamDelay: 1.8,
-    path: [[CX, CY], [660, CY], [848, 410], [912, 410]], joints: [1, 2],
+    id: 'shopify', name: 'Shopify', logo: '/landing/stores/shopify.png',
+    bg: '#065f46', beamColor: '#10b981', beamDelay: 0.9,
+    path: [[CX, CY], [310, CY], [220, 350], [90, 350]], joints: [1, 2],
+  },
+  {
+    id: 'easyorder', name: 'EasyOrder', logo: '/landing/stores/easyorder.png',
+    bg: '#1d4ed8', beamColor: '#3b82f6', beamDelay: 0.5,
+    path: [[CX, CY], [118, CY]], joints: [],
   },
 ];
 
@@ -214,11 +233,20 @@ function Node({ c, visible, idx }) {
       <circle cx={ex} cy={ey} r={R} fill={c.bg} />
 
       {/* logo — covers the entire circle */}
+      <circle
+        cx={ex}
+        cy={ey}
+        r={R}
+        fill={c.bg}
+      />
+
       <image
         href={c.logo}
-        x={ex - R} y={ey - R}
-        width={R * 2} height={R * 2}
-        preserveAspectRatio="xMidYMid slice"
+        x={ex - R}
+        y={ey - R}
+        width={R * 2}
+        height={R * 2}
+        preserveAspectRatio="xMidYMid meet"
         clipPath={`url(#cp-${c.id})`}
       />
 
@@ -355,9 +383,8 @@ export default function ShippingSection() {
       <div style={{ position: 'relative', width: '100%', maxWidth: 980, margin: '0 auto' }}>
         <svg viewBox={`0 0 ${VB_W} ${VB_H}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
           <defs>
-
             {/* per-company beam glow (for flow beams) */}
-            {COMPANIES.map(c => (
+            {[...COMPANIES, ...STORES].map(c => (
               <filter key={c.id} id={`bf-${c.id}`} x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur stdDeviation="3.5" result="b" />
                 <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
@@ -399,7 +426,7 @@ export default function ShippingSection() {
           {/* ══ 1. BASE TRACKS — always visible, very dim ══ */}
           <g stroke="rgba(70,55,130,0.28)" strokeWidth="1.4"
             fill="none" strokeLinecap="round" strokeLinejoin="round">
-            {COMPANIES.map(c => (
+            {[...COMPANIES, ...STORES].map(c => (
               <polyline key={c.id + '-base'} points={toPts(c.path)} />
             ))}
           </g>
@@ -407,7 +434,7 @@ export default function ShippingSection() {
           {/* ══ 2. DRAW-IN TRACES — animated stroke-dashoffset reveal ══ */}
           <g filter="url(#tglow)" stroke="url(#lg)" strokeWidth="2.2"
             fill="none" strokeLinecap="round" strokeLinejoin="round">
-            {COMPANIES.map((c, i) => {
+            {[...COMPANIES, ...STORES].map((c, i) => {
               const L = Math.ceil(pathLen(c.path)) + 10;
               return (
                 <polyline key={c.id + '-trace'} points={toPts(c.path)}
@@ -425,7 +452,7 @@ export default function ShippingSection() {
           </g>
 
           {/* ══ 3. COLOR TINT layer — per-company faint glow on traces ══ */}
-          {vis && COMPANIES.map((c, i) => {
+          {vis && [...COMPANIES, ...STORES].map((c, i) => {
             const L = Math.ceil(pathLen(c.path)) + 10;
             return (
               <polyline key={c.id + '-ct'} points={toPts(c.path)}
@@ -447,7 +474,7 @@ export default function ShippingSection() {
           })}
 
           {/* ══ 4. ELBOW DOTS ══ */}
-          {COMPANIES.map((c, i) =>
+          {[...COMPANIES, ...STORES].map((c, i) =>
             c.joints.map(ji => {
               const [jx, jy] = c.path[ji];
               return (
@@ -467,7 +494,7 @@ export default function ShippingSection() {
           )}
 
           {/* ══ 5. FLOW BEAMS — the "light travelling along the line" effect ══ */}
-          {vis && COMPANIES.map(c => {
+          {vis && [...COMPANIES, ...STORES].map(c => {
             const L = Math.ceil(pathLen(c.path));
             return (
               <FlowBeam
@@ -482,7 +509,7 @@ export default function ShippingSection() {
           })}
 
           {/* ══ 6. COMPANY NODES ══ */}
-          {COMPANIES.map((c, i) => (
+          {[...COMPANIES, ...STORES].map((c, i) => (
             <Node key={c.id} c={c} visible={vis} idx={i} />
           ))}
 
@@ -543,12 +570,13 @@ export default function ShippingSection() {
                 fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
 
               {/* isometric cube */}
-              <g transform={`translate(${CX - 13},${CY - 19})`}>
-                <path d="M13 1 L25 7 L13 13 L1 7 Z" fill="rgba(255,255,255,0.97)" />
-                <path d="M1 7 L13 13 L13 27 L1 21 Z" fill="rgba(255,255,255,0.42)" />
-                <path d="M25 7 L13 13 L13 27 L25 21 Z" fill="rgba(255,255,255,0.7)" />
-                <line x1="13" y1="1" x2="13" y2="13" stroke="rgba(255,255,255,0.45)" strokeWidth="0.7" />
-              </g>
+              {/* Madaar Logo */}
+              <image
+                href="/madaar.svg"
+                x={CX - 15} y={CY - 20}
+                width="30" height="30"
+                preserveAspectRatio="xMidYMid meet"
+              />
 
               <text x={CX} y={CY + 34} textAnchor="middle"
                 fontSize="11.5" fontWeight="800"

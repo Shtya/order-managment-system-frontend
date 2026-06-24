@@ -51,7 +51,631 @@ function formatShipmentDate(dateStr) {
     month: "short",
     day: "numeric",
   });
-}
+}const generateOrderNumber = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let suffix = '';
+  for (let i = 0; i < 7; i++) {
+    suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `ORD${suffix}`;
+};
+
+
+const mockOrders = [
+  {
+    id: "1",
+    customerName: "Ahmed Mohamed",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Cairo",
+    address: "123 Street Name, Nasr City, Cairo",
+    finalTotal: 350,
+    shippingCost: 30,
+    phoneNumber: "01012345678",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+    },
+    shippingCompany: { id: "1", name: "Aramex" },
+    shipments: [
+      { id: "1", status: "in_transit", trackingNumber: "ARX-7890123", created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "T-Shirt" },
+          sku: "TS-001",
+        },
+        quantity: 2,
+      },
+    ],
+  },
+  {
+    id: "2",
+    customerName: "Fatma Ali",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: generateOrderNumber(),
+    city: "Alexandria",
+    address: "456 Corniche Road, Alexandria",
+    finalTotal: 500,
+    shippingCost: 45,
+    phoneNumber: "01298765439",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 3, maxShippingDays: 5 }],
+    },
+    shippingCompany: { id: "2", name: "SMSA" },
+    shipments: [
+      { id: "2", status: "in_transit", trackingNumber: "SMSA-4567890", created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Jeans" },
+          sku: "JN-0022",
+        },
+        quantity: 1,
+      },
+      {
+        variant: {
+          product: { name: "Belt" },
+          sku: "BL-003",
+        },
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "3",
+    customerName: "Omar Hassan",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Giza",
+    address: "789 Pyramids Road, Giza",
+    finalTotal: 280,
+    shippingCost: 25,
+    phoneNumber: "01145678901",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 1, maxShippingDays: 3 }],
+    },
+    shippingCompany: { id: "3", name: "Bosta" },
+    shipments: [
+      { id: "3", status: "delivered", trackingNumber: "BSTA-1234567", created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Shoes" },
+          sku: "SH-004",
+        },
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "4",
+    customerName: "Sara Kamal",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Luxor",
+    address: "321 Karnak Street, Luxor",
+    finalTotal: 800,
+    shippingCost: 60,
+    phoneNumber: "01055556666",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 4, maxShippingDays: 6 }],
+    },
+    shippingCompany: { id: "1", name: "Aramex" },
+    shipments: [
+      { id: "4", status: "in_transit", trackingNumber: "ARX-3456789", created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Dress" },
+          sku: "DR-005",
+        },
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "5",
+    customerName: "Mohamed Ahmed",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Cairo",
+    address: "654 Heliopolis Square, Cairo",
+    finalTotal: 420,
+    shippingCost: 35,
+    phoneNumber: "01233334444",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+    },
+    shippingCompany: { id: "2", name: "SMSA" },
+    shipments: [
+      { id: "5", status: "delivered", trackingNumber: "SMSA-8901234", created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Watch" },
+          sku: "WT-006",
+        },
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "6",
+    customerName: "Hala Hussein",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Port Said",
+    address: "987 Port Fuad Street, Port Said",
+    finalTotal: 300,
+    shippingCost: 40,
+    phoneNumber: "01177778888",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 3, maxShippingDays: 5 }],
+    },
+    shippingCompany: { id: "3", name: "Bosta" },
+    shipments: [
+      { id: "6", status: "failed", trackingNumber: "BSTA-5678901", created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Bag" },
+          sku: "BG-007",
+        },
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "7",
+    customerName: "Youssef Ibrahim",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Ismailia",
+    address: "147 Taha Hussein Street, Ismailia",
+    finalTotal: 550,
+    shippingCost: 50,
+    phoneNumber: "01099990000",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+    },
+    shippingCompany: { id: "1", name: "Aramex" },
+    shipments: [
+      { id: "7", status: "in_transit", trackingNumber: "ARX-9012345", created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Hat" },
+          sku: "HT-008",
+        },
+        quantity: 2,
+      },
+    ],
+  },
+  {
+    id: "8",
+    customerName: "Nour El-Din",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: generateOrderNumber(),
+    city: "Mansoura",
+    address: "258 Mansoura University Street, Mansoura",
+    finalTotal: 650,
+    shippingCost: 45,
+    phoneNumber: "01211112222",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+    },
+    shippingCompany: { id: "2", name: "SMSA" },
+    shipments: [
+      { id: "8", status: "in_transit", trackingNumber: "SMSA-2345678", created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Jacket" },
+          sku: "JK-009",
+        },
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "9",
+    customerName: "Lina Samir",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Cairo",
+    address: "369 Downtown Cairo",
+    finalTotal: 200,
+    shippingCost: 25,
+    phoneNumber: "01133334444",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+    },
+    shippingCompany: { id: "3", name: "Bosta" },
+    shipments: [
+      { id: "9", status: "delivered", trackingNumber: "BSTA-6789012", created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Socks" },
+          sku: "SK-010",
+        },
+        quantity: 3,
+      },
+    ],
+  },
+  {
+    id: "10",
+    customerName: "Karim Mostafa",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Suez",
+    address: "741 Suez Canal Street, Suez",
+    finalTotal: 480,
+    shippingCost: 40,
+    phoneNumber: "01066667777",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+    },
+    shippingCompany: { id: "1", name: "Aramex" },
+    shipments: [
+      { id: "10", status: "in_transit", trackingNumber: "ARX-0123456", created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Sunglasses" },
+          sku: "SG-011",
+        },
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "11",
+    customerName: "Mona Farid",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Tanta",
+    address: "852 Tanta Center, Tanta",
+    finalTotal: 700,
+    shippingCost: 55,
+    phoneNumber: "01288889999",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 3, maxShippingDays: 5 }],
+    },
+    shippingCompany: { id: "2", name: "SMSA" },
+    shipments: [
+      { id: "11", status: "in_transit", trackingNumber: "SMSA-7890123", created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Perfume" },
+          sku: "PF-012",
+        },
+        quantity: 1,
+      },
+      {
+        variant: {
+          product: { name: "Body Lotion" },
+          sku: "BL-013",
+        },
+        quantity: 2,
+      },
+    ],
+  },
+  {
+    id: "12",
+    customerName: "Ali Nasser",
+    orderNumber: generateOrderNumber(),
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Cairo",
+    address: "963 Maadi, Cairo",
+    finalTotal: 320,
+    shippingCost: 30,
+    phoneNumber: "01112345678",
+    status: {
+      id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+      code: OrderStatus.SHIPPED,
+      system: true,
+      name: "Shipped",
+      color: "#03A9F4",
+    },
+    postponedDate: null,
+    shippedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+    },
+    shippingCompany: { id: "3", name: "Bosta" },
+    shipments: [
+      { id: "12", status: "delivered", trackingNumber: "BSTA-1234567", created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
+    items: [
+      {
+        variant: {
+          product: { name: "Shirt" },
+          sku: "ST-014",
+        },
+        quantity: 1,
+      },
+    ],
+  },
+  // {
+  //   id: "13",
+  //   customerName: "Dina Zaki",
+  //   orderNumber: generateOrderNumber(),
+  //   duplicateCount: 0,
+  //   originalOrderNumber: null,
+  //   city: "Asyut",
+  //   address: "159 Asyut City Center, Asyut",
+  //   finalTotal: 450,
+  //   shippingCost: 45,
+  //   phoneNumber: "01022223333",
+  //   status: {
+  //     id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+  //     code: OrderStatus.SHIPPED,
+  //     system: true,
+  //     name: "Shipped",
+  //     color: "#03A9F4",
+  //   },
+  //   postponedDate: null,
+  //   shippedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  //   cityDetails: {
+  //     tenantConfigs: [{ minShippingDays: 4, maxShippingDays: 6 }],
+  //   },
+  //   shippingCompany: { id: "1", name: "Aramex" },
+  //   shipments: [
+  //     { id: "13", status: "in_transit", trackingNumber: "ARX-5678901", created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+  //   ],
+  //   items: [
+  //     {
+  //       variant: {
+  //         product: { name: "Wallet" },
+  //         sku: "WL-015",
+  //       },
+  //       quantity: 1,
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "14",
+  //   customerName: "Hassan Youssef",
+  //   orderNumber: generateOrderNumber(),
+  //   duplicateCount: 0,
+  //   originalOrderNumber: null,
+  //   city: "Sohag",
+  //   address: "753 Sohag Downtown, Sohag",
+  //   finalTotal: 600,
+  //   shippingCost: 50,
+  //   phoneNumber: "01244445555",
+  //   status: {
+  //     id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+  //     code: OrderStatus.SHIPPED,
+  //     system: true,
+  //     name: "Shipped",
+  //     color: "#03A9F4",
+  //   },
+  //   postponedDate: null,
+  //   shippedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+  //   cityDetails: {
+  //     tenantConfigs: [{ minShippingDays: 3, maxShippingDays: 5 }],
+  //   },
+  //   shippingCompany: { id: "2", name: "SMSA" },
+  //   shipments: [
+  //     { id: "14", status: "failed", trackingNumber: "SMSA-0123456", created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString() },
+  //   ],
+  //   items: [
+  //     {
+  //       variant: {
+  //         product: { name: "Belt" },
+  //         sku: "BL-016",
+  //       },
+  //       quantity: 1,
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "15",
+  //   customerName: "Yara Adel",
+  //   orderNumber: generateOrderNumber(),
+  //   duplicateCount: 0,
+  //   originalOrderNumber: null,
+  //   city: "Cairo",
+  //   address: "852 New Cairo, Cairo",
+  //   finalTotal: 380,
+  //   shippingCost: 35,
+  //   phoneNumber: "01166667777",
+  //   status: {
+  //     id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+  //     code: OrderStatus.SHIPPED,
+  //     system: true,
+  //     name: "Shipped",
+  //     color: "#03A9F4",
+  //   },
+  //   postponedDate: null,
+  //   shippedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+  //   cityDetails: {
+  //     tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+  //   },
+  //   shippingCompany: { id: "3", name: "Bosta" },
+  //   shipments: [
+  //     { id: "15", status: "in_transit", trackingNumber: "BSTA-8901234", created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+  //   ],
+  //   items: [
+  //     {
+  //       variant: {
+  //         product: { name: "Scarf" },
+  //         sku: "SF-017",
+  //       },
+  //       quantity: 2,
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "16",
+  //   customerName: "Omar Khaled",
+  //   orderNumber: generateOrderNumber(),
+  //   duplicateCount: 0,
+  //   originalOrderNumber: null,
+  //   city: "Hurghada",
+  //   address: "951 Hurghada Resort, Hurghada",
+  //   finalTotal: 900,
+  //   shippingCost: 65,
+  //   phoneNumber: "01088889999",
+  //   status: {
+  //     id: "30a29f2e-8d28-4f4a-b521-1139004d929d",
+  //     code: OrderStatus.SHIPPED,
+  //     system: true,
+  //     name: "Shipped",
+  //     color: "#03A9F4",
+  //   },
+  //   postponedDate: null,
+  //   shippedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+  //   cityDetails: {
+  //     tenantConfigs: [{ minShippingDays: 5, maxShippingDays: 7 }],
+  //   },
+  //   shippingCompany: { id: "1", name: "Aramex" },
+  //   shipments: [
+  //     { id: "16", status: "delivered", trackingNumber: "ARX-2345678", created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString() },
+  //   ],
+  //   items: [
+  //     {
+  //       variant: {
+  //         product: { name: "Swimsuit" },
+  //         sku: "SW-018",
+  //       },
+  //       quantity: 1,
+  //     },
+  //     {
+  //       variant: {
+  //         product: { name: "Towel" },
+  //         sku: "TW-019",
+  //       },
+  //       quantity: 2,
+  //     },
+  //   ],
+  // },
+];
 
 export default function ShippedOrders({ statuses = [] }) {
   const ts = useTranslations("orders.shippedOrders");
@@ -543,8 +1167,8 @@ export default function ShippedOrders({ statuses = [] }) {
                 tooltip: t("actions.view"),
                 onClick: (r) => {
                   
-                    router.push(`/orders/details/${r.id}`);
-                  
+                  router.push(`/orders/details/${r.id}`);
+                
                 },
                 variant: "primary",
                 permission: "orders.read",

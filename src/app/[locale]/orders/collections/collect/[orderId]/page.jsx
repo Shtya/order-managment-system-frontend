@@ -459,7 +459,7 @@ export default function CollectOrderPage() {
     resolver: yupResolver(schema),
     defaultValues: {
       shippingCompanyId: "",
-      collectionDate: new Date().toLocaleDateString(),
+      collectionDate: new Date().toLocaleDateString("en-US"),
       source: "",
       safeId: "",
       amount: 0,

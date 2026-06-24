@@ -1050,7 +1050,7 @@ export default function CallCenterPage() {
     const [selectedRule, setSelectedRule] = useState(null);
 
     // Get today's date in YYYY-MM-DD format
-    const today = new Date().toLocaleDateString();
+    const today = new Date().toLocaleDateString("en-US");
     const [stats, setStats] = useState([]);
     const [manualStatsData, setManualStatsData] = useState({
         new: 0,

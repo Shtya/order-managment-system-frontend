@@ -2047,7 +2047,7 @@
       },
       "howItWorks": "How it works?",
       "subtabs": {
-        "scanning": "Processing",
+        "scanning": "Preparing orders",
         "inProgress": "In Preparation",
         "prepared": "Prepared"
       },
@@ -2057,7 +2057,7 @@
         "scanned": "Scanned",
         "prepared": "Prepared",
         "scanning": "Scanning",
-        "notStarted": "Not Started",
+        "notStarted": "In preparation",
         "total": "Total Orders"
       },
       "common": {
@@ -5509,7 +5509,7 @@
       "deposit": "Deposit",
       "amountReceived": "Amount Received",
       "lastUpdate": "Last Update",
-      "createdat": "Order Date",
+      "createdat": "Creation date",
       "actions": "Actions",
       "finalTotal": "Final Total",
       "shipmentStatus": "Shipment status",

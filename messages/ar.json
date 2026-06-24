@@ -4729,6 +4729,7 @@
     "warning": "تحذير",
     "info": "معلومات",
     "loadMore": "تحميل المزيد",
+    "clearAll": "مسح الكل",
     "purchase": {
       "addNewSupplier": "إضافة مورد"
     },
@@ -5617,7 +5618,7 @@
         "window": "نافذة الكشف",
         "windowDesc": "الفترة الزمنية (بالساعات) للبحث عن طلبات سابقة بنفس الهاتف والمنتجات",
         "autoCancel": "إلغاء تلقائي للمكرر",
-        "autoCancelDesc": "عند التفعيل، سيتم تحويل حالة الطلبات المكررة المكتشفة تلقائياً إلى «ملغي»"
+        "autoCancelDesc": "عند التفعيل، سيتم تحويل حالة الطلبات المكررة المكتشفة تلقائياً إلى «مكرر»"
       },
       "tabs": {
         "general": "عام",
@@ -6363,25 +6364,49 @@
       "dateRangePlaceholder": "اختر نطاق التاريخ",
       "store": "المتجر",
       "allStores": "كل المتاجر",
-      "search": "بحث في الطلبات"
+      "search": "بحث في الطلبات",
+      "shippingCompany": "شركة الشحن",
+      "employee": "الموظف",
+      "employeePlaceholder": "اختر الموظف",
+      "all": "الكل",
+      "city": "المدينة",
+      "products": "المنتجات"
     },
     "kpi": {
       "totalOrders": "إجمالي الطلبات",
-      "confirmedOrders": "الطلبات المؤكدة",
-      "deliveredOrders": "الطلبات المُسلّمة",
+      "confirmedOrders": "المؤكدة",
+      "deliveredOrders": "تم توصيلها",
       "cancelledOrders": "الطلبات الملغاة",
       "deliveryRate": "التوصيل من الإجمالي",
       "deliveryFromConf": "التوصيل من المؤكد",
       "inDelivery": "جارٍ التسليم",
-      "totalSales": "إجمالي المبيعات (بدون توصيل)",
+      "totalSales": "إجمالي المبيعات",
       "totalWithShipping": "إجمالي مع توصيل",
-      "totalSalesBosta": "إجمالي مبيعات بوسطة"
+      "totalSalesBosta": "إجمالي مبيعات بوسطة",
+      "correctedOrders": "الطلبات الصحيحة",
+      "confirmedCount": "الطلبات المؤكدة",
+      "deliveredFromConfirmed": "التوصيل من المؤكدة",
+      "deliveredFromTotal": "التوصيل من الإجمالي",
+      "deliveredSales": "مبيعات تم توصيلها",
+      "collectedAmount": "المبلغ المحصل",
+      "canceledAndUnderReview": "ملغاة وتحت المراجعة",
+      "pendingOrders": "المعلقة",
+      "inWarehouseOrders": "في المستودع",
+      "newOrders": "الجديدة",
+      "returnedOrders": "المُرجعة",
+      "postponedOrders": "المؤجلة",
+      "outOfDeliveryOrders": "خارج منطقة التوصيل",
+      "wrongNumberOrders": "رقم خاطئ",
+      "shippedOrders": "المُشحونة",
+      "canceledOrders": "الملغي"
     },
     "charts": {
       "generalReports": "تقارير عامة",
       "topProducts": "منتجاتك الأكثر طلباً",
       "newOrders": "الطلبات الجديدة",
-      "deliveredOrders": "الطلبات المستلمة"
+      "deliveredOrders": "طلبات تم توصيلها",
+      "perStatus": "الطلبات حسب الحالة",
+      "ordersPercent": "معدل الطلبات"
     },
     "areas": {
       "title": "المناطق الأكثر مبيعاً",
@@ -6403,7 +6428,8 @@
         "confirmedOrders": "الطلبات المؤكدة",
         "inDelivery": "جارٍ التسليم",
         "deliveryFromTotal": "التسليم من الإجمالي",
-        "deliveryFromConfirmed": "التسليم من المؤكد"
+        "deliveryFromConfirmed": "التسليم من المؤكد",
+        "delivered": "تم التوصيل"
       }
     },
     "export": {

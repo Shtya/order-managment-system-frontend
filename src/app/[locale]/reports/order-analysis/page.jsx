@@ -48,18 +48,21 @@ import {
   Tooltip as ChTooltip,
   Legend,
   Filler,
+  BarElement,
+  Title,
+  Tooltip,
 } from "chart.js";
-import { Line, Doughnut } from "react-chartjs-2";
-import PageHeader, { StatsGrid } from "@/components/atoms/Pageheader";
+import { Line, Doughnut, Bar } from "react-chartjs-2";
+import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
-import { useFormatter, useTranslations } from "next-intl";
-import { Input } from "@/components/ui/input";
+import {  useTranslations, useLocale } from "next-intl";
 import { avatarSrc } from "@/components/atoms/UserSelect";
-import { generateBgColors, getIconForStatus } from "../../orders/page";
-import { useDebounce } from "@/hook/useDebounce";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
+import MultiSelect from "@/components/atoms/MultiSelect";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import UserSelect from "@/components/atoms/UserSelect";
 
 ChartJS.register(
   CategoryScale,
@@ -70,6 +73,9 @@ ChartJS.register(
   ChTooltip,
   Legend,
   Filler,
+  BarElement, 
+  Title, 
+  Tooltip,
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -234,6 +240,7 @@ export function StatusDonut({
   data,
   loading,
   label,
+  showLabels = true,
   config = {
     key: "count",
     imageKey: "image",
@@ -337,7 +344,7 @@ export function StatusDonut({
       </div>
 
       {/* Legend */}
-      <div className="w-full space-y-1.5">
+      {showLabels && <div className="w-full space-y-1.5">
         {data.map((item, i) => {
           const color = item.color || BRAND_COLORS[i % BRAND_COLORS.length];
           const percentage = config.hasPercentage
@@ -397,7 +404,7 @@ export function StatusDonut({
             </motion.div>
           );
         })}
-      </div>
+      </div>}
     </div>
   );
 }
@@ -463,7 +470,7 @@ export function TrendChart({ data, loading, configs = [] }) {
     labels: data.map((d) => d.label),
     datasets,
   };
-  console.log(chartData);
+  
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -537,6 +544,128 @@ export function TrendChart({ data, loading, configs = [] }) {
   return (
     <div style={{ height: 264 }}>
       <Line data={chartData} options={options} />
+    </div>
+  );
+}
+
+export function BarChart({ data, loading, configs = [] }) {
+  const t = useTranslations("dashboard");
+  const hasData = data && data.length > 0;
+
+  if (loading)
+    return (
+      <div className="w-full h-64 flex flex-col justify-between animate-pulse px-2 py-4">
+        <div className="flex-1 flex flex-col justify-between mb-6 gap-3">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="w-full h-px bg-slate-100 dark:bg-slate-800 rounded-full"
+            />
+          ))}
+        </div>
+        <div className="h-px w-full bg-slate-200 dark:bg-slate-700 rounded-full mb-4" />
+        <div className="flex justify-between px-2">
+          {[...Array(7)].map((_, i) => (
+            <div
+              key={i}
+              className="h-2 w-8 bg-slate-100 dark:bg-slate-800 rounded-full"
+            />
+          ))}
+        </div>
+      </div>
+    );
+
+  if (!hasData)
+    return (
+      <div className="flex flex-col items-center justify-center h-64 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/20">
+        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+          <BarChart3 size={22} className="text-slate-400" />
+        </div>
+        <p className="text-xs font-semibold text-slate-400">
+          {t("common.noOperations")}
+        </p>
+      </div>
+    );
+
+  const datasets = configs.map((cfg) => ({
+    label: cfg.label,
+    data: data.map((d) => d[cfg.key] ?? 0),
+    backgroundColor: hex(cfg.color, 0.85),
+    borderColor: cfg.color,
+    borderWidth: 1.5,
+    borderRadius: 8,
+    maxBarThickness: 40,
+  }));
+
+  const chartData = {
+    labels: data.map((d) => d.label),
+    datasets,
+  };
+  
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: {
+        position: "bottom",
+        rtl: true,
+        labels: {
+          usePointStyle: true,
+          pointStyle: "circle",
+          font: { family: "Cairo, Cairo Fallback" },
+          padding: 20,
+          font: {
+            family: "Cairo, Cairo Fallback",
+            size: 11,
+            weight: "600"
+          },
+          color: "#64748b",
+        },
+      },
+      tooltip: {
+        rtl: true,
+        backgroundColor: "#fff",
+        titleColor: "#64748b",
+        bodyColor: "#1e293b",
+        borderColor: "#e2e8f0",
+        borderWidth: 1,
+        padding: 12,
+        titleFont: {
+          family: "Cairo, Cairo Fallback",
+          size: 11,
+          weight: "700",
+        },
+        bodyFont: {
+          family: "Cairo, Cairo Fallback",
+          size: 10,
+          weight: "500",
+        },
+        footerFont: {
+          family: "Cairo, Cairo Fallback",
+        },
+        cornerRadius: 14,
+        boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+      },
+    },
+    scales: {
+      x: {
+        grid: { color: "rgba(0,0,0,0.03)", drawBorder: false },
+        ticks: { font: { family: "Cairo, Cairo Fallback", size: 10 }, color: "#94a3b8", maxRotation: 0 },
+        border: { display: false },
+      },
+      y: {
+        grid: { color: "rgba(0,0,0,0.03)", drawBorder: false },
+        ticks: { font: { family: "Cairo, Cairo Fallback", size: 10 }, color: "#94a3b8" },
+        border: { display: false },
+        beginAtZero: true,
+      },
+    },
+  };
+
+  return (
+    <div style={{ height: 264 }}>
+      <Bar data={chartData} options={options} />
     </div>
   );
 }
@@ -745,29 +874,38 @@ function FilterField({ label, icon: FieldIcon, children }) {
 export default function OrdersStatisticsPage() {
   const tOrders = useTranslations("orders");
   const t = useTranslations("orderAnalysis");
+  const locale = useLocale();
 
-  const [quickRange, setQuickRange] = useState("this_month");
+  const [quickRange, setQuickRange] = useState();
   const [filters, setFilters] = useState({
     startDate: null,
     endDate: null,
     storeId: "all",
+    shippingCompanyId: "all",
+    assignedUserId: "all",
+    productIds: [],
+    cityId: "all",
   });
 
-
-  const format = useFormatter();
-  const [stores, setStores] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [citySearch, setCitySearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const filteredCities = useMemo(() => {
+    if (!citySearch) return cities;
+    const lowerSearch = citySearch.toLowerCase();
+    return cities.filter(city => {
+      const nameEn = city.nameEn?.toLowerCase() || "";
+      const nameAr = city.nameAr?.toLowerCase() || "";
+      return nameEn.includes(lowerSearch) || nameAr.includes(lowerSearch);
+    });
+  }, [cities, citySearch]);
+  const [advancedStats, setAdvancedStats] = useState(null);
+  const [weeklyTrend, setWeeklyTrend] = useState([]);
+  const [topCitiesStats, setTopCitiesStats] = useState([]);
+  const [topProductsStats, setTopProductsStats] = useState([]);
   const [exAreas, setExAreas] = useState(false);
-  const [summary, setSummary] = useState(null);
-  const [trendData, setTrendData] = useState([]);
-  const [statusData, setStatusData] = useState([]);
-  const [areasData, setAreasData] = useState([]);
-  const [searchValue, setSearchValue] = useState("");
+  const [exProducts, setExProducts] = useState(false);
   const { formatTrendLabel } = useTrendLabelFormatter();
-  const { debouncedValue: debouncedSearch } = useDebounce({
-    value: searchValue,
-    delay: 300,
-  });
 
   const buildParams = useCallback(() => {
     const p = { range: quickRange };
@@ -775,6 +913,14 @@ export default function OrdersStatisticsPage() {
     if (filters.endDate) p.endDate = filters.endDate;
     if (filters.storeId && filters.storeId !== "all")
       p.storeId = filters.storeId;
+    if (filters.shippingCompanyId && filters.shippingCompanyId !== "all")
+      p.shippingCompanyId = filters.shippingCompanyId;
+    if (filters.assignedUserId && filters.assignedUserId !== "all")
+      p.assignedUserId = filters.assignedUserId;
+    if (filters.productIds && filters.productIds.length > 0)
+      p.productIds = filters.productIds;
+    if (filters.cityId && filters.cityId !== "all")
+      p.cityId = filters.cityId;
     return p;
   }, [quickRange, filters]);
 
@@ -782,31 +928,33 @@ export default function OrdersStatisticsPage() {
     const p = buildParams();
     setLoading(true);
     try {
-      const [sum, trd, sts, ars] = await Promise.all([
+      const [advStats, weekTrend, citiesStats, productsStats] = await Promise.all([
         api
-          .get("/dashboard/top-products", { params: p })
+          .get("/dashboard/advanced-stats", { params: p })
           .catch(() => ({ data: null })),
         api
-          .get("/dashboard/orders/trend", { params: p })
+          .get("/dashboard/weekly-trend", { params: p })
           .catch(() => ({ data: [] })),
         api
-          .get("/dashboard/orders/stats", { params: p })
+          .get("/dashboard/top-cities-stats", { params: p })
           .catch(() => ({ data: [] })),
         api
-          .get("/dashboard/orders/top-areas", { params: p })
+          .get("/dashboard/top-products-stats", { params: p })
           .catch(() => ({ data: [] })),
       ]);
       const getData = (r) =>
         Array.isArray(r.data) ? r.data : (r.data?.records ?? []);
-      setSummary(sum.data);
-      const formattedTrend = (getData(trd)).map((item) => ({
+      
+      setAdvancedStats(advStats.data);
+      
+      const formattedTrend = (getData(weekTrend)).map((item) => ({
         ...item,
         label: formatTrendLabel(item.date),
       }));
 
-      setTrendData(formattedTrend);
-      setStatusData(getData(sts));
-      setAreasData(getData(ars));
+      setWeeklyTrend(formattedTrend);
+      setTopCitiesStats(getData(citiesStats));
+      setTopProductsStats(getData(productsStats));
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     } finally {
@@ -814,18 +962,18 @@ export default function OrdersStatisticsPage() {
     }
   }, [buildParams]);
 
-  useEffect(() => {
+  useEffect(() => {    // Fetch cities
     api
-      .get("/lookups/stores", { params: { limit: 200, isActive: true } })
+      .get("/cities")
       .then(({ data }) =>
-        setStores(Array.isArray(data) ? data : (data?.records ?? [])),
+        setCities(Array.isArray(data) ? data : (data?.records ?? [])),
       )
-      .catch((err) => console.error("Failed to fetch stores:", err));
+      .catch((err) => console.error("Failed to fetch cities:", err));
   }, []);
 
   useEffect(() => {
     fetchAll();
-  }, [quickRange, debouncedSearch]);
+  }, [quickRange]);
 
   // ── KPI config ────────────────────────────────────────────────────────────
 
@@ -834,63 +982,101 @@ export default function OrdersStatisticsPage() {
       key: "totalOrders",
       title: t("kpi.totalOrders"),
       icon: ShoppingCart,
-      color: "#6366f1",
     },
     {
-      key: "confirmedOrders",
-      title: t("kpi.confirmedOrders"),
+      key: "correctedOrders",
+      title: t("kpi.correctedOrders") || "Corrected Orders",
       icon: CheckCircle,
-      color: "#3b82f6",
     },
     {
-      key: "deliveredOrders",
-      title: t("kpi.deliveredOrders"),
-      icon: Truck,
-      color: "#10b981",
+      key: "confirmedCount",
+      title: t("kpi.confirmedCount") || "Confirmed Count",
+      icon: CheckCircle,
     },
     {
-      key: "cancelledOrders",
-      title: t("kpi.cancelledOrders"),
-      icon: XCircle,
-      color: "#ef4444",
+      key: "deliveredFromConfirmed",
+      title: t("kpi.deliveredFromConfirmed") || "Delivered from Confirmed",
+      icon: Truck
     },
     {
-      key: "deliveryRate",
-      title: t("kpi.deliveryRate"),
-      icon: TrendingUp,
-      color: "#8b5cf6",
-      pct: true,
-    },
-    {
-      key: "deliveryFromConf",
-      title: t("kpi.deliveryFromConf"),
-      icon: BarChart3,
-      color: "#f59e0b",
-      pct: true,
-    },
-    {
-      key: "inDelivery",
-      title: t("kpi.inDelivery"),
-      icon: Truck,
-      color: "#06b6d4",
+      key: "deliveredFromTotal",
+      title: t("kpi.deliveredFromTotal") || "Delivered from Total",
+      icon: TrendingUp
     },
     {
       key: "totalSales",
       title: t("kpi.totalSales"),
       icon: TrendingUp,
-      color: "#10b981",
     },
     {
-      key: "totalWithShipping",
-      title: t("kpi.totalWithShipping"),
+      key: "deliveredSales",
+      title: t("kpi.deliveredSales") || "Delivered Sales",
+      icon: Truck,
+    },
+    {
+      key: "collectedAmount",
+      title: t("kpi.collectedAmount") || "Collected Amount",
       icon: TrendingUp,
-      color: "#6366f1",
     },
     {
-      key: "totalSalesBosta",
-      title: t("kpi.totalSalesBosta"),
+      key: "canceledAndUnderReview",
+      title: t("kpi.canceledAndUnderReview") || "Canceled & Under Review",
+      icon: XCircle,
+    },
+    {
+      key: "pendingOrders",
+      title: t("kpi.pendingOrders") || "Pending",
+      icon: Package,
+    },
+    {
+      key: "inWarehouseOrders",
+      title: t("kpi.inWarehouseOrders") || "In Warehouse Orders",
       icon: Store,
-      color: "#f97316",
+    },
+    {
+      key: "new",
+      title: t("kpi.newOrders") || "New Orders",
+      icon: Package,
+    },
+    {
+      key: "returned",
+      title: t("kpi.returnedOrders") || "Returned Orders",
+      icon: XCircle,
+    },
+    {
+      key: "postponed",
+      title: t("kpi.postponedOrders") || "Postponed Orders",
+      icon: Package,
+    },
+    {
+      key: "outOfDelivery",
+      title: t("kpi.outOfDeliveryOrders") || "Out of Delivery Area Orders",
+      icon: MapPin,
+    },
+    {
+      key: "wrongNumber",
+      title: t("kpi.wrongNumberOrders") || "Wrong Number Orders",
+      icon: XCircle,
+    },
+    {
+      key: "canceled",
+      title: t("kpi.canceledOrders"),
+      icon: XCircle,
+    },
+    {
+      key: "confirmed",
+      title: t("kpi.confirmedOrders"),
+      icon: CheckCircle,
+    },
+    {
+      key: "shipped",
+      title: t("kpi.shippedOrders"),
+      icon: Truck,
+    },
+    {
+      key: "delivered",
+      title: t("kpi.deliveredOrders"),
+      icon: CheckCircle,
     },
   ];
 
@@ -906,7 +1092,7 @@ export default function OrdersStatisticsPage() {
             <MapPin size={11} className="text-emerald-500" />
           </div>
           <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">
-            {r.city ?? "—"}
+            {locale === "ar" ? r.nameAr : r.nameEn}
           </span>
         </div>
       ),
@@ -924,11 +1110,20 @@ export default function OrdersStatisticsPage() {
       ),
     },
     {
-      key: "confirmedOrders",
+      key: "correctedOrders",
+      header: t("kpi.correctedOrders"),
+      cell: (r) => (
+        <span className="font-semibold text-purple-500 dark:text-purple-400 tabular-nums text-sm">
+          {fmt(r.correctedOrders)}
+        </span>
+      ),
+    },
+    {
+      key: "confirmedCount",
       header: t("areas.columns.confirmed"),
       cell: (r) => (
         <span className="font-semibold text-blue-500 dark:text-blue-400 tabular-nums text-sm">
-          {fmt(r.confirmedOrders)}
+          {fmt(r.confirmedCount)}
         </span>
       ),
     },
@@ -942,52 +1137,102 @@ export default function OrdersStatisticsPage() {
       ),
     },
     {
-      key: "deliveredOrders",
+      key: "deliveredTotal",
       header: t("areas.columns.delivered"),
       cell: (r) => (
         <span className="font-semibold text-emerald-500 dark:text-emerald-400 tabular-nums text-sm">
-          {fmt(r.deliveredOrders)}
+          {fmt(r.deliveredTotal)}
         </span>
       ),
     },
     {
-      key: "sales",
-      header: t("areas.columns.netSales"),
+      key: "deliveredFromConfirmed",
+      header: t("kpi.deliveredFromConfirmed"),
       cell: (r) => (
-        <span className="font-bold text-slate-700 dark:text-slate-200 tabular-nums text-sm">
-          {fmt(r.sales)}
+        <span className="font-semibold text-orange-500 dark:text-orange-400 tabular-nums text-sm">
+          {fmt(r.deliveredFromConfirmed)}
+        </span>
+      ),
+    },
+  ];
+
+  // ── Products table columns ─────────────────────────────────────────────────
+
+  const productsCols = [
+    {
+      key: "label",
+      header: t("products.columns.name"),
+      cell: (r) => (
+        <div className="flex items-center gap-2">
+          {r.image && (
+            <img
+              src={avatarSrc(r.image)}
+              alt=""
+              className="w-8 h-8 rounded-lg object-cover shrink-0"
+            />
+          )}
+          <span className="font-semibold text-sm text-slate-700 dark:text-slate-200 truncate">
+            {r.name}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "totalOrders",
+      header: t("products.columns.ordersCount"),
+      cell: (r) => (
+        <span
+          className="font-bold tabular-nums text-sm"
+          style={{ color: PRIMARY }}
+        >
+          {fmt(r.totalOrders)}
         </span>
       ),
     },
     {
-      key: "deliveryRate",
-      header: t("areas.columns.successRate"),
-      cell: (r) => {
-        const good = r.deliveryRate >= 80;
-        return (
-          <div className="flex items-center gap-2">
-            <div className="w-14 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden hidden md:block">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.min(r.deliveryRate, 100)}%`,
-                  background: good ? "#10b981" : "#f97316",
-                }}
-              />
-            </div>
-            <span
-              className={cn(
-                "text-xs font-bold px-2 py-0.5 rounded-full",
-                good
-                  ? "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30"
-                  : "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/30",
-              )}
-            >
-              {r.deliveryRate}%
-            </span>
-          </div>
-        );
-      },
+      key: "correctedOrders",
+      header: t("kpi.correctedOrders"),
+      cell: (r) => (
+        <span className="font-semibold text-purple-500 dark:text-purple-400 tabular-nums text-sm">
+          {fmt(r.correctedOrders)}
+        </span>
+      ),
+    },
+    {
+      key: "confirmedCount",
+      header: t("products.columns.confirmedOrders"),
+      cell: (r) => (
+        <span className="font-semibold text-blue-500 dark:text-blue-400 tabular-nums text-sm">
+          {fmt(r.confirmedCount)}
+        </span>
+      ),
+    },
+    {
+      key: "shippedOrders",
+      header: t("products.columns.inDelivery"),
+      cell: (r) => (
+        <span className="font-semibold text-cyan-500 dark:text-cyan-400 tabular-nums text-sm">
+          {fmt(r.shippedOrders)}
+        </span>
+      ),
+    },
+    {
+      key: "deliveredTotal",
+      header: t("products.columns.delivered"),
+      cell: (r) => (
+        <span className="font-semibold text-emerald-500 dark:text-emerald-400 tabular-nums text-sm">
+          {fmt(r.deliveredTotal)}
+        </span>
+      ),
+    },
+    {
+      key: "deliveredFromConfirmed",
+      header: t("kpi.deliveredFromConfirmed"),
+      cell: (r) => (
+        <span className="font-semibold text-orange-500 dark:text-orange-400 tabular-nums text-sm">
+          {fmt(r.deliveredFromConfirmed)}
+        </span>
+      ),
     },
   ];
 
@@ -996,7 +1241,13 @@ export default function OrdersStatisticsPage() {
   const statsData = useMemo(
     () =>
       KPI.map((card, i) => {
-        const raw = summary?.[card.key];
+        let raw;
+        // Check if the key is in statuses object or directly in advancedStats
+        if (card.key in (advancedStats?.statuses || {})) {
+          raw = advancedStats?.statuses?.[card.key];
+        } else {
+          raw = advancedStats?.[card.key];
+        }
         const val = raw == null ? "0" : card.pct ? pct(raw) : fmt(raw);
         return {
           id: card.key,
@@ -1008,35 +1259,13 @@ export default function OrdersStatisticsPage() {
           onClick: () => { },
         };
       }),
-    [summary, KPI],
+    [advancedStats, KPI],
   );
 
   const statsCards = useMemo(() => {
-    if (!statusData.length) return [];
-    return statusData
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((stat) => {
-        const Icon = getIconForStatus(stat.code);
-        const bgColors = generateBgColors(stat.color);
-        return {
-          id: stat.id,
-          name: stat.system ? tOrders(`statuses.${stat.code}`) : stat.name,
-          value: String(stat.count || 0),
-          icon: Icon,
-          bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
-          bgInlineLight: bgColors.light,
-          bgInlineDark: bgColors.dark,
-          iconColor: `text-[${stat.color}]`,
-          color: stat.color,
-          iconBorder: `border-[${stat.color}]`,
-          iconBorderInline: stat.color,
-          code: stat.code,
-          editable: false,
-          sortOrder: stat.sortOrder,
-          fullData: stat,
-        };
-      });
-  }, [statusData]);
+    // Using statsData from advanced stats instead of statusData
+    return statsData;
+  }, [statsData]);
 
   // ── Export helper ─────────────────────────────────────────────────────────
 
@@ -1127,15 +1356,6 @@ export default function OrdersStatisticsPage() {
         onRefresh={fetchAll}
         applyLabel={t("filters.apply")}
       >
-        {/* <FilterField label={t("filters.search")} icon={Search}>
-          <Input
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder={t("search.orderPlaceholder")}
-            startIcon={<Search size={15} />}
-            className="w-full h-10 rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm"
-          />
-        </FilterField> */}
 
         <FilterField label={t("filters.dateRange")} icon={Calendar}>
           <DateRangePicker
@@ -1156,6 +1376,78 @@ export default function OrdersStatisticsPage() {
         <StoreFilter value={filters.storeId} icon={Store} iconClass={"text-orange-400!"}
           onChange={(v) => setFilters((f) => ({ ...f, storeId: v }))} none={false} autoSelectIfSingle={true} />
 
+          <ShippingCompanyFilter
+            value={filters.shippingCompanyId}
+            onChange={(v) =>
+              setFilters((f) => ({ ...f, shippingCompanyId: v }))
+            }
+          />
+        
+
+        <FilterField label={t("filters.employee")}>
+          <UserSelect
+            value={filters.assignedUserId}
+            onSelect={(user) =>
+              setFilters((f) => ({
+                ...f,
+                assignedUserId: user ? String(user.id) : "all",
+              }))
+            }
+            placeholder={t("filters.employeePlaceholder")}
+            allowAll
+            allLabel={t("filters.all")}
+            className="h-10 rounded-xl border-border bg-background"
+            contentClassName="bg-card-select"
+          />
+        </FilterField>
+
+        <FilterField label={t("filters.city")}>
+          <Select
+            value={filters.cityId}
+            onValueChange={(v) => {
+              setFilters((f) => ({ ...f, cityId: v }));
+              setCitySearch("");
+            }}
+          >
+            <SelectTrigger className="h-10 rounded-xl border-border bg-background">
+              <SelectValue placeholder={t("filters.all")} />
+            </SelectTrigger>
+            <SelectContent className="bg-card-select">
+              <div className="px-2 py-2 sticky top-0 bg-card-select z-10 border-b border-border">
+                <input
+                  type="text"
+                  placeholder={t("filters.search")}
+                  className="w-full rounded-md border border-input bg-transparent px-3 py-1.5 rtl:text-end text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  value={citySearch}
+                  onChange={(e) => setCitySearch(e.target.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                />
+              </div>
+              <SelectItem value="all">{t("filters.all")}</SelectItem>
+              {filteredCities.map((city) => (
+                <SelectItem key={city.id} value={String(city.id)}>
+                  {locale === "ar" ? city.nameAr : city.nameEn}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FilterField>
+
+        <FilterField label={t("filters.products")}>
+          <MultiSelect
+            endpoint="/products"
+            params={{ isActive: "true", type: "PRODUCT" }}
+            value={filters.productIds}
+            initialValues={filters.productIds}
+            onChange={(newVal) => {
+              const ids = newVal.map(v => typeof v === 'string' ? v : v.id);
+              setFilters((f) => ({ ...f, productIds: ids }));
+            }}
+            placeholder={t("filters.products")}
+            labelKey="name"
+          />
+        </FilterField>
+
 
       </TableFilters>
 
@@ -1168,14 +1460,17 @@ export default function OrdersStatisticsPage() {
           className="lg:col-span-2"
         >
           <Card
-            title={t("charts.generalReports")}
+            title={t("charts.ordersPercent")}
             icon={TrendingUp}
             color={PRIMARY}
           >
-            <TrendChart
-              data={trendData}
+            <BarChart
+              data={weeklyTrend}
               loading={loading}
-              configs={orderConfigs}
+              configs={[
+                { key: "created", label: t("charts.newOrders"), color: "#6366f1" },
+                { key: "delivered", label: t("charts.deliveredOrders"), color: "#10b981" },
+              ]}
             />
           </Card>
         </motion.div>
@@ -1185,12 +1480,17 @@ export default function OrdersStatisticsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card title={t("charts.topProducts")} icon={PieIcon} color={PRIMARY}>
+          <Card title={t("charts.perStatus")} icon={PieIcon} color={PRIMARY}>
             <StatusDonut
-              data={summary}
+              showLabels={false}
+              data={advancedStats?.statusBreakdown?.map((s, i) => ({
+                ...s,
+                label:  s.system ? tOrders(`statuses.${s.code}`) : s.name,
+                count: s.count,
+                color: [PRIMARY, "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"][i % 6],
+              }))}
               loading={loading}
-              config={{ key: "count", imageKey: "image", label: "name" }}
-              allowImage={true}
+              config={{ key: "count", label: "label" }}
             />
           </Card>
         </motion.div>
@@ -1206,20 +1506,47 @@ export default function OrdersStatisticsPage() {
           title={t("areas.title")}
           icon={MapPin}
           color="#10b981"
-          action={
-            <ExportBtn
-              loading={exAreas}
-              onClick={() =>
-                doExport(
-                  "/dashboard/orders/top-areas/export",
-                  setExAreas,
-                  "top_areas",
-                )
-              }
-            />
-          }
+          // action={
+          //   <ExportBtn
+          //     loading={exAreas}
+          //     onClick={() =>
+          //       doExport(
+          //         "/dashboard/orders/top-areas/export",
+          //         setExAreas,
+          //         "top_areas",
+          //       )
+          //     }
+          //   />
+          // }
         >
-          <MiniTable columns={areasCols} data={areasData} loading={loading} />
+          <MiniTable columns={areasCols} data={topCitiesStats} loading={loading} />
+        </Card>
+      </motion.div>
+
+      {/* Products table */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <Card
+          title={t("products.title")}
+          icon={Package}
+          color="#3b82f6"
+          // action={
+          //   <ExportBtn
+          //     loading={exProducts}
+          //     onClick={() =>
+          //       doExport(
+          //         "/dashboard/orders/top-products/export",
+          //         setExProducts,
+          //         "top_products",
+          //       )
+          //     }
+          //   />
+          // }
+        >
+          <MiniTable columns={productsCols} data={topProductsStats} loading={loading} />
         </Card>
       </motion.div>
     </div>

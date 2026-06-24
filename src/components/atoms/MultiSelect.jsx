@@ -138,7 +138,7 @@ export default function MultiSelect({
                 <div
                     ref={containerRef}
                     className={cn(
-                        "min-h-[50px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background flex flex-wrap gap-2 cursor-pointer transition-all",
+                        "min-h-[50px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background flex flex-wrap gap-2 cursor-pointer transition-all items-center",
                         open && "ring-2 ring-primary ring-offset-2 border-primary shadow-sm"
                     )}
                 >
@@ -164,9 +164,9 @@ export default function MultiSelect({
                             <Badge
                                 key={id}
                                 variant="outline"
-                                className="gap-1 pr-1 py-1 h-7 bg-muted/50 border-border text-foreground font-medium max-w-sm "
+                                className="gap-1 pr-1 py-1 h-7 bg-muted/50 border-border text-foreground font-medium max-w-full"
                             >
-                                <span className="whitespace-nowrap  truncate ">
+                                <span className="whitespace-nowrap truncate max-w-[200px]">
                                 {label}
                                 </span>
                                 <button
@@ -175,13 +175,25 @@ export default function MultiSelect({
                                         e.stopPropagation();
                                         removeOption(id);
                                     }}
-                                    className="rounded-full hover:bg-muted p-0.5"
+                                    className="rounded-full hover:bg-muted p-0.5 shrink-0"
                                 >
                                     <X size={12} />
                                 </button>
                             </Badge>
                         );
                     })}
+                    {value.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onChange([]);
+                            }}
+                            className="ms-auto text-xs text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded-md hover:bg-muted transition-colors"
+                        >
+                            {t("clearAll")}
+                        </button>
+                    )}
                 </div>
             </PopoverTrigger>
 

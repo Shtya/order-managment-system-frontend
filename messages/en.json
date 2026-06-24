@@ -4734,6 +4734,7 @@
     "warning": "Warning",
     "info": "Info",
     "loadMore": "Load More",
+    "clearAll": "Clear All",
     "purchase": {
       "addNewSupplier": "Add Supplier"
     },
@@ -5622,7 +5623,7 @@
         "window": "Detection Window",
         "windowDesc": "The timeframe (in hours) to look back for orders with the same phone and items",
         "autoCancel": "Auto-Cancel Duplicates",
-        "autoCancelDesc": "If enabled, detected duplicate orders will be automatically marked as CANCELLED"
+        "autoCancelDesc": "If enabled, detected duplicate orders will be automatically marked as DUPLICATE"
       },
       "tabs": {
         "general": "General",
@@ -6368,25 +6369,49 @@
       "dateRangePlaceholder": "Select date range",
       "store": "Store",
       "allStores": "All Stores",
-      "search": "Search Orders"
+      "search": "Search Orders",
+      "shippingCompany": "Shipping Company",
+      "employee": "Employee",
+      "employeePlaceholder": "Select Employee",
+      "all": "All",
+      "city": "City",
+      "products": "Products"
     },
     "kpi": {
       "totalOrders": "Total Orders",
-      "confirmedOrders": "Confirmed Orders",
-      "deliveredOrders": "Delivered Orders",
+      "confirmedOrders": "Confirmed",
+      "deliveredOrders": "Delivered",
       "cancelledOrders": "Cancelled Orders",
       "deliveryRate": "Delivery from Total",
       "deliveryFromConf": "Delivery from Confirmed",
       "inDelivery": "In Delivery",
-      "totalSales": "Total Sales (Without Shipping)",
+      "totalSales": "Total Sales",
       "totalWithShipping": "Total with Shipping",
-      "totalSalesBosta": "Total Bosta Sales"
+      "totalSalesBosta": "Total Bosta Sales",
+      "correctedOrders": "Correct orders",
+      "confirmedCount": "Confirmed",
+      "deliveredFromConfirmed": "Delivery is confirmed",
+      "deliveredFromTotal": "Delivery of the total",
+      "deliveredSales": "Delivered Sales",
+      "collectedAmount": "Collected Amount",
+      "canceledAndUnderReview": "Canceled & Under Review",
+      "pendingOrders": "Pending",
+      "inWarehouseOrders": "In Warehouse",
+      "newOrders": "New",
+      "returnedOrders": "Returned",
+      "postponedOrders": "Postponed",
+      "outOfDeliveryOrders": "Out of Delivery Area",
+      "wrongNumberOrders": "Wrong Number",
+      "shippedOrders": "Shipped",
+      "canceledOrders": "Canceled"
     },
     "charts": {
       "generalReports": "General Reports",
       "topProducts": "Your Best-Selling Products",
       "newOrders": "New Orders",
-      "deliveredOrders": "Delivered Orders"
+      "deliveredOrders": "Delivered Orders",
+      "perStatus": "Orders depending on status",
+      "ordersPercent": "Orders rate"
     },
     "areas": {
       "title": "Top-Selling Areas",
@@ -6408,7 +6433,8 @@
         "confirmedOrders": "Confirmed Orders",
         "inDelivery": "In Delivery",
         "deliveryFromTotal": "Delivery from Total",
-        "deliveryFromConfirmed": "Delivery from Confirmed"
+        "deliveryFromConfirmed": "Delivery from Confirmed",
+        "delivered": "Delivered"
       }
     },
     "export": {

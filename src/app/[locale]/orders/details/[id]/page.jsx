@@ -782,13 +782,13 @@ export function OrderDetailsPage({ order, loading }) {
                       )}
 
                       {/* عرض الحالة الموحدة */}
-                      {shipment?.unifiedStatus && (
+                      {shipment?.status && (
                         <InfoRow
                           icon={Info}
                           label={t("fields.status")}
                           value={
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase">
-                              {t(`trackingStatus.${shipment.unifiedStatus}`)}
+                              {t(`trackingStatus.${shipment.status}`)}
                             </span>
                           }
                         />

@@ -58,11 +58,7 @@ export function ProductOrdersByStatusModal({ open, onOpenChange, title, loading,
 					) : (
 						orders.map((ord) => {
 							const ship = ord.shipments?.[0];
-							const shipLabel = ship?.unifiedStatus
-								? to(`trackingStatus.${ship.unifiedStatus}`)
-								: ship?.status
-									? to(`shipmentStatuses.${ship.status}`)
-									: "—";
+							const shipLabel = ship?.status ? to(`trackingStatus.${ship.status}`) : "—";
 							return (
 								<div
 									key={ord.id}

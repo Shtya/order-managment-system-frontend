@@ -65,7 +65,7 @@ export default function SupplierPaymentsTab({ onRefresh }) {
             supplierId: "none",
             safeId: "none",
             amount: "",
-            paymentDate: new Date().toLocaleDateString(),
+            paymentDate: new Date().toLocaleDateString("en-US"),
             notes: "",
             invoiceId: "none",
         },

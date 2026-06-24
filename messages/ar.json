@@ -155,13 +155,13 @@
     "filters": {
       "status": "الحالة",
       "date": "التاريخ",
-      "originalOrderCode": "رقم الطلب الأصلي",
+      "originalOrderCode": "كود الطلب الأصلي",
       "all": "الكل",
-      "originalOrderCodePlaceholder": "أدخل رقم الطلب"
+      "originalOrderCodePlaceholder": "أدخل كود الطلب"
     },
     "table": {
       "replacementCode": "رقم طلب الاستبدال",
-      "originalOrderCode": "رقم الطلب الأصلي",
+      "originalOrderCode": "كود الطلب الأصلي",
       "customer": "اسم العميل",
       "phone": "رقم الهاتف",
       "replacedProducts": "المنتجات المستبدلة",
@@ -190,7 +190,7 @@
         "date": "التاريخ",
         "employee": "الموظف المسئول",
         "customer": "اسم العميل",
-        "orderCode": "رقم الطلب"
+        "orderCode": "كود الطلب"
       },
       "filters": {
         "employee": "الموظف المسئول",
@@ -206,8 +206,8 @@
     },
     "createDialog": {
       "title": "إنشاء طلب استبدال",
-      "orderCode": "رقم الطلب",
-      "orderCodePlaceholder": "أدخل رقم الطلب الأصلي",
+      "orderCode": "كود الطلب",
+      "orderCodePlaceholder": "أدخل كود الطلب الأصلي",
       "fetchOrder": "جلب البيانات",
       "orderNotFound": "الطلب غير موجود",
       "orderInfo": "بيانات الطلب",
@@ -324,7 +324,7 @@
     },
     "orderInfo": {
       "customer": "العميل",
-      "orderCode": "رقم الطلب",
+      "orderCode": "كود الطلب",
       "status": "حالة الطلب"
     },
     "messagePlaceholder": "اكتب رسالتك...",
@@ -1538,7 +1538,7 @@
         "remaining": "متبقية"
       },
       "columns": {
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "customer": "العميل",
         "phone": "الهاتف",
         "city": "المدينة",
@@ -1637,7 +1637,7 @@
         "distribution": "التوزيع"
       },
       "fields": {
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "customerName": "اسم العميل",
         "phoneNumber": "رقم الهاتف",
         "address": "العنوان",
@@ -1740,7 +1740,7 @@
         "date": "التاريخ",
         "distributedAt": "تاريخ التوزيع",
         "status": "الحالة",
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "address": "العنوان",
         "email": "الايميل",
         "zone": "المنطقة",
@@ -1886,7 +1886,7 @@
         "inPreparation": "قيد التحضير"
       },
       "fields": {
-        "orderCode": "رقم الطلب",
+        "orderCode": "كود الطلب",
         "customer": "العميل",
         "phone": "الهاتف",
         "city": "المدينة",
@@ -1926,7 +1926,7 @@
         "note": "يمكن الطباعة من شركة الشحن فقط إذا كانت جميع الطلبات تابعة لنفس الشركة.",
         "tabTitle": "طباعة البوالص",
         "labels": "بوليصة",
-        "orderCode": "رقم الطلب",
+        "orderCode": "كود الطلب",
         "customerInfo": "معلومات العميل",
         "shippingInfo": "معلومات الشحن",
         "printNow": "طباعة {count} بوليصة الآن",
@@ -2022,7 +2022,7 @@
           "totalFailedAttempts": "إجمالي المحاولات الفاشلة",
           "attemptUnit": "محاولة",
           "scannedCode": "الكود الممسوح",
-          "orderNumber": "رقم الطلب",
+          "orderNumber": "كود الطلب",
           "failReason": "سبب الفشل",
           "time": "الوقت",
           "orderInfo": "بيانات الطلب",
@@ -2042,8 +2042,8 @@
       },
       "howItWorks": "كيف يعمل؟",
       "subtabs": {
-        "scanning": "قيد التحضير",
-        "inProgress": "طلبات التحضير",
+        "scanning": "تحضير الطلبات",
+        "inProgress": "قيد التحضير",
         "prepared": "جاهزة للشحن"
       },
       "stats": {
@@ -2052,7 +2052,7 @@
         "scanned": "تم تحضيرها",
         "prepared": "جاهزة للشحن",
         "scanning": "جاري المسح",
-        "notStarted": "لم يبدأ بعد",
+        "notStarted": "قيد التحضير",
         "total": "إجمالي الطلبات"
       },
       "common": {
@@ -2296,7 +2296,7 @@
           "price": "السعر",
           "lineTotal": "الإجمالي",
           "status": "الحالة",
-          "orderNumber": "رقم الطلب",
+          "orderNumber": "كود الطلب",
           "carrier": "شركة الشحن",
           "date": "تاريخ الطلب"
         },
@@ -2372,7 +2372,7 @@
         "wrongLog": {
           "title": "سجل محاولات المسح الفاشلة",
           "printDate": "تاريخ الطباعة",
-          "orderNumber": "رقم الطلب",
+          "orderNumber": "كود الطلب",
           "employee": "الموظف",
           "scanner": "الفاحص",
           "userName": "المستخدم",
@@ -2443,7 +2443,7 @@
           "titleActive": "تفاصيل المرتجع"
         },
         "placeholders": {
-          "scanOrder": "امسح رقم الطلب أو رقم التتبع...",
+          "scanOrder": "امسح كود الطلب أو رقم التتبع...",
           "scanAnother": "امسح طلبًا آخر..."
         },
         "status": {
@@ -2499,7 +2499,7 @@
           "scan": "مسح"
         },
         "table": {
-          "orderNumber": "رقم الطلب",
+          "orderNumber": "كود الطلب",
           "trackingCode": "رقم التتبع",
           "customer": "العميل",
           "productName": "اسم المنتج",
@@ -2518,7 +2518,7 @@
         },
         "empty": {
           "title": "جاهز لمسح الطلب المرتجع",
-          "subtitle": "امسح رقم الطلب أو رقم التتبع لإظهار التفاصيل مباشرة"
+          "subtitle": "امسح كود الطلب أو رقم التتبع لإظهار التفاصيل مباشرة"
         },
         "selectCarrierFirst": "اختر شركة الشحن والمستودع المستلم",
         "carrier": "شركة الشحن",
@@ -2538,7 +2538,7 @@
         "saveWarning": "عند الحفظ: تُعاد الطلبات إلى حالة \"مؤكد\"، وتُضاف الكميات إلى المخزون، ويُنشأ ملف PDF للمرتجعات.",
         "returnOpDetails": "تم استلام المرتجع من",
         "th": {
-          "orderNumber": "رقم الطلب",
+          "orderNumber": "كود الطلب",
           "customer": "العميل",
           "city": "المدينة",
           "carrier": "شركة الشحن",
@@ -2585,7 +2585,7 @@
         "allWarehouses": "كل المستودعات"
       },
       "detail": {
-        "orderLabel": "رقم الطلب",
+        "orderLabel": "كود الطلب",
         "customer": "العميل",
         "phone": "الهاتف",
         "city": "المدينة",
@@ -2630,7 +2630,7 @@
         "printAlertText": "هذا المستند يحتوي على محاولات مسح فاشلة — يُرجى المراجعة والتحقق من الباركود قبل الشحن",
         "totalAttempts": "إجمالي المحاولات",
         "scannedCode": "الكود الممسوح",
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "failReason": "سبب الفشل",
         "time": "الوقت",
         "system": "نظام إدارة المستودعات"
@@ -2667,7 +2667,7 @@
         "thisWeek": "هذا الأسبوع",
         "totalItems": "إجمالي المنتجات"
       },
-      "searchPlaceholder": "ابحث برقم الطلب أو العميل أو السبب...",
+      "searchPlaceholder": "ابحث بكود الطلب أو العميل أو السبب...",
       "filter": "فلترة",
       "apply": "تطبيق",
       "total": "الإجمالي",
@@ -2677,7 +2677,7 @@
       "retryOpDetails": "إعادة الطلب إلى المؤكد",
       "close": "إغلاق",
       "table": {
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "customer": "العميل",
         "phone": "الهاتف",
         "city": "المدينة",
@@ -2692,7 +2692,7 @@
         "viewReason": "عرض السبب"
       },
       "detail": {
-        "orderLabel": "رقم الطلب",
+        "orderLabel": "كود الطلب",
         "rejected": "مرفوض",
         "customer": "العميل",
         "phone": "الهاتف",
@@ -2749,7 +2749,7 @@
       "table": {
         "opNumber": "رقم العملية",
         "opType": "نوع العملية",
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "carrier": "شركة الشحن",
         "employee": "الموظف",
         "result": "النتيجة",
@@ -2793,7 +2793,7 @@
       "genericModal": {
         "operationLabel": "سجل العملية",
         "opType": "نوع العملية",
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "carrier": "شركة الشحن",
         "employee": "الموظف",
         "datetime": "التاريخ",
@@ -2811,7 +2811,7 @@
         "printedAt": "تاريخ الطباعة",
         "opNumber": "رقم العملية",
         "opType": "نوع العملية",
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "carrier": "شركة الشحن",
         "employee": "الموظف",
         "result": "النتيجة",
@@ -2932,7 +2932,7 @@
         "distributed": {
           "title": "الطلبات الموزعة",
           "table": {
-            "code": "رقم الطلب",
+            "code": "كود الطلب",
             "customer": "العميل",
             "city": "المدينة",
             "shippingCompany": "شركة الشحن",
@@ -2961,7 +2961,7 @@
         "undistributed": {
           "title": "الطلبات بدون شركة شحن",
           "table": {
-            "code": "رقم الطلب",
+            "code": "كود الطلب",
             "customer": "العميل",
             "city": "المدينة",
             "products": "المنتجات",
@@ -2978,7 +2978,7 @@
       "all": {
         "title": "جميع الطلبات",
         "table": {
-          "code": "رقم الطلب",
+          "code": "كود الطلب",
           "customer": "العميل",
           "location": "الموقع",
           "products": "المنتجات",
@@ -3003,13 +3003,13 @@
           "city": "المدينة",
           "carrier": "شركة الشحن",
           "noCarrier": "غير محدد",
-          "step1Title": "مسح رقم الطلب",
-          "step1Subtitle": "قم بمسح الباركود الخاص برقم الطلب للبدء",
-          "scanOrderPlaceholder": "امسح رقم الطلب",
+          "step1Title": "مسح كود الطلب",
+          "step1Subtitle": "قم بمسح الباركود الخاص بكود الطلب للبدء",
+          "scanOrderPlaceholder": "امسح كود الطلب",
           "scanSkuPlaceholder": "امسح SKU المنتج",
-          "orderScanned": "تم مسح رقم الطلب بنجاح",
+          "orderScanned": "تم مسح كود الطلب بنجاح",
           "wrongOrderCode": "رقم طلب غير صحيح",
-          "codeMismatch": "رقم الطلب لا يتطابق مع الطلب الحالي",
+          "codeMismatch": "كود الطلب لا يتطابق مع الطلب الحالي",
           "skuNotFound": "المنتج غير موجود",
           "skuNotInOrder": "هذا المنتج ليس ضمن الطلب",
           "skuAlreadyComplete": "المنتج مكتمل بالفعل",
@@ -3057,7 +3057,7 @@
         "title": "سجل العمليات",
         "table": {
           "id": "المعرف",
-          "orderCode": "رقم الطلب",
+          "orderCode": "كود الطلب",
           "operationType": "نوع العملية",
           "carrier": "شركة الشحن",
           "employee": "الموظف",
@@ -4878,7 +4878,7 @@
       "cardTitle": "طلب استبدال",
       "cardSubtitle": "هذا الطلب تم إنشاؤه كاستبدال لطلب آخر",
       "originalOrder": "الطلب الأصلي",
-      "orderNumber": "رقم الطلب",
+      "orderNumber": "كود الطلب",
       "customer": "العميل",
       "originalTotal": "إجمالي الأصلي",
       "originalDate": "تاريخ الأصلي",
@@ -4894,7 +4894,7 @@
       "noDifference": "لا يوجد فارق",
       "oldPrice": "السعر القديم",
       "newPrice": "السعر الجديد",
-      "searchPlaceholder": "ابحث برقم الطلب الأصلي أو المستبدل أو اسم أو رقم هاتف العميل",
+      "searchPlaceholder": "ابحث بكود الطلب الأصلي أو المستبدل أو اسم أو رقم هاتف العميل",
       "stats": {
         "pending": "بانتظار التأكيد",
         "pending_confirmation": "بانتظار التأكيد",
@@ -4920,7 +4920,7 @@
       },
       "columns": {
         "replacementOrderNumber": "رقم طلب الاستبدال",
-        "originalOrderNumber": "رقم الطلب الأصلي",
+        "originalOrderNumber": "كود الطلب الأصلي",
         "barcode": "باركود طلب الاستبدال",
         "customerName": "اسم العميل",
         "phoneNumber": "رقم الهاتف",
@@ -4990,7 +4990,7 @@
         "apply": "تطبيق"
       },
       "table": {
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "customerName": "اسم العميل",
         "phoneNumber": "رقم الهاتف",
         "city": "المدينة",
@@ -5188,7 +5188,7 @@
         "reserved": "محجوز",
         "na": "غير متوفر"
       },
-      "searchPlaceholder": "ابحث بالمتجر أو اسم العميل أو رقم الطلب...",
+      "searchPlaceholder": "ابحث بالمتجر أو اسم العميل أو كود الطلب...",
       "stats": {
         "total": "إجمالي الفاشلة",
         "pending": "قيد الانتظار",
@@ -5345,13 +5345,13 @@
       "title": "حذف الطلب",
       "subtitle": "هذا الإجراء لا يمكن التراجع عنه",
       "warning": "سيؤدي حذف هذا الطلب إلى إزالة جميع بياناته نهائيًا من النظام. لا يمكن التراجع عن هذا الإجراء.",
-      "orderNumber": "رقم الطلب المراد حذفه",
+      "orderNumber": "كود الطلب المراد حذفه",
       "confirmLabel": "تأكيد الحذف",
-      "confirmHint": "اكتب رقم الطلب للتأكيد",
+      "confirmHint": "اكتب كود الطلب للتأكيد",
       "cancel": "إلغاء",
       "confirm": "حذف الطلب",
       "deleting": "جاري الحذف...",
-      "errorMismatch": "رقم الطلب غير متطابق"
+      "errorMismatch": "كود الطلب غير متطابق"
     },
     "stats": {
       "pendingConfirmation": "بانتظار التأكيد",
@@ -5440,7 +5440,7 @@
       "partially_refunded": "تم الاسترداد جزئيًا"
     },
     "toolbar": {
-      "searchPlaceholder": "ابحث برقم الطلب، اسم العميل أو الهاتف",
+      "searchPlaceholder": "ابحث بكود الطلب، اسم العميل أو الهاتف",
       "filter": "فلترة",
       "export": "تصدير",
       "distribute": "توزيع",
@@ -5484,7 +5484,7 @@
     },
     "table": {
       "barcode": "باركود",
-      "orderNumber": "رقم الطلب",
+      "orderNumber": "كود الطلب",
       "duplicate": "مكرر",
       "from": "من",
       "assignedEmployee": "الموظف المسؤول",
@@ -5504,7 +5504,7 @@
       "deposit": "العربون",
       "amountReceived": "المبلغ المستلم",
       "lastUpdate": "آخر تحديث",
-      "createdat": "تاريخ الطلب",
+      "createdat": "تاريخ الانشاء",
       "actions": "الإجراءات",
       "finalTotal": "المبلغ الإجمالي",
       "shipmentStatus": "حالة الشحنه",
@@ -5540,7 +5540,7 @@
     },
     "distribution": {
       "fields": {
-        "orderNumber": "رقم الطلب",
+        "orderNumber": "كود الطلب",
         "customerName": "اسم العميل",
         "phoneNumber": "رقم الهاتف",
         "address": "العنوان",
@@ -5760,7 +5760,7 @@
       "trackingNumber": "رقم التتبع",
       "storeName": "اسم المتجر",
       "storeAddress": "عنوان المتجر",
-      "orderNumber": "رقم الطلب",
+      "orderNumber": "كود الطلب",
       "providerShipmentId": "رقم الشحنة لدى المزود",
       "notes": "ملاحظات",
       "adminName": "الاسم",
@@ -6155,7 +6155,7 @@
       "priceSummary": "ملخص الأسعار"
     },
     "placeholders": {
-      "orderNumber": "رقم الطلب",
+      "orderNumber": "كود الطلب",
       "reasonOfReplacement": "اكتب سبب الاستبدال",
       "anotherReason": "اكتب سببًا إضافيًا (اختياري)",
       "shippingCompany": "اختر شركة الشحن"
@@ -6339,7 +6339,7 @@
       "orderAnalysis": "تحليل الطلبات"
     },
     "search": {
-      "orderPlaceholder": "ابحث برقم الطلب أو اسم العميل..."
+      "orderPlaceholder": "ابحث بكود الطلب أو اسم العميل..."
     },
     "actions": {
       "howToUse": "شرح الاستخدام"
@@ -6546,7 +6546,7 @@
       "fullyCollected": "محصلة بالكامل"
     },
     "columns": {
-      "orderNumber": "رقم الطلب",
+      "orderNumber": "كود الطلب",
       "shippingCompany": "شركة الشحن",
       "collectedAmount": "المبلغ المُحصَّل",
       "remainingBalance": "المبلغ المتبقي",
@@ -6605,7 +6605,7 @@
       "exportSuccess": "تم التصدير بنجاح",
       "exportFailed": "فشل التصدير"
     },
-    "searchPlaceholder": "ابحث برقم الطلب أو شركة الشحن...",
+    "searchPlaceholder": "ابحث بكود الطلب أو شركة الشحن...",
     "days": "يوم",
     "empty": {
       "title": "لا توجد طلبات",
@@ -6634,7 +6634,7 @@
       "title": "تحصيل الطلب"
     },
     "fields": {
-      "orderNumber": "رقم الطلب",
+      "orderNumber": "كود الطلب",
       "orderTotal": "إجمالي الطلب",
       "collectedAmount": "المبلغ المحصَّل",
       "shippingCost": "تكلفة الشحن",
@@ -8399,7 +8399,7 @@
     "showLess": "عرض أقل",
     "retries": "المحاولات",
     "retriesExhausted": "انتهت جميع المحاولات",
-    "orderNumber": "رقم الطلب",
+    "orderNumber": "كود الطلب",
     "replacement": "استبدال",
     "customer": "العميل",
     "phone": "الهاتف",
@@ -9433,7 +9433,7 @@
         "createdBy": "المنشئ",
         "metadata": {
           "title": "بيانات إضافية",
-          "orderNumber": "رقم الطلب",
+          "orderNumber": "كود الطلب",
           "purchaseReturnNumber": "رقم فاتورة المرتجع",
           "purchaseNumber": "رقم فاتورة الشراء",
           "trackingNumber": "رقم التتبع",
@@ -9947,7 +9947,7 @@
     "pending": "قيد الانتظار"
   },
   "fields": {
-    "orderNumber": "رقم الطلب"
+    "orderNumber": "كود الطلب"
   },
   "status": {
     "delivered": "تاريخ التسليم"
@@ -10757,7 +10757,7 @@
           "templateDesc": "اختر قالب الرسالة الذي سيتم إرساله",
           "selectTemplate": "اختر القالب...",
           "recipientNumber": "رقم المستلم",
-          "recipientNumberDesc": "رقم الهاتف الذي سيتم إرسال الرسالة إليه (اتركه فارغاً لاستخدام رقم الطلب)",
+          "recipientNumberDesc": "رقم الهاتف الذي سيتم إرسال الرسالة إليه (اتركه فارغاً لاستخدام كود الطلب)",
           "variables": "المتغيرات",
           "variablesDesc": "اربط متغيرات القالب ببيانات الطلب",
           "checks": "الفحوصات",
@@ -10853,7 +10853,7 @@
         },
         "orderProperties": {
           "title": "اختيار حقل من الطلب",
-          "orderNumber": "رقم الطلب",
+          "orderNumber": "كود الطلب",
           "customerName": "اسم العميل",
           "phoneNumber": "رقم الجوال",
           "secondPhoneNumber": "رقم الجوال الثاني",

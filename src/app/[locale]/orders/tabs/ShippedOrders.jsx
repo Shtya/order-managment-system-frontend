@@ -923,6 +923,15 @@ export default function ShippedOrders({ statuses = [] }) {
   const columns = useMemo(
     () => [
       {
+        key: "created_at",
+        header: t("table.createdat"),
+        cell: (row) => (
+          <span className="text-xs text-gray-500">
+            {new Date(row.created_at).toLocaleDateString("en-US")}
+          </span>
+        ),
+      },
+      {
         key: "orderNumber",
         header: ts("table.orderNumber"),
         cell: (row) => (
@@ -937,6 +946,30 @@ export default function ShippedOrders({ statuses = [] }) {
             <div className="font-semibold text-sm">{row.customerName}</div>
             <div className="text-xs text-muted-foreground">{row.phoneNumber || "—"}</div>
           </div>
+        ),
+      },
+      {
+        key: "products",
+        header: t("table.products"),
+        cell: (row) => (
+          <div className="text-sm">
+            {row.items.map((p, i) => (
+              <div key={i} className="flex gap-2">
+                <span>{p.variant.product.name}</span> -
+                <span>{p.variant.sku}</span> -
+                <span> (x{p.quantity})</span>
+              </div>
+            ))}
+          </div>
+        ),
+      },
+      {
+        key: "shippingCost",
+        header: t("table.finalTotal"),
+        cell: (row) => (
+          <span className="text-gray-600 dark:text-slate-200">
+            {formatCurrency(row.finalTotal)}
+          </span>
         ),
       },
       {
@@ -959,13 +992,42 @@ export default function ShippedOrders({ statuses = [] }) {
         ),
       },
       {
-        key: "shippingCost",
-        header: t("table.finalTotal"),
-        cell: (row) => (
-          <span className="text-gray-600 dark:text-slate-200">
-            {formatCurrency(row.finalTotal)}
-          </span>
-        ),
+        key: "phoneNumber",
+        header: t("table.phoneNumber"),
+        cell: (row) => {
+          const rawNumber = String(row.phoneNumber || "").trim();
+          const cleanNumber = rawNumber.replace(/\D/g, "");
+
+          return (
+            <div className="flex items-center justify-between gap-3 text-sm group">
+
+              {/* Phone */}
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1 transition-opacity duration-200">
+                  <a
+                    href={`tel:${cleanNumber}`}
+                    className="p-1.5 hover:bg-blue-100 text-blue-600 rounded-full transition-all"
+                    title={t("common.call")}
+                  >
+                    <PhoneCall size={15} />
+                  </a>
+
+                  <a
+                    href={`https://wa.me/${cleanNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 hover:bg-green-100 text-green-600 rounded-full transition-all"
+                    title="Whatsapp"
+                  >
+                    <LucideMessageCircle size={15} />
+                  </a>
+                </div>
+                <span className="truncate">{rawNumber}</span>
+              </div>
+
+            </div>
+          );
+        },
       },
       {
         key: "shippingCost",
@@ -1006,21 +1068,6 @@ export default function ShippedOrders({ statuses = [] }) {
             </Badge>
           );
         },
-      },
-      {
-        key: "products",
-        header: t("table.products"),
-        cell: (row) => (
-          <div className="text-sm">
-            {row.items.map((p, i) => (
-              <div key={i} className="flex gap-2">
-                <span>{p.variant.product.name}</span> -
-                <span>{p.variant.sku}</span> -
-                <span> (x{p.quantity})</span>
-              </div>
-            ))}
-          </div>
-        ),
       },
       {
         key: "status",
@@ -1069,44 +1116,6 @@ export default function ShippedOrders({ statuses = [] }) {
             <Badge variant="outline">
               {t(`trackingStatus.${status}`) || status}
             </Badge>
-          );
-        },
-      },
-      {
-        key: "phoneNumber",
-        header: t("table.phoneNumber"),
-        cell: (row) => {
-          const rawNumber = String(row.phoneNumber || "").trim();
-          const cleanNumber = rawNumber.replace(/\D/g, "");
-
-          return (
-            <div className="flex items-center justify-between gap-3 text-sm group">
-
-              {/* Phone */}
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="flex items-center gap-1 transition-opacity duration-200">
-                  <a
-                    href={`tel:${cleanNumber}`}
-                    className="p-1.5 hover:bg-blue-100 text-blue-600 rounded-full transition-all"
-                    title={t("common.call")}
-                  >
-                    <PhoneCall size={15} />
-                  </a>
-
-                  <a
-                    href={`https://wa.me/${cleanNumber}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-1.5 hover:bg-green-100 text-green-600 rounded-full transition-all"
-                    title="Whatsapp"
-                  >
-                    <LucideMessageCircle size={15} />
-                  </a>
-                </div>
-                <span className="truncate">{rawNumber}</span>
-              </div>
-
-            </div>
           );
         },
       },

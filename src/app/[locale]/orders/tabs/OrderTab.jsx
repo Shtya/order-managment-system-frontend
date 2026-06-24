@@ -1138,31 +1138,16 @@ export default function OrdersTab({
 
   const columns = useMemo(() => {
     return [
-      {
-        key: "customerName",
-        header: t("table.customerName"),
+       {
+        key: "created_at",
+        header: t("table.createdat"),
         cell: (row) => (
-          <span className="text-gray-700 dark:text-slate-200 font-semibold">
-            {row.customerName}
+          <span className="text-xs text-gray-500">
+            {new Date(row.created_at).toLocaleDateString("en-US")}
           </span>
         ),
       },
-      // Admin details (for super admin)
-      ...(isSuperAdmin ? [{
-        key: "admin",
-        header: t("common.admin") || "Admin",
-        cell: (row) => (
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-foreground">
-              {row.admin?.name || "—"}
-            </span>
-            <span className="text-[10px] text-muted-foreground">
-              {row.admin?.email || "—"}
-            </span>
-          </div>
-        ),
-      }] : []),
-      {
+        {
         key: "orderNumber",
         header: t("table.orderNumber"),
         cell: (row) => (
@@ -1172,52 +1157,27 @@ export default function OrdersTab({
         ),
       },
       {
-        key: "duplicate",
-        header: t("table.duplicate") || "Duplicate",
+        key: "customerName",
+        header: t("table.customerName"),
         cell: (row) => (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={row.duplicateCount > 0}
-              disabled
-              size="sm"
-              activeColor="#b91c1c"
-            />
-
-            {row.duplicateCount > 0 && (
-              <div className="flex items-center gap-2">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-red-600 leading-tight">
-                    {t("table.duplicate") || "Duplicate"} ({row.duplicateCount + 1})
-                  </span>
-
-                  {row.originalOrderNumber && (
-                    <span className="text-[9px] text-red-500/80 font-medium leading-tight">
-                      {t("table.from")}: {row.originalOrderNumber}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        ),
-      },
-      {
-        key: "city",
-        header: t("table.city"),
-        cell: (row) => (
-          <div className="flex items-center gap-1 text-sm">
-            <MapPin size={12} />
-            {row.city}
-          </div>
-        ),
-      },
-      {
-        key: "address",
-        header: t("table.address"),
-        cell: (row) => (
-          <span title={row.address} className="text-sm text-gray-600 dark:text-slate-300 line-clamp-1 truncate max-w-[120px]">
-            {row.address}
+          <span className="text-gray-700 dark:text-slate-200 font-semibold">
+            {row.customerName}
           </span>
+        ),
+      },
+      {
+        key: "products",
+        header: t("table.products"),
+        cell: (row) => (
+          <div className="text-sm">
+            {row.items.map((p, i) => (
+              <div key={i} className="flex gap-2">
+                <span>{p.variant.product.name}</span> -
+                <span>{p.variant.sku}</span> -
+                <span> (x{p.quantity})</span>
+              </div>
+            ))}
+          </div>
         ),
       },
       {
@@ -1230,15 +1190,27 @@ export default function OrdersTab({
         ),
       },
       {
-        key: "shippingCost",
-        header: t("table.shippingCost"),
+        key: "city",
+        header: t("table.city"),
         cell: (row) => (
-          <span className="text-gray-600 dark:text-slate-200">
-            {formatCurrency(row.shippingCost)}
+          <div className="flex items-center gap-1 text-sm">
+            <MapPin size={12} />
+            {row.city}
+          </div>
+        ),
+      },
+         
+      {
+        key: "address",
+        header: t("table.address"),
+        cell: (row) => (
+          <span title={row.address} className="text-sm text-gray-600 dark:text-slate-300 line-clamp-1 truncate max-w-[120px]">
+            {row.address}
           </span>
         ),
       },
-      {
+     
+    {
         key: "phoneNumber",
         header: t("table.phoneNumber"),
         cell: (row) => {
@@ -1276,6 +1248,62 @@ export default function OrdersTab({
           );
         },
       },
+        // Admin details (for super admin)
+      ...(isSuperAdmin ? [{
+        key: "admin",
+        header: t("common.admin") || "Admin",
+        cell: (row) => (
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-foreground">
+              {row.admin?.name || "—"}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              {row.admin?.email || "—"}
+            </span>
+          </div>
+        ),
+      }] : []),
+    
+      {
+        key: "duplicate",
+        header: t("table.duplicate") || "Duplicate",
+        cell: (row) => (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={row.duplicateCount > 0}
+              disabled
+              size="sm"
+              activeColor="#b91c1c"
+            />
+
+            {row.duplicateCount > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-red-600 leading-tight">
+                    {t("table.duplicate") || "Duplicate"} ({row.duplicateCount + 1})
+                  </span>
+
+                  {row.originalOrderNumber && (
+                    <span className="text-[9px] text-red-500/80 font-medium leading-tight">
+                      {t("table.from")}: {row.originalOrderNumber}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: "shippingCost",
+        header: t("table.shippingCost"),
+        cell: (row) => (
+          <span className="text-gray-600 dark:text-slate-200">
+            {formatCurrency(row.shippingCost)}
+          </span>
+        ),
+      },
+      
 
       readOnlyStatus ? {
         key: "status",
@@ -1492,21 +1520,7 @@ export default function OrdersTab({
         },
       },
 
-      {
-        key: "products",
-        header: t("table.products"),
-        cell: (row) => (
-          <div className="text-sm">
-            {row.items.map((p, i) => (
-              <div key={i} className="flex gap-2">
-                <span>{p.variant.product.name}</span> -
-                <span>{p.variant.sku}</span> -
-                <span> (x{p.quantity})</span>
-              </div>
-            ))}
-          </div>
-        ),
-      },
+      
       {
         key: "paymentMethod",
         header: t("table.paymentMethod"),
@@ -1601,15 +1615,6 @@ export default function OrdersTab({
         cell: (row) => (
           <span className="text-xs text-gray-500">
             {new Date(row.updated_at).toLocaleDateString("en-US")}
-          </span>
-        ),
-      },
-      {
-        key: "created_at",
-        header: t("table.createdat"),
-        cell: (row) => (
-          <span className="text-xs text-gray-500">
-            {new Date(row.created_at).toLocaleDateString("en-US")}
           </span>
         ),
       },

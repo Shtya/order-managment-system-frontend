@@ -30,7 +30,7 @@ const COMPANIES = [
     joints: [1, 2],
   },
   {
-    id: 'spl', name: 'SPL', logo: '/landing/companies/spl.png',
+    id: 'dhl', name: 'DHL', logo: '/landing/companies/dhl.png',
     bg: '#164e63', beamColor: '#22d3ee', beamDelay: 0.2,
     path: [[CX, CY], [830, CY], [870, 148], [950, 148]], joints: [1, 2],
   },

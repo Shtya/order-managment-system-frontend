@@ -948,7 +948,7 @@ export default function ServerErrorsPage() {
                                             {copied === curlCommand ? (
                                                 <>
                                                     <CheckCircle2 size={14} className="mr-2 text-green-500" />
-                                                    {tCommon("copied") || "Copied"}
+                                                    {t("copied") || "Copied"}
                                                 </>
                                             ) : (
                                                 <>

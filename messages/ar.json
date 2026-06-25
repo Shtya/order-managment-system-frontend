@@ -11148,6 +11148,7 @@
       "technical": "السياق التقني",
       "payloads": "البيانات والبيانات الوصفية",
       "stackTrace": "تتبع الخطأ (Stack Trace)",
+      "retryRequest": "إعادة محاولة الطلب",
       "labels": {
         "errorMessage": "رسالة الخطأ",
         "endpoint": "endpoint",
@@ -11185,7 +11186,10 @@
         "requestSize": "حجم الطلب",
         "responseSize": "حجم الرد",
         "userReporter": "المستخدم (المبلغ)",
-        "adminContext": "سياق المسؤول"
+        "adminContext": "سياق المسؤول",
+        "curlCommand": "أمر cURL",
+        "copyCurl": "نسخ cURL",
+        "retry": "إعادة المحاولة"
       }
     },
     "delete": {
@@ -11196,8 +11200,10 @@
     },
     "messages": {
       "deleteSuccess": "تم حذف الخطأ بنجاح",
-      "bulkDeleteSuccess": "تم حذف {count} خطأ بنجاح"
-    }
+      "bulkDeleteSuccess": "تم حذف {count} خطأ بنجاح",
+      "retrySuccess": "تمت إعادة محاولة الطلب بنجاح"
+    },
+    "copied": "تم النسخ"
   },
   "error": {},
   "upsells": {

@@ -11117,6 +11117,7 @@
       "technical": "Technical Context",
       "payloads": "Payloads & Metadata",
       "stackTrace": "Stack Trace",
+      "retryRequest": "Retry Request",
       "labels": {
         "errorMessage": "Error Message",
         "endpoint": "Endpoint",
@@ -11154,7 +11155,10 @@
         "requestSize": "Request Size",
         "responseSize": "Response Size",
         "userReporter": "User (Reporter)",
-        "adminContext": "Admin Context"
+        "adminContext": "Admin Context",
+        "curlCommand": "cURL Command",
+        "copyCurl": "Copy cURL",
+        "retry": "Retry"
       }
     },
     "delete": {
@@ -11165,8 +11169,10 @@
     },
     "messages": {
       "deleteSuccess": "Error deleted successfully",
-      "bulkDeleteSuccess": "{count} errors deleted successfully"
-    }
+      "bulkDeleteSuccess": "{count} errors deleted successfully",
+      "retrySuccess": "Request retried successfully"
+    },
+    "copied": "Copied"
   },
   "error": {},
   "upsells": {

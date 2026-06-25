@@ -23,6 +23,8 @@ import {
     Terminal,
     Fingerprint,
     Trash2,
+    CheckCircle2,
+    Copy,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -39,6 +41,7 @@ import api from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useClipboard } from "@/hook/useClipboard";
 
 function normalizeAxiosError(err) {
     const msg =
@@ -88,10 +91,73 @@ export default function ServerErrorsPage() {
 
     const [viewState, setViewState] = useState({ open: false, error: null });
     const { handleExport, exportLoading } = useExport();
+    const { copied, handleCopy } = useClipboard();
     const [selectedErrors, setSelectedErrors] = useState([]);
     const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null });
     const [bulkDeleteDialog, setBulkDeleteDialog] = useState({ open: false });
     const [deleteLoading, setDeleteLoading] = useState(false);
+    const [retryLoading, setRetryLoading] = useState(false);
+    const [retryResult, setRetryResult] = useState(null); // { success: boolean, data: any, error: any }
+
+    // Generate curl command using useMemo
+    const curlCommand = useMemo(() => {
+        if (!viewState.error) return "";
+
+        const error = viewState.error;
+
+        const escapeDoubleQuotes = (value) =>
+            String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+
+        // Build URL
+        let url = error.originalUrl || error.endpoint;
+
+        if (!url.startsWith("http")) {
+            url = `${process.env.NEXT_PUBLIC_BASE_URL}${url.startsWith("/") ? "" : "/"
+                }${url}`;
+        }
+
+        const parts = ["curl"];
+
+        parts.push(`-X ${(error.method || "GET").toUpperCase()}`);
+
+        // Headers
+        if (error.headers) {
+            Object.entries(error.headers).forEach(([key, value]) => {
+                if (
+                    ![
+                        "host",
+                        "content-length",
+                        "connection",
+                        "if-none-match",
+                        "if-modified-since"
+                    ].includes(key.toLowerCase())
+                ) {
+                    parts.push(
+                        `-H "${escapeDoubleQuotes(key)}: ${escapeDoubleQuotes(value)}"`
+                    );
+                }
+            });
+        }
+
+        // Body
+        if (
+            error.requestPayload &&
+            Object.keys(error.requestPayload).length > 0 &&
+            ["POST", "PUT", "PATCH"].includes(
+                (error.method || "").toUpperCase()
+            )
+        ) {
+            const body = JSON.stringify(error.requestPayload)
+                .replace(/\\/g, "\\\\")
+                .replace(/'/g, `'\\''`);
+
+            parts.push(`--data '${body}'`);
+        }
+
+        parts.push(`"${escapeDoubleQuotes(url)}"`);
+
+        return parts.join(" \\\n  ");
+    }, [viewState.error]);
 
     const [filters, setFilters] = useState({
         severity: "all",
@@ -213,6 +279,78 @@ export default function ServerErrorsPage() {
         } finally {
             setDeleteLoading(false);
             setBulkDeleteDialog({ open: false });
+        }
+    };
+
+    const retryRequest = async (error) => {
+        if (!error) return;
+        setRetryLoading(true);
+        setRetryResult(null);
+
+        try {
+            let url = error.originalUrl || error.endpoint;
+            if (!url.startsWith('http')) {
+                url = `${process.env.NEXT_PUBLIC_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+            }
+
+            const options = {
+                method: error.method?.toUpperCase() || 'GET',
+                headers: {},
+                // FIX 1: Force the fetch request to bypass the browser cache
+                cache: 'no-cache'
+            };
+
+            if (error.headers) {
+                // FIX 2: Filter out headers that tell the server to return a 304
+                const ignoredHeaders = [
+                    'host',
+                    'content-length',
+                    'connection',
+                    'if-none-match',
+                    'if-modified-since'
+                ];
+
+                Object.entries(error.headers).forEach(([key, value]) => {
+                    if (!ignoredHeaders.includes(key.toLowerCase())) {
+                        options.headers[key] = value;
+                    }
+                });
+            }
+
+            if (error.requestPayload && Object.keys(error.requestPayload).length > 0 &&
+                ['POST', 'PUT', 'PATCH'].includes(options.method)) {
+                options.headers['Content-Type'] = 'application/json';
+                options.body = JSON.stringify(error.requestPayload);
+            }
+
+            const response = await fetch(url, options);
+
+            const text = await response.text();
+            console.log(text);
+
+            let responseData;
+
+            try {
+                // Added a quick trim before parsing to prevent trailing space errors
+                responseData = text ? JSON.parse(text.trim()) : null;
+            } catch {
+                responseData = text;
+            }
+
+            setRetryResult({
+                success: response.ok,
+                status: response.status,
+                data: responseData
+            });
+
+        } catch (e) {
+            setRetryResult({
+                success: false,
+                status: null,
+                data: { message: e.message, error: e }
+            });
+        } finally {
+            setRetryLoading(false);
         }
     };
 
@@ -497,7 +635,7 @@ export default function ServerErrorsPage() {
                         key: "bulkDelete",
                         label: tCommon("delete"),
                         icon: deleteLoading ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />,
-                         color: "primary",
+                        color: "primary",
                         onClick: () => setBulkDeleteDialog({ open: true }),
                         disabled: deleteLoading || selectedErrors.length === 0,
                         permission: "system.errors.delete",
@@ -627,7 +765,10 @@ export default function ServerErrorsPage() {
                 }
             />
 
-            <Dialog open={viewState.open} onOpenChange={(open) => setViewState({ open, error: null })}>
+            <Dialog open={viewState.open} onOpenChange={(open) => {
+                setViewState({ open, error: null })
+                setRetryResult(null)
+            }}>
                 <DialogContent className="sm:max-w-5xl w-[95vw] max-h-[92vh] overflow-y-auto overflow-x-hidden custom-scrollbar p-0 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl gap-0">
 
                     {/* Header Section */}
@@ -648,6 +789,37 @@ export default function ServerErrorsPage() {
 
                             {/* Primary Info */}
                             <section className="space-y-4">
+                                <section className="md:col-span-3 space-y-4">
+                                    <h3 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                                        <RefreshCw size={14} className="text-indigo-500" />
+                                        {t("details.retryRequest")}
+                                    </h3>
+
+
+                                    <div className="flex gap-3">
+                                        <Button onClick={() => retryRequest(viewState.error)} disabled={retryLoading}>
+                                            {retryLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                                            {t("details.labels.retry")}
+                                        </Button>
+                                    </div>
+
+                                    {/* Retry Result */}
+                                    {retryResult && (
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                                    Retry Result {retryResult.status && `(${retryResult.status})`}
+                                                </Label>
+                                            </div>
+                                            <div className={`relative group rounded-xl overflow-hidden border shadow-sm ${retryResult.success ? 'border-emerald-300 dark:border-emerald-800' : 'border-rose-300 dark:border-rose-800'}`}>
+                                                <pre className={`p-4 text-[11px] whitespace-pre-wrap break-all font-mono max-h-[250px] overflow-x-auto custom-scrollbar leading-relaxed ${retryResult.success ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-800 dark:text-rose-200'}`} dir="ltr">
+                                                    {JSON.stringify(retryResult.data, null, 2)}
+                                                </pre>
+                                            </div>
+                                        </div>
+                                    )}
+                                </section>
+                                
                                 <h3 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2 text-slate-500 dark:text-slate-400">
                                     <Activity size={14} className="text-indigo-500" />
                                     {t("details.general")}
@@ -762,6 +934,37 @@ export default function ServerErrorsPage() {
                                     </div>
                                 </section>
                             )}
+
+                            {/* Retry Request & Curl Section */}
+                            <section className="space-y-4 pt-6">
+
+
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                            {t("details.labels.curlCommand")}
+                                        </Label>
+                                        <Button variant="ghost" size="sm" onClick={() => handleCopy(curlCommand)}>
+                                            {copied === curlCommand ? (
+                                                <>
+                                                    <CheckCircle2 size={14} className="mr-2 text-green-500" />
+                                                    {tCommon("copied") || "Copied"}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Copy size={14} className="mr-2" />
+                                                    {t("details.labels.copyCurl")}
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
+                                        <pre className="p-4 bg-slate-900 dark:bg-slate-950 text-slate-300 text-[11px] whitespace-pre-wrap break-all font-mono max-h-[250px] overflow-x-auto custom-scrollbar leading-relaxed selection:bg-indigo-500/30" dir="ltr">
+                                            {curlCommand}
+                                        </pre>
+                                    </div>
+                                </div>
+                            </section>
                         </div>
                     )}
                 </DialogContent>

@@ -6343,6 +6343,10 @@
       "home": "Home",
       "orderAnalysis": "Order Analysis"
     },
+    "report": {
+      "exportDate": "Export Date",
+      "userName": "User Name"
+    },
     "search": {
       "orderPlaceholder": "Search by order number or customer name..."
     },
@@ -6375,7 +6379,8 @@
       "employeePlaceholder": "Select Employee",
       "all": "All",
       "city": "City",
-      "products": "Products"
+      "products": "Products",
+      "searchCities": "Search..."
     },
     "kpi": {
       "totalOrders": "Total Orders",
@@ -6403,7 +6408,11 @@
       "outOfDeliveryOrders": "Out of Delivery Area",
       "wrongNumberOrders": "Wrong Number",
       "shippedOrders": "Shipped",
-      "canceledOrders": "Canceled"
+      "canceledOrders": "Canceled",
+      "percentageStats": "Percentage Statistics",
+      "salesOverview": "Sales Overview",
+      "statistics": "General statistics",
+      "percentageStatistics": "Percentage Statistics"
     },
     "charts": {
       "generalReports": "General Reports",
@@ -6412,6 +6421,10 @@
       "deliveredOrders": "Delivered Orders",
       "perStatus": "Orders depending on status",
       "ordersPercent": "Orders rate"
+    },
+    "common": {
+      "remaining": "Remaining",
+      "preparing": "Creating report..."
     },
     "areas": {
       "title": "Top-Selling Areas",
@@ -6440,7 +6453,16 @@
     "export": {
       "exporting": "Exporting...",
       "success": "Exported successfully",
-      "failed": "Export failed"
+      "failed": "Export failed",
+      "print": "Print PDF"
+    },
+    "dashboard": {
+      "common": {
+        "comparison": {
+          "custom": "vs Previous period\t"
+        },
+        "noComparisonData": "No comparison data\t"
+      }
     }
   },
   "dashboard": {
@@ -6464,7 +6486,8 @@
       "refresh": "Refresh",
       "export": "Export",
       "orderLabel": "to request",
-      "totalLabel": "Total"
+      "totalLabel": "Total",
+      "remaining": "Remaining"
     },
     "breadcrumb": {
       "home": "Home",

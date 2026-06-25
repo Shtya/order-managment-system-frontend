@@ -1,6 +1,7 @@
 "use client";
 
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { createRoot } from "react-dom/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -25,11 +26,11 @@ import {
   PieChart,
   Info,
   FileDown,
+  Printer,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import api from "@/utils/api";
-import Flatpickr from "react-flatpickr";
 
 import {
   Select,
@@ -53,9 +54,21 @@ import {
   Tooltip,
 } from "chart.js";
 import { Line, Doughnut, Bar } from "react-chartjs-2";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image as PdfImage,
+  pdf,
+  Font,
+  Svg, // <-- Add this
+  Path // <-- Add this
+} from "@react-pdf/renderer";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
-import {  useTranslations, useLocale } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import StoreFilter from "@/components/atoms/StoreFilter";
@@ -64,7 +77,20 @@ import MultiSelect from "@/components/atoms/MultiSelect";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import UserSelect from "@/components/atoms/UserSelect";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useAuth } from "@/context/AuthContext";
+import BrandLogo from "@/components/atoms/BrandLogo";
+import QRCode from "react-qr-code";
+const PDFArrowUp = ({ color = "#059669" }) => (
+  <Svg viewBox="0 0 24 24" width={10} height={10}>
+    <Path d="M12 4l-8 8h6v8h4v-8h6z" fill={color} />
+  </Svg>
+);
 
+const PDFArrowDown = ({ color = "#dc2626" }) => (
+  <Svg viewBox="0 0 24 24" width={10} height={10}>
+    <Path d="M12 20l8-8h-6V4h-4v8H4z" fill={color} />
+  </Svg>
+);
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -74,10 +100,607 @@ ChartJS.register(
   ChTooltip,
   Legend,
   Filler,
-  BarElement, 
-  Title, 
+  BarElement,
+  Title,
   Tooltip,
 );
+
+Font.register({
+  family: "Cairo",
+  fonts: [
+    {
+      src: "/fonts/Cairo-ExtraLight.ttf",
+      fontWeight: 200,
+    },
+    {
+      src: "/fonts/Cairo-Light.ttf",
+      fontWeight: 300,
+    },
+    {
+      src: "/fonts/Cairo-Regular.ttf",
+      fontWeight: 400,
+    },
+    {
+      src: "/fonts/Cairo-Medium.ttf",
+      fontWeight: 500,
+    },
+    {
+      src: "/fonts/Cairo-SemiBold.ttf",
+      fontWeight: 600,
+    },
+    {
+      src: "/fonts/Cairo-Bold.ttf",
+      fontWeight: 700,
+    },
+    {
+      src: "/fonts/Cairo-ExtraBold.ttf",
+      fontWeight: 800,
+    },
+    {
+      src: "/fonts/Cairo-Black.ttf",
+      fontWeight: 900,
+    },
+  ],
+});
+// PDF Styles
+const pdfStyles = StyleSheet.create({
+  page: {
+    padding: 20,
+    backgroundColor: "#ffffff",
+    fontFamily: "Helvetica",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottom: "2px solid #e5e7eb",
+  },
+  headerTitle: {
+    fontSize: 24,
+    color: "#1f2937",
+    fontWeight: "bold",
+    textAlign: "center",
+    flex: 1,
+  },
+  headerLogo: {
+    width: 80,
+    height: 40,
+    objectFit: "contain",
+  },
+  headerQR: {
+    width: 50,
+    height: 50,
+    backgroundColor: "#fff",
+  },
+  subHeader: {
+    // flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 30,
+    paddingBottom: 15,
+    borderBottom: "1px solid #e5e7eb",
+  },
+  subHeaderItem: {
+    flexDirection: "column",
+  },
+  subHeaderLabel: {
+    fontSize: 10,
+    color: "#6b7280",
+    marginBottom: 2,
+  },
+  subHeaderValue: {
+    fontSize: 12,
+    color: "#1f2937",
+    fontWeight: "bold",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#374151",
+    marginBottom: 15,
+    marginTop: 30,
+    paddingBottom: 8,
+    borderBottom: "1px solid #e5e7eb",
+  },
+  statsGrid: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 15,
+    marginBottom: 30,
+  },
+  statBox: {
+    // Subtract half of the total gap space per row to keep things perfectly centered
+    width: "48%",
+    padding: 10,
+    border: "1px solid #e5e7eb",
+    borderRadius: 8,
+    backgroundColor: "#f9fafb",
+  },
+  statHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 10,
+  },
+  statIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  statTitle: {
+    fontSize: 13,
+    color: "#4b5563",
+    marginBottom: 2,
+    fontWeight: "bold",
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#111827",
+    marginBottom: 2,
+  },
+  statTrend: {
+    fontSize: 12,
+    color: "#6b7280",
+  },
+  statTrendUp: {
+    color: "#059669",
+  },
+  statTrendDown: {
+    color: "#dc2626",
+  },
+  chartContainer: {
+    marginBottom: 30,
+    textAlign: "center",
+    border: "1px solid #e5e7eb",
+    borderRadius: 8,
+    padding: 20,
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#374151",
+    marginBottom: 20,
+  },
+  chartImage: {
+    maxWidth: "100%",
+    maxHeight: 400,
+  },
+  tableContainer: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: 11,
+  },
+  tableHeader: {
+    backgroundColor: "#f3f4f6",
+    fontWeight: "bold",
+    color: "#374151",
+  },
+  tableCell: {
+    flex: 1,
+    padding: 6,
+    border: "1px solid #e5e7eb"
+    // textAlign: "left",
+  },
+  pctGrid: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 20,
+    marginBottom: 30,
+  },
+  pctChartBox: {
+    width: "45%",
+    textAlign: "center",
+    border: "1px solid #e5e7eb",
+    borderRadius: 8,
+    padding: 15,
+    backgroundColor: "#fff",
+  },
+  pctChartImage: {
+    width: "100%",
+    maxWidth: 350,
+  },
+});
+
+// PDF Document Component
+const OrderAnalysisPDF = ({
+  t,
+  tOrders,
+  locale,
+  statsData,
+  weeklyTrend,
+  weeklyTrendChartUrl,
+  statusDonutChartUrl,
+  topCitiesStats,
+  topProductsStats,
+  percentageChartUrls,
+  advancedStats,
+  user,
+  exportDate,
+  websiteUrl,
+  qrCodeUrl,
+}) => {
+
+  const isArabic = locale === "ar";
+  const currentFontFamily = "Cairo"
+
+  return (<Document>
+    <Page size="A4" style={[
+      pdfStyles.page,
+      {
+        fontFamily: currentFontFamily,
+        direction: isArabic ? "rtl" : "ltr", // Reverses Flexbox layouts (like tables)
+        textAlign: isArabic ? "right" : "left" // Forces text to the correct side
+      }
+    ]}>
+      {/* Header */}
+      <View style={pdfStyles.header}>
+        {/* QR Code */}
+        {qrCodeUrl && <PdfImage src={qrCodeUrl} style={pdfStyles.headerQR} />}
+
+        {/* Title */}
+        <Text style={pdfStyles.headerTitle}>{t("breadcrumb.orderAnalysis")}</Text>
+
+        {/* Logo */}
+        <PdfImage src="/logo.png" style={pdfStyles.headerLogo} />
+      </View>
+
+      {/* Subheader */}
+      <View style={[
+        pdfStyles.subHeader,
+        { flexDirection: isArabic ? "row" : "row-reverse" },
+      ]}>
+        <View
+          style={[
+            pdfStyles.subHeaderItem,
+            {
+              alignItems: isArabic ? "flex-end" : "flex-start",
+            },
+          ]}
+        >
+          <Text style={pdfStyles.subHeaderLabel}>{t("report.userName")}</Text>
+          <Text style={pdfStyles.subHeaderValue}>{user?.name || user?.email || ""}</Text>
+        </View>
+        <View
+          style={[
+            pdfStyles.subHeaderItem,
+            {
+              alignItems: isArabic ? "flex-end" : "flex-start",
+            },
+          ]}
+        >
+          <Text style={pdfStyles.subHeaderLabel}>{t("report.exportDate")}</Text>
+          <Text style={pdfStyles.subHeaderValue}>{exportDate}</Text>
+        </View>
+      </View>
+
+      {/* Stats Grid */}
+      {statsData && statsData.length > 0 && (
+        <View >
+          <Text style={pdfStyles.sectionTitle}>
+            {t("kpi.statistics")}
+          </Text>
+          <View style={pdfStyles.statsGrid}>
+            {statsData.map((stat, index) => (
+              <View key={index} style={pdfStyles.statBox}  wrap={false}>
+                <Text style={pdfStyles.statTitle}>{stat.name}</Text>
+                <Text style={pdfStyles.statValue}>{stat.value}</Text>
+                {stat.trend.showArrow && (
+                  <View
+                    style={{
+                      flexDirection: isArabic ? "row-reverse" : "row",
+                      alignItems: "center",
+                      gap: 4, // Adds spacing between the elements
+                      marginTop: 4
+                    }}
+                  >
+                    {/* 1. The Arrow (Using standard Helvetica to ensure it renders) */}
+                    {stat.trend.isUp ? (
+                      <PDFArrowUp color="#059669" /> // Green for up
+                    ) : (
+                      <PDFArrowDown color="#dc2626" /> // Red for down
+                    )}
+
+                    {/* 2. The Value (Forced LTR so the % sign stays on the correct side) */}
+                    <Text
+                      style={[
+                        stat.trend.isUp ? pdfStyles.statTrendUp : pdfStyles.statTrendDown,
+                        { fontSize: 12, direction: "ltr" }
+                      ]}
+                    >
+                      {stat.trend.value}
+                    </Text>
+
+                    {/* 3. The Label (Arabic/English Text) */}
+                    <Text style={{ fontSize: 12, color: "#6b7280" }}>
+                      {stat.trend.label}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Weekly Trend Chart */}
+      {weeklyTrendChartUrl && (
+        <View style={pdfStyles.chartContainer}  wrap={false}>
+          <Text style={pdfStyles.chartTitle}>{t("charts.ordersPercent")}</Text>
+          <PdfImage src={weeklyTrendChartUrl} style={pdfStyles.chartImage} />
+        </View>
+      )}
+
+      {/* Status Donut Chart */}
+      {statusDonutChartUrl && (
+        <View style={pdfStyles.chartContainer}  wrap={false}>
+          <Text style={pdfStyles.chartTitle}>{t("charts.perStatus")}</Text>
+          <PdfImage src={statusDonutChartUrl} style={pdfStyles.chartImage} />
+        </View>
+      )}
+
+      {/* Top Cities Table */}
+      {topCitiesStats && topCitiesStats.length > 0 && (
+        <View>
+          <Text style={pdfStyles.sectionTitle}>{t("areas.title")}</Text>
+          <View style={pdfStyles.tableContainer}>
+            <View style={pdfStyles.table}>
+              {/* Table Header */}
+              <View style={[{ flexDirection: isArabic ? "row-reverse" : "row" }, pdfStyles.tableHeader]}>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("areas.columns.cityArea")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("areas.columns.totalOrders")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("kpi.correctedOrders")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("areas.columns.confirmed")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("areas.columns.inDelivery")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("areas.columns.delivered")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("kpi.deliveredFromConfirmed")}
+                </Text>
+              </View>
+
+              {/* Table Rows */}
+              {topCitiesStats.map((row, index) => (
+                <View key={index} style={[{ flexDirection: isArabic ? "row-reverse" : "row" }]}>
+                  <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                    {locale === "ar" ? row.nameAr : row.nameEn}
+                  </Text>
+                  <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                    {row.totalOrders}
+                  </Text>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.correctedOrders}</Text>
+                    {row.totalOrders > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.correctedOrders / row.totalOrders) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.confirmedCount}</Text>
+                    {row.totalOrders > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.confirmedCount / row.totalOrders) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.shippedOrders}</Text>
+                    {row.totalOrders > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.shippedOrders / row.totalOrders) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.deliveredTotal}</Text>
+                    {row.totalOrders > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.deliveredTotal / row.totalOrders) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.deliveredFromConfirmed}</Text>
+                    {row.confirmedCount > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.deliveredFromConfirmed / row.confirmedCount) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Top Products Table */}
+      {topProductsStats && topProductsStats.length > 0 && (
+        <View>
+          <Text style={pdfStyles.sectionTitle}>{t("products.title")}</Text>
+          <View style={pdfStyles.tableContainer}>
+            <View style={pdfStyles.table}>
+              {/* Table Header */}
+              <View style={[{ flexDirection: isArabic ? "row-reverse" : "row" }, pdfStyles.tableHeader]}>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("products.columns.name")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("products.columns.ordersCount")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("kpi.correctedOrders")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("products.columns.confirmedOrders")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("products.columns.inDelivery")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("products.columns.delivered")}
+                </Text>
+                <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                  {t("kpi.deliveredFromConfirmed")}
+                </Text>
+              </View>
+
+              {/* Table Rows */}
+              {topProductsStats.map((row, index) => (
+                <View key={index} style={[{ flexDirection: isArabic ? "row-reverse" : "row" }]}  wrap={false}>
+                  <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                    {row.name}
+                  </Text>
+                  <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
+                    {row.totalOrders}
+                  </Text>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.correctedOrders}</Text>
+                    {row.totalOrders > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.correctedOrders / row.totalOrders) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.confirmedCount}</Text>
+                    {row.totalOrders > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.confirmedCount / row.totalOrders) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.shippedOrders}</Text>
+                    {row.totalOrders > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.shippedOrders / row.totalOrders) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.deliveredTotal}</Text>
+                    {row.totalOrders > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.deliveredTotal / row.totalOrders) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                  <View style={[pdfStyles.tableCell, { flexDirection: isArabic ? "row-reverse" : "row", alignItems: "center" }]}>
+                    <Text>{row.deliveredFromConfirmed}</Text>
+                    {row.confirmedCount > 0 && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        marginLeft: isArabic ? 0 : 2,
+                        marginRight: isArabic ? 2 : 0
+                      }}>
+                        ({((row.deliveredFromConfirmed / row.confirmedCount) * 100).toFixed(0)}%)
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Percentage Stats Grid */}
+      {percentageChartUrls && percentageChartUrls.length > 0 && (
+        <View>
+          <View wrap={false} style={{ flexDirection: 'column' }}>
+            <Text style={pdfStyles.sectionTitle} wrap={false}>{t("kpi.percentageStatistics")}</Text>
+            <View style={[pdfStyles.pctGrid, { flexWrap: 'nowrap' }]}>
+              {percentageChartUrls.slice(0, 2).map((chart, index) => (
+                <View key={index} style={pdfStyles.pctChartBox} wrap={false}>
+                  <Text style={pdfStyles.statTitle}>{chart.title}</Text>
+                  <PdfImage src={chart.url} style={pdfStyles.pctChartImage} />
+                </View>
+              ))}
+            </View>
+          </View>
+          {percentageChartUrls.length > 2 && (
+            <View style={pdfStyles.pctGrid}>
+              {percentageChartUrls.slice(2).map((chart, index) => (
+                <View key={index + 2} style={pdfStyles.pctChartBox} wrap={false}>
+                  <Text style={pdfStyles.statTitle}>{chart.title}</Text>
+                  <PdfImage src={chart.url} style={pdfStyles.pctChartImage} />
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+    </Page>
+  </Document>)
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -247,6 +870,8 @@ export function StatusDonut({
     imageKey: "image",
     label: "label",
     hasPercentage: false,
+    centerValue: null,
+    centerLabel: null,
   },
   allowImage = false,
 }) {
@@ -257,6 +882,8 @@ export function StatusDonut({
   const total = hasData
     ? data.reduce((s, d) => s + (Number(d[config.key]) ?? 0), 0)
     : 0;
+  const centerValue = !!config.centerValue ? config.centerValue : total;
+  const centerLabel = !!config.centerLabel ? config.centerLabel : t("common.totalLabel");
 
   if (loading)
     return (
@@ -336,10 +963,10 @@ export function StatusDonut({
         <Doughnut data={chartData} options={options} />
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className="text-2xl font-black text-slate-800 dark:text-white leading-none">
-            {total}
+            {centerValue}
           </span>
           <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-1">
-            {t("common.totalLabel")}
+            {centerLabel}
           </span>
         </div>
       </div>
@@ -348,9 +975,9 @@ export function StatusDonut({
       {showLabels && <div className="w-full space-y-1.5">
         {data.map((item, i) => {
           const color = item.color || BRAND_COLORS[i % BRAND_COLORS.length];
-          const percentage = config.hasPercentage
-            ? item.percentage
-            : ((item[config.key] / total) * 100).toFixed(0);
+          const value = Number(item?.[config.key] ?? 0);
+
+          const percentage = config.hasPercentage ? item.percentage : ((value / Number(total, 0)) * 100).toFixed(0);
 
           return (
             <motion.div
@@ -406,6 +1033,76 @@ export function StatusDonut({
           );
         })}
       </div>}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MiniDonut — small donut for single percentage
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function MiniDonut({ value, total, label, color, loading, money = false, formatCurrencyFn, centerValue, centerLabel }) {
+  const t = useTranslations("dashboard");
+  const hasData = !loading && total !== undefined && total !== null;
+  const percentage = hasData && total > 0 ? (value / total) * 100 : 0;
+  const locale = useLocale();
+  const isArabic = locale === "ar";
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center gap-3 animate-pulse w-full">
+        <div className="w-24 h-24 rounded-full border-[10px] border-slate-100 dark:border-slate-800" />
+        <div className="h-3 w-24 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+        <div className="h-2 w-16 bg-slate-50 dark:bg-slate-900 rounded-lg" />
+      </div>
+    );
+  }
+
+  const chartData = {
+    labels: [label, t("common.remaining")],
+    datasets: [{
+      data: [value, total - value],
+      backgroundColor: [hex(color, 0.9), hex("#e2e8f0", 0.5)],
+      borderColor: [color, "#e2e8f0"],
+      borderWidth: 2,
+      hoverOffset: 6,
+    }]
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: "70%",
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        rtl: true,
+        backgroundColor: "#fff",
+        titleColor: "#64748b",
+        bodyColor: "#1e293b",
+        borderColor: "#e2e8f0",
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 10,
+      },
+    },
+  };
+
+  const displayCenterValue = centerValue !== undefined ? centerValue : value;
+  const displayCenterLabel = centerLabel !== undefined ? centerLabel : label;
+
+  return (
+    <div className="flex flex-col items-center gap-2 w-full">
+      <div className="relative h-24 w-24">
+        <Doughnut data={chartData} options={options} />
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-lg font-black text-slate-800 dark:text-white leading-none">
+            {displayCenterValue}
+          </span>
+          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-1">
+            {displayCenterLabel}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -471,7 +1168,7 @@ export function TrendChart({ data, loading, configs = [] }) {
     labels: data.map((d) => d.label),
     datasets,
   };
-  
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -602,7 +1299,7 @@ export function BarChart({ data, loading, configs = [] }) {
     labels: data.map((d) => d.label),
     datasets,
   };
-  
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -789,7 +1486,7 @@ export const TableFilters = memo(function TableFilters({
 }) {
 
   const t = useTranslations("dashboard");
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -873,11 +1570,13 @@ function FilterField({ label, icon: FieldIcon, children }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function OrdersStatisticsPage() {
+  const tDash = useTranslations("dashboard");
   const tOrders = useTranslations("orders");
   const t = useTranslations("orderAnalysis");
   const locale = useLocale();
   const { formatCurrency } = usePlatformSettings();
-  const [quickRange, setQuickRange] = useState();
+  const { user } = useAuth();
+  const [quickRange, setQuickRange] = useState("this_month");
   const [filters, setFilters] = useState({
     startDate: null,
     endDate: null,
@@ -891,6 +1590,7 @@ export default function OrdersStatisticsPage() {
   const [cities, setCities] = useState([]);
   const [citySearch, setCitySearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isPrintingLoading, setIsPrintingLoading] = useState(false);
   const filteredCities = useMemo(() => {
     if (!citySearch) return cities;
     const lowerSearch = citySearch.toLowerCase();
@@ -925,6 +1625,7 @@ export default function OrdersStatisticsPage() {
     return p;
   }, [quickRange, filters]);
 
+
   const fetchAll = useCallback(async () => {
     const p = buildParams();
     setLoading(true);
@@ -945,9 +1646,9 @@ export default function OrdersStatisticsPage() {
       ]);
       const getData = (r) =>
         Array.isArray(r.data) ? r.data : (r.data?.records ?? []);
-      
+
       setAdvancedStats(advStats.data);
-      
+
       const formattedTrend = (getData(weekTrend)).map((item) => ({
         ...item,
         label: formatTrendLabel(item.date),
@@ -978,109 +1679,241 @@ export default function OrdersStatisticsPage() {
 
   // ── KPI config ────────────────────────────────────────────────────────────
 
+  const pctStatsConfig = useMemo(() => [
+    // Order count stats (relative to totalOrders)
+    {
+      key: "correctedOrders",
+      totalKey: "totalOrders",
+      title: t("kpi.correctedOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#6366f1"
+    },
+    {
+      key: "confirmedCount",
+      totalKey: "totalOrders",
+      title: t("kpi.confirmedCount"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#3b82f6"
+    },
+    {
+      key: "deliveredFromTotal",
+      totalKey: "totalOrders",
+      title: t("kpi.deliveredFromTotal"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#10b981"
+    },
+    {
+      key: "canceledAndUnderReview",
+      totalKey: "totalOrders",
+      title: t("kpi.canceledAndUnderReview"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#ef4444"
+    },
+    // Statuses (relative to totalOrders)
+    {
+      key: "new",
+      totalKey: "totalOrders",
+      title: t("kpi.newOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#f59e0b",
+      nested: "statuses"
+    },
+    {
+      key: "returned",
+      totalKey: "totalOrders",
+      title: t("kpi.returnedOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#ec4899",
+      nested: "statuses"
+    },
+    {
+      key: "postponed",
+      totalKey: "totalOrders",
+      title: t("kpi.postponedOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#8b5cf6",
+      nested: "statuses"
+    },
+    {
+      key: "outOfDelivery",
+      totalKey: "totalOrders",
+      title: t("kpi.outOfDeliveryOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#14b8a6",
+      nested: "statuses"
+    },
+    {
+      key: "wrongNumber",
+      totalKey: "totalOrders",
+      title: t("kpi.wrongNumberOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#f97316",
+      nested: "statuses"
+    },
+    {
+      key: "canceled",
+      totalKey: "totalOrders",
+      title: t("kpi.canceledOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#dc2626",
+      nested: "statuses"
+    },
+    {
+      key: "confirmed",
+      totalKey: "totalOrders",
+      title: t("kpi.confirmedOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#2563eb",
+      nested: "statuses"
+    },
+    {
+      key: "shipped",
+      totalKey: "totalOrders",
+      title: t("kpi.shippedOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#0ea5e9",
+      nested: "statuses"
+    },
+    {
+      key: "delivered",
+      totalKey: "totalOrders",
+      title: t("kpi.deliveredOrders"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#10b981",
+      nested: "statuses"
+    },
+    // Delivered from confirmed
+    {
+      key: "deliveredFromConfirmed",
+      totalKey: "confirmedCount",
+      title: t("kpi.deliveredFromConfirmed"),
+      totalLabel: t("kpi.confirmedCount"),
+      color: "#22c55e"
+    }
+  ], [t]);
+
   const KPI = [
     {
       key: "totalOrders",
       title: t("kpi.totalOrders"),
       icon: ShoppingCart,
+      color: PRIMARY,
     },
     {
       key: "correctedOrders",
       title: t("kpi.correctedOrders") || "Corrected Orders",
       icon: CheckCircle,
+      color: "#6366f1",
     },
     {
       key: "confirmedCount",
       title: t("kpi.confirmedCount") || "Confirmed Count",
       icon: CheckCircle,
+      color: "#3b82f6",
     },
     {
       key: "deliveredFromConfirmed",
       title: t("kpi.deliveredFromConfirmed") || "Delivered from Confirmed",
-      icon: Truck
+      icon: Truck,
+      color: "#22c55e",
     },
     {
       key: "deliveredFromTotal",
       title: t("kpi.deliveredFromTotal") || "Delivered from Total",
       icon: TrendingUp,
-      
+      color: "#10b981",
     },
     {
       key: "totalSales",
       title: t("kpi.totalSales"),
       icon: TrendingUp,
       money: true,
+      color: "#10b981",
     },
     {
       key: "deliveredSales",
       title: t("kpi.deliveredSales") || "Delivered Sales",
       icon: Truck,
       money: true,
+      color: "#10b981",
     },
     {
       key: "collectedAmount",
       title: t("kpi.collectedAmount") || "Collected Amount",
       icon: TrendingUp,
+      color: "#f59e0b",
     },
     {
       key: "canceledAndUnderReview",
       title: t("kpi.canceledAndUnderReview") || "Canceled & Under Review",
       icon: XCircle,
+      color: "#ef4444",
     },
     {
       key: "pendingOrders",
       title: t("kpi.pendingOrders") || "Pending",
       icon: Package,
+      color: "#f59e0b",
     },
     {
       key: "inWarehouseOrders",
       title: t("kpi.inWarehouseOrders") || "In Warehouse Orders",
       icon: Store,
+      color: "#0ea5e9",
     },
     {
       key: "new",
       title: t("kpi.newOrders") || "New Orders",
       icon: Package,
+      color: "#f59e0b",
     },
     {
       key: "returned",
       title: t("kpi.returnedOrders") || "Returned Orders",
       icon: XCircle,
+      color: "#ec4899",
     },
     {
       key: "postponed",
       title: t("kpi.postponedOrders") || "Postponed Orders",
       icon: Package,
+      color: "#8b5cf6",
     },
     {
       key: "outOfDelivery",
       title: t("kpi.outOfDeliveryOrders") || "Out of Delivery Area Orders",
       icon: MapPin,
+      color: "#14b8a6",
     },
     {
       key: "wrongNumber",
       title: t("kpi.wrongNumberOrders") || "Wrong Number Orders",
       icon: XCircle,
+      color: "#f97316",
     },
     {
       key: "canceled",
       title: t("kpi.canceledOrders"),
       icon: XCircle,
+      color: "#dc2626",
     },
     {
       key: "confirmed",
       title: t("kpi.confirmedOrders"),
       icon: CheckCircle,
+      color: "#2563eb",
     },
     {
       key: "shipped",
       title: t("kpi.shippedOrders"),
       icon: Truck,
+      color: "#0ea5e9",
     },
     {
       key: "delivered",
       title: t("kpi.deliveredOrders"),
       icon: CheckCircle,
+      color: "#10b981",
     },
   ];
 
@@ -1119,6 +1952,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-purple-500 dark:text-purple-400 tabular-nums text-sm">
           {fmt(r.correctedOrders)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.totalOrders > 0 ? `(${((r.correctedOrders / r.totalOrders) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1128,6 +1964,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-blue-500 dark:text-blue-400 tabular-nums text-sm">
           {fmt(r.confirmedCount)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.totalOrders > 0 ? `(${((r.confirmedCount / r.totalOrders) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1137,6 +1976,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-cyan-500 dark:text-cyan-400 tabular-nums text-sm">
           {fmt(r.shippedOrders)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.totalOrders > 0 ? `(${((r.shippedOrders / r.totalOrders) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1146,6 +1988,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-emerald-500 dark:text-emerald-400 tabular-nums text-sm">
           {fmt(r.deliveredTotal)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.totalOrders > 0 ? `(${((r.deliveredTotal / r.totalOrders) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1155,6 +2000,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-orange-500 dark:text-orange-400 tabular-nums text-sm">
           {fmt(r.deliveredFromConfirmed)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.confirmedCount > 0 ? `(${((r.deliveredFromConfirmed / r.confirmedCount) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1199,6 +2047,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-purple-500 dark:text-purple-400 tabular-nums text-sm">
           {fmt(r.correctedOrders)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.totalOrders > 0 ? `(${((r.correctedOrders / r.totalOrders) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1208,6 +2059,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-blue-500 dark:text-blue-400 tabular-nums text-sm">
           {fmt(r.confirmedCount)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.totalOrders > 0 ? `(${((r.confirmedCount / r.totalOrders) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1217,6 +2071,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-cyan-500 dark:text-cyan-400 tabular-nums text-sm">
           {fmt(r.shippedOrders)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.totalOrders > 0 ? `(${((r.shippedOrders / r.totalOrders) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1226,6 +2083,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-emerald-500 dark:text-emerald-400 tabular-nums text-sm">
           {fmt(r.deliveredTotal)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.totalOrders > 0 ? `(${((r.deliveredTotal / r.totalOrders) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1235,6 +2095,9 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-orange-500 dark:text-orange-400 tabular-nums text-sm">
           {fmt(r.deliveredFromConfirmed)}
+          <span className="text-xs text-slate-400 ms-1">
+            {r.confirmedCount > 0 ? `(${((r.deliveredFromConfirmed / r.confirmedCount) * 100).toFixed(0)}%)` : ""}
+          </span>
         </span>
       ),
     },
@@ -1243,19 +2106,41 @@ export default function OrdersStatisticsPage() {
   // ── Derived stats ─────────────────────────────────────────────────────────
 
   const statsData = useMemo(
-    () =>
-      KPI.map((card, i) => {
-        let raw;
+    () => {
+      const comparisonLabel = quickRange
+        ? tDash(`common.comparison.${quickRange}`)
+        : t("dashboard.common.comparison.custom");
+
+      return KPI.map((card, i) => {
+        let currentVal;
+        let previousVal;
+
         // Check if the key is in statuses object or directly in advancedStats
         if (card.key in (advancedStats?.statuses || {})) {
-          raw = advancedStats?.statuses?.[card.key];
+          currentVal = advancedStats?.statuses?.[card.key] ?? 0;
+          previousVal = advancedStats?.comparison?.statuses?.[card.key];
         } else {
-          raw = advancedStats?.[card.key];
+          currentVal = advancedStats?.[card.key] ?? 0;
+          previousVal = advancedStats?.comparison?.[card.key];
         }
-        let val = raw == null ? "0" : card.pct ? pct(raw) : fmt(raw);
-        if(card.money){
+
+        let change = null;
+        if (previousVal !== undefined && previousVal !== null && previousVal !== 0) {
+          change = ((currentVal - previousVal) / previousVal) * 100;
+        }
+
+        const hasComparison = change !== null;
+        const isPositiveChange = (change ?? 0) > 0;
+        const isNegativeChange = (change ?? 0) < 0;
+        const isGood = card.isInverse
+          ? isNegativeChange
+          : isPositiveChange;
+
+        let val = currentVal == null ? "0" : card.pct ? pct(currentVal) : fmt(currentVal);
+        if (card.money) {
           val = formatCurrency(val);
         }
+
         return {
           id: card.key,
           name: card.title,
@@ -1264,9 +2149,17 @@ export default function OrdersStatisticsPage() {
           color: card.color,
           sortOrder: i,
           onClick: () => { },
+          trend: {
+            label: hasComparison ? comparisonLabel : t("dashboard.common.noComparisonData"),
+            value: hasComparison ? `${Math.abs(Math.round(change))}%` : "",
+            isUp: isPositiveChange,
+            isGood: isGood,
+            showArrow: hasComparison && Math.round(change) !== 0,
+          },
         };
-      }),
-    [advancedStats, KPI,formatCurrency],
+      });
+    },
+    [advancedStats, KPI, formatCurrency, quickRange, t],
   );
 
   const statsCards = useMemo(() => {
@@ -1327,9 +2220,375 @@ export default function OrdersStatisticsPage() {
     { id: "last_month", label: t("ranges.last_month") },
     { id: "this_year", label: t("ranges.this_year") },
   ];
+  const handlePrint = useCallback(async () => {
+    if (!advancedStats) return;
+    setIsPrintingLoading(true);
 
-  // ── Render ────────────────────────────────────────────────────────────────
+    // Create a temporary div to render charts and QR with fixed dimensions
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.width = '800px';
+    document.body.appendChild(tempDiv);
 
+    // Helper function to generate QR code data URL
+    const getQRCodeDataUrl = (value) => {
+      return new Promise((resolve) => {
+        // Create a container div
+        const qrContainer = document.createElement('div');
+        qrContainer.style.background = 'white';
+        qrContainer.style.padding = '8px';
+        tempDiv.appendChild(qrContainer);
+
+        // Create and append the QR code SVG
+        const qrEl = document.createElement('div');
+        qrContainer.appendChild(qrEl);
+
+        // We'll use a simple approach: render a canvas-based QR code
+        // Since react-qr-code renders an SVG, we can capture that
+        const renderQR = () => {
+          // Use canvas to draw QR
+          const canvas = document.createElement('canvas');
+          canvas.width = 256;
+          canvas.height = 256;
+          tempDiv.appendChild(canvas);
+
+          // Or better: use canvas
+          const qrValue = value;
+
+          const root = require('react-dom/client').createRoot(qrEl);
+          root.render(<QRCode value={qrValue} size={256} />);
+
+          // Wait a moment, then after rendering, we can get the SVG and convert to canvas!
+          setTimeout(() => {
+            // Get the SVG from qrEl
+            const svg = qrEl.querySelector('svg');
+            if (svg) {
+              // Convert SVG to data URL
+              const serializer = new XMLSerializer();
+              const svgStr = serializer.serializeToString(svg);
+              const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+              const url = URL.createObjectURL(svgBlob);
+
+              // Create an image to load the SVG, then draw to canvas
+              const img = new Image();
+              img.onload = () => {
+                const canvas2 = document.createElement('canvas');
+                canvas2.width = 256;
+                canvas2.height = 256;
+                const ctx = canvas2.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, 256, 256);
+                ctx.drawImage(img, 0, 0);
+                const dataUrl = canvas2.toDataURL('image/png');
+                URL.revokeObjectURL(url);
+                tempDiv.removeChild(qrContainer);
+                resolve(dataUrl);
+              };
+              img.onerror = () => {
+                // Fallback
+                URL.revokeObjectURL(url);
+                tempDiv.removeChild(qrContainer);
+                resolve('');
+              };
+              img.src = url;
+            } else {
+              tempDiv.removeChild(qrContainer);
+              resolve('');
+            }
+          }, 100);
+        };
+
+        renderQR();
+      });
+    };
+
+    // Function to render a chart synchronously and get a high-quality data URL
+    const getChartDataUrl = (config, width = 800, height = 400) => {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        tempDiv.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+
+        // Disable animations for instant, complete capture
+        const printConfig = {
+          ...config,
+          options: {
+            ...config.options,
+            animation: false,
+            responsive: false,
+            devicePixelRatio: 2, // Boosts resolution
+          }
+        };
+
+        const chart = new ChartJS(ctx, printConfig);
+
+        // Wait exactly one frame to ensure drawing is complete, then capture
+        requestAnimationFrame(() => {
+          const dataUrl = canvas.toDataURL('image/png', 1.0);
+          chart.destroy();
+          tempDiv.removeChild(canvas); // Clean up canvas after capture
+          resolve(dataUrl);
+        });
+      });
+    };
+
+    let weeklyTrendChartUrl = '';
+    let statusDonutChartUrl = '';
+    const percentageChartUrls = [];
+
+    // 1. Render weekly trend chart
+    if (weeklyTrend.length > 0) {
+      const chartData = {
+        labels: weeklyTrend.map(d => d.label),
+        datasets: [
+          {
+            label: t("charts.newOrders"),
+            data: weeklyTrend.map(d => d.created),
+            backgroundColor: "#6366f1",
+            borderColor: "#6366f1",
+            borderWidth: 2,
+          },
+          {
+            label: t("charts.deliveredOrders"),
+            data: weeklyTrend.map(d => d.delivered),
+            backgroundColor: "#10b981",
+            borderColor: "#10b981",
+            borderWidth: 2,
+          },
+        ],
+      };
+
+      const chartConfig = {
+        type: 'bar',
+        data: chartData,
+        options: {
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { font: { size: 14 } }
+            },
+          },
+          scales: { y: { beginAtZero: true } }
+        },
+      };
+      weeklyTrendChartUrl = await getChartDataUrl(chartConfig);
+    }
+
+    // 2. Render status donut chart
+    if (advancedStats.statusBreakdown?.length > 0) {
+      const colors = ["#6366f1", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+
+      // Calculate total to determine percentages
+      const totalStatusCount = advancedStats.statusBreakdown.reduce((sum, d) => sum + (d.count || 0), 0);
+
+      const chartData = {
+        labels: advancedStats.statusBreakdown.map(d => {
+          const name = d.system ? tOrders(`statuses.${d.code}`) : d.name;
+          const count = d.count || 0;
+          const percentage = totalStatusCount > 0 ? ((count / Number(totalStatusCount)) * 100).toFixed(0) : 0;
+          // Add count and percentage to label
+          return `${name}: ${count} (${percentage}%)`;
+        }),
+        datasets: [
+          {
+            data: advancedStats.statusBreakdown.map(d => d.count),
+            backgroundColor: advancedStats.statusBreakdown.map((_, i) => colors[i % colors.length]),
+            borderColor: "#ffffff",
+            borderWidth: 2,
+          },
+        ],
+      };
+
+      const chartConfig = {
+        type: 'doughnut',
+        data: chartData,
+        options: {
+          plugins: {
+            legend: {
+              position: 'bottom', // Put labels under the circle
+              labels: {
+                font: { size: 15, weight: 'bold' }, // Larger text
+                padding: 15
+              }
+            },
+          },
+          layout: { padding: 20 }
+        },
+      };
+      statusDonutChartUrl = await getChartDataUrl(chartConfig, 800, 500); // Taller canvas to fit bottom labels
+    }
+
+    // Register the center text plugin first
+    ChartJS.register({
+      id: 'centerText',
+      afterDatasetsDraw: (chart) => {
+        const ctx = chart.ctx;
+        const { width, height } = chart;
+        const fontSizeBold = Math.min(width, height) / 12;
+        const fontSizeRegular = fontSizeBold * 0.55;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const centerData = chart.config.options.centerText;
+        if (!centerData) return;
+
+        // Draw center value
+        ctx.font = `bold ${fontSizeBold}px Arial`;
+        ctx.fillStyle = '#1f2937';
+        ctx.fillText(centerData.value, width / 2, height / 2 - fontSizeRegular / 2);
+
+        // Draw center label
+        ctx.font = `normal ${fontSizeRegular}px Arial`;
+        ctx.fillStyle = '#6b7280';
+        ctx.fillText(centerData.label, width / 2, height / 2 + fontSizeBold / 2);
+      }
+    });
+
+    // 3. Render Percentage Stats Donuts
+    const generateMiniDonut = async (title, value, total, color, isMoney = false, totalLabel) => {
+      const safeVal = value || 0;
+      const safeTot = total || 0;
+      const remaining = Math.max(0, safeTot - safeVal);
+
+      // Calculate percentages
+      const pctVal = safeTot > 0 ? ((safeVal / Number(safeTot)) * 100).toFixed(0) : 0;
+      const pctRem = safeTot > 0 ? ((remaining / Number(safeTot)) * 100).toFixed(0) : 0;
+
+      // Format currency if needed
+      const displayVal = isMoney && formatCurrency ? formatCurrency(safeVal) : safeVal;
+      const displayRem = isMoney && formatCurrency ? formatCurrency(remaining) : remaining;
+      const displayTotal = isMoney && formatCurrency ? formatCurrency(safeTot) : safeTot;
+
+      const config = {
+        type: 'doughnut',
+        data: {
+          labels: [
+            `${title}: ${displayVal} (${pctVal}%)`,
+            `${totalLabel || t("common.remaining") || "Remaining"}: ${displayTotal} (${pctRem}%)`
+          ],
+          datasets: [{
+            data: [safeVal, remaining],
+            backgroundColor: [color, "#e2e8f0"],
+            borderWidth: 1,
+            borderColor: "#ffffff"
+          }]
+        },
+        options: {
+          cutout: '65%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: { size: 13, weight: 'bold' },
+                padding: 15
+              }
+            }
+          },
+          layout: { padding: 10 },
+          centerText: {
+            value: displayVal,
+            label: title
+          }
+        }
+      };
+      return { title, url: await getChartDataUrl(config, 400, 350) };
+    };
+
+    // Add specific money/sales stats first (passing true for isMoney flag)
+    percentageChartUrls.push(await generateMiniDonut(
+      t("kpi.deliveredSales") || "Delivered Sales",
+      advancedStats.deliveredSales,
+      advancedStats.totalSales,
+      "#10b981",
+      true, // Format as currency
+      t("kpi.totalSales") || "Total Sales"
+    ));
+    percentageChartUrls.push(await generateMiniDonut(
+      t("kpi.collectedAmount") || "Collected Amount",
+      advancedStats.collectedAmount,
+      advancedStats.deliveredSales, // Based on UI setup
+      "#f59e0b",
+      true, // Format as currency
+      t("kpi.deliveredSales") || "Delivered Sales"
+    ));
+
+    // Add dynamic pctStatsConfig loops
+    for (const stat of pctStatsConfig) {
+      const val = stat.nested
+        ? advancedStats?.[stat.nested]?.[stat.key] || 0
+        : advancedStats?.[stat.key] || 0;
+      const tot = stat.nested
+        ? advancedStats?.[stat.nested]?.[stat.totalKey] || advancedStats?.[stat.totalKey] || 0
+        : advancedStats?.[stat.totalKey] || 0;
+
+      percentageChartUrls.push(await generateMiniDonut(
+        stat.title,
+        val,
+        tot,
+        stat.color,
+        stat.money || false,
+        stat.totalLabel
+      ));
+    }
+
+    // Generate QR code
+    const websiteUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    let qrCodeUrl = '';
+    if (websiteUrl) {
+      qrCodeUrl = await getQRCodeDataUrl(websiteUrl);
+    }
+
+    // Generate export date
+    const exportDate = new Date().toLocaleDateString(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // Clean up temp div
+    document.body.removeChild(tempDiv);
+
+    try {
+      // Generate PDF using @react-pdf/renderer
+      const blob = await pdf(
+        <OrderAnalysisPDF
+          t={t}
+          tOrders={tOrders}
+          locale={locale}
+          statsData={statsData}
+          weeklyTrend={weeklyTrend}
+          weeklyTrendChartUrl={weeklyTrendChartUrl}
+          statusDonutChartUrl={statusDonutChartUrl}
+          topCitiesStats={topCitiesStats}
+          topProductsStats={topProductsStats}
+          percentageChartUrls={percentageChartUrls}
+          advancedStats={advancedStats}
+          user={user}
+          exportDate={exportDate}
+          websiteUrl={websiteUrl}
+          qrCodeUrl={qrCodeUrl}
+        />
+      ).toBlob();
+
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${t("breadcrumb.orderAnalysis") || "OrderAnalysis"}_${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setIsPrintingLoading(false);
+    }
+  }, [t, tDash, tOrders, locale, statsData, weeklyTrend, advancedStats, topCitiesStats, topProductsStats, quickRange, pctStatsConfig, formatCurrency, user]);
   return (
     <div className="min-h-screen p-5 space-y-5">
       {/* Page header */}
@@ -1340,12 +2599,22 @@ export default function OrdersStatisticsPage() {
           { name: t("breadcrumb.orderAnalysis") },
         ]}
         buttons={
-          <Button_
-            size="sm"
-            label={t("actions.howToUse")}
-            variant="ghost"
-            icon={<Info size={18} />}
-          />
+          <>
+            <Button_
+              size="sm"
+              label={t("actions.howToUse")}
+              variant="ghost"
+              icon={<Info size={18} />}
+            />
+            <Button_
+              size="sm"
+              label={isPrintingLoading ? (t("common.preparing") || "Preparing...") : (t("export.print") || "Print")}
+              variant="ghost"
+              icon={isPrintingLoading ? <Loader2 size={18} className="animate-spin" /> : <Printer size={18} />}
+              onClick={handlePrint}
+              disabled={loading || isPrintingLoading}
+            />
+          </>
         }
         statsLoading={loading}
         stats={statsCards}
@@ -1383,13 +2652,13 @@ export default function OrdersStatisticsPage() {
         <StoreFilter value={filters.storeId} icon={Store} iconClass={"text-orange-400!"}
           onChange={(v) => setFilters((f) => ({ ...f, storeId: v }))} none={false} autoSelectIfSingle={true} />
 
-          <ShippingCompanyFilter
-            value={filters.shippingCompanyId}
-            onChange={(v) =>
-              setFilters((f) => ({ ...f, shippingCompanyId: v }))
-            }
-          />
-        
+        <ShippingCompanyFilter
+          value={filters.shippingCompanyId}
+          onChange={(v) =>
+            setFilters((f) => ({ ...f, shippingCompanyId: v }))
+          }
+        />
+
 
         <FilterField label={t("filters.employee")}>
           <UserSelect
@@ -1423,7 +2692,7 @@ export default function OrdersStatisticsPage() {
               <div className="px-2 py-2 sticky top-0 bg-card-select z-10 border-b border-border">
                 <input
                   type="text"
-                  placeholder={t("filters.search")}
+                  placeholder={t("filters.searchCities")}
                   className="w-full rounded-md border border-input bg-transparent px-3 py-1.5 rtl:text-end text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   value={citySearch}
                   onChange={(e) => setCitySearch(e.target.value)}
@@ -1492,7 +2761,7 @@ export default function OrdersStatisticsPage() {
               showLabels={false}
               data={advancedStats?.statusBreakdown?.map((s, i) => ({
                 ...s,
-                label:  s.system ? tOrders(`statuses.${s.code}`) : s.name,
+                label: s.system ? tOrders(`statuses.${s.code}`) : s.name,
                 count: s.count,
                 color: [PRIMARY, "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"][i % 6],
               }))}
@@ -1502,6 +2771,9 @@ export default function OrdersStatisticsPage() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Combined Stats Grid */}
+
 
       {/* Areas table */}
       <motion.div
@@ -1513,18 +2785,18 @@ export default function OrdersStatisticsPage() {
           title={t("areas.title")}
           icon={MapPin}
           color="#10b981"
-          // action={
-          //   <ExportBtn
-          //     loading={exAreas}
-          //     onClick={() =>
-          //       doExport(
-          //         "/dashboard/orders/top-areas/export",
-          //         setExAreas,
-          //         "top_areas",
-          //       )
-          //     }
-          //   />
-          // }
+          action={
+            <ExportBtn
+              loading={exAreas}
+              onClick={() =>
+                doExport(
+                  "/dashboard/orders/top-areas/export",
+                  setExAreas,
+                  "top_areas",
+                )
+              }
+            />
+          }
         >
           <MiniTable columns={areasCols} data={topCitiesStats} loading={loading} />
         </Card>
@@ -1540,22 +2812,144 @@ export default function OrdersStatisticsPage() {
           title={t("products.title")}
           icon={Package}
           color="#3b82f6"
-          // action={
-          //   <ExportBtn
-          //     loading={exProducts}
-          //     onClick={() =>
-          //       doExport(
-          //         "/dashboard/orders/top-products/export",
-          //         setExProducts,
-          //         "top_products",
-          //       )
-          //     }
-          //   />
-          // }
+          action={
+            <ExportBtn
+              loading={exProducts}
+              onClick={() =>
+                doExport(
+                  "/dashboard/orders/top-products/export",
+                  setExProducts,
+                  "top_products",
+                )
+              }
+            />
+          }
         >
           <MiniTable columns={productsCols} data={topProductsStats} loading={loading} />
         </Card>
       </motion.div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        {/* Sales Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+        >
+          <Card
+            title={t("kpi.deliveredSales")}
+            icon={TrendingUp}
+            color="#10b981"
+          >
+            <StatusDonut
+              showLabels={true}
+              data={[
+                {
+                  label: t("kpi.deliveredSales"),
+                  count: advancedStats?.deliveredSales || 0,
+                  color: "#10b981"
+                },
+                {
+                  label: t("kpi.totalSales"),
+                  count: advancedStats?.totalSales || 0,
+                  color: "#e2e8f0"
+                }
+              ]}
+              loading={loading}
+              config={{
+                key: "count",
+                label: "label",
+                centerValue: advancedStats?.deliveredSales || 0,
+                centerLabel: t("kpi.deliveredSales")
+              }}
+            />
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.23 }}
+        >
+          <Card
+            title={t("kpi.collectedAmount")}
+            icon={TrendingUp}
+            color="#f59e0b"
+          >
+            <StatusDonut
+              showLabels={true}
+              data={[
+                {
+                  label: t("kpi.collectedAmount"),
+                  count: advancedStats?.collectedAmount || 0,
+                  color: "#f59e0b"
+                },
+                {
+                  label: t("kpi.deliveredSales"),
+                  count: advancedStats?.deliveredSales || 0,
+                  color: "#e2e8f0"
+                }
+              ]}
+              loading={loading}
+              config={{
+                key: "count",
+                label: "label",
+                centerValue: advancedStats?.collectedAmount || 0,
+                centerLabel: t("kpi.collectedAmount")
+              }}
+            />
+          </Card>
+        </motion.div>
+
+        {/* Percentage Stats */}
+        {pctStatsConfig.map((stat, idx) => {
+          const value = stat.nested
+            ? advancedStats?.[stat.nested]?.[stat.key] || 0
+            : advancedStats?.[stat.key] || 0;
+          const total = stat.nested
+            ? advancedStats?.[stat.nested]?.[stat.totalKey] || advancedStats?.[stat.totalKey] || 0
+            : advancedStats?.[stat.totalKey] || 0;
+
+          return (
+            <motion.div
+              key={stat.key}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.24 + idx * 0.01 }}
+            >
+              <Card
+                title={stat.title}
+                icon={Package}
+                color={stat.color}
+              >
+                <StatusDonut
+                  showLabels={true}
+                  data={[
+                    {
+                      label: stat.title,
+                      count: value,
+                      color: stat.color
+                    },
+                    {
+                      label: stat.totalLabel,
+                      count: total,
+                      color: "#e2e8f0"
+                    }
+                  ]}
+                  loading={loading}
+                  config={{
+                    key: "count",
+                    label: "label",
+                    centerValue: value,
+                    centerLabel: stat.title
+                  }}
+                />
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
+
     </div>
   );
 }

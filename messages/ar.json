@@ -6338,6 +6338,10 @@
       "home": "الرئيسية",
       "orderAnalysis": "تحليل الطلبات"
     },
+    "report": {
+      "exportDate": "تاريخ التصدير",
+      "userName": "اسم المستخدم"
+    },
     "search": {
       "orderPlaceholder": "ابحث بكود الطلب أو اسم العميل..."
     },
@@ -6370,7 +6374,8 @@
       "employeePlaceholder": "اختر الموظف",
       "all": "الكل",
       "city": "المدينة",
-      "products": "المنتجات"
+      "products": "المنتجات",
+      "searchCities": "بحث..."
     },
     "kpi": {
       "totalOrders": "إجمالي الطلبات",
@@ -6398,7 +6403,11 @@
       "outOfDeliveryOrders": "خارج منطقة التوصيل",
       "wrongNumberOrders": "رقم خاطئ",
       "shippedOrders": "المُشحونة",
-      "canceledOrders": "الملغي"
+      "canceledOrders": "الملغي",
+      "percentageStats": "إحصائيات النسب المئوية",
+      "salesOverview": "نظرة عامة على المبيعات",
+      "statistics": "الاحصائيات العامة",
+      "percentageStatistics": "إحصائيات النسبة المئوية"
     },
     "charts": {
       "generalReports": "تقارير عامة",
@@ -6408,10 +6417,14 @@
       "perStatus": "الطلبات حسب الحالة",
       "ordersPercent": "معدل الطلبات"
     },
+    "common": {
+      "remaining": "المتبقي",
+      "preparing": "جاري إنشاء التقرير..."
+    },
     "areas": {
       "title": "المناطق الأكثر مبيعاً",
       "columns": {
-        "cityArea": "الإمارة/المنطقة",
+        "cityArea": "المنطقة",
         "totalOrders": "إجمالي الطلبات",
         "confirmed": "المؤكدة",
         "inDelivery": "جارٍ التسليم",
@@ -6435,7 +6448,16 @@
     "export": {
       "exporting": "جارٍ التصدير...",
       "success": "تمّ التصدير بنجاح",
-      "failed": "فشل التصدير"
+      "failed": "فشل التصدير",
+      "print": "طباعة PDF"
+    },
+    "dashboard": {
+      "common": {
+        "comparison": {
+          "custom": "مقارنة بالفترة السابقة\t"
+        },
+        "noComparisonData": "لا توجد بيانات للمقارنة\t"
+      }
     }
   },
   "dashboard": {
@@ -6459,7 +6481,8 @@
       },
       "noOperations": "لم يتم تسجيل أي عمليات في هذا النطاق الزمني",
       "refresh": "تحديث",
-      "export": "تصدير"
+      "export": "تصدير",
+      "remaining": "الباقي"
     },
     "breadcrumb": {
       "home": "الرئيسية",

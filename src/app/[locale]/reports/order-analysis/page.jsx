@@ -78,7 +78,6 @@ import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import UserSelect from "@/components/atoms/UserSelect";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
-import BrandLogo from "@/components/atoms/BrandLogo";
 import QRCode from "react-qr-code";
 const PDFArrowUp = ({ color = "#059669" }) => (
   <Svg viewBox="0 0 24 24" width={10} height={10}>

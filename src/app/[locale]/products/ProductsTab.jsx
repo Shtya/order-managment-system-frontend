@@ -2,11 +2,10 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { motion } from "framer-motion";
-import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw, Printer, Plus, Minus, X, Loader2, Truck, RefreshCcw, Link } from "lucide-react";
+import { CalendarDays, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw, Printer, Plus, Minus, X, Loader2, Truck, RefreshCw, Link, Download } from "lucide-react";
+import { useExport } from "@/hook/useExport";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/utils/cn";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useRouter } from "@/i18n/navigation";
@@ -21,10 +20,10 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import BarcodeCell from "@/components/atoms/BarcodeCell";
 import { renderBarcode } from "@/utils/barcode";
 import { Input } from "@/components/ui/input";
 import SafeHtmlRenderer from "@/components/atoms/SafeHtmlRenderer";
+import { cn } from "@/utils/cn";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -32,7 +31,17 @@ function normalizeAxiosError(err) {
 }
 
 /** Orders list popup for a product (shipped / delivered filters). */
-export function ProductOrdersByStatusModal({ open, onOpenChange, title, loading, orders }) {
+export function ProductOrdersByStatusModal({
+	open,
+	onOpenChange,
+	title,
+	loading,
+	orders,
+	shippingCompany,
+	onShippingCompanyChange,
+	onExport,
+	exportLoading
+}) {
 	const to = useTranslations("orders");
 	const t = useTranslations("products");
 	const { formatCurrency } = usePlatformSettings();
@@ -41,13 +50,32 @@ export function ProductOrdersByStatusModal({ open, onOpenChange, title, loading,
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="!max-w-3xl max-h-[90vh] overflow-hidden p-0">
 				<DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
-					<DialogTitle className="flex items-center gap-2 text-lg font-bold">
-						<Package className="text-primary" size={20} />
-						{title}
-					</DialogTitle>
-					<DialogDescription className="sr-only">{title}</DialogDescription>
+					<div className="flex items-center justify-between mb-4">
+						<DialogTitle className="flex items-center gap-2 text-lg font-bold">
+							<Package className="text-primary" size={20} />
+							{title}
+						</DialogTitle>
+					</div>
+					<div className="flex gap-4 justify-end">
+						<div className="flex-1">
+							<ShippingCompanyFilter
+								value={shippingCompany}
+								onChange={onShippingCompanyChange}
+							/>
+						</div>
+						<Button
+							// variant="outline"
+							className="rounded-lg! mt-auto"
+							size="sm"
+							onClick={onExport}
+							disabled={exportLoading}
+						>
+							{exportLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+							{t("toolbar.export")}
+						</Button>
+					</div>
 				</DialogHeader>
-				<div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)] space-y-4 bg-white dark:bg-slate-900">
+				<div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)] space-y-4 bg-white dark:bg-slate-900">
 					{loading ? (
 						<div className="flex items-center justify-center gap-2 py-12 text-slate-500">
 							<Loader2 className="h-5 w-5 animate-spin" />
@@ -68,14 +96,51 @@ export function ProductOrdersByStatusModal({ open, onOpenChange, title, loading,
 										<div className="font-semibold text-slate-900 dark:text-slate-100">
 											#{ord.orderNumber}
 										</div>
-										<div className="text-sm text-slate-600 dark:text-slate-300">
+										{ship?.status && <div className="text-sm text-slate-600 dark:text-slate-300">
 											<span className="text-slate-500">{t("table.productOrdersShipmentStatus")}:</span>{" "}
 											{shipLabel}
-										</div>
+										</div>}
+									</div>
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+										{ord.customerName && (
+											<div>
+												<span className="text-slate-500">{to("table.customerName")}:</span>{" "}
+												<span className="text-slate-700 dark:text-slate-200 font-medium">
+													{ord.customerName}
+												</span>
+											</div>
+										)}
+										{ord.phoneNumber && (
+											<div>
+												<span className="text-slate-500">{to("table.phoneNumber")}:</span>{" "}
+												<span className="text-slate-700 dark:text-slate-200 font-mono">
+													{ord.phoneNumber}
+												</span>
+											</div>
+										)}
+										{ord.city && (
+											<div>
+												<span className="text-slate-500">{to("table.city")}:</span>{" "}
+												<span className="text-slate-700 dark:text-slate-200 font-medium">
+													{ord.city}
+												</span>
+											</div>
+										)}
+										{
+											<div>
+												<span className="text-slate-500">{to("table.shippingCompany")}:</span>{" "}
+												<span className="text-slate-700 dark:text-slate-200 font-medium">
+													{ord?.shippingCompany?.name || "-"}
+												</span>
+											</div>
+										}
 									</div>
 									{ord.trackingNumber && (
-										<div className="text-sm font-mono text-slate-700 dark:text-slate-200">
-											{ord.trackingNumber}
+										<div>
+											<span className="text-slate-500">{to("trackShipment.trackingNumber")}:</span>{" "}
+											<span className="text-slate-700 dark:text-slate-200 font-medium">
+												{ord.trackingNumber}
+											</span>
 										</div>
 									)}
 									<div className="text-sm space-y-1 border-t border-slate-200/80 dark:border-slate-700 pt-2">
@@ -107,6 +172,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 	const requestIdRef = useRef(0);
 	const { formatCurrency } = usePlatformSettings();
 	const { reservedEnabled, calculateAvailableStock } = useOrdersSettings();
+	const { handleExport, exportLoading } = useExport();
 
 	const [loading, setLoading] = useState(false);
 	const [pager, setPager] = useState({
@@ -123,8 +189,29 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 		title: "",
 		loading: false,
 		orders: [],
+		productId: null,
+		statusCode: null,
+		shippingCompany: "none",
 	});
 
+	const fetchProductOrders = useCallback(
+		async (productId, statusCode, shippingCompany) => {
+			setProductOrdersModal((m) => ({ ...m, loading: true }));
+			try {
+				const params = { productId, status: statusCode, limit: 50, page: 1 };
+				if (shippingCompany && shippingCompany !== "none") {
+					params.shippingCompanyId = shippingCompany;
+				}
+				const res = await api.get("/orders", { params });
+				const rec = Array.isArray(res.data?.records) ? res.data.records : [];
+				setProductOrdersModal((m) => ({ ...m, loading: false, orders: rec }));
+			} catch (e) {
+				toast.error(normalizeAxiosError(e));
+				setProductOrdersModal((m) => ({ ...m, loading: false, orders: [] }));
+			}
+		},
+		[]
+	);
 	const openProductOrders = useCallback(
 		async (product, statusCode) => {
 			const titleKey =
@@ -136,20 +223,43 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 				title: t(`table.${titleKey}`),
 				loading: true,
 				orders: [],
+				productId: product.id,
+				statusCode,
+				shippingCompany: "none",
 			});
-			try {
-				const res = await api.get("/orders", {
-					params: { productId: product.id, status: statusCode, limit: 50, page: 1 },
-				});
-				const rec = Array.isArray(res.data?.records) ? res.data.records : [];
-				setProductOrdersModal((m) => ({ ...m, loading: false, orders: rec }));
-			} catch (e) {
-				toast.error(normalizeAxiosError(e));
-				setProductOrdersModal((m) => ({ ...m, loading: false, orders: [] }));
-			}
+			fetchProductOrders(product.id, statusCode, "none");
 		},
-		[t]
+		[t, fetchProductOrders]
 	);
+
+	const handleShippingCompanyChange = useCallback(
+		(shippingCompany) => {
+			setProductOrdersModal((m) => ({
+				...m,
+				shippingCompany,
+				loading: true,
+			}));
+			fetchProductOrders(
+				productOrdersModal.productId,
+				productOrdersModal.statusCode,
+				shippingCompany
+			);
+		},
+		[fetchProductOrders, productOrdersModal.productId, productOrdersModal.statusCode]
+	);
+
+	const handleOrdersExport = useCallback(() => {
+		const { productId, statusCode, shippingCompany } = productOrdersModal;
+		const params = { productId, status: statusCode };
+		if (shippingCompany && shippingCompany !== "none") {
+			params.shippingCompanyId = shippingCompany;
+		}
+		handleExport({
+			endpoint: "/orders/export",
+			params,
+			filename: `product_orders_${Date.now()}.xlsx`,
+		});
+	}, [productOrdersModal, handleExport]);
 
 	const toggleProduct = (id) => {
 		if (!setSelectedProducts) return;
@@ -612,7 +722,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 		];
 	}, [reservedEnabled, router, t, onAskDelete, onOpenView, formatCurrency, activetab, pager.per_page, selectedProducts, openProductOrders]);
 
-	return { loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal };
+	return { loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal, handleShippingCompanyChange, handleOrdersExport, exportLoading };
 }
 
 export function SkuPrintModal({ open, onClose, product }) {

@@ -91,7 +91,7 @@ export default function ProductsPage() {
 	const [selectedProducts, setSelectedProducts] = useState([]);
 	const [exportToStoreModal, setExportToStoreModal] = useState(false);
 	const { reservedEnabled } = useOrdersSettings();
-	console.log(reservedEnabled)
+	
 	const exportBuilderRef = useRef(null);
 
 	const hasActiveFilters = useMemo(() => {
@@ -693,6 +693,10 @@ export default function ProductsPage() {
 				title={productsLogic.productOrdersModal.title}
 				loading={productsLogic.productOrdersModal.loading}
 				orders={productsLogic.productOrdersModal.orders}
+				shippingCompany={productsLogic.productOrdersModal.shippingCompany}
+				onShippingCompanyChange={productsLogic.handleShippingCompanyChange}
+				onExport={productsLogic.handleOrdersExport}
+				exportLoading={productsLogic.exportLoading}
 			/>
 
 			<ExportToStoreModal

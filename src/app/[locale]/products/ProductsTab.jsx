@@ -191,7 +191,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 		orders: [],
 		productId: null,
 		statusCode: null,
-		shippingCompany: "none",
+		shippingCompany: "all",
 	});
 
 	const fetchProductOrders = useCallback(
@@ -199,7 +199,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 			setProductOrdersModal((m) => ({ ...m, loading: true }));
 			try {
 				const params = { productId, status: statusCode, limit: 50, page: 1 };
-				if (shippingCompany && shippingCompany !== "none") {
+				if (shippingCompany && shippingCompany !== "all") {
 					params.shippingCompanyId = shippingCompany;
 				}
 				const res = await api.get("/orders", { params });
@@ -225,9 +225,9 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 				orders: [],
 				productId: product.id,
 				statusCode,
-				shippingCompany: "none",
+				shippingCompany: "all",
 			});
-			fetchProductOrders(product.id, statusCode, "none");
+			fetchProductOrders(product.id, statusCode, "all");
 		},
 		[t, fetchProductOrders]
 	);
@@ -251,7 +251,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 	const handleOrdersExport = useCallback(() => {
 		const { productId, statusCode, shippingCompany } = productOrdersModal;
 		const params = { productId, status: statusCode };
-		if (shippingCompany && shippingCompany !== "none") {
+		if (shippingCompany && shippingCompany !== "all") {
 			params.shippingCompanyId = shippingCompany;
 		}
 		handleExport({

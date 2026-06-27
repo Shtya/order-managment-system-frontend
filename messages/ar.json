@@ -5886,6 +5886,7 @@
         "shippingCompaniesRequired": "يجب اختيار شركة شحن واحدة على الأقل",
         "paymentStatusRequired": "حالة الدفع مطلوبة",
         "minAmountRequired": "الحد الأدنى للمبلغ مطلوب",
+        "invalidNumber":  "رقم غير صحيح",
         "maxAmountRequired": "الحد الأقصى للمبلغ مطلوب",
         "maxAmountGteMin": "يجب أن يكون الحد الأقصى أكبر من أو يساوي الحد الأدنى",
         "endTimeAfterStartTime": "يجب أن يكون وقت الانتهاء بعد وقت البدء",

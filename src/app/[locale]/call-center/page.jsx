@@ -24,6 +24,7 @@ import {
     Settings,
     Settings2,
     Store,
+    UserPlus,
 } from "lucide-react";
 import { useLocale, useTranslations, useFormatter } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
@@ -144,7 +145,7 @@ import MultiSelect from "@/components/atoms/MultiSelect";
 const ruleSchema = (t) => yup.lazy((value) => {
     // 1. Determine conditional fields based on the current value of ruleType
     let conditionalShape = {};
-    
+
     switch (value?.ruleType) {
         case 'product':
             conditionalShape = {
@@ -227,7 +228,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
     const schema = useMemo(() => ruleSchema(t), [t]);
 
     const isEditMode = !!rule;
-    
+
     const {
         register,
         handleSubmit,
@@ -299,7 +300,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
             setValue("weekDays", filteredWeekDays);
         }
     }, [activeFrom, activeUntil, availableMask]);
-    
+
     useEffect(() => {
         if (rule && open) {
             reset({
@@ -350,9 +351,9 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
         }
     }, [rule, open, reset]);
 
-    
+
     const onSubmit = async (data) => {
-        
+
         const {
             ruleType,
             weekDays,
@@ -456,11 +457,18 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl! max-h-[90vh] overflow-y-auto!">
-                <DialogHeader className="border-b pb-4">
-                    <DialogTitle>{rule ? t("actions.edit") : t("toolbar.addRole")}</DialogTitle>
+            <DialogContent className="max-w-4xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+               
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+                            {rule ? <Edit2 size={20} /> : <UserPlus size={20} />}
+                        </div>
+                        {rule ? t("actions.edit") : t("toolbar.addRole")}
+                    </DialogTitle>
+
                 </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label className="text-sm font-semibold">{t("form.name")}</Label>
@@ -682,7 +690,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                     );
                                 })}
                             </div>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground pb-2">
                                 {t("form.weekDaysNote")}
                             </p>
                         </div>
@@ -817,7 +825,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                         )}
                     </div>
 
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t">
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t mt-4">
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                             {t("form.cancel")}
                         </Button>
@@ -850,7 +858,7 @@ function RuleViewDialog({ open, onOpenChange, rule }) {
         });
     };
 
-    if(!rule) return;
+    if (!rule) return;
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-xl">
@@ -1172,7 +1180,7 @@ export default function CallCenterPage() {
     /* build API params */
     const buildParams = useCallback(
         (page = pager.current_page, per_page = pager.per_page) => {
-            
+
             const params = {
                 page,
                 limit: per_page,
@@ -1473,7 +1481,7 @@ export default function CallCenterPage() {
             {
                 key: "ruleType",
                 header: t("callCenter.autoAssign.columns.type"),
-                cell: (row) => <Badge variant="outline" className="capitalize">{ row.ruleType ? t(`callCenter.autoAssign.stats.${row.ruleType}`) : null}</Badge>,
+                cell: (row) => <Badge variant="outline" className="capitalize">{row.ruleType ? t(`callCenter.autoAssign.stats.${row.ruleType}`) : null}</Badge>,
             },
             {
                 key: "strategy",

@@ -200,7 +200,7 @@ function NotificationRow({ n, idx, onRead, t }) {
       <div className="flex-1 min-w-0 space-y-0.5">
         <p
           className={cn(
-            "text-sm leading-snug",
+            "text-sm leading-snug group-hover:text-white",
             n.isRead
               ? "font-medium text-foreground"
               : "font-bold text-foreground",

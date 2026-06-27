@@ -974,7 +974,8 @@
       "manageSubscription": "Manage Subscription",
       "addSubscription": "Add New Subscription",
       "manageFeatures": "Manage Features",
-      "manageWallet": "Manage Wallet"
+      "manageWallet": "Manage Wallet",
+      "manualReset": "Manual password reset"
     },
     "validation": {
       "nameRequired": "Name is required",

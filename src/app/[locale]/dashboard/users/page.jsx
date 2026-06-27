@@ -248,6 +248,7 @@ export default function SuperAdminUsersPage() {
 	const [editOpen, setEditOpen] = useState(false);
 	const [deactivateOpen, setDeactivateOpen] = useState(false);
 	const [credOpen, setCredOpen] = useState(false);
+	const [credAllowChange, setCredAllowChange] = useState(true);
 	const [subscriptionId, setSubscriptionId] = useState(false);
 	const [subOpen, setSubOpen] = useState(false);
 	const [waOpen, setWaOpen] = useState(false);
@@ -446,7 +447,7 @@ export default function SuperAdminUsersPage() {
 				key: "email",
 				header: t("table.email"),
 				className: "text-gray-600 dark:text-slate-200",
-				cell: (row) => <span dir="ltr" className="font-en">{row.email}</span>,
+				cell: (row) => <span  className="">{row.email}</span>,
 			},
 			{
 				key: "role",
@@ -478,7 +479,7 @@ export default function SuperAdminUsersPage() {
 							<div className="font-semibold text-gray-800 dark:text-slate-100">
 								{row.admin.name || `#${row.admin.id}`}
 							</div>
-							<div dir="ltr" className="font-en text-xs text-gray-500 dark:text-slate-400">
+							<div  className=" text-xs text-gray-500 dark:text-slate-400">
 								{row.admin.email || ""}
 							</div>
 						</div>
@@ -494,7 +495,7 @@ export default function SuperAdminUsersPage() {
 					if (!row.createdAt) return <span className="text-gray-500">-</span>;
 					const d = new Date(row.createdAt);
 					return (
-						<span className="text-gray-600 dark:text-slate-200" dir="ltr">
+						<span className="text-gray-600 dark:text-slate-200" >
 							{isNaN(d.getTime()) ? "-" : d.toLocaleDateString()}
 						</span>
 					);
@@ -529,6 +530,7 @@ export default function SuperAdminUsersPage() {
 													password: res.data.password,
 												});
 												setSelectedUser(row);
+												setCredAllowChange(false);
 												setCredOpen(true);
 											} catch (e) {
 												setError(getApiMsg(e, tCommon));
@@ -636,10 +638,11 @@ export default function SuperAdminUsersPage() {
 								},
 								{
 									icon: <KeyRound size={16} />,
-									tooltip: t("actions.resetAndShow"),
+									tooltip: t("actions.manualReset"),
 									onClick: (r) => {
 										setSelectedUser(r);
 										setCredentials(null);
+										setCredAllowChange(true);
 										setCredOpen(true);
 									},
 									variant: "primary",
@@ -838,6 +841,7 @@ export default function SuperAdminUsersPage() {
 							password: res.data?.credentials?.password,
 						});
 						setSelectedUser(res.data?.user || null);
+						setCredAllowChange(true);
 						setCredOpen(true);
 						setCreateOpen(false);
 						await fetchUsers({ page: 1, per_page: pagination.per_page });
@@ -851,9 +855,12 @@ export default function SuperAdminUsersPage() {
 
 
 			<Dialog open={subOpen} onOpenChange={setSubOpen}>
-				<DialogContent className="sm:max-w-2xl rounded-xl">
-					<DialogHeader className="text-right">
-						<DialogTitle>
+				<DialogContent className="max-w-4xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+					<DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+						<DialogTitle className="flex items-center gap-3">
+							<div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+								<CreditCard size={20} />
+							</div>
 							{t("subscription.title")}
 						</DialogTitle>
 						<DialogDescription>
@@ -862,49 +869,61 @@ export default function SuperAdminUsersPage() {
 								: ""}
 						</DialogDescription>
 					</DialogHeader>
-					<ManageSubscription userId={selectedUser?.id} subscriptionId={subscriptionId} onSaved={async () => {
-						setSubOpen(false)
-						await fetchUsers({ page: 1, per_page: pagination.per_page });
+					<div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
+						<ManageSubscription userId={selectedUser?.id} subscriptionId={subscriptionId} onSaved={async () => {
+							setSubOpen(false)
+							await fetchUsers({ page: 1, per_page: pagination.per_page });
 
-					}} />
+						}} />
+					</div>
 				</DialogContent>
 			</Dialog>
 			<Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+				<DialogContent className="max-w-3xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+					<DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+						<DialogTitle className="flex items-center gap-3">
+							<div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+								<Sparkles size={20} />
+							</div>
+							{t("actions.manageFeatures").trim()}
+						</DialogTitle>
+					</DialogHeader>
+					<div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
+						<AssignFeatureModal
+							isOpen={assignOpen}
+							onClose={() => setAssignOpen(false)}
+							user={selectedUser}
+							onSaved={async () => {
+								setAssignOpen(false)
+								await fetchUsers({ page: 1, per_page: pagination.per_page });
 
-				<DialogContent className="sm:max-w-2xl rounded-xl">
-					<DialogTitle>
-						{t("actions.manageFeatures").trim()}
-					</DialogTitle>
-
-					<AssignFeatureModal
-						isOpen={assignOpen}
-						onClose={() => setAssignOpen(false)}
-						user={selectedUser}
-						onSaved={async () => {
-							setAssignOpen(false)
-							await fetchUsers({ page: 1, per_page: pagination.per_page });
-
-						}}
-					/>
+							}}
+						/>
+					</div>
 				</DialogContent>
 			</Dialog>
 			<Dialog open={walletOpen} onOpenChange={setWalletOpen}>
+				<DialogContent className="max-w-3xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+					<DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+						<DialogTitle className="flex items-center gap-3">
+							<div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+								<Wallet size={20} />
+							</div>
+							{t("actions.manageWallet").trim()}
+						</DialogTitle>
+					</DialogHeader>
+					<div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
+						<ManageWalletModal
+							isOpen={walletOpen}
+							onClose={() => setWalletOpen(false)}
+							user={selectedUser}
+							onSaved={async () => {
+								setWalletOpen(false)
+								await fetchUsers({ page: 1, per_page: pagination.per_page });
 
-				<DialogContent className="sm:max-w-2xl rounded-xl">
-					<DialogTitle>
-						{t("actions.manageWallet").trim()}
-					</DialogTitle>
-
-					<ManageWalletModal
-						isOpen={walletOpen}
-						onClose={() => setWalletOpen(false)}
-						user={selectedUser}
-						onSaved={async () => {
-							setWalletOpen(false)
-							await fetchUsers({ page: 1, per_page: pagination.per_page });
-
-						}}
-					/>
+							}}
+						/>
+					</div>
 				</DialogContent>
 			</Dialog>
 
@@ -975,6 +994,7 @@ export default function SuperAdminUsersPage() {
 					setCredOpen(false);
 					setWaOpen(true);
 				}}
+				AllowChange={credAllowChange}
 			/>
 
 			<WhatsappDialog
@@ -1264,11 +1284,16 @@ function CreateUserDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl rounded-xl">
-				<DialogHeader className="text-right">
-					<DialogTitle>{t.has("create.title") ? t("create.title") : "Create new user"}</DialogTitle>
+			<DialogContent className="max-w-4xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+				<DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+					<DialogTitle className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+							<UserPlus size={20} />
+						</div>
+						{t.has("create.title") ? t("create.title") : "Create new user"}
+					</DialogTitle>
 				</DialogHeader>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
+				<form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div className="space-y-1">
 							<Label className="text-xs text-gray-500 dark:text-slate-400">
@@ -1288,7 +1313,7 @@ function CreateUserDialog({
 							</Label>
 							<Input
 								{...register("email")}
-								className="font-en rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+								className=" rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
 								placeholder={t.has("placeholders.email") ? t("placeholders.email") : "user@email.com"}
 							/>
 							{errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
@@ -1447,12 +1472,17 @@ function EditUserDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl rounded-xl">
-				<DialogHeader className="text-right">
-					<DialogTitle>{t.has("edit.title") ? t("edit.title") : "Edit user"}</DialogTitle>
-					<DialogDescription>{user ? `${user.email}` : ""}</DialogDescription>
+			<DialogContent className="max-w-2xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+				<DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+					<DialogTitle className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+							<Pencil size={20} />
+						</div>
+						{t.has("edit.title") ? t("edit.title") : "Edit user"}
+					</DialogTitle>
+					{user ? <DialogDescription>{user.email}</DialogDescription> : null}
 				</DialogHeader>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
+				<form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div className="space-y-1">
 							<Label className="text-xs text-gray-500 dark:text-slate-400">
@@ -1471,7 +1501,7 @@ function EditUserDialog({
 							</Label>
 							<Input
 								{...register("email")}
-								className="rounded-full font-en h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+								className="rounded-full  h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
 							/>
 							{errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
 						</div>
@@ -1581,7 +1611,7 @@ function DeactivateAlertDialog({ t, open, onOpenChange, user, onConfirm, isLoadi
 	);
 }
 
-function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, setCredentials, setApiMsg, onSendWhatsapp }) {
+function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, setCredentials, setApiMsg, onSendWhatsapp, AllowChange = true }) {
 	const [show, setShow] = useState(false);
 	const [newPassword, setNewPassword] = useState("");
 	const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -1624,15 +1654,20 @@ function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, 
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-xl rounded-xl">
-				<DialogHeader className="text-right">
-					<DialogTitle>{t.has("credentials.title") ? t("credentials.title") : "User credentials"}</DialogTitle>
+			<DialogContent className="max-w-2xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+				<DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+					<DialogTitle className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+							<KeyRound size={20} />
+						</div>
+						{t.has("credentials.title") ? t("credentials.title") : "User credentials"}
+					</DialogTitle>
 					<DialogDescription>
 						{t.has("credentials.subtitle") ? t("credentials.subtitle") : "These are the latest credentials generated by admin-create / reset-password"}
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-4">
+				<div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
 					<div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
 						<div className="flex items-center justify-between gap-2">
 							<div className="text-xs text-gray-500 dark:text-slate-400">{t("fields.email")}</div>
@@ -1640,7 +1675,7 @@ function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, 
 								<Copy size={16} />
 							</Button>
 						</div>
-						<div className="mt-1 font-en text-sm text-gray-900 dark:text-white" dir="ltr">
+						<div className="mt-1  text-sm text-gray-900 dark:text-white" >
 							{email || "-"}
 						</div>
 					</div>
@@ -1665,7 +1700,7 @@ function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, 
 							</div>
 						</div>
 
-						<div className="mt-1 font-en text-sm text-gray-900 dark:text-white" dir="ltr">
+						<div className="mt-1  text-sm text-gray-900 dark:text-white" >
 							{password ? (show ? password : "••••••••••") : "-"}
 						</div>
 
@@ -1674,7 +1709,7 @@ function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, 
 						</div>
 					</div>
 
-					<div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
+					{AllowChange && <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
 						<div className="text-xs text-gray-500 dark:text-slate-400 mb-2">
 							{t.has("fields.passwordOptional") ? t("fields.passwordOptional") : "Set new password (leave empty to auto-generate)"}
 						</div>
@@ -1697,7 +1732,7 @@ function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, 
 								</span>
 							</Button>
 						</div>
-					</div>
+					</div>}
 
 					<div className="flex items-center justify-end gap-2">
 						<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>
@@ -1786,15 +1821,18 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-xl rounded-xl">
-				<DialogHeader className="text-right">
-					<DialogTitle>{t("whatsapp.title")}</DialogTitle>
-					<DialogHeader className="text-right">
-						<DialogDescription>{t("whatsapp.subtitle")}</DialogDescription>
-					</DialogHeader>
+			<DialogContent className="max-w-2xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+				<DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+					<DialogTitle className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+							<Send size={20} />
+						</div>
+						{t("whatsapp.title")}
+					</DialogTitle>
+					<DialogDescription>{t("whatsapp.subtitle")}</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-4">
+				<div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
 					<div className="space-y-2">
 						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("whatsapp.phone")}</Label>
 
@@ -1816,11 +1854,11 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 							<Input
 								placeholder={selectedCountry.placeholder}
-								dir="ltr"
+								
 								value={phoneNumber}
 								onChange={handlePhoneChange}
 								className={cn(
-									"flex-1 rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en",
+									"flex-1 rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 ",
 									error ? "border-red-300 focus-visible:ring-red-300" : ""
 								)}
 								inputMode="numeric"
@@ -1859,9 +1897,9 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 						<div className="text-xs text-gray-500 dark:text-slate-400 mb-2">
 							{t("whatsapp.preview")}
 						</div>
-						<pre className="text-sm whitespace-pre-wrap text-gray-800 dark:text-slate-100 font-en" dir="ltr">
+						<div className="text-sm whitespace-pre-wrap text-gray-800 dark:text-slate-100 " >
 							{message}
-						</pre>
+						</div>
 					</div>
 
 					<div className="flex items-center justify-end gap-2">

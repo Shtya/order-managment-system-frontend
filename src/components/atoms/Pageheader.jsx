@@ -4,9 +4,13 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
-
-import { ArrowUpRight, ArrowDownRight, Edit3, Trash2, AlertCircle } from "lucide-react";
-
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 /* ══════════════════════════════════════════════════════════════
 	 ANIMATED COUNTER
 ══════════════════════════════════════════════════════════════ */
@@ -68,6 +72,7 @@ function InfoCard({
 	title, value, icon, editable,
 	isAddCard, onEdit, onDelete, onClick,
 	trend, // trend: { value: number|string, label: string, isUp: boolean, isGood: boolean, showArrow: boolean }
+	description, // New prop for description
 }) {
 	const t = useTranslations("orders");
 	const [hov, setHov] = useState(false);
@@ -160,31 +165,99 @@ function InfoCard({
 				transition: "border-color .2s, box-shadow .2s",
 			}}
 		>
-			{/* <div style={{
-				position: "absolute", left: 0, top: 12, bottom: 12, width: 3,
-				borderRadius: "0 3px 3px 0",
-				background: accent,
-				opacity: hov ? 1 : 0.38,
-				transition: "opacity .25s",
-			}} />
-			<div style={{
-				position: "absolute", inset: 0, pointerEvents: "none",
-				opacity: hov ? 1 : 0,
-				background: `radial-gradient(ellipse at 15% 15%, color-mix(in oklab, var(--primary) 6%, transparent), transparent 65%)`,
-				transition: "opacity .3s",
-			}} /> */}
+
 			<div className="flex flex-col justify-between h-full" style={{ padding: "14px 16px 14px 22px" }}>
 				{/* السطر العلوي: العنوان + الأيقونة/أزرار التعديل */}
 				<div className="flex justify-between items-start w-full">
-
-
 					<div style={{ flex: 1, minWidth: 0 }} className="space-y-2">
-						<div className="text-gray-500" style={{
-							marginTop: 5, fontSize: 11, fontWeight: 700,
-							letterSpacing: "0.15em",
-							overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-						}}>
-							{title}
+						<div
+							style={{
+								marginTop: 5,
+								display: "flex",
+								alignItems: "center",
+								gap: 6,
+								minWidth: 0,
+							}}
+						>
+							<span
+								style={{
+									fontSize: 11,
+									fontWeight: 700,
+									letterSpacing: "0.15em",
+									color: "var(--muted-foreground)",
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap",
+								}}
+							>
+								{title}
+							</span>
+
+							{description && (
+								<TooltipProvider delayDuration={150}>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<button
+												onClick={(e) => e.stopPropagation()}
+												style={{
+													width: 16,
+													height: 16,
+													borderRadius: 999,
+													display: "flex",
+													alignItems: "center",
+													justifyContent: "center",
+													border: "none",
+													background: "transparent",
+													color: hov ? "var(--primary)" : "var(--muted-foreground)",
+													cursor: "help",
+													padding: 0,
+													transition: "all .18s",
+													flexShrink: 0,
+												}}
+											>
+												<Info size={13} />
+											</button>
+										</TooltipTrigger>
+
+										<TooltipContent
+											side="top"
+											align="center"
+											sideOffset={12}
+											avoidCollisions
+											collisionPadding={16}
+											style={{
+												width: 260,
+												background: "var(--popover)",
+												color: "var(--popover-foreground)",
+												border: "1px solid var(--border)",
+												borderRadius: 12,
+												padding: "12px 14px",
+												boxShadow: "0 16px 40px rgba(0,0,0,.16)",
+											}}
+										>
+											<div
+												style={{
+													fontSize: 12,
+													fontWeight: 600,
+													marginBottom: 4,
+												}}
+											>
+												{title}
+											</div>
+
+											<div
+												style={{
+													fontSize: 12,
+													lineHeight: 1.5,
+													color: "var(--muted-foreground)",
+												}}
+											>
+												{description}
+											</div>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							)}
 						</div>
 						<div style={{
 							// fontFamily: "'Instrument Serif', serif",
@@ -617,6 +690,7 @@ export function StatsGrid({ stats }) {
 									onDelete={stat.onDelete}
 									onClick={stat.onClick}
 									trend={stat.trend}
+									description={stat.description}
 								/>
 							)}
 						</motion.div>
@@ -993,7 +1067,7 @@ export function PageHeader({
 							opacity: isHeaderScrolled && stacky ? 0 : 1,
 							marginBottom: isHeaderScrolled && stacky ? -20 : 0
 						}}
-						className="overflow-hidden"
+					className="overflow-hidden"
 					>
 						{statsLoading
 							? <PageHeaderStatsSkeleton count={statsCount} />

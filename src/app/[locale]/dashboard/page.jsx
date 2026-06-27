@@ -160,12 +160,14 @@ export default function DashboardPage() {
     {
       key: "totalSales",
       title: t("kpi.totalSales"),
+      description: t("kpiDescription.totalSales"),
       icon: TrendingUp,
       color: "#6366f1",
     },
     {
       key: "costOfGoods",
       title: t("kpi.costOfGoods"),
+      description: t("kpiDescription.costOfGoods"),
       icon: Briefcase,
       color: "#f59e0b",
       isInverse: true,
@@ -173,12 +175,14 @@ export default function DashboardPage() {
     {
       key: "totalProfit",
       title: t("kpi.totalProfit"),
+      description: t("kpiDescription.totalProfit"),
       icon: DollarSign,
       color: "#8b5cf6",
     },
     {
       key: "profitMargin",
       title: t("kpi.profitMargin"),
+      description: t("kpiDescription.profitMargin"),
       icon: Percent,
       color: "#06b6d4",
       pct: true,
@@ -186,6 +190,7 @@ export default function DashboardPage() {
     {
       key: "confirmRate",
       title: t("kpi.confirmRate"),
+      description: t("kpiDescription.confirmRate"),
       icon: CheckCircle,
       color: "#3b82f6",
       pct: true,
@@ -193,6 +198,7 @@ export default function DashboardPage() {
     {
       key: "deliveryRate",
       title: t("kpi.deliveryRate"),
+      description: t("kpiDescription.deliveryRate"),
       icon: Truck,
       color: "#10b981",
       pct: true,
@@ -200,6 +206,7 @@ export default function DashboardPage() {
     {
       key: "cancelled",
       title: t("kpi.cancelled"),
+      description: t("kpiDescription.cancelled"),
       icon: XCircle,
       color: "#ef4444",
       pct: true,
@@ -208,6 +215,7 @@ export default function DashboardPage() {
     {
       key: "returned",
       title: t("kpi.returned"),
+      description: t("kpiDescription.returned"),
       icon: RotateCcw,
       color: "#607D8B",
       pct: true,
@@ -216,24 +224,28 @@ export default function DashboardPage() {
     {
       key: "inDelivery",
       title: t("kpi.inDelivery"),
+      description: t("kpiDescription.inDelivery"),
       icon: Activity,
       color: "#f97316",
     },
     {
       key: "newOrders",
       title: t("kpi.newOrders"),
+      description: t("kpiDescription.newOrders"),
       icon: ShoppingCart,
       color: "#ec4899",
     },
     {
       key: "totalOrders",
       title: t("kpi.totalOrders"),
+      description: t("kpiDescription.totalOrders"),
       icon: BarChart3,
       color: "#475569",
     },
     {
       key: "totalCollected",
       title: t("kpi.totalCollected"),
+      description: t("kpiDescription.totalCollected"),
       icon: CreditCard,
       color: "#0ea5e9",
     },
@@ -291,6 +303,7 @@ export default function DashboardPage() {
                 : fmt(summary[card.key]),
           icon: card.icon,
           color: card.color,
+          description: card.description,
           trend: {
             label: hasComparison ? comparisonLabel : t("common.noComparisonData"),
             value: hasComparison ? `${Math.abs(Math.round(change))}%` : "",

@@ -3970,6 +3970,15 @@
       "remaingStock": "Remaining stock",
       "totalStock": "Total inventory"
     },
+    "statsDescription": {
+      "totalProducts": "Total number of active products in your inventory",
+      "totalStock": "Total Inventory: Total inventory is calculated as the total quantity of items in accepted purchase invoices minus the quantity of items in accepted purchase return invoices.",
+      "availableItems": "Total available inventory that decreases once a shipment is out",
+      "withShippingCompanies": "Number of items currently with shipping companies (shipped status)",
+      "soldPieces": "Number of items sold (delivered status)",
+      "reservedItems": "Number of items currently reserved",
+      "remaingStock": "The remaining inventory is calculated as ((inventory in shipping companies, inventory on the shelf))"
+    },
     "toolbar": {
       "searchPlaceholder": "Search products...",
       "filter": "Filter",
@@ -6470,6 +6479,38 @@
   "dashboard": {
     "actions": {
       "howToUse": "Usage Guide"
+    },
+    "kpiDescription": {
+      "totalSales": "Total revenue (total amount) from all orders delivered",
+      "costOfGoods": "Total cost of goods sold for delivered orders (sales minus profit)",
+      "totalProfit": "Total profit from all delivered orders. Profit is calculated as (Selling Price − Cost Price) for each item in the order",
+      "profitMargin": "Percentage of profit from total sales ((profit / sales) * 100)",
+      "confirmRate": "Percentage of orders that were confirmed (orders were confirmed at any time, not just those in confirmed status now). Calculated as ((confirmed orders / total orders) * 100)",
+      "deliveryRate": "Percentage of orders that were successfully delivered ((delivered orders / total orders) * 100)",
+      "cancelled": "Percentage of orders that were cancelled ((cancelled orders / total orders) * 100)",
+      "returned": "Percentage of orders that were returned ((returned orders / total orders) * 100)",
+      "inDelivery": "Number of orders currently in the shipping/delivery process",
+      "newOrders": "The total number of new orders created during the selected period",
+      "totalOrders": "Total number of all orders received",
+      "totalCollected": "Total amount collected from orders",
+      "correctedOrders": "Total number of orders excluding duplicate, out of delivery area, and wrong number orders",
+      "confirmedCount": "Total number of orders that were confirmed at any time",
+      "deliveredFromConfirmed": "Total number of delivered orders that were previously confirmed. Calculated as ((delivered from confirmed / confirmed count) * 100)",
+      "deliveredFromTotal": "Total number of delivered orders out of all orders. Calculated as ((delivered / total orders) * 100)",
+      "deliveredSales": "Total revenue from delivered orders only",
+      "collectedAmount": "Total amount collected from customers",
+      "canceledAndUnderReview": "Total number of canceled orders with active assignment plus orders under review after being canceled",
+      "pendingOrders": "The number of orders received from connected stores that could not be imported into the system. Common reasons include missing products, missing product variants (SKU), insufficient stock, invalid order data, or other import errors.",
+      "inWarehouseOrders": "Total number of orders in warehouse statuses (Distributed, Printed, Preparing, Ready, Packed, Shipped)",
+      "postponed": "Total number of postponed orders",
+      "outOfDelivery": "Total number of orders out of delivery area",
+      "wrongNumber": "Total number of orders with wrong phone number",
+      "new": "The total number of new orders created during the selected period",
+      "returnedOrders": "Percentage of orders that were returned ((returned orders / total orders) * 100)",
+      "canceled": "Percentage of orders that were cancelled ((cancelled orders / total orders) * 100)",
+      "confirmed": "Total number of orders in confirmed status",
+      "shipped": "Number of orders currently in the shipping/delivery process",
+      "delivered": "Total number of delivered orders"
     },
     "common": {
       "noData": "No data available",
@@ -9256,6 +9297,27 @@
       "home": "Home",
       "accounts": "Accounts"
     },
+    "statsDescription": {
+      "productPurchases": "Total cost of accepted purchase invoices (includes only invoices with status = ACCEPTED)",
+      "manualExpenses": "Total amount of manual operating expenses",
+      "totalExpenses": "Total expenses calculated as (product purchases + manual expenses)",
+      "returns": "Total cost of accepted purchase returns",
+      "totalPurchases": "Total amount of supplier purchases (sum of all accepted purchase invoices)",
+      "totalPaid": "Total amount paid to suppliers (sum of purchase invoice paid amounts + supplier payments)",
+      "totalReceived": "Total amount received from suppliers (sum of purchase return paid amounts)",
+      "finalBalance": "The final balance to be paid to suppliers",
+      "lastMonthProfit": "Net profit from the last closed month (revenue - product cost - operating expenses - returns cost)",
+      "currentRevenue": "Current month's total revenue from delivered orders (final total - shipping cost)",
+      "productCost": "Total cost of products from delivered orders during the selected period. Product Cost = Σ(Unit Cost × Quantity for delivered order items) − Σ(Unit Cost × Quantity for approved returned items).",
+      "operationalExpenses": "Current month's total operating expenses",
+      "returnsCost": "Current month's total returns cost (sum of unit cost * quantity for all approved return items)",
+      "currentNetProfit": "Current month's net profit (current revenue - product cost - operating expenses - returns cost)",
+      "totalBalance": "Total current balance across all active accounts",
+      "totalIn": "Total completed inflow transactions across all accounts",
+      "totalOut": "Total completed outflow transactions across all accounts",
+      "accountsCount": "Total number of active financial accounts",
+      "totalShouldCollect": "The total amount required to be taken from the suppliers"
+    },
     "tabs": {
       "overview": "Overview",
       "monthlyExpenses": "Monthly Expenses",
@@ -11197,6 +11259,16 @@
       "acceptedNonEligible": "Accepted But Non-Eligible",
       "failedToAdd": "Failed to Add",
       "delivered": "Delivered"
+    },
+    "statsDescription": {
+      "sent": "Total number of upsell offers sent to customers (all records contribute to this count)",
+      "accepted": "Number of upsells accepted by the customer (but order not yet delivered)",
+      "rejected": "Number of upsells rejected by the customer",
+      "noAnswer": "Number of upsells where the customer did not respond (still pending)",
+      "expired": "Number of upsells where the customer accepted after the offer's time limit expired",
+      "acceptedNonEligible": "Number of upsells accepted, but the order was already delivered or entered warehouse preparation (so upsell was no longer eligible)",
+      "failedToAdd": "Number of upsells that failed to add to the order (due to insufficient stock, deleted/inactive product, etc.)",
+      "delivered": "Number of upsells accepted and the order was successfully delivered"
     },
     "table": {
       "triggerProduct": "Trigger Product",

@@ -119,14 +119,14 @@ export default function UpsellsPage() {
 
   const statsCards = useMemo(
     () => [
-      { name: t("stats.sent"), value: stats.sent, icon: TrendingUp, color: "#8b5cf6" },
-      { name: t("stats.accepted"), value: stats.accepted, icon: CheckCircle2, color: "#10b981" },
-      { name: t("stats.delivered"), value: stats.delivered, icon: PackageCheck, color: "#059669" },
-      { name: t("stats.rejected"), value: stats.rejected, icon: XCircle, color: "#ef4444" },
-      { name: t("stats.noAnswer"), value: stats.pending, icon: HelpCircle, color: "#3b82f6" },
-      { name: t("stats.expired"), value: stats.expired, icon: Timer, color: "#f59e0b" },
-      { name: t("stats.acceptedNonEligible"), value: stats.acceptedNonEligible, icon: Ban, color: "#64748b" },
-      { name: t("stats.failedToAdd"), value: stats.failedToAdd, icon: AlertTriangle, color: "#dc2626" },
+      { name: t("stats.sent"), description: t("statsDescription.sent"), value: stats.sent, icon: TrendingUp, color: "#8b5cf6" },
+      { name: t("stats.accepted"), description: t("statsDescription.accepted"), value: stats.accepted, icon: CheckCircle2, color: "#10b981" },
+      { name: t("stats.delivered"), description: t("statsDescription.delivered"), value: stats.delivered, icon: PackageCheck, color: "#059669" },
+      { name: t("stats.rejected"), description: t("statsDescription.rejected"), value: stats.rejected, icon: XCircle, color: "#ef4444" },
+      { name: t("stats.noAnswer"), description: t("statsDescription.noAnswer"), value: stats.pending, icon: HelpCircle, color: "#3b82f6" },
+      { name: t("stats.expired"), description: t("statsDescription.expired"), value: stats.expired, icon: Timer, color: "#f59e0b" },
+      { name: t("stats.acceptedNonEligible"), description: t("statsDescription.acceptedNonEligible"), value: stats.acceptedNonEligible, icon: Ban, color: "#64748b" },
+      { name: t("stats.failedToAdd"), description: t("statsDescription.failedToAdd"), value: stats.failedToAdd, icon: AlertTriangle, color: "#dc2626" },
     ],
     [t, stats]
   );

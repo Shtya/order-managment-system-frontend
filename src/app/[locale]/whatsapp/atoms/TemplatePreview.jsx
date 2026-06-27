@@ -173,7 +173,7 @@ export function WhatsAppCallPermissionsBubble({ locale = "en", onOpenMenu }) {
         <div className={cn(
             "bg-white dark:bg-[#1f2c33] rounded-sm shadow-sm p-1.5 pe-2 relative min-w-[200px] max-w-[95%] mt-2",
         )}>
-            <div className="flex items-start gap-3 p-2" dir="ltr">
+            <div className="flex items-start gap-3 p-2">
                 <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
                     <Phone size={20} className="text-slate-600 dark:text-slate-400" />
                 </div>
@@ -252,7 +252,6 @@ export default function TemplatePreview({
                     ? raw
                     : null;
 
-    const language = raw.language ?? "en";
     const subCategory = raw.subCategory ?? raw.subcategory ?? "";
 
     const {
@@ -274,6 +273,8 @@ export default function TemplatePreview({
             ? { bodyText: "", buttons: [], examples: {}, ...cfgSource }
             : { bodyText: "", buttons: [], examples: {} };
 
+    const isArabic = /[\u0600-\u06FF]/.test(bodyText || "");
+    const language = raw.language ?? isArabic ? "ar" : "en";
     const parsedBodyParts = useMemo(() => {
         const text =
             bodyText && String(bodyText).trim()
@@ -554,15 +555,15 @@ export default function TemplatePreview({
 
                         {/* Buttons Section */}
                         {(buttons.length > 0 || isList) && (
-                            <div className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
+                            <div dir={locale === "ar" ? "rtl" : "ltr"} className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
                                 {(() => {
                                     const showMenuButton = buttons.length > 3 || isList;
                                     const visibleButtons = showMenuButton ? (isList ? [] : buttons.slice(0, 2)) : buttons;
-
                                     return (
                                         <>
-                                            {visibleButtons.map((btn, idx) => (
-                                                <div
+                                            {visibleButtons.map((btn, idx) => {
+                                                const btnText = btn.text ? btn.text :  locale === "ar" ? btn.textAr : btn.textEn;
+                                                return (<div
                                                     key={btn.id || idx}
                                                     className={cn(
                                                         "py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] hover:bg-slate-50 dark:hover:bg-white/5 cursor-default transition-colors",
@@ -589,11 +590,11 @@ export default function TemplatePreview({
                                                         strokeWidth={1.8}
                                                     />}
 
-                                                    {btn.text || (
+                                                    {btnText || (
                                                         <span className="opacity-40 italic">{t("preview.actionButtonPlaceholder")}</span>
                                                     )}
-                                                </div>
-                                            ))}
+                                                </div>)
+                                            })}
 
                                             {showMenuButton && (
                                                 <button
@@ -611,7 +612,7 @@ export default function TemplatePreview({
                         )}
 
                         {subCategory === "AUTHENTICATION_OTP" && authMethod === "COPY_CODE" && (
-                            <div className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
+                            <div dir={locale === "ar" ? "rtl" : "ltr"} className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
                                 <div className="py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px]">
                                     <Copy size={14} />
                                     {otpPreviewLabel}

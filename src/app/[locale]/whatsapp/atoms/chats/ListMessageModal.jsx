@@ -26,9 +26,10 @@ export default function ListMessageModal() {
         listMessage,
         setListMessage,
         handleSendMessage,
+        headerMediaFile,
         setHeaderMediaFile
     } = useConversation();
-
+    
     const handleSend = () => {
         handleSendMessage({
             type: "interactive",
@@ -37,8 +38,11 @@ export default function ListMessageModal() {
                 header: listMessage.headerType !== "NONE" ? {
                     type: listMessage.headerType.toLowerCase(),
                     [listMessage.headerType.toLowerCase()]: listMessage.headerType === "TEXT"
-                        ? { text: listMessage.headerText }
-                        : { link: listMessage.headerUrl }
+                        ? listMessage.headerText
+                        : { 
+                            link: listMessage.headerUrl,
+                            file: headerMediaFile || undefined
+                         }
                 } : undefined,
                 body: { text: listMessage.bodyText },
                 footer: listMessage.footerText ? { text: listMessage.footerText } : undefined,
@@ -69,7 +73,7 @@ export default function ListMessageModal() {
 
     return (
         <Dialog open={showListModal} onOpenChange={setShowListModal}>
-            <DialogContent className="sm:max-w-[900px] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
+            <DialogContent className="sm:max-w-[900px] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
@@ -93,7 +97,7 @@ export default function ListMessageModal() {
                     </div>
 
                     {/* Preview Section */}
-                    <div className="w-full md:w-[300px] bg-muted/30 flex flex-col items-center justify-center p-4 md:p-6 shrink-0 overflow-y-auto md:border-s border-border">
+                    <div className="w-full md:w-[300px] b flex flex-col items-center justify-center p-4 md:p-6 shrink-0 overflow-y-auto md:border-s border-border">
                         <div className="sticky top-0 w-full flex flex-col items-center">
                             <p className="text-[10px] md:text-xs font-bold text-muted-foreground/40 uppercase tracking-widest mb-4 md:mb-6">
                                 {t("preview")}

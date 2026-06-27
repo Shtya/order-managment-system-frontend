@@ -33,7 +33,7 @@ export default function LocationRequestModal() {
         handleSendMessage({
             type: "interactive",
             interactive: {
-                type: "location_request_button",
+                type: "location_request_message",
                 body: { text: locationRequestBody },
                 action: {
                     name: "send_location"
@@ -46,7 +46,8 @@ export default function LocationRequestModal() {
 
     return (
         <Dialog open={showLocationRequestModal} onOpenChange={setShowLocationRequestModal}>
-            <DialogContent className="sm:max-w-[900px] w-full h-[90vh] md:h-[80vh] flex flex-col p-0 overflow-hidden bg-muted/30">
+            <DialogContent className="sm:max-w-[900px] w-full h-[90vh] md:h-[80vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+            
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
@@ -72,7 +73,7 @@ export default function LocationRequestModal() {
                     </div>
 
                     {/* Preview Section */}
-                    <div className="w-full md:w-[300px] bg-muted/30 flex flex-col items-center justify-center p-4 md:p-6 shrink-0 overflow-y-auto md:border-s border-border">
+                    <div className="w-full md:w-[300px]  flex flex-col items-center justify-center p-4 md:p-6 shrink-0 overflow-y-auto md:border-s border-border">
                         <div className="sticky top-0 w-full flex flex-col items-center">
                             <p className="text-[10px] md:text-xs font-bold text-muted-foreground/40 uppercase tracking-widest mb-4 md:mb-6">
                                 {t("preview")}

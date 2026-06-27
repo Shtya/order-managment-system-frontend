@@ -11332,7 +11332,8 @@
       "firstNameRequired": "First name is required",
       "lastNameRequired": "Last name is required",
       "formattedNameRequired": "Formatted name is required",
-      "invalidEmail": "Invalid email address"
+      "invalidEmail": "Invalid email address",
+      "required": "This field is required"
     },
     "sendMessage": "Send Message",
     "preview": "Preview",
@@ -11387,7 +11388,11 @@
     "failedToLoadVideo": "Failed to load video",
     "messageFailedToSend": "Message failed to send",
     "retrySending": "Retry Sending",
-    "document": "file"
+    "document": "file",
+    "message": "Message",
+    "saveContact": "Save Contact",
+    "mobile": "Mobile",
+    "home": "Home"
   },
   "failedToLoadImage": "Failed to load image",
   "failedToLoadVideo": "Failed to load video",

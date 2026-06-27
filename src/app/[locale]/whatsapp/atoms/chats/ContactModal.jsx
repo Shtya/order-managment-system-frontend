@@ -68,7 +68,7 @@ export default function ContactModal() {
 
     const onSubmit = (data) => {
         handleSendMessage({
-            type: "contact",
+            type: "contacts",
             contacts: [{
                 addresses: (data.street || data.city || data.state || data.zip || data.country) ? [{
                     street: data.street,
@@ -94,7 +94,7 @@ export default function ContactModal() {
 
     return (
         <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
-            <DialogContent className="sm:max-w-2xl w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
+            <DialogContent className="sm:max-w-2xl w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">

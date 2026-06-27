@@ -2,7 +2,7 @@
 
 import { cn } from "@/utils/cn";
 import { format } from "date-fns";
-import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw, List, MapPin } from "lucide-react";
+import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw, List, MapPin, User, Mail, Calendar, ChevronRight, Save, CheckCircle2 } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
@@ -11,13 +11,21 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { BASE_URL } from "@/utils/api";
 import TemplatePreview from "../TemplatePreview";
 import { formatText } from "@/utils/whatsapp-healper";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useClipboard } from "@/hook/useClipboard";
 
 export default function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted }) {
     const t = useTranslations("chats");
+    const locale = useLocale();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [audioProgress, setAudioProgress] = useState(0);
@@ -26,9 +34,65 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
     const [audioLoading, setAudioLoading] = useState(true);
     const [mediaError, setMediaError] = useState(false);
     const [audioError, setAudioError] = useState(false);
+    const [contactDetailsOpen, setContactDetailsOpen] = useState(false);
+    const [saveContactSuccess, setSaveContactSuccess] = useState(false);
+    const { copied, handleCopy } = useClipboard();
     const audioRef = useRef(null);
     const progressRef = useRef(null);
     const time = message.createdAt ? format(new Date(message.createdAt), "hh:mm a") : "";
+
+    const contact = message.content?.contacts?.[0];
+
+    // Generate vCard for saving contact
+    const generateVCard = useMemo(() => {
+        if (!contact) return "";
+
+        let vCard = "BEGIN:VCARD\n";
+        vCard += "VERSION:3.0\n";
+        vCard += `N:${contact.name?.last_name || ''};${contact.name?.first_name || ''};;;\n`;
+        vCard += `FN:${contact.name?.formatted_name || ''}\n`;
+
+        if (contact.phones) {
+            contact.phones.forEach((phone) => {
+                vCard += `TEL;TYPE=${phone.type || 'CELL'}:${phone.phone}\n`;
+            });
+        }
+
+        if (contact.emails) {
+            contact.emails.forEach((email) => {
+                vCard += `EMAIL;TYPE=${email.type || 'INTERNET'}:${email.email}\n`;
+            });
+        }
+
+        if (contact.addresses) {
+            contact.addresses.forEach((addr) => {
+                vCard += `ADR;TYPE=${addr.type || 'HOME'}:;;${addr.street || ''};${addr.city || ''};${addr.state || ''};${addr.zip || ''};${addr.country || ''}\n`;
+            });
+        }
+
+        if (contact.birthday) {
+            vCard += `BDAY:${contact.birthday}\n`;
+        }
+
+        vCard += "END:VCARD";
+
+        return vCard;
+    }, [contact]);
+
+    const handleSaveContact = () => {
+        if (!generateVCard) return;
+        const blob = new Blob([generateVCard], { type: 'text/vcard' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${contact?.name?.formatted_name || 'contact'}.vcf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        setSaveContactSuccess(true);
+        setTimeout(() => setSaveContactSuccess(false), 2000);
+    };
 
     const formattedBody = useMemo(() => {
         const body = message.content?.text?.body || message.content?.body || "";
@@ -39,7 +103,6 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
     const formattedCaption = useMemo(() => {
         return formatText(caption || "");
     }, [caption]);
-
   
 
     const getMediaUrl = (content, type) => {
@@ -414,11 +477,11 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 return (
                     <div className="space-y-2 min-w-[240px]">
                         <div
-                            onClick={() => window.open(`https://www.google.com/maps?q=${content.location.latitude},${content.location.longitude}`, "_blank")}
+                            onClick={() => window.open(`https://www.google.com/maps?q=${content?.location?.latitude},${content?.location?.longitude}`, "_blank")}
                             className="h-32 rounded-lg overflow-hidden relative cursor-pointer group"
                         >
                             <img
-                                src={`https://static-maps.yandex.ru/1.x/?lang=en_US&ll=${content.location.longitude},${content.location.latitude}&z=13&l=map&size=300,150`}
+                                src={`https://static-maps.yandex.ru/1.x/?lang=en_US&ll=${content?.location?.longitude},${content?.location?.latitude}&z=13&l=map&size=300,150`}
                                 alt="map"
                                 className="w-full h-full object-cover"
                             />
@@ -427,21 +490,24 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             </div>
                         </div>
                         <div className="min-w-0 px-1 pb-1">
-                            <p className="text-sm font-bold text-foreground truncate">{content.location.name}</p>
-                            <p className="text-[11px] text-muted-foreground line-clamp-1">{content.location.address}</p>
+                            <p className="text-sm font-bold text-foreground truncate">{content?.location?.name}</p>
+                            <p className="text-[11px] text-muted-foreground line-clamp-1">{content?.location?.address}</p>
                         </div>
                     </div>
                 );
 
-            case "contact":
+            case "contacts":
                 const contact = content.contacts?.[0];
                 return (
                     <div className="space-y-3 min-w-[240px]">
-                        <div className="flex items-center gap-3 border-b border-border pb-3">
+                        <button
+                            onClick={() => setContactDetailsOpen(true)}
+                            className="w-full flex items-center gap-3 border-b border-border pb-3 hover:bg-muted/30  transition-colors -mx-1 px-1"
+                        >
                             <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground/60">
                                 <User size={24} />
                             </div>
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                                 <p className="text-sm font-bold text-foreground truncate">
                                     {contact?.name?.formatted_name || contact?.name?.first_name}
                                 </p>
@@ -449,10 +515,89 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                     {contact?.phones?.[0]?.phone}
                                 </p>
                             </div>
-                        </div>
-                        <button className="w-full py-2 text-sm font-bold text-primary hover:bg-muted rounded-lg transition-colors">
-                            Message
                         </button>
+                        <div className="flex gap-2">
+                            <button className="flex-1 py-2 text-sm font-bold text-primary hover:bg-muted rounded-lg transition-colors">
+                                {t("message")}
+                            </button>
+                            <button
+                                onClick={handleSaveContact}
+                                className="flex-1 text-nowrap py-2 text-sm font-bold text-primary hover:bg-muted rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                                {saveContactSuccess && <Save size={16} />}
+                                {t("saveContact")}
+                            </button>
+                        </div>
+
+                        {/* Contact Details Dialog */}
+                        <Dialog open={contactDetailsOpen} onOpenChange={setContactDetailsOpen}>
+                            <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                                            <User size={24} />
+                                        </div>
+                                        {contact?.name?.formatted_name || contact?.name?.first_name}
+                                    </DialogTitle>
+                                </DialogHeader>
+
+                                <div className="space-y-4">
+                                    {/* Phones */}
+                                    {contact?.phones?.map((phone, idx) => (
+                                        <div key={`phone-${idx}`} className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-primary">
+                                                <User size={20} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-foreground">{phone.phone}</p>
+                                                <p className="text-[11px] text-muted-foreground">{phone.type || t("mobile")}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {/* Emails */}
+                                    {contact?.emails?.map((email, idx) => (
+                                        <div key={`email-${idx}`} className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-primary">
+                                                <Mail size={20} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-foreground">{email.email}</p>
+                                                <p className="text-[11px] text-muted-foreground">{email.type || t("home")}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {/* Addresses */}
+                                    {contact?.addresses?.map((addr, idx) => (
+                                        <div key={`addr-${idx}`} className="flex items-start gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-primary shrink-0 mt-1">
+                                                <MapPin size={20} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-foreground">
+                                                    {[addr.street, addr.city, addr.state, addr.zip, addr.country].filter(Boolean).join(', ')}
+                                                </p>
+                                                <p className="text-[11px] text-muted-foreground">{addr.type || t("home")}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {/* Birthday */}
+                                    {contact?.birthday && (
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-primary">
+                                                <Calendar size={20} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-foreground">{contact.birthday}</p>
+                                                <p className="text-[11px] text-muted-foreground">{t("birthday")}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 );
 
@@ -480,6 +625,32 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     );
                 }
 
+                if (content.interactive?.type === "location_request_message") {
+                    return(
+                          <div className="space-y-2 min-w-[300px]">
+                        <TemplatePreview
+                            isChatBubble
+                            bgTransparent
+                            hideToggleAction
+                            hasHeader={false}
+                            template={{
+                                bodyText: content.interactive?.body?.text,
+                                buttons: [
+                                    {
+                                        type: "LOCATION_REQUEST",
+                                        textEn: "Send Location",
+                                        textAr: "إرسال الموقع"
+                                    }
+                                ]
+                                // locationData,
+                                // language: templateMetadata.language || "en",
+                                // subCategory: templateMetadata.subCategory,
+                                // examples: dynamicExamples // Use the actual sent values as "examples"
+                            }}
+                        />
+                    </div>
+                    )
+                }
                 return (
                     <div className="space-y-3">
                         {content.interactive?.header && (

@@ -16,8 +16,6 @@ import Button_ from "@/components/atoms/Button";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import LocationFields from "./LocationFields";
 
@@ -95,7 +93,7 @@ export default function LocationModal() {
 
     return (
         <Dialog open={showLocationModal} onOpenChange={setShowLocationModal}>
-            <DialogContent className="sm:max-w-4xl w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
+            <DialogContent className="sm:max-w-4xl w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
@@ -147,9 +145,9 @@ export default function LocationModal() {
                     <Button_
                         type="submit"
                         form="location-form"
-                        disabled={!isValid || isSubmitting}
+                        disabled={isSubmitting}
                         loading={isSubmitting}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 w-full sm:w-auto"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground  w-full sm:w-auto"
                         label={t("sendMessage")}
                     />
                 </DialogFooter>

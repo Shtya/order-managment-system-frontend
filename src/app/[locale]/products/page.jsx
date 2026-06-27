@@ -181,30 +181,35 @@ export default function ProductsPage() {
 		return [
 			{
 				name: t("stats.totalProducts"),
+				description: t("statsDescription.totalProducts"),
 				value: summary.productCount.toString(),
 				icon: Package,
 				color: "#10B981", // Green
 			},
 			{
 				name: t("stats.totalStock"),
+				description: t("statsDescription.totalStock"),
 				value: (Number(summary.purchases.acceptedQuantity) - Number(summary.purchaseReturns.acceptedReturnedQuantity || 0)).toString(),
 				icon: Layers,
 				color: "#10B981", // Green
 			},
 			{
 				name: t("stats.availableItems"),
+				description: t("statsDescription.availableItems"),
 				value: summary.inventory.totalOnHand.toString(),
 				icon: PackageSearch,
 				color: "#3B82F6", // Blue
 			},
 			{
 				name: t("stats.withShippingCompanies"),
+				description: t("statsDescription.withShippingCompanies"),
 				value: summary.orders.inTransitQuantity.toString(), // From 'shipped' status
 				icon: Truck,
 				color: "#6B7CFF",
 			},
 			{
 				name: t("stats.soldPieces"),
+				description: t("statsDescription.soldPieces"),
 				value: summary.orders.soldQuantity.toString(), // From 'delivered' status
 				icon: CheckCircle,
 				color: "#F59E0B",
@@ -212,6 +217,7 @@ export default function ProductsPage() {
 			...(reservedEnabled ? [{
 				// ✅ Updated to show Reserved Items
 				name: t("stats.reservedItems"),
+				description: t("statsDescription.reservedItems"),
 				value: summary.inventory.reserved.toString(),
 				icon: Boxes, // ✅ Correct Lucide icon
 				color: "#3B82F6",
@@ -219,6 +225,7 @@ export default function ProductsPage() {
 			{
 				// ✅ Updated to show Reserved Items
 				name: t("stats.remaingStock"),
+				description: t("statsDescription.remaingStock"),
 				value: (Number(summary.orders.inTransitQuantity || 0) + Number(summary.inventory.totalOnHand || 0)).toString(),
 				icon: PackageSearch, // ✅ Correct Lucide icon
 				color: "#3B82F6",

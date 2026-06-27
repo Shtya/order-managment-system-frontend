@@ -149,10 +149,10 @@ export default function Accounts() {
     const statsData = useMemo(() => {
         if (activeTab === "overview" || activeTab === "monthlyExpenses") {
             return [
-                { name: t("stats.productPurchases"), value: stats?.productCost?.toLocaleString() || "0", icon: BarChart2, color: "#8b5cf6" },
-                { name: t("stats.manualExpenses"), value: stats?.manualExpenses?.toLocaleString() || "0", icon: BarChart2, color: "#a855f7" },
-                { name: t("stats.totalExpenses"), value: stats ? (Number(stats?.manualExpenses) + Number(stats?.productCost)).toLocaleString() || "0" : "0", icon: DollarSign, color: "#f97316" },
-                { name: t("stats.returns"), value: stats?.returnsCost?.toLocaleString() || "0", icon: BarChart2, color: "#ef4444" },
+                { name: t("stats.productPurchases"), description: t("statsDescription.productPurchases"), value: stats?.productCost?.toLocaleString() || "0", icon: BarChart2, color: "#8b5cf6" },
+                { name: t("stats.manualExpenses"), description: t("statsDescription.manualExpenses"), value: stats?.manualExpenses?.toLocaleString() || "0", icon: BarChart2, color: "#a855f7" },
+                { name: t("stats.totalExpenses"), description: t("statsDescription.totalExpenses"), value: stats ? (Number(stats?.manualExpenses) + Number(stats?.productCost)).toLocaleString() || "0" : "0", icon: DollarSign, color: "#f97316" },
+                { name: t("stats.returns"), description: t("statsDescription.returns"), value: stats?.returnsCost?.toLocaleString() || "0", icon: BarChart2, color: "#ef4444" },
             ];
         }
 
@@ -191,11 +191,11 @@ export default function Accounts() {
 
         if (activeTab === "supplierAccounts") {
             return [
-                { name: t("stats.productPurchases"), value: stats?.totalPurchases?.toLocaleString() || "0", icon: Building2, color: "#3b82f6" },
-                { name: t("stats.totalPaid"), value: stats?.totalPaid?.toLocaleString() || "0", icon: Wallet, color: "#10b981" },
-                { name: t("stats.returns"), value: stats?.totalReturns?.toLocaleString() || "0", icon: BarChart2, color: "#ef4444" },
-                { name: t("stats.totalReceived"), value: stats?.totalTaken?.toLocaleString() || "0", icon: Wallet, color: "#10b981" },
-                { name: t("stats.finalBalance"), value: stats?.finalBalance?.toLocaleString() || "0", icon: DollarSign, color: "#f97316" },
+                { name: t("stats.productPurchases"), description: t("statsDescription.totalPurchases"), value: stats?.totalPurchases?.toLocaleString() || "0", icon: Building2, color: "#3b82f6" },
+                { name: t("stats.totalPaid"), description: t("statsDescription.totalPaid"), value: stats?.totalPaid?.toLocaleString() || "0", icon: Wallet, color: "#10b981" },
+                { name: t("stats.returns"), description: t("statsDescription.returns"), value: stats?.totalReturns?.toLocaleString() || "0", icon: BarChart2, color: "#ef4444" },
+                { name: t("stats.totalReceived"), description: t("statsDescription.totalReceived"), value: stats?.totalTaken?.toLocaleString() || "0", icon: Wallet, color: "#10b981" },
+                { name: t("stats.finalBalance"), description: t("statsDescription.finalBalance"), value: stats?.finalBalance?.toLocaleString() || "0", icon: DollarSign, color: "#f97316" },
             ];
         }
 
@@ -204,29 +204,29 @@ export default function Accounts() {
             const last = stats?.lastMonthProfit;
 
             return [
-                { name: t("stats.lastMonthProfit") + (last?.month ? ` (${last.month}/${last.year})` : ""), value: last?.netProfit?.toLocaleString() || "0", icon: CheckCircle, color: "#10b981" },
-                { name: t("stats.currentRevenue"), value: current?.revenue?.toLocaleString() || "0", icon: TrendingUp, color: "#8b5cf6" },
-                { name: t("stats.productCost"), value: current?.productCost?.toLocaleString() || "0", icon: Package, color: "#f97316" },
-                { name: t("stats.operationalExpenses"), value: current?.operationalExpenses?.toLocaleString() || "0", icon: Settings, color: "#f59e0b" },
-                { name: t("stats.returnsCost"), value: current?.returnsCost?.toLocaleString() || "0", icon: RefreshCw, color: "#ef4444" },
-                { name: t("stats.currentNetProfit"), value: current?.netProfit?.toLocaleString() || "0", icon: DollarSign, color: "#059669", isFinal: true },
+                { name: t("stats.lastMonthProfit") + (last?.month ? ` (${last.month}/${last.year})` : ""), description: t("statsDescription.lastMonthProfit"), value: last?.netProfit?.toLocaleString() || "0", icon: CheckCircle, color: "#10b981" },
+                { name: t("stats.currentRevenue"), description: t("statsDescription.currentRevenue"), value: current?.revenue?.toLocaleString() || "0", icon: TrendingUp, color: "#8b5cf6" },
+                { name: t("stats.productCost"), description: t("statsDescription.productCost"), value: current?.productCost?.toLocaleString() || "0", icon: Package, color: "#f97316" },
+                { name: t("stats.operationalExpenses"), description: t("statsDescription.operationalExpenses"), value: current?.operationalExpenses?.toLocaleString() || "0", icon: Settings, color: "#f59e0b" },
+                { name: t("stats.returnsCost"), description: t("statsDescription.returnsCost"), value: current?.returnsCost?.toLocaleString() || "0", icon: RefreshCw, color: "#ef4444" },
+                { name: t("stats.currentNetProfit"), description: t("statsDescription.currentNetProfit"), value: current?.netProfit?.toLocaleString() || "0", icon: DollarSign, color: "#059669", isFinal: true },
             ];
         }
 
         if (activeTab === "safes") {
             return [
-                { name: t("safes.stats.totalBalance"), value: stats?.totalBalance?.toLocaleString() || "0", icon: Wallet, color: "#8b5cf6" },
-                { name: t("safes.stats.totalIn"), value: stats?.totalIn?.toLocaleString() || "0", icon: ArrowUpRight, color: "#10b981" },
-                { name: t("safes.stats.totalOut"), value: stats?.totalOut?.toLocaleString() || "0", icon: ArrowDownLeft, color: "#ef4444" },
-                { name: t("safes.stats.accountsCount"), value: stats?.accountsCount || "0", icon: Building2, color: "#3b82f6" },
+                { name: t("safes.stats.totalBalance"), description: t("statsDescription.totalBalance"), value: stats?.totalBalance?.toLocaleString() || "0", icon: Wallet, color: "#8b5cf6" },
+                { name: t("safes.stats.totalIn"), description: t("statsDescription.totalIn"), value: stats?.totalIn?.toLocaleString() || "0", icon: ArrowUpRight, color: "#10b981" },
+                { name: t("safes.stats.totalOut"), description: t("statsDescription.totalOut"), value: stats?.totalOut?.toLocaleString() || "0", icon: ArrowDownLeft, color: "#ef4444" },
+                { name: t("safes.stats.accountsCount"), description: t("statsDescription.accountsCount"), value: stats?.accountsCount || "0", icon: Building2, color: "#3b82f6" },
             ];
         }
 
         if (activeTab === "supplierPayments") {
             return [
-                { name: t("supplierPayments.stats.totalSuppliers"), value: stats?.totalSuppliers || "0", icon: Building2, color: "#3b82f6" },
-                { name: t("supplierPayments.stats.totalShouldPay"), value: stats?.totalShouldPay?.toLocaleString() || "0", icon: ArrowUpRight, color: "#ef4444" },
-                { name: t("supplierPayments.stats.totalShouldCollect"), value: stats?.totalShouldCollect?.toLocaleString() || "0", icon: ArrowDownLeft, color: "#10b981" },
+                { name: t("supplierPayments.stats.totalSuppliers"), description: t("statsDescription.accountsCount"), value: stats?.totalSuppliers || "0", icon: Building2, color: "#3b82f6" },
+                { name: t("supplierPayments.stats.totalShouldPay"), description: t("statsDescription.finalBalance"), value: stats?.totalShouldPay?.toLocaleString() || "0", icon: ArrowUpRight, color: "#ef4444" },
+                { name: t("supplierPayments.stats.totalShouldCollect"), description: t("statsDescription.totalShouldCollect"), value: stats?.totalShouldCollect?.toLocaleString() || "0", icon: ArrowDownLeft, color: "#10b981" },
             ];
         }
 

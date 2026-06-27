@@ -234,7 +234,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
     const schema = useMemo(() => ruleSchema(t), [t]);
 
     const isEditMode = !!rule;
-    console.log(isEditMode, rule)
+    
     const {
         register,
         handleSubmit,
@@ -357,7 +357,9 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
         }
     }, [rule, open, reset]);
 
+    console.log("errors: ", errors)
     const onSubmit = async (data) => {
+        
         const {
             ruleType,
             weekDays,

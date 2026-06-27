@@ -141,92 +141,85 @@ import Button_ from "@/components/atoms/Button";
 import MultiSelect from "@/components/atoms/MultiSelect";
 
 // ── Form Schema ──────────────────────────────────────────────────────────────
-const ruleSchema = (t) =>
-    yup.object({
+const ruleSchema = (t) => yup.lazy((value) => {
+    // 1. Determine conditional fields based on the current value of ruleType
+    let conditionalShape = {};
+    
+    switch (value?.ruleType) {
+        case 'product':
+            conditionalShape = {
+                productIds: yup.array().of(yup.string()).min(1, t("validation.productsRequired")),
+            };
+            break;
+        case 'city':
+            conditionalShape = {
+                cityIds: yup.array().of(yup.string()).min(1, t("validation.citiesRequired")),
+            };
+            break;
+        case 'store':
+            conditionalShape = {
+                storeIds: yup.array().of(yup.string()).min(1, t("validation.storesRequired")),
+            };
+            break;
+        case 'paymentStatus':
+            conditionalShape = {
+                paymentStatus: yup.string().required(t("validation.paymentStatusRequired")),
+            };
+            break;
+        case 'amountRange':
+            conditionalShape = {
+                minAmount: yup.number().typeError(t('validation.invalidNumber')).required(t("validation.minAmountRequired")).default(0),
+                maxAmount: yup.number().typeError(t('validation.invalidNumber')).required(t("validation.maxAmountRequired")).default(0).test(
+                    "max-gte-min",
+                    t("validation.maxAmountGteMin"),
+                    (val) => {
+                        if (val == null || value?.minAmount == null) return true;
+                        return val >= value.minAmount;
+                    }
+                ),
+            };
+            break;
+        default:
+            break;
+    }
+
+    // 2. Return the complete combined object schema
+    return yup.object({
         name: yup.string().required(t("validation.nameRequired")),
         description: yup.string().optional().nullable(),
         priority: yup.number().required(t("validation.priorityRequired")).min(1, t("validation.priorityMin")),
         isActive: yup.boolean().default(true),
         ruleType: yup.string().required(t("validation.ruleTypeRequired")),
         strategy: yup.string().required(t("validation.strategyRequired")),
-
-        // Conditional fields
         employeeIds: yup.array().of(yup.string()).min(1, t("validation.employeesRequired")),
 
-        productIds: yup.array().of(yup.string()).when("ruleType", {
-            is: "product",
-            then: (schema) => schema.min(1, t("validation.productsRequired")),
-            otherwise: (schema) => schema.optional().nullable(),
-        }),
+        // Inject the dynamic fields safely here
+        ...conditionalShape,
 
-        cityIds: yup.array().of(yup.string()).when("ruleType", {
-            is: "city",
-            then: (schema) => schema.min(1, t("validation.citiesRequired")),
-            otherwise: (schema) => schema.optional().nullable(),
-        }),
-
-        storeIds: yup.array().of(yup.string()).when("ruleType", {
-            is: "store",
-            then: (schema) => schema.min(1, t("validation.storesRequired")),
-            otherwise: (schema) => schema.optional().nullable(),
-        }),
-
-
-        paymentStatus: yup.string().when("ruleType", {
-            is: "paymentStatus",
-            then: (schema) => schema.required(t("validation.paymentStatusRequired")),
-            otherwise: (schema) => schema.optional().nullable(),
-        }),
-
-        minAmount: yup.number().nullable().when("ruleType", {
-            is: "amountRange",
-            then: (schema) => schema.required(t("validation.minAmountRequired")),
-            otherwise: (schema) => schema.nullable().optional().nullable(),
-        }),
-
-        maxAmount: yup.number().nullable().when("ruleType", {
-            is: "amountRange",
-            then: (schema) => schema.required(t("validation.maxAmountRequired")).test(
-                "max-gte-min",
-                t("validation.maxAmountGteMin"),
-                function (value) {
-                    const { minAmount } = this.parent;
-                    if (value == null || minAmount == null) return true;
-                    return value >= minAmount;
-                }
-            ),
-            otherwise: (schema) => schema.nullable().optional().nullable(),
-        }),
-
-        // New fields
+        // Always present fields
         startTime: yup.string().nullable().optional(),
         endTime: yup.string().nullable().optional().test(
             "end-after-start",
             t("validation.endTimeAfterStartTime"),
-            function (value) {
-                const { startTime } = this.parent;
-                if (!startTime || !value) return true;
-                return value > startTime;
+            (val) => {
+                if (!value?.startTime || !val) return true;
+                return val > value.startTime;
             }
         ),
-
         weekDays: yup.array().of(yup.string()).nullable().optional(),
-
         activeFrom: yup.string().nullable().optional(),
         activeUntil: yup.string().nullable().optional().test(
             "active-until-after-from",
             t("validation.activeUntilAfterFrom"),
-            function (value) {
-                const { activeFrom } = this.parent;
-                if (!activeFrom || !value) return true;
-                return new Date(value) >= new Date(activeFrom);
+            (val) => {
+                if (!value?.activeFrom || !val) return true;
+                return new Date(val) >= new Date(value.activeFrom);
             }
         ),
-
-        // Temporary UI fields
         timeWindowEnabled: yup.boolean().optional(),
         dateRangeEnabled: yup.boolean().optional(),
     });
+});
 
 // ── Form Components ──────────────────────────────────────────────────────────
 function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
@@ -306,7 +299,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
             setValue("weekDays", filteredWeekDays);
         }
     }, [activeFrom, activeUntil, availableMask]);
-
+    
     useEffect(() => {
         if (rule && open) {
             reset({
@@ -357,7 +350,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
         }
     }, [rule, open, reset]);
 
-    console.log("errors: ", errors)
+    
     const onSubmit = async (data) => {
         
         const {
@@ -369,15 +362,32 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
             endTime,
             timeWindowEnabled,
             dateRangeEnabled,
-            ...payload
+            name,
+            description,
+            priority,
+            isActive,
+            strategy,
+            employeeIds,
+            productIds,
+            cityIds,
+            storeIds,
+            paymentStatus,
+            minAmount,
+            maxAmount
         } = data;
 
         try {
             const timezone =
                 Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-            const finalPayload = {
-                ...payload,
+            // Base payload with common fields
+            let basePayload = {
+                name,
+                description,
+                priority,
+                isActive,
+                strategy,
+                employeeIds,
 
                 // TIME (KEEP AS STRING ONLY)
                 startTime: startTime || null,
@@ -398,6 +408,30 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                 // TIMEZONE (IMPORTANT FIX)
                 timezone,
             };
+
+            // Add only fields relevant to current ruleType
+            let conditionalPayload = {};
+            switch (ruleType) {
+                case 'product':
+                    conditionalPayload = { productIds };
+                    break;
+                case 'city':
+                    conditionalPayload = { cityIds };
+                    break;
+                case 'store':
+                    conditionalPayload = { storeIds };
+                    break;
+                case 'paymentStatus':
+                    conditionalPayload = { paymentStatus };
+                    break;
+                case 'amountRange':
+                    conditionalPayload = { minAmount, maxAmount };
+                    break;
+                default:
+                    break;
+            }
+
+            const finalPayload = { ...basePayload, ...conditionalPayload };
 
             if (isEditMode) {
                 await api.patch(
@@ -816,6 +850,7 @@ function RuleViewDialog({ open, onOpenChange, rule }) {
         });
     };
 
+    if(!rule) return;
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-xl">
@@ -1438,14 +1473,14 @@ export default function CallCenterPage() {
             {
                 key: "ruleType",
                 header: t("callCenter.autoAssign.columns.type"),
-                cell: (row) => <Badge variant="outline" className="capitalize">{t(`callCenter.autoAssign.stats.${row.ruleType}`)}</Badge>,
+                cell: (row) => <Badge variant="outline" className="capitalize">{ row.ruleType ? t(`callCenter.autoAssign.stats.${row.ruleType}`) : null}</Badge>,
             },
             {
                 key: "strategy",
                 header: t("callCenter.autoAssign.columns.strategy"),
                 cell: (row) => (
                     <span className="text-sm font-medium text-muted-foreground capitalize">
-                        {t(`callCenter.autoAssign.strategy.${row.strategy}`)}
+                        {row.strategy ? t(`callCenter.autoAssign.strategy.${row.strategy}`) : null}
                     </span>
                 ),
             },
@@ -1564,7 +1599,7 @@ export default function CallCenterPage() {
 
             const extraStats = typeStats.map((ts, index) => ({
                 id: ts.id,
-                name: t(`callCenter.autoAssign.stats.${ts.id}`),
+                name: ts.id ? t(`callCenter.autoAssign.stats.${ts.id}`) : null,
                 value: autoStatsData.byType?.[ts.id] || 0,
                 icon: ts.icon,
                 color: ts.color,

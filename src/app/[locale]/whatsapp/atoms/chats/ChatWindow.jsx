@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
     MoreVertical, Phone, Video,
@@ -38,6 +38,53 @@ import { useDebounce } from "@/hook/useDebounce";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 
+// Skeleton message component with config
+function MessageSkeleton() {
+    // Array config for skeleton messages
+    const skeletonConfig = [
+        { type: "outbound", lines: ["w-32", "w-48", "w-24"] },
+        { type: "inbound", lines: ["w-36", "w-56", "w-40"] },
+        { type: "outbound", lines: ["w-28", "w-40"] },
+        { type: "inbound", lines: ["w-44", "w-32"] },
+        { type: "outbound", lines: ["w-32", "w-48", "w-24"] },
+        { type: "inbound", lines: ["w-44", "w-32"] },
+        { type: "outbound", lines: ["w-32", "w-48", "w-24"] },
+        { type: "inbound", lines: ["w-44", "w-32"] },
+    ];
+
+    return (
+        <div className="space-y-4">
+            {skeletonConfig.map((config, index) => (
+                <div 
+                    key={index} 
+                    className={cn("flex", config.type === "outbound" ? "justify-start" : "justify-end")}
+                >
+                    <div className={cn(
+                        "w-fit max-w-[450px] min-w-[100px] px-4 py-3 rounded-2xl shadow-sm animate-pulse",
+                        config.type === "outbound"
+                            ? "bg-whatsapp-message"
+                            : "bg-card border border-border"
+                    )}>
+                        {config.lines.map((lineWidth, lineIndex) => (
+                            <div 
+                                key={lineIndex}
+                                className={cn(
+                                    "h-3 rounded mb-2",
+                                    config.type === "outbound"
+                                        ? "bg-green-200/70 dark:bg-[#2a3940]"
+                                        : "bg-muted/70",
+                                    lineWidth,
+                                    lineIndex === config.lines.length - 1 && "mb-0"
+                                )}
+                            ></div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 
 export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const t = useTranslations("chats");
@@ -50,6 +97,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         messages,
         setConversations,
         isMessagesLoading,
+        initialMessagesLoading,
         hasMoreMessages,
         loadMoreMessages,
         messageSearch,
@@ -65,7 +113,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         setMobileView
     } = useConversation();
 
-    const locale  = useLocale();
+    const locale = useLocale();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [localSearch, setLocalSearch] = useState("");
 
@@ -87,54 +135,62 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const prevScrollHeight = useRef(0);
     const prevMessagesCount = useRef(0);
     const lastConversationId = useRef(null);
-
-    useLayoutEffect(() => {
-        if (scrollRef.current) {
-            const currentCount = messages.length;
-            const currentLastConversationId = messages[currentCount - 1]?.conversationId;
-            const diff = currentCount - prevMessagesCount.current;
-
-            // 1. Initial Load: scroll to bottom
-            if (prevMessagesCount.current === 0 && currentCount > 0) {
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-            }
-            // 2. New messages arrived
-            else if (diff > 0) {
-                const isNewLastConversation = currentLastConversationId !== lastConversationId.current;
-
-                if (isNewLastConversation || diff === 1) {
-                    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-                } else {
-                    // const delta = scrollRef.current.scrollHeight - prevScrollHeight.current;
-                    // scrollRef.current.scrollTop = delta;
-                }
-
-
-            }
-
-            // Update refs for next render
-            prevScrollHeight.current = scrollRef.current.scrollHeight;
-            prevMessagesCount.current = currentCount;
-            lastConversationId.current = currentLastConversationId;
-        }
-    }, [messages.length, selectedConversation?.id]);
+    const lastMessage = useMemo(() => messages[messages.length - 1], [messages.length]);
 
     useEffect(() => {
+        if (!lastMessage?.id) return;
+        scrollToBottom("smooth");
+    }, [lastMessage?.id]);
+
+
+    const scrollToMessage = (messageId, behavior = "smooth") => {
+        const element = document.getElementById(`msg-${messageId}`);
+        if (element) {
+            element.scrollIntoView({ behavior, block: "center" });
+            setHighlightedMessageId(messageId);
+            setTimeout(() => setHighlightedMessageId(null), 2000);
+        }
+    };
+
+    const scrollToBottom = (behavior = "smooth") => {
+        const element = document.getElementById("messages-end");
+        if (element) {
+            element.scrollIntoView({ behavior, block: "end" });
+        }
+    };
+
+    useLayoutEffect(() => {
         // Reset scroll tracking when conversation changes
         prevScrollHeight.current = 0;
         prevMessagesCount.current = 0;
         lastConversationId.current = null;
         setReplyTo(null);
-    }, [selectedConversation?.id]);
 
-    const scrollToMessage = (messageId) => {
-        const element = document.getElementById(`msg-${messageId}`);
-        if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "center" });
-            setHighlightedMessageId(messageId);
-            setTimeout(() => setHighlightedMessageId(null), 2000);
+        // No setTimeout! Execute the scroll immediately before the paint.
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: "instant"
+            });
         }
-    };
+    }, [selectedConversation?.id, initialMessagesLoading]);
+
+    const handleMediaLoad = useCallback(() => {
+        // if (!scrollRef.current) return;
+
+        // const container = scrollRef.current;
+
+        // const isNearBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) <= 200;
+        // console.log("isNearBottom: ", isNearBottom, container.scrollHeight - container.scrollTop - container.clientHeight, 200);
+
+        // if (isNearBottom) {
+        //     container.scrollTop = container.scrollHeight;
+        // }
+
+        // prevScrollHeight.current = container.scrollHeight;
+        
+
+    }, []);
 
     const filteredMessages = messages;
 
@@ -184,7 +240,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                         </div>
                         <div className="w-full md:w-40 flex flex-col gap-2">
                             <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                                    {t("status")}
+                                {t("status")}
                             </Label>
                             <Select value={messageStatus} onValueChange={setMessageStatus}>
                                 <SelectTrigger className="h-10 bg-muted border-border rounded-lg text-sm text-foreground">
@@ -323,16 +379,12 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             onReply={(m) => setReplyTo(m)}
                             onReaction={onReaction}
                             onRetry={onRetry}
+                            onMediaLoad={handleMediaLoad}
                             isHighlighted={highlightedMessageId === msg.id}
                         />
                     ))
                 ) : isMessagesLoading ? (
-                    <div className="flex-1 flex flex-col items-center justify-center h-full">
-                        <Loader2 className="w-10 h-10 text-primary animate-spin opacity-50" />
-                        <p className="mt-4 text-sm text-muted-foreground font-medium animate-pulse">
-                            {t("loadingMessages")}
-                        </p>
-                    </div>
+                    <MessageSkeleton />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center h-full opacity-60">
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-3">
@@ -358,6 +410,8 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                         )}
                     </div>
                 )}
+
+                <div id="messages-end"></div>
             </div>
 
             {/* Input Area */}

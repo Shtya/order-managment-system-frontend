@@ -10468,7 +10468,7 @@
         "useCustomValidity": "Set a custom validity period for your message",
         "addSecurityRecommendation": "Add Security Recommendation",
         "authExpirationTime": "Add Code Expiration Time",
-        "authOtpBody": "{{1}} is your verification code.",
+        "authOtpBody": "{otp} is your verification code.",
         "authOtpSecurity": " For your security, do not share this code.",
         "authOtpFooter": "Code expires in {minutes} minutes.",
         "bodyPlaceholderPreview": "Your message text will appear here...",
@@ -11473,7 +11473,9 @@
     "mobile": "Mobile",
     "home": "Home",
     "chooseOption": "Choose",
-    "unsupportedMessage": "Unsupported message"
+    "unsupportedMessage": "Unsupported message",
+    "from": "From",
+    "to": "To"
   },
   "failedToLoadImage": "Failed to load image",
   "failedToLoadVideo": "Failed to load video",

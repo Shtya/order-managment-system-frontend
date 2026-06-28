@@ -123,7 +123,12 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04);
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
-
+  --template-btn-hover: #cbe5c8;
+  --whatsapp-message: #D8FDD2;
+  --whatsapp-message2: white;
+  --whatsapp-button-border: #cbd5e1;
+  --whatsapp-time: #343435;
+  
   /* ── Typography ── */
   --mono: 'JetBrains Mono', monospace;
   --font-serif: ui-sans-serif, system-ui, -apple-system, Segoe UI, Tahoma, Arial;
@@ -165,6 +170,13 @@
 
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
+
+  --template-btn-hover: #16583f;
+  --whatsapp-message: #134D37;
+  --whatsapp-message2: #1F272A;
+  --whatsapp-button-border: #2D3538;
+  --whatsapp-time: #98aaa3;
+  
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -201,6 +213,11 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-whatsapp-message: var(--whatsapp-message);
+  --color-whatsapp-message2: var(--whatsapp-message2);
+  --color-template-btn-hover: var(--template-btn-hover);
+  --color-whatsapp-button-border: var(--whatsapp-button-border);
+  --color-whatsapp-time: var(--whatsapp-time);
 }
 
 /* ═══════════════════════════════════════════════════════════════

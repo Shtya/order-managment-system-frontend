@@ -22,8 +22,13 @@ import TemplatePreview from "../TemplatePreview";
 import { formatText, handleMediaClick, getMediaUrl } from "@/utils/whatsapp-healper";
 import { useTranslations, useLocale } from "next-intl";
 import { useClipboard } from "@/hook/useClipboard";
+import { useConversation } from "./ConversationContext";
 
-function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted }) {
+function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted, onMediaLoad }) {
+    const {
+        accounts
+    } = useConversation();
+    const account = useMemo(() => accounts.find((acc) => acc.id === message.accountId), [accounts, message.accountId]);
     const t = useTranslations("chats");
     const locale = useLocale();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -221,10 +226,18 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                         (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
                                     )}
                                     loading="lazy"
-                                    onLoad={() => setMediaLoading(false)}
+                                    onLoad={() => {
+                                        setMediaLoading(false);
+                                        if (onMediaLoad) {
+                                            onMediaLoad();
+                                        }
+                                    }}
                                     onError={() => {
                                         setMediaLoading(false);
                                         setMediaError(true);
+                                        if (onMediaLoad) {
+                                            onMediaLoad();
+                                        }
                                     }}
                                     onClick={() => handleMediaClick("image", mediaContent)}
                                 />
@@ -261,10 +274,18 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                         (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
                                     )}
                                     loading="lazy"
-                                    onLoad={() => setMediaLoading(false)}
+                                    onLoad={() => {
+                                        setMediaLoading(false);
+                                        if (onMediaLoad) {
+                                            onMediaLoad();
+                                        }
+                                    }}
                                     onError={() => {
                                         setMediaLoading(false);
                                         setMediaError(true);
+                                        if (onMediaLoad) {
+                                            onMediaLoad();
+                                        }
                                     }}
                                     onClick={() => handleMediaClick("sticker", mediaContent)}
                                 />
@@ -296,10 +317,18 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                         "rounded-lg w-full h-auto transition-opacity duration-300",
                                         (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
                                     )}
-                                    onLoadedData={() => setMediaLoading(false)}
+                                    onLoadedData={() => {
+                                        setMediaLoading(false);
+                                        if (onMediaLoad) {
+                                            onMediaLoad();
+                                        }
+                                    }}
                                     onError={() => {
                                         setMediaLoading(false);
                                         setMediaError(true);
+                                        if (onMediaLoad) {
+                                            onMediaLoad();
+                                        }
                                     }}
                                 />
                             )}
@@ -480,6 +509,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                             bgTransparent
                             hideToggleAction
                             hasHeader={false}
+                            onMediaLoad={onMediaLoad}
                             isUploading={message.status === "uploading"}
                             template={{
                                 ...templateConfig,
@@ -689,7 +719,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                 if (content.interactive?.type === "button") {
                     const buttonMessage = content.interactive;
                     const media = buttonMessage?.header?.[buttonMessage?.header?.type];
-                  
+
                     return (
                         <div className="space-y-2 min-w-[300px]">
                             <TemplatePreview
@@ -699,6 +729,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                 hideToggleAction
                                 isInteractive={true}
                                 isUploading={message.status === "uploading"}
+                                onMediaLoad={onMediaLoad}
                                 template={{
                                     headerType: buttonMessage?.header?.type?.toUpperCase(),
                                     headerText: buttonMessage?.header?.text,
@@ -841,8 +872,8 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                 <div className={cn(
                     "max-w-[450px] px-4 py-2.5 rounded-2xl relative shadow-sm transition-all duration-500",
                     isOutbound
-                        ? "bg-green-100 dark:bg-[#1f2c33] text-foreground rtl:rounded-tr-none ltr:rounded-tl-none "
-                        : "bg-card text-foreground rtl:rounded-tl-none ltr:rounded-tr-none border border-border",
+                        ? "bg-whatsapp-message text-foreground rtl:rounded-tr-none ltr:rounded-tl-none "
+                        : "bg-whatsapp-message2 text-foreground rtl:rounded-tl-none ltr:rounded-tr-none border border-border",
                     isHighlighted && (isOutbound ? "bg-primary/20 ring-4 ring-primary/20" : "bg-muted/50 ring-4 ring-muted/50")
                 )}>
                     {/* Reply Preview */}
@@ -890,11 +921,12 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                     )}
 
                     <div className={cn(
-                        "flex items-center gap-1 justify-end mt-1",
-                        isOutbound ? "text-primary/60" : "text-muted-foreground/60"
+                        "flex items-center gap-1  mt-1",
+                        "text-whatsapp-time",
+                        isOutbound ? "justify-start" : "justify-end"
                     )}>
-                        <span className="text-[10px]">{time}</span>
                         {isOutbound && <StatusIcon status={message.status} />}
+                        <span className="text-[10px]">{time}</span>
                     </div>
 
                     {/* Reactions Display */}
@@ -918,7 +950,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                         <div key={r.id || idx} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-muted transition-colors">
                                             <span className="text-lg">{r.content?.reaction?.emoji || r.reaction}</span>
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-bold text-foreground">
+                                                <span className="text-xs font-bold text-foreground dark:text-[#9EB5AC]">
                                                     {r.direction === "outbound" ? "You" : "Customer"}
                                                 </span>
                                                 <span className="text-[10px] text-muted-foreground">
@@ -931,29 +963,54 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                             </PopoverContent>
                         </Popover>
                     )}
+
+                    {/* Account Badge - Less prominent, inside bubble */}
+                    {account && (
+                        <div >
+                            <div className={cn(
+                                "inline-flex items-center gap-1 mt-1.5 px-1.5 py-0.5 rounded-md w-fit",
+                                "text-[10px] bg-muted/20",
+                                "text-muted-foreground/70 max-w-full overflow-hidden",
+                                "opacity-70 group-hover:opacity-100 transition-opacity"
+                            )}>
+                                <span className={cn(
+                                    "w-1 h-1 rounded-full shrink-0",
+                                    isOutbound ? "bg-green-500" : "bg-blue-500"
+                                )} />
+                                <span className="text-muted-foreground/90 font-normal">
+                                    {isOutbound ? t("from") : t("to")}
+                                </span>
+                                <span className="font-medium text-foreground/60 truncate">
+                                    {account.name}
+                                </span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
+            {/* Account Badge */}
+
         </div>
     );
 }
 
 
 export default memo(MessageBubble, (prevProps, nextProps) => {
-    
+
     return (
         // Check if it's the exact same message
         prevProps.id === nextProps.id &&
         prevProps.message.id === nextProps.message.id &&
-        
+
         // Re-render if the message status changes (e.g., sent -> delivered -> read)
         prevProps.message.status === nextProps.message.status &&
-        
+
         // Re-render if the text body changes (if you support message editing)
         prevProps.message.body === nextProps.message.body &&
-        
+
         // Re-render if the highlight state changes (e.g., when scrolling to a searched message)
         prevProps.isHighlighted === nextProps.isHighlighted &&
-        
+
         // Safety check for outbound status
         prevProps.isOutbound === nextProps.isOutbound
     );

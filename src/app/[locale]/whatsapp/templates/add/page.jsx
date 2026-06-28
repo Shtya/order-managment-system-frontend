@@ -521,17 +521,24 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
 
     // Derived Body Text for Preview (especially for Authentication)
-    const getPreviewBody = () => {
+    const getPreviewBody = useCallback(() => {
         if (templateData.subcategory === "AUTHENTICATION_OTP") {
-            let body = tForm("authOtpBody");
+            let body = tForm("authOtpBody", { "otp":"123456"  });
+
             if (templateData.addSecurityRecommendation) {
                 body += tForm("authOtpSecurity");
             }
+
             return body;
         }
-        return templateData.bodyText || tForm("bodyPlaceholderPreview");
-    };
 
+        return templateData.bodyText || tForm("bodyPlaceholderPreview");
+    }, [
+        templateData.subcategory,
+        templateData.addSecurityRecommendation,
+        templateData.bodyText,
+        tForm,
+    ]);
     const getPreviewFooter = () => {
         if (templateData.subcategory === "AUTHENTICATION_OTP" && templateData.addExpirationTime) {
             return tForm("authOtpFooter", { minutes: templateData.expirationMinutes });
@@ -797,9 +804,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                 </>
                             )}
                             <Button_
-                                        size="sm"
-                                        label={superAdmin ? (isEdit ? tForm("update") : tForm("create")) : (isEdit ? tForm("submitUpdate") : tForm("submitCreate"))}
-                                        tone="primary"
+                                size="sm"
+                                label={superAdmin ? (isEdit ? tForm("update") : tForm("create")) : (isEdit ? tForm("submitUpdate") : tForm("submitCreate"))}
+                                tone="primary"
                                 variant="solid"
                                 disabled={isSubmitting}
                                 onClick={handleSubmit(onSubmit)}

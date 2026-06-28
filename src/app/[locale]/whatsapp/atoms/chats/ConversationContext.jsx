@@ -72,6 +72,7 @@ export const ConversationProvider = ({ children }) => {
 
     // Message Pagination & Filter States
     const [isMessagesLoading, setIsMessagesLoading] = useState(false);
+    const [initialMessagesLoading, setInitialMessagesLoading] = useState(false);
     const [hasMoreMessages, setHasMoreMessages] = useState(false);
     const [messagesCursor, setMessagesCursor] = useState(null);
     const [messageSearch, setMessageSearch] = useState("");
@@ -156,6 +157,9 @@ export const ConversationProvider = ({ children }) => {
     const fetchMessages = useCallback(async (conversationId, cursor, append = false) => {
         if (!conversationId) return;
         setIsMessagesLoading(true);
+        if (!append) {
+            setInitialMessagesLoading(true);
+        }
         try {
             const params = {
                 limit: MESSAGES_LIMIT,
@@ -183,6 +187,9 @@ export const ConversationProvider = ({ children }) => {
             console.error("Failed to fetch messages:", error);
         } finally {
             setIsMessagesLoading(false);
+            if (!append) {
+                setInitialMessagesLoading(false);
+            }
         }
     }, [messageSearch, messageAccount, messageStatus]);
 
@@ -217,7 +224,11 @@ export const ConversationProvider = ({ children }) => {
         messageStatus,
         messageAccount,
     ]);
-
+    const onSelectConversation = useCallback((conversation) => {
+        setSelectedConversation(conversation);
+        setMessages([]);
+    }, [setSelectedConversation]);
+    
     useEffect(() => {
         const unsubConversation = subscribe("WHATSAPP_CONVERSATION_NEW", (payload) => {
             if (!payload?.conversation) return;
@@ -663,10 +674,11 @@ export const ConversationProvider = ({ children }) => {
         setShowDetails(!showDetails)
     }, [showDetails]);
 
+
     return (
         <ConversationContext.Provider value={{
             selectedConversation,
-            setSelectedConversation,
+            setSelectedConversation: onSelectConversation,
             mobileView,
             setMobileView,
             selectedAccount,
@@ -715,6 +727,8 @@ export const ConversationProvider = ({ children }) => {
             loadMoreConversations,
             isMessagesLoading,
             hasMoreMessages,
+            initialMessagesLoading,
+            setInitialMessagesLoading,
             loadMoreMessages,
             messageSearch,
             setMessageSearch,

@@ -19,12 +19,12 @@ import {
 } from "@/components/ui/dialog";
 import { BASE_URL } from "@/utils/api";
 import TemplatePreview from "../TemplatePreview";
-import { formatText, handleMediaClick, getMediaUrl } from "@/utils/whatsapp-healper";
+import { formatText, handleMediaClick, getMediaUrl, formatMessagePreview } from "@/utils/whatsapp-healper";
 import { useTranslations, useLocale } from "next-intl";
 import { useClipboard } from "@/hook/useClipboard";
 import { useConversation } from "./ConversationContext";
 
-function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted, onMediaLoad }) {
+function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted, onMediaLoad,scrollToMessage }) {
     const {
         accounts
     } = useConversation();
@@ -113,12 +113,8 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
 
     useEffect(() => {
         const handleScrollToMsg = (e) => {
-            if (e.detail?.id === message.id) {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.scrollIntoView({ behavior: "smooth", block: "center" });
-                }
-            }
+            scrollToMessage(e.detail?.id);
+            
         };
         window.addEventListener("whatsapp:scroll-to-message", handleScrollToMsg);
         return () => window.removeEventListener("whatsapp:scroll-to-message", handleScrollToMsg);
@@ -814,8 +810,11 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                     </div>
                 );
         }
-    };
-
+    };  
+    const formattedPreview = useMemo(() => {
+        if(!message?.replyTo) return "";
+        return formatMessagePreview(message?.replyTo, t);
+    }, [message?.replyTo, t]);
     return (
         <div id={id} className={cn(
             "flex w-full mb-4 group",
@@ -874,7 +873,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                     isOutbound
                         ? "bg-whatsapp-message text-foreground rtl:rounded-tr-none ltr:rounded-tl-none "
                         : "bg-whatsapp-message2 text-foreground rtl:rounded-tl-none ltr:rounded-tr-none border border-border",
-                    isHighlighted && (isOutbound ? "bg-primary/20 ring-4 ring-primary/20" : "bg-muted/50 ring-4 ring-muted/50")
+                    isHighlighted && (isOutbound ? "bg-whatsapp-message/80 ring-4 ring-whatsapp-message/80" : "bg-whatsapp-message2/80 ring-4 ring-whatsapp-message2/80")
                 )}>
                     {/* Reply Preview */}
                     {message.replyTo && (
@@ -888,11 +887,9 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                             <p className="text-[10px] font-bold text-muted-foreground/60 uppercase mb-0.5">
                                 {message.replyTo.direction === "inbound" ? "Customer" : "You"}
                             </p>
-                            <p className="text-xs italic line-clamp-2 text-muted-foreground italic">
-                                {message.replyTo.messageType === "text"
-                                    ? (message.replyTo.content?.text?.body || message.replyTo.content?.body)
-                                    : `[${message.replyTo.messageType.toUpperCase()}]`}
-                            </p>
+                            <div className="text-xs italic line-clamp-2 text-muted-foreground italic">
+                                {formattedPreview}
+                            </div>
                         </div>
                     )}
 

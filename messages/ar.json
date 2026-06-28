@@ -11458,7 +11458,10 @@
       "interactive": "أزرار تفاعلية",
       "template": "رسالة قالب",
       "requestLocation": "طلب الموقع",
-      "sendLocation": "الموقع"
+      "sendLocation": "الموقع",
+      "locationRequest": "طلب الموقع",
+      "button": "زر",
+      "sticker": "ملصق"
     },
     "address": "العنوان",
     "viewOptions": "عرض الخيارات",

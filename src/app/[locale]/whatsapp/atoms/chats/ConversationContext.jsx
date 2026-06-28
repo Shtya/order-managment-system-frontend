@@ -505,7 +505,7 @@ export const ConversationProvider = ({ children }) => {
             metadata: { localId, ...metadata },
             replyTo: repMsg,
         };
-
+        console.log(newMessage)
         // 1. Optimistic UI: Add message and move conversation to top
         setMessages(prev => [...prev, newMessage]);
         setConversations(prev => {
@@ -514,6 +514,7 @@ export const ConversationProvider = ({ children }) => {
 
             const updated = {
                 ...existing,
+                lastMessage: newMessage,
                 lastMessageAt: newMessage.createdAt,
                 lastMessagePreview: msg.type === "text" ? msg.text : `[${msg.type.toUpperCase()}]`,
                 lastMessageDirection: "outbound"

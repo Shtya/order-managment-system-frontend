@@ -144,6 +144,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
 
     const scrollToMessage = (messageId, behavior = "smooth") => {
+        console.log(messageId);
         const element = document.getElementById(`msg-${messageId}`);
         if (element) {
             element.scrollIntoView({ behavior, block: "center" });
@@ -379,6 +380,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             onReply={(m) => setReplyTo(m)}
                             onReaction={onReaction}
                             onRetry={onRetry}
+                            scrollToMessage={scrollToMessage}
                             onMediaLoad={handleMediaLoad}
                             isHighlighted={highlightedMessageId === msg.id}
                         />

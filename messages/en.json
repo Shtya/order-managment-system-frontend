@@ -11428,7 +11428,10 @@
       "interactive": "Interactive Buttons",
       "template": "Template Message",
       "requestLocation": "Location Request",
-      "sendLocation": "location"
+      "sendLocation": "location",
+      "locationRequest": "Location request",
+      "button": "Button",
+      "sticker": "Sticker"
     },
     "address": "Address",
     "viewOptions": "View Options",

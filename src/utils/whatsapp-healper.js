@@ -1,5 +1,19 @@
 import React from 'react';
 import { BASE_URL } from './api';
+import {
+    Image as ImageIcon,
+    Video as VideoIcon,
+    FileText,
+    MapPin,
+    User,
+    MessageSquare,
+    List as ListIcon,
+    Sticker,
+    LayoutTemplate,
+    Map as MapIcon,
+    Reply,
+    AlertCircle
+} from 'lucide-react';
 
 /**
  * WhatsApp Template Variable Helpers
@@ -177,5 +191,117 @@ export  const handleMediaClick = (type, content) => {
     console.log(url);
     if (url) {
         window.open(url, "_blank");
+    }
+};
+
+export const formatMessagePreview = (message, t = (key) => key) => {
+    if (!message) return "";
+    
+    const { messageType, content } = message;
+    const { bodyContent } = content || {};
+    const interactiveType = content?.interactive?.type || "";
+    const type = messageType === "interactive" ? interactiveType : messageType;
+    const body = bodyContent || content?.[messageType]?.body || "";
+    const bodyText = formatText(typeof body === "string" ? body : body?.text);
+    
+    switch (type) {
+        case "image":
+            return (
+                <div className="flex items-center gap-1.5">
+                    <ImageIcon size={14} className="text-muted-foreground" />
+                    <span>{t("messageTypes.image") || "Image"}</span>
+                </div>
+            );
+        case "video":
+            return (
+                <div className="flex items-center gap-1.5">
+                    <VideoIcon size={14} className="text-muted-foreground" />
+                    <span>{t("messageTypes.video") || "Video"}</span>
+                </div>
+            );
+        case "sticker":
+            return (
+                <div className="flex items-center gap-1.5">
+                    <Sticker size={14} className="text-muted-foreground" />
+                    <span>{t("messageTypes.sticker") || "Sticker"}</span>
+                </div>
+            );
+        case "document":
+            const docName = content?.document?.filename || content?.document?.name || t("document") || "Document";
+            return (
+                <div className="flex items-center gap-1.5">
+                    <FileText size={14} className="text-muted-foreground" />
+                    <span>{docName}</span>
+                </div>
+            );
+        case "location":
+            const locName = content?.location?.name;
+            const locAddress = content?.location?.address;
+            const locationText = locName || locAddress || t("messageTypes.location") || "Location";
+            return (
+                <div className="flex items-center gap-1.5">
+                    <MapPin size={14} className="text-muted-foreground" />
+                    <span>{locationText}</span>
+                </div>
+            );
+        case "location_request_message":
+            return (
+                <div className="flex items-center gap-1.5">
+                    <MapIcon size={14} className="text-muted-foreground" />
+                    <span>{bodyText || t("messageTypes.locationRequest") || "Location request"}</span>
+                </div>
+            );
+        case "template":
+            return (
+                <div className="flex items-center gap-1.5">
+                    <LayoutTemplate size={14} className="text-muted-foreground" />
+                    <span>{content?.template?.name || t("messageTypes.template") || "Template"}</span>
+                </div>
+            );
+            
+        case "text":
+            return <span>{formatText(bodyText || "")}</span>;
+        case "contacts":
+            const contactName = content?.contacts?.[0]?.name?.formatted_name || t("messageTypes.contact") || "Contact";
+            return (
+                <div className="flex items-center gap-1.5">
+                    <User size={14} className="text-muted-foreground" />
+                    <span>{contactName}</span>
+                </div>
+            );
+        case "list":
+            const interactiveBody = content?.interactive?.body?.text || bodyText || t("messageTypes.interactive") || "Interactive";
+            return (
+                <div className="flex items-center gap-1.5">
+                    <ListIcon size={14} className="text-muted-foreground" />
+                    <span>{interactiveBody}</span>
+                </div>
+            );
+        case "list_reply":
+        case "button_reply":
+            const listReplyBody = content?.interactive?.list_reply?.title || content?.interactive?.button_reply?.title || bodyText || t("messageTypes.interactive") || "Interactive";
+            return (
+                <div className="flex items-center gap-1.5">
+                    <Reply size={14} className="text-muted-foreground" />
+                    <span>{listReplyBody}</span>
+                </div>
+            );
+        case "button":
+            const buttonText = content?.button?.text || bodyText || t("messageTypes.button") || "Button";
+            return (
+                <div className="flex items-center gap-1.5">
+                    <MessageSquare size={14} className="text-muted-foreground" />
+                    <span>{buttonText}</span>
+                </div>
+            );
+        case "unsupported":
+            return (
+            <div className='flex items-center gap-1.5 text-yellow-600 dark:text-yellow-400'>
+                <AlertCircle size={14} className="text-yellow-600 dark:text-yellow-400" />
+                <span>{t("unsupportedMessage") || "Unsupported message"}</span>
+            </div>
+            )
+        default:
+            return <span>{formatText(bodyText || "")}</span>;
     }
 };

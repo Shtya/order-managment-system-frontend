@@ -1,8 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Search, Filter, MoreVertical, Check, CheckCheck, Plus, UserPlus, X, Loader2 } from "lucide-react";
+import { 
+    Search, 
+    Filter, 
+    MoreVertical, 
+    Check, 
+    CheckCheck, 
+    Plus, 
+    UserPlus, 
+    X, 
+    Loader2
+} from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/utils/cn";
 
@@ -17,14 +27,15 @@ import CustomerModal from "./CustomerModal";
 import { useConversation } from "./ConversationContext";
 import { useDebounce } from "@/hook/useDebounce";
 import { avatarSrc } from "@/components/atoms/UserSelect";
-import { formatText } from "@/utils/whatsapp-healper";
-import { useMemo } from "react";
+import { formatText, formatMessagePreview } from "@/utils/whatsapp-healper";
 import { useAuth } from "@/context/AuthContext";
 
 const ChatListItem = ({ conv, activeId, onSelect }) => {
+    const t = useTranslations("chats");
+    
     const formattedPreview = useMemo(() => {
-        return formatText(conv.lastMessagePreview) || "...";
-    }, [conv.lastMessagePreview]);
+        return formatMessagePreview(conv?.lastMessage, t);
+    }, [conv?.lastMessage, t]);
 
     return (
         <button
@@ -58,9 +69,9 @@ const ChatListItem = ({ conv, activeId, onSelect }) => {
                     </span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs text-muted-foreground truncate flex-1 whitespace-pre-wrap">
+                    <div className="text-xs text-muted-foreground truncate flex-1 whitespace-pre-wrap">
                         {formattedPreview}
-                    </p>
+                    </div>
                     {conv.unreadCount > 0 && (
                         <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
                             {conv.unreadCount}

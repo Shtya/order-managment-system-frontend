@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import {
     Dialog,
     DialogContent,
@@ -29,6 +29,14 @@ export default function InteractiveMessageModal() {
         headerMediaFile,
         setHeaderMediaFile
     } = useConversation();
+
+    const isSendDisabled = useMemo(() => {
+        return (
+            !interactiveMessage.bodyText ||
+            interactiveMessage.buttons.length === 0 ||
+            interactiveMessage.buttons.some(btn => !btn.text)
+        );
+    }, [interactiveMessage]);
 
     const handleSend = () => {
         handleSendMessage({
@@ -135,7 +143,7 @@ export default function InteractiveMessageModal() {
                     />
                     <Button_
                         type="button"
-                        disabled={!interactiveMessage.bodyText || interactiveMessage.buttons.length === 0}
+                        disabled={isSendDisabled}
                         onClick={handleSend}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                         label={t("sendMessage")}

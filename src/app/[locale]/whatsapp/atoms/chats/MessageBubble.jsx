@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { BASE_URL } from "@/utils/api";
 import TemplatePreview from "../TemplatePreview";
-import { formatText } from "@/utils/whatsapp-healper";
+import { formatText, handleMediaClick, getMediaUrl } from "@/utils/whatsapp-healper";
 import { useTranslations, useLocale } from "next-intl";
 import { useClipboard } from "@/hook/useClipboard";
 
@@ -103,30 +103,8 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
     const formattedCaption = useMemo(() => {
         return formatText(caption || "");
     }, [caption]);
-  
 
-    const getMediaUrl = (content, type) => {
-        const media = content[type];
-        if (media?.localUrl) return media.localUrl;
 
-        const token = localStorage.getItem('accessToken');
-        const accountId = message.accountId;
-        const mediaId = media?.id || content.id;
-
-        const params = new URLSearchParams();
-        if (token) params.append('token', token);
-        if (accountId) params.append('accountId', accountId);
-        if (mediaId) params.append('mediaId', mediaId);
-
-        return `${BASE_URL}/whatsapp/media?${params.toString()}`;
-    };
-
-    const handleMediaClick = (type, content) => {
-        const url = getMediaUrl(content, type);
-        if (url) {
-            window.open(url, "_blank");
-        }
-    };
 
     useEffect(() => {
         const handleScrollToMsg = (e) => {
@@ -213,10 +191,10 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
     const renderMedia = (type, mediaContent, isHeader = false) => {
         const caption = formattedCaption;
-        
+
         switch (type) {
             case "image":
-                
+
                 return (
                     <div className={cn("space-y-2", !isHeader && "max-w-sm")}>
                         <div className={cn(
@@ -236,7 +214,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                 </div>
                             ) : (
                                 <img
-                                    src={getMediaUrl(mediaContent, "image")}
+                                    src={getMediaUrl(mediaContent, "image", message)}
                                     alt="image"
                                     className={cn(
                                         "rounded-lg w-full h-auto cursor-pointer transition-opacity duration-300",
@@ -253,6 +231,45 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             )}
                         </div>
                         {!isHeader && caption && <p className="text-sm text-foreground whitespace-pre-wrap">{caption}</p>}
+                    </div>
+                );
+
+            case "sticker":
+                return (
+                    <div className="space-y-2 max-w-xs">
+                        <div className={cn(
+                            "relative flex items-center justify-center overflow-hidden group/media",
+                            (mediaLoading || mediaError) && "md:min-w-[150px] md:min-h-[150px]"
+                        )}>
+                            {(mediaLoading || message.status === "uploading") && !mediaError && (
+                                <div className="absolute bg-muted/30 inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
+                                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/60" />
+                                    {message.status === "uploading" && <span className="text-[10px] text-muted-foreground font-bold mt-2 uppercase tracking-widest">{t("uploading")}</span>}
+                                </div>
+                            )}
+                            {mediaError ? (
+                                <div className="flex flex-col bg-muted/30 items-center gap-2 p-6 text-muted-foreground/60">
+                                    <AlertCircle size={32} />
+                                    <span className="text-xs font-medium">{t("failedToLoadImage")}</span>
+                                </div>
+                            ) : (
+                                <img
+                                    src={getMediaUrl(mediaContent, "sticker", message)}
+                                    alt="sticker"
+                                    className={cn(
+                                        "w-48 h-48 object-contain cursor-pointer transition-opacity duration-300",
+                                        (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
+                                    )}
+                                    loading="lazy"
+                                    onLoad={() => setMediaLoading(false)}
+                                    onError={() => {
+                                        setMediaLoading(false);
+                                        setMediaError(true);
+                                    }}
+                                    onClick={() => handleMediaClick("sticker", mediaContent)}
+                                />
+                            )}
+                        </div>
                     </div>
                 );
 
@@ -273,7 +290,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                 </div>
                             ) : (
                                 <video
-                                    src={getMediaUrl(mediaContent, "video")}
+                                    src={getMediaUrl(mediaContent, "video", message)}
                                     controls
                                     className={cn(
                                         "rounded-lg w-full h-auto transition-opacity duration-300",
@@ -347,6 +364,9 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
             case "image":
                 return renderMedia("image", content);
 
+            case "sticker":
+                return renderMedia("sticker", content);
+
             case "video":
                 return renderMedia("video", content);
 
@@ -358,7 +378,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     <div className="flex items-center gap-3 py-1 min-w-[200px]">
                         <audio
                             ref={audioRef}
-                            src={getMediaUrl(content, "audio")}
+                            src={getMediaUrl(content, "audio", message)}
                             onTimeUpdate={handleAudioTimeUpdate}
                             onEnded={handleAudioEnded}
                             onCanPlayThrough={() => setAudioLoading(false)}
@@ -452,7 +472,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                         }
                     });
                 }
-                
+
                 return (
                     <div className="space-y-2 min-w-[300px]">
                         <TemplatePreview
@@ -603,16 +623,25 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
             case "interactive":
                 if (content.interactive?.type === "list") {
+                    const listMessage = content.interactive;
                     return (
-                        <div className="space-y-3">
-                            {content.interactive.header && (
-                                <div className="font-bold text-sm text-foreground">{content.interactive.header.text}</div>
-                            )}
-                            <p className="text-sm text-foreground">{content.interactive.body?.text}</p>
-                            <button className="w-full py-2.5 px-3 flex items-center justify-center gap-2 text-primary font-medium text-[13px] hover:bg-muted border-t border-border transition-colors">
-                                <List size={14} />
-                                {content.interactive.action?.button || "View Options"}
-                            </button>
+                        <div className="space-y-2 min-w-[300px]">
+                            <TemplatePreview
+                                hasHeader={false}
+                                isChatBubble
+                                bgTransparent
+                                hideToggleAction
+                                isInteractive={true}
+                                isList={true}
+                                seeAllOptionsLabel={listMessage.action.button}
+                                template={{
+                                    headerType: listMessage?.header?.type?.toUpperCase(),
+                                    headerText: listMessage?.header?.text,
+                                    bodyText: listMessage?.body?.text,
+                                    footerText: listMessage?.footer?.text,
+                                    sections: listMessage?.action?.sections,
+                                }}
+                            />
                         </div>
                     );
                 }
@@ -626,31 +655,67 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 }
 
                 if (content.interactive?.type === "location_request_message") {
-                    return(
-                          <div className="space-y-2 min-w-[300px]">
-                        <TemplatePreview
-                            isChatBubble
-                            bgTransparent
-                            hideToggleAction
-                            hasHeader={false}
-                            template={{
-                                bodyText: content.interactive?.body?.text,
-                                buttons: [
-                                    {
-                                        type: "LOCATION_REQUEST",
-                                        textEn: "Send Location",
-                                        textAr: "إرسال الموقع"
-                                    }
-                                ]
-                                // locationData,
-                                // language: templateMetadata.language || "en",
-                                // subCategory: templateMetadata.subCategory,
-                                // examples: dynamicExamples // Use the actual sent values as "examples"
-                            }}
-                        />
-                    </div>
+                    return (
+                        <div className="space-y-2 min-w-[300px]">
+                            <TemplatePreview
+                                isChatBubble
+                                bgTransparent
+                                hideToggleAction
+                                hasHeader={false}
+                                template={{
+                                    bodyText: content.interactive?.body?.text,
+                                    buttons: [
+                                        {
+                                            type: "LOCATION_REQUEST",
+                                            textEn: "Send Location",
+                                            textAr: "إرسال الموقع"
+                                        }
+                                    ]
+                                }}
+                            />
+                        </div>
                     )
                 }
+
+                if (content.interactive?.type === "list_reply") {
+                    return (
+                        <p className="text-sm text-foreground whitespace-pre-wrap flex gap-0.5 flex-col">
+                            <span>{content.interactive?.list_reply?.title}</span>
+                            <span>{content.interactive?.list_reply?.description}</span>
+                        </p>
+                    );
+                }
+
+                if (content.interactive?.type === "button") {
+                    const buttonMessage = content.interactive;
+                    const media = buttonMessage?.header?.[buttonMessage?.header?.type];
+                  
+                    return (
+                        <div className="space-y-2 min-w-[300px]">
+                            <TemplatePreview
+                                hasHeader={false}
+                                isChatBubble
+                                bgTransparent
+                                hideToggleAction
+                                isInteractive={true}
+                                isUploading={message.status === "uploading"}
+                                template={{
+                                    headerType: buttonMessage?.header?.type?.toUpperCase(),
+                                    headerText: buttonMessage?.header?.text,
+                                    headerUrl: media?.link || media?.id,
+                                    bodyText: buttonMessage?.body?.text,
+                                    footerText: buttonMessage?.footer?.text,
+                                    buttons: buttonMessage?.action?.buttons?.map(b => ({
+                                        type: "QUICK_REPLY",
+                                        text: b?.reply?.title
+                                    })),
+                                    // language: locale === "ar" ? "ar" : "en"
+                                }}
+                            />
+                        </div>
+                    );
+                }
+
                 return (
                     <div className="space-y-3">
                         {content.interactive?.header && (
@@ -694,10 +759,27 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
                 );
 
+            case "unsupported":
+                return (
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+                            <AlertCircle size={16} />
+                            <span className="text-sm font-medium">
+                                {t("unsupportedMessage")}
+                            </span>
+                        </div>
+                        {content.errors && content.errors.length > 0 && (
+                            <div className="text-xs text-muted-foreground">
+                                {content.errors[0].message}
+                            </div>
+                        )}
+                    </div>
+                );
+
             default:
                 return (
                     <div className="flex items-center gap-2 italic text-gray-400 text-xs">
-                        [{messageType.toUpperCase()} Message - Not supported yet]
+                        [{messageType.toUpperCase()} {t("unsupportedMessage")}]
                     </div>
                 );
         }

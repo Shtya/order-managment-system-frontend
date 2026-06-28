@@ -70,6 +70,11 @@ export default function StoresIntegrationPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const error = params.get("error");
+    const errorMessage = params.get("errorMessage");
+    if(errorMessage) {
+      toast.error(errorMessage);
+      return;
+    }
     if (error === "easyOrder_not_found") {
       toast.error(t("messages.easyOrderNotFound") || "EasyOrder store not found for this user");
     } else if (error === "shopify_store_not_found") {
@@ -78,8 +83,9 @@ export default function StoresIntegrationPage() {
       toast.error(t("messages.woocommerceNotFound") || "Woocommerce store not found for this user");
     } else if (error === "shopify_connection_failed") {
       toast.error(t("messages.shopifyConnectionFailed"));
-    }
-    else if (error === "shopify_security_verification_failed") {
+    } else if (error === "shopify_invalid_session") {
+      toast.error(t("messages.shopifyInvalidSession") || "Shopify session is invalid. Please log in again.");
+    } else if (error === "shopify_security_verification_failed") {
       toast.error(t("messages.shopifySecurityFailed") || "Shopify security verification failed. Please try again.");
     }
     if (error)

@@ -5,12 +5,14 @@ import api from "@/utils/api";
 import { useSocket } from "@/context/SocketContext";
 import toast from "react-hot-toast";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
+import { useTranslations } from "next-intl";
 
 const ConversationContext = createContext();
 
 export const useConversation = () => useContext(ConversationContext);
 
 export const ConversationProvider = ({ children }) => {
+    const t = useTranslations("chats");
     const { settings } = useOrdersSettings();
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [accounts, setAccounts] = useState([]);
@@ -45,7 +47,7 @@ export const ConversationProvider = ({ children }) => {
         headerUrl: "",
         bodyText: "",
         footerText: "",
-        menuLabel: "View Options",
+        menuLabel: t("chooseOption"),
         sections: [{
             title: "",
             rows: []
@@ -329,9 +331,12 @@ export const ConversationProvider = ({ children }) => {
             const headerComponent = msg.template.components.find(c => c.type === "header");
             const param = headerComponent?.parameters?.[0];
             const mediaType = param?.type;
-
             if (headerComponent && ["image", "video", "document"].includes(mediaType) && param) {
                 const mediaObj = param[mediaType];
+                if(mediaObj?.id){
+                    delete mediaObj.link;
+                    delete mediaObj.file;
+                }
                 if (mediaObj && mediaObj.link && !mediaObj.id) {
                     mediaInfo = { mediaType, mediaObj, headerComponent: "template" };
                 }
@@ -339,10 +344,13 @@ export const ConversationProvider = ({ children }) => {
         } else if (msg.type === "interactive" && msg.interactive?.header) {
             const header = msg.interactive.header;
             const mediaType = header.type;
-
             if (["image", "video", "document"].includes(mediaType)) {
                 const mediaObj = header[mediaType];
-                if (mediaObj && (mediaObj.link || mediaObj.file) && !mediaObj.id) {
+                if(mediaObj?.id){
+                    delete mediaObj.link;
+                    delete mediaObj.file;
+                }
+                if (mediaObj && mediaObj.link  && !mediaObj.id) {
                     mediaInfo = { mediaType, mediaObj, headerComponent: "interactive" };
                 }
             }

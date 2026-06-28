@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import {
     Dialog,
     DialogContent,
@@ -26,10 +26,22 @@ export default function ListMessageModal() {
         listMessage,
         setListMessage,
         handleSendMessage,
-        headerMediaFile,
         setHeaderMediaFile
     } = useConversation();
     
+    const isSendDisabled = useMemo(() => {
+        return (
+            !listMessage.bodyText ||
+            !listMessage.menuLabel ||
+            listMessage.sections.length === 0 ||
+            listMessage.sections.some(section => 
+                !section.title || 
+                section.rows.length === 0 ||
+                section.rows.some(row => !row.title )
+            )
+        );
+    }, [listMessage]);
+
     const handleSend = () => {
         handleSendMessage({
             type: "interactive",
@@ -40,8 +52,7 @@ export default function ListMessageModal() {
                     [listMessage.headerType.toLowerCase()]: listMessage.headerType === "TEXT"
                         ? listMessage.headerText
                         : { 
-                            link: listMessage.headerUrl,
-                            file: headerMediaFile || undefined
+                            link: listMessage.headerUrl
                          }
                 } : undefined,
                 body: { text: listMessage.bodyText },
@@ -132,12 +143,7 @@ export default function ListMessageModal() {
                     />
                     <Button_
                         type="button"
-                        disabled={
-                            !listMessage.bodyText ||
-                            !listMessage.menuLabel ||
-                            listMessage.sections.length === 0 ||
-                            listMessage.sections.some(s => !s.title || s.rows.length === 0)
-                        }
+                        disabled={isSendDisabled}
                         onClick={handleSend}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                         label={t("sendMessage")}

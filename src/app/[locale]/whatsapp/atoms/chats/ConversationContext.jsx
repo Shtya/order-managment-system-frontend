@@ -311,20 +311,20 @@ export const ConversationProvider = ({ children }) => {
         };
     }, [subscribe, selectedConversation, markAsRead]);
 
-    const loadMoreConversations = () => {
+    const loadMoreConversations = useCallback(() => {
         if (!isLoading && hasMore) {
             fetchConversations(search, activeTab, true);
         }
-    };
+    }, [isLoading, hasMore, fetchConversations, search, activeTab]);
 
-    const loadMoreMessages = () => {
+    const loadMoreMessages = useCallback(() => {
         if (!isMessagesLoading && hasMoreMessages && selectedConversation?.id) {
             fetchMessages(selectedConversation.id, messagesCursor, true);
         }
-    };
+    }, [isMessagesLoading, hasMoreMessages, selectedConversation?.id, fetchMessages, messagesCursor]);
 
     // Private function to check if media upload is needed for template or interactive messages
-    const checkIfMediaUploadNeeded = (msg) => {
+    const checkIfMediaUploadNeeded = useCallback((msg) => {
         let mediaInfo = null;
 
         if (msg.type === "template" && msg.template?.components) {
@@ -333,7 +333,7 @@ export const ConversationProvider = ({ children }) => {
             const mediaType = param?.type;
             if (headerComponent && ["image", "video", "document"].includes(mediaType) && param) {
                 const mediaObj = param[mediaType];
-                if(mediaObj?.id){
+                if (mediaObj?.id) {
                     delete mediaObj.link;
                     delete mediaObj.file;
                 }
@@ -346,21 +346,21 @@ export const ConversationProvider = ({ children }) => {
             const mediaType = header.type;
             if (["image", "video", "document"].includes(mediaType)) {
                 const mediaObj = header[mediaType];
-                if(mediaObj?.id){
+                if (mediaObj?.id) {
                     delete mediaObj.link;
                     delete mediaObj.file;
                 }
-                if (mediaObj && mediaObj.link  && !mediaObj.id) {
+                if (mediaObj && mediaObj.link && !mediaObj.id) {
                     mediaInfo = { mediaType, mediaObj, headerComponent: "interactive" };
                 }
             }
         }
 
         return mediaInfo;
-    };
+    }, []);
 
     // Private function to handle media upload
-    const handleMediaUpload = async (mediaInfo, currentAccountId, localId, msg) => {
+    const handleMediaUpload = useCallback(async (mediaInfo, currentAccountId, localId, msg) => {
         try {
             const file = mediaInfo.mediaObj?.file;
             const link = mediaInfo.mediaObj?.link;
@@ -428,9 +428,9 @@ export const ConversationProvider = ({ children }) => {
                 m.id === localId ? { ...m, status: "pending" } : m
             ));
         }
-    };
+    }, []);
 
-    const handleSendMessage = async (msg, metadata) => {
+    const handleSendMessage = useCallback(async (msg, metadata) => {
         if (!selectedConversation) return;
 
 
@@ -573,9 +573,9 @@ export const ConversationProvider = ({ children }) => {
                 m.id === localId ? { ...m, status: "failed", error: error?.response?.data?.message || error?.message } : m
             ));
         }
-    };
+    }, [selectedConversation, replyTo, messages, checkIfMediaUploadNeeded, handleMediaUpload, selectedAccount]);
 
-    const handleRetryMessage = async (failedMessage) => {
+    const handleRetryMessage = useCallback(async (failedMessage) => {
         // 1. Remove the failed message from UI
         setMessages(prev => prev.filter(m => m.id !== failedMessage.id));
 
@@ -593,12 +593,15 @@ export const ConversationProvider = ({ children }) => {
         }
 
         await handleSendMessage(msgPayload, failedMessage.metadata);
-    };
-
-    const handleReaction = async (messageId, emoji) => {
+    }, [handleSendMessage]);
+    const messagesRef = useRef(messages);
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
+    const handleReaction = useCallback(async (messageId, emoji) => {
         if (!selectedConversation) return;
 
-        const targetMsg = messages.find(m => m.id === messageId);
+        const targetMsg = messagesRef.current.find(m => m.id === messageId);
         if (!targetMsg || !targetMsg.messageId) return;
 
         const previousReactions = targetMsg.reactions || [];
@@ -654,12 +657,11 @@ export const ConversationProvider = ({ children }) => {
             ));
             toast.error("Failed to send reaction");
         }
-    };
+    }, [selectedConversation, selectedAccount]);
 
-    const toggleDetails = () => {
-
+    const toggleDetails = useCallback(() => {
         setShowDetails(!showDetails)
-    };
+    }, [showDetails]);
 
     return (
         <ConversationContext.Provider value={{

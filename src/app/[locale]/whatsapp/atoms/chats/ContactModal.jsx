@@ -25,7 +25,7 @@ const createSchema = (t) =>
         lastName: yup.string().required(t("validation.lastNameRequired")),
         phoneNumber: yup.string().required(t("validation.phoneNumberRequired")),
         email: yup.string().email(t("validation.invalidEmail")).optional(),
-        formattedName: yup.string().optional(),
+        // formattedName: yup.string().optional(),
         birthday: yup.string().optional(),
         street: yup.string().optional(),
         city: yup.string().optional(),
@@ -56,7 +56,7 @@ export default function ContactModal() {
             lastName: "",
             phoneNumber: "",
             email: "",
-            formattedName: "",
+            // formattedName: "",
             birthday: "",
             street: "",
             city: "",
@@ -139,7 +139,7 @@ export default function ContactModal() {
                             {errors.lastName && <p className="text-[10px] text-red-500">{errors.lastName.message}</p>}
                         </div>
 
-                        <div className="space-y-2">
+                        {/* <div className="space-y-2">
                             <Label className="text-xs font-bold">{t("formattedName")} <span className="text-red-500">*</span></Label>
                             <Controller
                                 name="formattedName"
@@ -149,7 +149,7 @@ export default function ContactModal() {
                                 )}
                             />
                             {errors.formattedName && <p className="text-[10px] text-red-500">{errors.formattedName.message}</p>}
-                        </div>
+                        </div> */}
 
                         <div className="space-y-2">
                             <Label className="text-xs font-bold">{t("phoneNumber")} <span className="text-red-500">*</span></Label>

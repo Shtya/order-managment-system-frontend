@@ -1,4 +1,5 @@
 import React from 'react';
+import { BASE_URL } from './api';
 
 /**
  * WhatsApp Template Variable Helpers
@@ -151,3 +152,30 @@ export const MESSAGE_STATUS_LIST = [
     { value: MESSAGE_STATUS.READ, label: "Read", color: "text-green-500" },
     { value: MESSAGE_STATUS.FAILED, label: "Failed", color: "text-red-500" },
 ];
+
+
+export const getMediaUrl = (content, type,message) => {
+    const media = content[type];
+    if (media?.localUrl) {
+        return media.localUrl;
+    }
+
+    const token = localStorage.getItem('accessToken');
+    const accountId = message?.accountId;
+    const mediaId = media?.id || content.id;
+
+    const params = new URLSearchParams();
+    if (token) params.append('token', token);
+    if (accountId) params.append('accountId', accountId);
+    if (mediaId) params.append('mediaId', mediaId);
+
+    return `${BASE_URL}/whatsapp/media?${params.toString()}`;
+};
+
+export  const handleMediaClick = (type, content) => {
+    const url = getMediaUrl(content, type);
+    console.log(url);
+    if (url) {
+        window.open(url, "_blank");
+    }
+};

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
     Image as ImageIcon,
     Video,
@@ -24,6 +25,8 @@ import {
     isPotentialVariable,
     replaceVariables,
     formatText,
+    getMediaUrl,
+    handleMediaClick,
 } from "@/utils/whatsapp-healper";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { FaLocationDot } from "react-icons/fa6";
@@ -44,122 +47,155 @@ export function WhatsAppButtonMenu({
     radioOptions = [],
     sections = [],
     seeAllOptionsLabel,
+    isPortal = false,
 }) {
     const t = useTranslations("whatsApp.templates.preview");
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [mounted, setMounted] = useState(false);
 
-    if (!isOpen) return null;
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     const displayTitle = title || t("allOptions");
-    const displaySeeAllOptionsLabel = seeAllOptionsLabel || t("seeAllOptions");
 
     const actionButtons = buttons.filter(btn => btn.type !== "CUSTOM");
     const customButtons = buttons.filter(btn => btn.type === "CUSTOM");
 
-    return (
-        <div className="absolute inset-0 z-[100] flex flex-col justify-end bg-black/40 transition-opacity overflow-hidden">
-            <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="bg-white dark:bg-[#1f2c33] rounded-t-2xl p-4 shadow-2xl max-h-[80%] flex flex-col"
-            >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">
-                    <button onClick={onClose} className="p-1 mt-0.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
-                        <X size={20} className="text-slate-500" />
-                    </button>
-                    <div className="flex-1 px-4 text-center">
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-[15px] leading-tight">{displayTitle}</h3>
-                        {subtitle && <p className="text-[12.5px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">{subtitle}</p>}
-                    </div>
-                    <div className="w-8" /> {/* Spacer */}
-                </div>
-
-                {/* Content */}
-                <div className="overflow-y-auto space-y-1 custom-scrollbar pb-2">
-                    {type === "LIST" ? (
-                        <div className="flex flex-col">
-                            {sections.map((section, sIdx) => (
-                                <div key={sIdx} className="flex flex-col mb-4 last:mb-0">
-                                    {section.title && (
-                                        <div className="px-2 py-1.5 text-[13px] font-bold text-[#00a884] uppercase tracking-wider">
-                                            {section.title}
-                                        </div>
-                                    )}
-                                    <div className="space-y-1">
-                                        {section.rows?.map((row, rIdx) => (
-                                            <div key={rIdx} className="px-2 py-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors cursor-default group">
-                                                <p className="text-[15px] text-slate-700 dark:text-slate-200 font-medium group-hover:text-[#00a884]">{row.title}</p>
-                                                {row.description && (
-                                                    <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">{row.description}</p>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : type === "BUTTONS" ? (
-                        <>
-                            {/* Action Buttons */}
-                            {actionButtons.map((btn, idx) => (
-                                <div key={btn.id || `action-${idx}`} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-default transition-colors group">
-                                    <div className="text-slate-500 group-hover:text-[#00a884]">
-                                        {btn.type === "PHONE_NUMBER" && <Phone size={18} />}
-                                        {btn.type === "VISIT_WEBSITE" && <ExternalLink size={18} />}
-                                        {btn.type === "WHATSAPP_CALL" && <Phone size={18} />}
-                                    </div>
-                                    <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || t("actionButtonPlaceholder")}</span>
-                                </div>
-                            ))}
-
-                            {/* Separator if both types exist */}
-                            {actionButtons.length > 0 && customButtons.length > 0 && (
-                                <div className="h-px bg-slate-100 dark:bg-slate-800 my-2 mx-2" />
-                            )}
-
-                            {/* Custom Buttons */}
-                            {customButtons.map((btn, idx) => (
-                                <div key={btn.id || `custom-${idx}`} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-default transition-colors group">
-                                    <div className="text-slate-500 group-hover:text-[#00a884]">
-                                        <Reply size={18} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
-                                    </div>
-                                    <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || t("quickReplyPlaceholder")}</span>
-                                </div>
-                            ))}
-                        </>
-                    ) : (
-                        <div className="space-y-4 py-2">
-                            {radioOptions.map((option, idx) => (
-                                <div
-                                    key={idx}
-                                    onClick={() => setSelectedIndex(idx)}
-                                    className="flex items-center justify-between px-2 py-1 cursor-pointer group"
-                                >
-                                    <span className={cn(
-                                        "text-[15px] transition-colors",
-                                        selectedIndex === idx ? "text-[#00a884] font-medium" : "text-slate-700 dark:text-slate-200"
-                                    )}>
-                                        {option.label}
-                                    </span>
-                                    <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                                        selectedIndex === idx ? "border-[#00a884]" : "border-slate-300 dark:border-slate-600"
-                                    )}>
-                                        {selectedIndex === idx && <div className="w-2.5 h-2.5 rounded-full bg-[#00a884]" />}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+    const menuContent = (
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div
+                    // 1. Made the background a motion.div for a rapid fade out
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, transition: { duration: 0.1 } }} 
+                    className={cn(
+                        isPortal ? "fixed inset-0 z-[100]" : "absolute inset-0 z-[100]",
+                        "flex items-center justify-center bg-black/40 overflow-hidden"
                     )}
-                </div>
+                    onClick={onClose}
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        // 2. Overriding the exit animation to be very fast (100ms)
+                        exit={{ 
+                            opacity: 0, 
+                            scale: 0.97, 
+                            transition: { duration: 0.1, ease: "easeOut" } 
+                        }}
+                        transition={{
+                            type: "spring",
+                            duration: 0.12,
+                            stiffness: 450,
+                            damping: 35,
+                            mass: 0.5,
+                        }}
+                        className="bg-white dark:bg-[#1f2c33] rounded-xl p-4 shadow-2xl max-h-[80%] w-[90%] max-w-md flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+                            <button onClick={onClose} className="p-1 mt-0.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
+                                <X size={20} className="text-slate-500" />
+                            </button>
+                            <div className="flex-1 px-4 text-center">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-[15px] leading-tight">{displayTitle}</h3>
+                                {subtitle && <p className="text-[12.5px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">{subtitle}</p>}
+                            </div>
+                            <div className="w-8" /> {/* Spacer */}
+                        </div>
 
-                {/* Pull handle for UI look */}
-                <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
-            </motion.div>
-        </div>
+                        {/* Content */}
+                        <div className="overflow-y-auto space-y-1 custom-scrollbar pb-2">
+                            {type === "LIST" ? (
+                                <div className="flex flex-col">
+                                    {sections.map((section, sIdx) => (
+                                        <div key={sIdx} className="flex flex-col mb-4 last:mb-0">
+                                            {section.title && (
+                                                <div className="px-2 py-1.5 text-[13px] font-bold text-[#00a884] uppercase tracking-wider">
+                                                    {section.title}
+                                                </div>
+                                            )}
+                                            <div className="space-y-1">
+                                                {section.rows?.map((row, rIdx) => (
+                                                    <div key={rIdx} className="px-2 py-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors cursor-default group">
+                                                        <p className="text-[15px] text-slate-700 dark:text-slate-200 font-medium group-hover:text-[#00a884]">{row.title}</p>
+                                                        {row.description && (
+                                                            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">{row.description}</p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : type === "BUTTONS" ? (
+                                <>
+                                    {/* Action Buttons */}
+                                    {actionButtons.map((btn, idx) => (
+                                        <div key={btn.id || `action-${idx}`} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-default transition-colors group">
+                                            <div className="text-slate-500 group-hover:text-[#00a884]">
+                                                {btn.type === "PHONE_NUMBER" && <Phone size={18} />}
+                                                {btn.type === "VISIT_WEBSITE" && <ExternalLink size={18} />}
+                                                {btn.type === "WHATSAPP_CALL" && <Phone size={18} />}
+                                            </div>
+                                            <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || t("actionButtonPlaceholder")}</span>
+                                        </div>
+                                    ))}
+
+                                    {/* Separator if both types exist */}
+                                    {actionButtons.length > 0 && customButtons.length > 0 && (
+                                        <div className="h-px bg-slate-100 dark:bg-slate-800 my-2 mx-2" />
+                                    )}
+
+                                    {/* Custom Buttons */}
+                                    {customButtons.map((btn, idx) => (
+                                        <div key={btn.id || `custom-${idx}`} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-default transition-colors group">
+                                            <div className="text-slate-500 group-hover:text-[#00a884]">
+                                                <Reply size={18} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
+                                            </div>
+                                            <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || t("quickReplyPlaceholder")}</span>
+                                        </div>
+                                    ))}
+                                </>
+                            ) : (
+                                <div className="space-y-4 py-2">
+                                    {radioOptions.map((option, idx) => (
+                                        <div
+                                            key={idx}
+                                            onClick={() => setSelectedIndex(idx)}
+                                            className="flex items-center justify-between px-2 py-1 cursor-pointer group"
+                                        >
+                                            <span className={cn(
+                                                "text-[15px] transition-colors",
+                                                selectedIndex === idx ? "text-[#00a884] font-medium" : "text-slate-700 dark:text-slate-200"
+                                            )}>
+                                                {option.label}
+                                            </span>
+                                            <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                                                selectedIndex === idx ? "border-[#00a884]" : "border-slate-300 dark:border-slate-600"
+                                            )}>
+                                                {selectedIndex === idx && <div className="w-2.5 h-2.5 rounded-full bg-[#00a884]" />}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
+
+    if (isPortal && mounted) {
+        return createPortal(menuContent, document.body);
+    }
+
+    return menuContent;
 }
 
 /**
@@ -230,11 +266,15 @@ export default function TemplatePreview({
     const [showExamples, setShowExamples] = useState(forceShowExamples || isChatBubble);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isPermissionsMenuOpen, setIsPermissionsMenuOpen] = useState(false);
+    const [mediaLoading, setMediaLoading] = useState(true);
+    const [mediaError, setMediaError] = useState(false);
     const locale = useLocale();
 
     useEffect(() => {
         if (forceShowExamples) setShowExamples(true);
     }, [forceShowExamples]);
+
+ 
 
     const raw = template || {};
     const cfgSource =
@@ -321,7 +361,10 @@ export default function TemplatePreview({
             return part;
         });
     }, [bodyText, examples, t]);
-
+   useEffect(() => {
+        setMediaLoading(true);
+        setMediaError(false);
+    }, [headerUrl, headerType]);
     const renderHeader = () => {
         const mediaClass = "aspect-video w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-sm overflow-hidden border-b border-slate-100 dark:border-slate-800 mb-2 relative";
 
@@ -332,35 +375,116 @@ export default function TemplatePreview({
             </div>
         );
 
+        // Create a mock message object for getMediaUrl
+        const mockMessage = { accountId: null };
+        // Create content object based on headerType and headerUrl
+        const createMediaContent = (type, urlOrId) => {
+            if (urlOrId) {
+                // Check if it's a URL or ID
+                if (urlOrId.startsWith('http://') || urlOrId.startsWith('https://') || urlOrId.startsWith('blob:')) {
+                    return { [type]: { localUrl: urlOrId } };
+                } else {
+                    return { [type]: { id: urlOrId } };
+                }
+            }
+            return { [type]: {} };
+        };
+
         switch (headerType) {
             case "IMAGE":
+                const imageContent = createMediaContent('image', headerUrl);
+                const imageUrl = headerUrl ? getMediaUrl(imageContent, 'image', mockMessage) : null;
                 return (
                     <div className={mediaClass}>
                         {uploadOverlay}
-                        {headerUrl ? (
-                            <img src={avatarSrc(headerUrl)} alt="Header" className="w-full h-full object-cover" />
+                        {imageUrl ? (
+                            <>
+                                {(mediaLoading || isUploading) && !mediaError && (
+                                    <div className="absolute bg-muted/30 inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
+                                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/60" />
+                                        {isUploading && <span className="text-[10px] text-muted-foreground font-bold mt-2 uppercase tracking-widest">{t("preview.uploading")}</span>}
+                                    </div>
+                                )}
+                                {mediaError ? (
+                                    <div className="flex flex-col bg-muted/30 items-center gap-2 p-6 text-muted-foreground/60">
+                                        <AlertCircle size={32} />
+                                        <span className="text-xs font-medium">Failed to load image</span>
+                                    </div>
+                                ) : (
+                                    <img
+                                        src={imageUrl}
+                                        alt="Header"
+                                        className={cn(
+                                            "w-full h-full object-cover cursor-pointer transition-opacity duration-300",
+                                            (mediaLoading && !isUploading) ? "opacity-0" : "opacity-100"
+                                        )}
+                                        loading="lazy"
+                                        onLoad={() => setMediaLoading(false)}
+                                        onError={() => {
+                                            setMediaLoading(false);
+                                            setMediaError(true);
+                                        }}
+                                        onClick={() => handleMediaClick("image", imageContent)}
+                                    />
+                                )}
+                            </>
                         ) : (
                             <ImageIcon size={48} className="text-slate-300" />
                         )}
                     </div>
                 );
             case "VIDEO":
+                const videoContent = createMediaContent('video', headerUrl);
+                const videoUrl = headerUrl ? getMediaUrl(videoContent, 'video', mockMessage) : null;
                 return (
                     <div className={mediaClass}>
                         {uploadOverlay}
-                        {headerUrl ? (
-                            <video src={avatarSrc(headerUrl)} className="w-full h-full object-cover" controls
-                                preload="metadata"
-                                playsInline />
+                        {videoUrl ? (
+                            <>
+                                {(mediaLoading || isUploading) && !mediaError && (
+                                    <div className="absolute bg-muted/30 inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
+                                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/60" />
+                                        {isUploading && <span className="text-[10px] text-muted-foreground font-bold mt-2 uppercase tracking-widest">{t("preview.uploading")}</span>}
+                                    </div>
+                                )}
+                                {mediaError ? (
+                                    <div className="flex flex-col bg-muted/30 items-center gap-2 p-6 text-muted-foreground/60">
+                                        <AlertCircle size={32} />
+                                        <span className="text-xs font-medium">Failed to load video</span>
+                                    </div>
+                                ) : (
+                                    <video
+                                        src={videoUrl}
+                                        className={cn(
+                                            "w-full h-full object-cover transition-opacity duration-300",
+                                            (mediaLoading && !isUploading) ? "opacity-0" : "opacity-100"
+                                        )}
+                                        controls
+                                        preload="metadata"
+                                        playsInline
+                                        onLoadedData={() => setMediaLoading(false)}
+                                        onError={() => {
+                                            setMediaLoading(false);
+                                            setMediaError(true);
+                                        }}
+                                    />
+                                )}
+                            </>
                         ) : (
                             <Video size={48} className="text-slate-300" />
                         )}
                     </div>
                 );
             case "DOCUMENT":
+                const docContent = createMediaContent('document', headerUrl);
+                const docUrl = headerUrl ? getMediaUrl(docContent, 'document', mockMessage) : null;
                 return (
                     <a
-                        href={headerUrl ? avatarSrc(headerUrl) : "#"}
+                        href={docUrl ? docUrl : "#"}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            if (docUrl) handleMediaClick("document", docContent);
+                        }}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={mediaClass}
@@ -460,7 +584,7 @@ export default function TemplatePreview({
                     "relative flex-1 transition-all duration-300",
                     !isChatBubble && "whatsapp-wallpaper",
                     isChatBubble ? "p-0" : "p-6",
-                    isMenuOpen ? "min-h-[500px]!" : (isChatBubble ? "min-h-0" : "min-h-[300px]!")
+                    isMenuOpen && !isChatBubble ? "min-h-[500px]!" : (isChatBubble ? "min-h-0" : "min-h-[300px]!")
                 )}
             >
                 <div className={cn(
@@ -562,7 +686,7 @@ export default function TemplatePreview({
                                     return (
                                         <>
                                             {visibleButtons.map((btn, idx) => {
-                                                const btnText = btn.text ? btn.text :  locale === "ar" ? btn.textAr : btn.textEn;
+                                                const btnText = btn.text ? btn.text : locale === "ar" ? btn.textAr : btn.textEn;
                                                 return (<div
                                                     key={btn.id || idx}
                                                     className={cn(
@@ -643,6 +767,7 @@ export default function TemplatePreview({
                             title={seeAllOptionsLabel || (isList ? t("preview.selectAnOption") : t("preview.allOptions"))}
                             locale={locale}
                             seeAllOptionsLabel={seeAllOptionsLabel || t("preview.seeAllOptions")}
+                            isPortal={isChatBubble}
                         />
                     )}
                 </AnimatePresence>
@@ -662,6 +787,7 @@ export default function TemplatePreview({
                                 { label: t("preview.callPermissionNotNow") },
                             ]}
                             locale={locale}
+                            isPortal={isChatBubble}
                         />
                     )}
                 </AnimatePresence>

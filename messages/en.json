@@ -902,7 +902,8 @@
       "woocommerceNotFound": "WooCommerce store not found or not active for this user",
       "integrationCancelled": "Integration cancelled successfully",
       "shopifySecurityFailed": "Shopify security verification failed. Please try again.",
-      "shopifyConnectionFailed": "Failed to connect to Shopify store. Please check your settings and try again."
+      "shopifyConnectionFailed": "Failed to connect to Shopify store. Please check your settings and try again.",
+      "shopifyInvalidSession": "Shopify session is invalid. Please try again"
     }
   },
   "integrated": {
@@ -1981,6 +1982,7 @@
         "uploading": "Uploading...",
         "failedToLoadImage": "Failed to load image",
         "failedToLoadVideo": "Failed to load video",
+        "unsupportedMessage": "Unsupported message",
         "document": "Document",
         "messageFailedToSend": "Message failed to send",
         "retrySending": "Retry Sending"
@@ -11329,7 +11331,10 @@
         "IMAGE": "Image",
         "VIDEO": "Video",
         "DOCUMENT": "Document"
-      }
+      },
+      "menuLabelPlaceholder": "e.g. View Options",
+      "sectionTitlePlaceholder": "e.g. Select a category",
+      "menuLabel": "View Options"
     }
   },
   "chats": {
@@ -11427,7 +11432,7 @@
     },
     "address": "Address",
     "viewOptions": "View Options",
-    "menuLabel": "Menu Label",
+    "menuLabel": "Button text",
     "listSections": "List Sections",
     "sectionTitle": "Section Title",
     "rowTitle": "Row Title",
@@ -11466,7 +11471,9 @@
     "message": "Message",
     "saveContact": "Save Contact",
     "mobile": "Mobile",
-    "home": "Home"
+    "home": "Home",
+    "chooseOption": "Choose",
+    "unsupportedMessage": "Unsupported message"
   },
   "failedToLoadImage": "Failed to load image",
   "failedToLoadVideo": "Failed to load video",

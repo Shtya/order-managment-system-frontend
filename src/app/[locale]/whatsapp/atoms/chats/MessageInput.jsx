@@ -207,8 +207,8 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
         { icon: MapPin, label: t("messageTypes.sendLocation"), color: "text-green-500", type: "location" },
         { icon: MapIcon, label: t("messageTypes.requestLocation"), color: "text-green-500", type: "location_request" },
         { icon: UserCircle, label: t("messageTypes.contact"), color: "text-teal-500", type: "contact" },
-        // { icon: List, label: t("messageTypes.list"), color: "text-blue-600", type: "list" },
-        // { icon: LayoutGrid, label: t("messageTypes.interactive"), color: "text-green-600", type: "interactive" },
+        { icon: List, label: t("messageTypes.list"), color: "text-blue-600", type: "list" },
+        { icon: LayoutGrid, label: t("messageTypes.interactive"), color: "text-green-600", type: "interactive" },
         { icon: MessageSquareQuote, label: t("messageTypes.template"), color: "text-gray-600", type: "template" },
     ];
 

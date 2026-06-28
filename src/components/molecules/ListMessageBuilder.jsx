@@ -112,12 +112,12 @@ export default function ListMessageBuilder({
   config = {
     maxRows: 10,
     maxSections: 10,
-    headerTypes: ["NONE", "TEXT", "IMAGE", "VIDEO", "DOCUMENT"],
+    headerTypes: ["NONE", "TEXT"],
     allowVariables: false
   }
 }) {
-  const t = useTranslations("upsells.builder");
   const tc = useTranslations("chats");
+  const t = useTranslations("upsells.builder");
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -132,10 +132,9 @@ export default function ListMessageBuilder({
     headerUrl = "",
     bodyText = "",
     footerText = "",
-    menuLabel = "View Options",
+    menuLabel = "",
     sections = [{ title: "", rows: [] }]
   } = value || {};
-
   const totalRows = sections.reduce((acc, s) => acc + (s.rows?.length || 0), 0);
 
   const handleUpdate = (updates) => {
@@ -281,7 +280,7 @@ export default function ListMessageBuilder({
         <div className="space-y-3">
           <Label className="text-base font-bold">{tc("menuLabel")}</Label>
           <Input
-            placeholder="e.g. View Options"
+            placeholder={t("menuLabelPlaceholder")}
             maxLength={200}
             value={menuLabel}
             onChange={(e) => handleUpdate({ menuLabel: e.target.value })}
@@ -327,7 +326,7 @@ export default function ListMessageBuilder({
                   {tc("sectionTitle")} <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  placeholder="e.g. Select a category"
+                  placeholder={t("sectionTitlePlaceholder")}
                   maxLength={24}
                   value={section.title}
                   onChange={(e) => handleSectionTitleChange(sIdx, e.target.value)}

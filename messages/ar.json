@@ -902,7 +902,8 @@
       "woocommerceNotFound": "متجر WooCommerce غير موجود أو غير مفعل لهذا المستخدم",
       "integrationCancelled": "تم إلغاء الربط بنجاح",
       "shopifySecurityFailed": "فشل التحقق الأمني من Shopify، يرجى المحاولة مرة أخرى",
-      "shopifyConnectionFailed": "تعذر الاتصال بمتجر شوبيفاي، يرجى التحقق من الإعدادات والمحاولة مرة أخرى"
+      "shopifyConnectionFailed": "تعذر الاتصال بمتجر شوبيفاي، يرجى التحقق من الإعدادات والمحاولة مرة أخرى",
+      "shopifyInvalidSession": "جلسة Shopify غير صالحة. يُرجى  المحاولة مرة أخرى"
     }
   },
   "integrated": {
@@ -11360,7 +11361,10 @@
         "IMAGE": "صورة",
         "VIDEO": "فيديو",
         "DOCUMENT": "مستند"
-      }
+      },
+      "menuLabelPlaceholder": "مثال: عرض الخيارات",
+      "sectionTitlePlaceholder": "مثال: اختر فئة",
+      "menuLabel": "عرض الخيارات"
     }
   },
   "chats": {
@@ -11458,7 +11462,7 @@
     },
     "address": "العنوان",
     "viewOptions": "عرض الخيارات",
-    "menuLabel": "عنوان القائمة",
+    "menuLabel": "نص الزر",
     "listSections": "أقسام القائمة",
     "sectionTitle": "عنوان القسم",
     "rowTitle": "عنوان الصف",
@@ -11491,13 +11495,15 @@
     "uploading": "جاري الرفع...",
     "failedToLoadImage": "فشل تحميل الصورة",
     "failedToLoadVideo": "فشل تحميل الفيديو",
+    "unsupportedMessage": "رسالة غير مدعومة",
     "messageFailedToSend": "فشل إرسال الرسالة",
     "retrySending": "إعادة المحاولة",
     "document": "ملف",
     "message": "رسالة",
     "saveContact": "حفظ جهة الاتصال",
     "mobile": "موبايل",
-    "home": "منزل"
+    "home": "منزل",
+    "chooseOption": "إختر"
   },
   "failedToLoadImage": "فشل تحميل الصورة",
   "failedToLoadVideo": " فشل تحميل الفيديو",

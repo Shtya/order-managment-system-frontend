@@ -58,12 +58,10 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         setMessageStatus,
         messageAccount,
         setMessageAccount,
-        handleSendMessage: onSendMessageFromContext,
         handleRetryMessage: onRetry,
         handleReaction: onReaction,
         replyTo,
         setReplyTo,
-        mobileView,
         setMobileView
     } = useConversation();
 

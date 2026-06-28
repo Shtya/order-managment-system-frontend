@@ -3,7 +3,7 @@
 import { cn } from "@/utils/cn";
 import { format } from "date-fns";
 import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw, List, MapPin, User, Mail, Calendar, ChevronRight, Save, CheckCircle2 } from "lucide-react";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, memo } from "react";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
 import {
@@ -23,7 +23,7 @@ import { formatText, handleMediaClick, getMediaUrl } from "@/utils/whatsapp-heal
 import { useTranslations, useLocale } from "next-intl";
 import { useClipboard } from "@/hook/useClipboard";
 
-export default function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted }) {
+function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted }) {
     const t = useTranslations("chats");
     const locale = useLocale();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -527,7 +527,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground/60">
                                 <User size={24} />
                             </div>
-                            <div className="min-w-0 flex-1">
+                            <div className="min-w-0 flex-1 text-start">
                                 <p className="text-sm font-bold text-foreground truncate">
                                     {contact?.name?.formatted_name || contact?.name?.first_name}
                                 </p>
@@ -936,3 +936,25 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
         </div>
     );
 }
+
+
+export default memo(MessageBubble, (prevProps, nextProps) => {
+    
+    return (
+        // Check if it's the exact same message
+        prevProps.id === nextProps.id &&
+        prevProps.message.id === nextProps.message.id &&
+        
+        // Re-render if the message status changes (e.g., sent -> delivered -> read)
+        prevProps.message.status === nextProps.message.status &&
+        
+        // Re-render if the text body changes (if you support message editing)
+        prevProps.message.body === nextProps.message.body &&
+        
+        // Re-render if the highlight state changes (e.g., when scrolling to a searched message)
+        prevProps.isHighlighted === nextProps.isHighlighted &&
+        
+        // Safety check for outbound status
+        prevProps.isOutbound === nextProps.isOutbound
+    );
+});

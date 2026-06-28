@@ -257,6 +257,7 @@ export const ConversationProvider = ({ children }) => {
 
                 const updated = {
                     ...existing,
+                    lastMessage: msg,
                     lastMessageAt: msg.createdAt,
                     lastMessagePreview: msg.messageType === "text" ? msg.content?.text?.body : (isReaction ? `Reaction: ${msg.content?.reaction?.emoji}` : `[${msg.messageType.toUpperCase()}]`),
                     unreadCount: shouldIncrementUnread ? (existing.unreadCount || 0) + 1 : (isConversationOpen ? 0 : existing.unreadCount)
@@ -505,7 +506,7 @@ export const ConversationProvider = ({ children }) => {
             metadata: { localId, ...metadata },
             replyTo: repMsg,
         };
-        console.log(newMessage)
+        
         // 1. Optimistic UI: Add message and move conversation to top
         setMessages(prev => [...prev, newMessage]);
         setConversations(prev => {

@@ -93,7 +93,7 @@ export function WhatsAppButtonMenu({
                             damping: 35,
                             mass: 0.5,
                         }}
-                        className="bg-white dark:bg-[#1f2c33] rounded-xl p-4 shadow-2xl max-h-[80%] w-[90%] max-w-md flex flex-col"
+                        className="bg-whatsapp-message rounded-xl p-4 shadow-2xl max-h-[80%] w-[90%] max-w-md flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
@@ -121,7 +121,7 @@ export function WhatsAppButtonMenu({
                                             )}
                                             <div className="space-y-1">
                                                 {section.rows?.map((row, rIdx) => (
-                                                    <div key={rIdx} className="px-2 py-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors cursor-default group">
+                                                    <div key={rIdx} className="px-2 py-3 hover:bg-[#cbe5c8] dark:hover:bg-[#182229] rounded-lg transition-colors cursor-default group">
                                                         <p className="text-[15px] text-slate-700 dark:text-slate-200 font-medium group-hover:text-[#00a884]">{row.title}</p>
                                                         {row.description && (
                                                             <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">{row.description}</p>
@@ -136,7 +136,7 @@ export function WhatsAppButtonMenu({
                                 <>
                                     {/* Action Buttons */}
                                     {actionButtons.map((btn, idx) => (
-                                        <div key={btn.id || `action-${idx}`} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-default transition-colors group">
+                                        <div key={btn.id || `action-${idx}`} className="flex items-center gap-3 p-3 hover:bg-[#cbe5c8] dark:hover:bg-[#182229] rounded-lg cursor-default transition-colors group">
                                             <div className="text-slate-500 group-hover:text-[#00a884]">
                                                 {btn.type === "PHONE_NUMBER" && <Phone size={18} />}
                                                 {btn.type === "VISIT_WEBSITE" && <ExternalLink size={18} />}
@@ -148,12 +148,12 @@ export function WhatsAppButtonMenu({
 
                                     {/* Separator if both types exist */}
                                     {actionButtons.length > 0 && customButtons.length > 0 && (
-                                        <div className="h-px bg-slate-100 dark:bg-slate-800 my-2 mx-2" />
+                                        <div className="h-px bg-[#e8f5e9] dark:bg-slate-800 my-2 mx-2" />
                                     )}
 
                                     {/* Custom Buttons */}
                                     {customButtons.map((btn, idx) => (
-                                        <div key={btn.id || `custom-${idx}`} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-default transition-colors group">
+                                        <div key={btn.id || `custom-${idx}`} className="flex items-center gap-3 p-3 hover:bg-[#cbe5c8] dark:hover:bg-[#182229] rounded-lg cursor-default transition-colors group">
                                             <div className="text-slate-500 group-hover:text-[#00a884]">
                                                 <Reply size={18} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
                                             </div>
@@ -207,7 +207,7 @@ export function WhatsAppCallPermissionsBubble({ locale = "en", onOpenMenu }) {
 
     return (
         <div className={cn(
-            "bg-white dark:bg-[#1f2c33] rounded-sm shadow-sm p-1.5 pe-2 relative min-w-[200px] max-w-[95%] mt-2",
+            "bg-whatsapp-message rounded-sm shadow-sm p-1.5 pe-2 relative min-w-[200px] max-w-[95%] mt-2",
         )}>
             <div className="flex items-start gap-3 p-2">
                 <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
@@ -260,6 +260,7 @@ export default function TemplatePreview({
     bgTransparent = false,
     isChatBubble = false,
     isUploading = false,
+    onMediaLoad = () => {},
 }) {
 
     const t = useTranslations("whatsApp.templates");
@@ -419,10 +420,18 @@ export default function TemplatePreview({
                                             (mediaLoading && !isUploading) ? "opacity-0" : "opacity-100"
                                         )}
                                         loading="lazy"
-                                        onLoad={() => setMediaLoading(false)}
+                                        onLoad={() => {
+                                            setMediaLoading(false)
+                                            if (onMediaLoad) {
+                                                onMediaLoad();
+                                            }   
+                                        }}
                                         onError={() => {
                                             setMediaLoading(false);
                                             setMediaError(true);
+                                             if (onMediaLoad) {
+                                                onMediaLoad();
+                                            }
                                         }}
                                         onClick={() => handleMediaClick("image", imageContent)}
                                     />
@@ -462,10 +471,18 @@ export default function TemplatePreview({
                                         controls
                                         preload="metadata"
                                         playsInline
-                                        onLoadedData={() => setMediaLoading(false)}
+                                        onLoadedData={() => {
+                                            setMediaLoading(false)
+                                            if (onMediaLoad) {
+                                                onMediaLoad();
+                                            }   
+                                        }}
                                         onError={() => {
                                             setMediaLoading(false);
                                             setMediaError(true);
+                                             if (onMediaLoad) {
+                                                onMediaLoad();
+                                            }
                                         }}
                                     />
                                 )}
@@ -569,12 +586,12 @@ export default function TemplatePreview({
     return (
         <div className={cn(
             "w-full mx-auto overflow-hidden flex flex-col",
-            bgTransparent ? "bg-transparent" : "bg-white dark:bg-[#111b21]",
+            bgTransparent ? "bg-transparent" : "bg-whatsapp-message",
             (!flat && !isChatBubble) && "shadow-lg border border-slate-200 dark:border-slate-800",
             isChatBubble ? "rounded-none" : "rounded-md"
         )}>
             {/* Template Header Bar */}
-            {hasHeader && <div className="px-4 py-2 bg-white dark:bg-[#111b21] border-b border-slate-100 dark:border-slate-800">
+            {hasHeader && <div className="px-4 py-2 bg-whatsapp-message border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">{t("preview.title")}</h3>
             </div>
             }
@@ -595,7 +612,7 @@ export default function TemplatePreview({
                     {/* Bubble Container */}
                     <div className={cn(
                         "relative min-w-[200px] max-w-[95%]",
-                        !isChatBubble && "bg-white dark:bg-[#1f2c33] rounded-sm shadow-sm p-1.5 pe-2",
+                        !isChatBubble && "bg-whatsapp-message rounded-sm shadow-sm p-1.5 pe-2",
                         !isChatBubble && (locale === "ar" ? "rounded-tr-none" : "rounded-tl-none")
                     )}
                         dir={language === "ar" ? "rtl" : "ltr"}
@@ -679,7 +696,9 @@ export default function TemplatePreview({
 
                         {/* Buttons Section */}
                         {(buttons.length > 0 || isList) && (
-                            <div dir={locale === "ar" ? "rtl" : "ltr"} className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
+                            <div dir={locale === "ar" ? "rtl" : "ltr"} className={cn(
+                                "border-t border-whatsapp-button-border mt-2 -mx-1.5 -mb-1.5 overflow-hidden"
+                            )}>
                                 {(() => {
                                     const showMenuButton = buttons.length > 3 || isList;
                                     const visibleButtons = showMenuButton ? (isList ? [] : buttons.slice(0, 2)) : buttons;
@@ -690,9 +709,9 @@ export default function TemplatePreview({
                                                 return (<div
                                                     key={btn.id || idx}
                                                     className={cn(
-                                                        "py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] hover:bg-slate-50 dark:hover:bg-white/5 cursor-default transition-colors",
-                                                        idx > 0 && "border-t border-slate-100 dark:border-slate-800",
-
+                                                        "py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] cursor-default transition-colors",
+                                                        "hover:bg-template-btn-hover",
+                                                        idx > 0 && "border-t border-whatsapp-button-border",
                                                     )}
                                                 >
 
@@ -723,7 +742,11 @@ export default function TemplatePreview({
                                             {showMenuButton && (
                                                 <button
                                                     onClick={() => setIsMenuOpen(true)}
-                                                    className="w-full py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] hover:bg-slate-50 dark:hover:bg-white/5 border-t border-slate-100 dark:border-slate-800 transition-colors"
+                                                    className={cn(
+                                                        "w-full py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] transition-colors",
+                                                        "hover:bg-template-btn-hover",
+                                                        "border-t border-whatsapp-button-border"
+                                                    )}
                                                 >
                                                     <List size={14} />
                                                     {seeAllOptionsLabel || t("preview.seeAllOptions")}
@@ -736,7 +759,7 @@ export default function TemplatePreview({
                         )}
 
                         {subCategory === "AUTHENTICATION_OTP" && authMethod === "COPY_CODE" && (
-                            <div dir={locale === "ar" ? "rtl" : "ltr"} className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
+                            <div dir={locale === "ar" ? "rtl" : "ltr"} className="border-t border-whatsapp-button-border mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
                                 <div className="py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px]">
                                     <Copy size={14} />
                                     {otpPreviewLabel}

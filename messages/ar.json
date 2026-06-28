@@ -10498,7 +10498,7 @@
         "useCustomValidity": "تعيين فترة صلاحية مخصصة لرسالتك",
         "addSecurityRecommendation": "إضافة توصية أمنية",
         "authExpirationTime": "إضافة وقت انتهاء صلاحية الرمز",
-        "authOtpBody": "{{1}} هو رمز التحقق الخاص بك.",
+        "authOtpBody": "هو رمز التحقق الخاص بك {otp}.",
         "authOtpSecurity": " لحمايتك، لا تشارك هذا الرمز.",
         "authOtpFooter": "تنتهي صلاحية الرمز خلال {minutes} دقائق.",
         "bodyPlaceholderPreview": "سيظهر نص رسالتك هنا...",
@@ -11503,7 +11503,9 @@
     "saveContact": "حفظ جهة الاتصال",
     "mobile": "موبايل",
     "home": "منزل",
-    "chooseOption": "إختر"
+    "chooseOption": "إختر",
+    "from": "من",
+    "to": "إلي"
   },
   "failedToLoadImage": "فشل تحميل الصورة",
   "failedToLoadVideo": " فشل تحميل الفيديو",

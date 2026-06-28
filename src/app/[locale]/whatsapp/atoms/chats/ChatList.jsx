@@ -72,6 +72,30 @@ const ChatListItem = ({ conv, activeId, onSelect }) => {
     );
 };
 
+// Skeleton for chat list items
+const ChatListItemSkeleton = () => {
+    return (
+        <div className="w-full p-4 flex gap-3 animate-pulse">
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-muted border border-border"></div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                    <div className="h-4 bg-muted/70 rounded w-32"></div>
+                    <div className="h-3 bg-muted/70 rounded w-12"></div>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                    <div className="h-3 bg-muted/70 rounded flex-1 max-w-[200px]"></div>
+                    <div className="h-[18px] w-[18px] bg-muted/70 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function ChatList() {
     const t = useTranslations("chats");
     const { hasPermission } = useAuth();
@@ -208,14 +232,23 @@ export default function ChatList() {
                     </div>
                 )}
 
-                {conversations.map((conv) => (
-                    <ChatListItem
-                        key={conv.id}
-                        conv={conv}
-                        activeId={activeId}
-                        onSelect={onSelect}
-                    />
-                ))}
+                {!isLoading ? (
+                    conversations.map((conv) => (
+                        <ChatListItem
+                            key={conv.id}
+                            conv={conv}
+                            activeId={activeId}
+                            onSelect={onSelect}
+                        />
+                    ))
+                ) : (
+                    <>
+                        {/* Show skeletons */}
+                        {[...Array(8)].map((_, index) => (
+                            <ChatListItemSkeleton key={`skeleton-${index}`} />
+                        ))}
+                    </>
+                )}
 
                 {hasMore && (
                     <button
@@ -229,12 +262,6 @@ export default function ChatList() {
                             t("loadMore")
                         )}
                     </button>
-                )}
-
-                {isLoading && conversations.length === 0 && (
-                    <div className="flex justify-center p-8">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    </div>
                 )}
             </div>
 

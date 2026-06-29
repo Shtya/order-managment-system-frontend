@@ -14,6 +14,9 @@ export const useConversation = () => useContext(ConversationContext);
 export const ConversationProvider = ({ children }) => {
     const t = useTranslations("chats");
     const { settings } = useOrdersSettings();
+    const scrollRef = useRef(null);
+    const prevScrollHeight = useRef(0);
+
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [accounts, setAccounts] = useState([]);
     const [replyTo, setReplyTo] = useState(null);
@@ -175,10 +178,12 @@ export const ConversationProvider = ({ children }) => {
             const res = await api.get("/whatsapp/messages", { params });
             const { records, hasMore: apiHasMore, nextCursor } = res.data || {};
 
-            // We fetch in DESC order (newest first) for pagination, 
-            // but usually we want to display them in ASC order (oldest first at top).
-            // When appending (loading older messages), we prepend them.
             const newMessages = records.reverse();
+
+
+            if (append && scrollRef.current) {
+                prevScrollHeight.current = scrollRef.current.scrollHeight;
+            }
 
             setMessages(prev => append ? [...newMessages, ...prev] : newMessages);
             setHasMoreMessages(!!apiHasMore);
@@ -228,7 +233,7 @@ export const ConversationProvider = ({ children }) => {
         setSelectedConversation(conversation);
         setMessages([]);
     }, [setSelectedConversation]);
-    
+
     useEffect(() => {
         const unsubConversation = subscribe("WHATSAPP_CONVERSATION_NEW", (payload) => {
             if (!payload?.conversation) return;
@@ -506,7 +511,7 @@ export const ConversationProvider = ({ children }) => {
             metadata: { localId, ...metadata },
             replyTo: repMsg,
         };
-        
+
         // 1. Optimistic UI: Add message and move conversation to top
         setMessages(prev => [...prev, newMessage]);
         setConversations(prev => {
@@ -739,7 +744,9 @@ export const ConversationProvider = ({ children }) => {
             messageAccount,
             setMessageAccount,
             replyTo,
-            setReplyTo
+            setReplyTo,
+            prevScrollHeight,
+            scrollRef
         }}>
             {children}
         </ConversationContext.Provider>

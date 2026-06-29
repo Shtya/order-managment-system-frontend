@@ -11341,6 +11341,7 @@
       "bodyTextRequired": "نص الرسالة مطلوب",
       "buttonTextRequired": "نص الزر مطلوب",
       "buttonsRequired": "يجب إضافة زرين على الأقل",
+      "buttonTextDuplicate": "لا يمكن تكرار نص الزر",
       "mediaHeaderFileRequired": "ارفع ملفاً لهذا النوع من الرأس (صورة أو فيديو أو مستند)",
       "mediaHeaderMustReupload": "يجب إعادة رفع الملف أو اختيار رابط صالح"
     },
@@ -11442,7 +11443,16 @@
       "lastNameRequired": "اسم العائلة مطلوب",
       "formattedNameRequired": "الاسم بالكامل مطلوب",
       "invalidEmail": "بريد إلكتروني غير صالح",
-      "required": "هذا الحقل مطلوب"
+      "required": "هذا الحقل مطلوب",
+      "bodyTextRequired": "نص الرسالة مطلوب",
+      "buttonTextRequired": "نص الزر مطلوب",
+      "buttonsRequired": "يجب إضافة زر على الأقل",
+      "buttonTextDuplicate": "لا يمكن تكرار نص الزر",
+      "menuLabelRequired": "نص القائمة مطلوب",
+      "minOneRowRequired": "يجب إضافة صف على الأقل",
+      "sectionTitleRequired": "عنوان القسم مطلوب",
+      "rowTitleRequired": "عنوان الصف مطلوب",
+      "sectionsRequired": "يجب إضافة قسم على الأقل"
     },
     "sendMessage": "إرسال الرسالة",
     "preview": "معاينة",

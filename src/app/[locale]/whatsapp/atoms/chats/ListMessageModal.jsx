@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import {
     Dialog,
     DialogContent,
@@ -16,6 +16,36 @@ import { useConversation } from "./ConversationContext";
 import { useLocale } from "next-intl";
 import { List } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
+import { useForm } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+const createSchema = (t) =>
+    yup.object({
+        headerType: yup.string().oneOf(["NONE", "TEXT", "IMAGE", "VIDEO", "DOCUMENT"]).default("NONE"),
+        headerText: yup.string().default(""),
+        headerUrl: yup.string().default(""),
+        bodyText: yup.string().required(t("validation.bodyTextRequired")),
+        footerText: yup.string().default(""),
+        menuLabel: yup.string().required(t("validation.menuLabelRequired")),
+        sections: yup.array()
+            .of(
+                yup.object({
+                    title: yup.string().required(t("validation.sectionTitleRequired")),
+                    rows: yup.array()
+                        .of(
+                            yup.object({
+                                // Fixed the missing closing quote after the template literal
+                                id: yup.string().default(() => `row_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
+                                title: yup.string().required(t("validation.rowTitleRequired")),
+                                description: yup.string().nullable().default("")
+                            })
+                        )
+                        .min(1, t("validation.minOneRowRequired"))
+                })
+            )
+            .min(1, t("validation.sectionsRequired"))
+    });             
 
 export default function ListMessageModal() {
     const t = useTranslations("chats");
@@ -23,43 +53,69 @@ export default function ListMessageModal() {
     const {
         showListModal,
         setShowListModal,
-        listMessage,
-        setListMessage,
-        handleSendMessage,
-        setHeaderMediaFile
+        handleSendMessage
     } = useConversation();
     
-    const isSendDisabled = useMemo(() => {
-        return (
-            !listMessage.bodyText ||
-            !listMessage.menuLabel ||
-            listMessage.sections.length === 0 ||
-            listMessage.sections.some(section => 
-                !section.title || 
-                section.rows.length === 0 ||
-                section.rows.some(row => !row.title )
-            )
-        );
-    }, [listMessage]);
+    const [localHeaderMediaFile, setLocalHeaderMediaFile] = useState(null);
+    
+    const schema = useMemo(() => createSchema(t), [t]);
 
-    const handleSend = () => {
+    const {
+        control,
+        handleSubmit,
+        watch,
+        setValue,
+        reset,
+        formState: { errors }
+    } = useForm({
+        resolver: yupResolver(schema),
+        defaultValues: {
+            headerType: "NONE",
+            headerText: "",
+            headerUrl: "",
+            bodyText: "",
+            footerText: "",
+            menuLabel: t("viewOptions"),
+            sections: [{ title: "", rows: [] }]
+        }
+    });
+    
+    const watchAllFields = watch();
+    
+    useEffect(() => {
+        if (showListModal) {
+            reset({
+                headerType: "NONE",
+                headerText: "",
+                headerUrl: "",
+                bodyText: "",
+                footerText: "",
+                menuLabel: t("viewOptions"),
+                sections: [{ title: "", rows: [] }]
+            });
+            setLocalHeaderMediaFile(null);
+        }
+    }, [showListModal, reset, t]);
+
+    const onSubmit = (data) => {
         handleSendMessage({
             type: "interactive",
             interactive: {
                 type: "list",
-                header: listMessage.headerType !== "NONE" ? {
-                    type: listMessage.headerType.toLowerCase(),
-                    [listMessage.headerType.toLowerCase()]: listMessage.headerType === "TEXT"
-                        ? listMessage.headerText
+                header: data.headerType !== "NONE" ? {
+                    type: data.headerType.toLowerCase(),
+                    [data.headerType.toLowerCase()]: data.headerType === "TEXT"
+                        ? data.headerText
                         : { 
-                            link: listMessage.headerUrl
+                            link: data.headerUrl,
+                            file: localHeaderMediaFile || undefined
                          }
                 } : undefined,
-                body: { text: listMessage.bodyText },
-                footer: listMessage.footerText ? { text: listMessage.footerText } : undefined,
+                body: { text: data.bodyText },
+                footer: data.footerText ? { text: data.footerText } : undefined,
                 action: {
-                    button: listMessage.menuLabel,
-                    sections: listMessage.sections.map((s) => ({
+                    button: data.menuLabel,
+                    sections: data.sections.map((s) => ({
                         title: s.title,
                         rows: s.rows.map((r) => ({
                             id: r.id,
@@ -71,15 +127,6 @@ export default function ListMessageModal() {
             }
         });
         setShowListModal(false);
-        setListMessage({
-            headerType: "NONE",
-            headerText: "",
-            headerUrl: "",
-            bodyText: "",
-            footerText: "",
-            menuLabel: "View Options",
-            sections: [{ title: "", rows: [] }]
-        });
     };
 
     return (
@@ -101,9 +148,14 @@ export default function ListMessageModal() {
                     {/* Builder Section */}
                     <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar border-b md:border-b-0 md:border-e border-border bg-card">
                         <ListMessageBuilder
-                            value={listMessage}
-                            onChange={setListMessage}
-                            setHeaderMediaFile={setHeaderMediaFile}
+                            value={watchAllFields}
+                            onChange={(newValue) => {
+                                Object.entries(newValue).forEach(([key, value]) => {
+                                    setValue(key, value);
+                                });
+                            }}
+                            setHeaderMediaFile={setLocalHeaderMediaFile}
+                            errors={errors}
                         />
                     </div>
 
@@ -117,14 +169,14 @@ export default function ListMessageModal() {
                                 <TemplatePreview
                                     isInteractive={true}
                                     isList={true}
-                                    seeAllOptionsLabel={listMessage.menuLabel}
+                                    seeAllOptionsLabel={watchAllFields.menuLabel}
                                     template={{
-                                        headerType: listMessage.headerType,
-                                        headerText: listMessage.headerText,
-                                        headerUrl: listMessage.headerUrl,
-                                        bodyText: listMessage.bodyText,
-                                        footerText: listMessage.footerText,
-                                        sections: listMessage.sections,
+                                        headerType: watchAllFields.headerType,
+                                        headerText: watchAllFields.headerText,
+                                        headerUrl: watchAllFields.headerUrl,
+                                        bodyText: watchAllFields.bodyText,
+                                        footerText: watchAllFields.footerText,
+                                        sections: watchAllFields.sections,
                                         language: locale === "ar" ? "ar" : "en"
                                     }}
                                 />
@@ -143,8 +195,7 @@ export default function ListMessageModal() {
                     />
                     <Button_
                         type="button"
-                        disabled={isSendDisabled}
-                        onClick={handleSend}
+                        onClick={handleSubmit(onSubmit)}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                         label={t("sendMessage")}
                     />

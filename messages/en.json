@@ -11311,6 +11311,7 @@
       "bodyTextRequired": "Message body text is required",
       "buttonTextRequired": "Button text is required",
       "buttonsRequired": "At least 2 buttons are required",
+      "buttonTextDuplicate": "Button text can't be duplicated",
       "mediaHeaderFileRequired": "Upload a file for this header type (Image, Video, or Document)",
       "mediaHeaderMustReupload": "You must re-upload the file or provide a valid link"
     },
@@ -11412,7 +11413,16 @@
       "lastNameRequired": "Last name is required",
       "formattedNameRequired": "Formatted name is required",
       "invalidEmail": "Invalid email address",
-      "required": "This field is required"
+      "required": "This field is required",
+      "bodyTextRequired": "Message body text is required",
+      "buttonTextRequired": "Button text is required",
+      "buttonsRequired": "At least 1 button is required",
+      "buttonTextDuplicate": "Button text can't be duplicated",
+      "menuLabelRequired": "Menu label is required",
+      "sectionTitleRequired": "Section title is required",
+      "minOneRowRequired": "At least 1 row is required",
+      "rowTitleRequired": "Row title is required",
+      "sectionsRequired": "At least 1 section is required"
     },
     "sendMessage": "Send Message",
     "preview": "Preview",

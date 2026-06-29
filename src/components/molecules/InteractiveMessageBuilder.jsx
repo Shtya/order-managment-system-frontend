@@ -166,7 +166,7 @@ export default function InteractiveMessageBuilder({
             const btnStyle = config.buttonStyles?.[idx];
             const borderClass = btnStyle === "emerald" ? "border-emerald-500" : btnStyle === "red" ? "border-red-500" : "";
             const btnError = errors.buttons?.[idx]?.text;
-
+            
             return (
               <div key={idx} className="flex items-center gap-2 group">
                 <div className="flex-1 space-y-2">
@@ -196,7 +196,7 @@ export default function InteractiveMessageBuilder({
               </div>
             );
           })}
-
+          {errors.buttons && !Array.isArray(errors.buttons) && <p className="text-xs text-red-500 mt-1">{errors.buttons.message || errors.buttons}</p>}
           {buttons.length < config.maxButtons && (
             <button
               type="button"
@@ -207,10 +207,7 @@ export default function InteractiveMessageBuilder({
               {t("addButton")}
             </button>
           )}
-        </div>
-        {errors.buttons && !Array.isArray(errors.buttons) && <p className="text-xs text-red-500 mt-1">{errors.buttons.message || errors.buttons}</p>}
-        {/* If buttons error is from the array validation (like min) */}
-        {errors.buttons?.message && <p className="text-xs text-red-500 mt-1">{errors.buttons.message}</p>}
+        </div>  
       </div>
     </div>
   );

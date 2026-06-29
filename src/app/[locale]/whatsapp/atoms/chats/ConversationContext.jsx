@@ -30,15 +30,8 @@ export const ConversationProvider = ({ children }) => {
     const [messages, setMessages] = useState([]);
     const [pendingMedia, setPendingMedia] = useState(null);
     const [showInteractiveModal, setShowInteractiveModal] = useState(false);
-    const [headerMediaFile, setHeaderMediaFile] = useState(null);
-    const [interactiveMessage, setInteractiveMessage] = useState({
-        headerType: "NONE",
-        headerText: "",
-        headerUrl: "",
-        bodyText: "",
-        footerText: "",
-        buttons: []
-    });
+    
+    
     const [showLocationRequestModal, setShowLocationRequestModal] = useState(false);
     const [locationRequestBody, setLocationRequestBody] = useState("");
     const [showContactModal, setShowContactModal] = useState(false);
@@ -724,10 +717,6 @@ export const ConversationProvider = ({ children }) => {
             setPendingMedia,
             showInteractiveModal,
             setShowInteractiveModal,
-            interactiveMessage,
-            setInteractiveMessage,
-            headerMediaFile,
-            setHeaderMediaFile,
             showLocationRequestModal,
             setShowLocationRequestModal,
             locationRequestBody,

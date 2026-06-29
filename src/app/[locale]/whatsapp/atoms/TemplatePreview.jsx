@@ -94,7 +94,7 @@ export function WhatsAppButtonMenu({
                             damping: 35,
                             mass: 0.5,
                         }}
-                        className="bg-whatsapp-message rounded-xl p-4 shadow-2xl max-h-[80%] w-[90%] max-w-md flex flex-col"
+                        className="bg-white dark:bg-slate-950 rounded-xl p-4 shadow-2xl max-h-[80%] w-[90%] max-w-md flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
@@ -122,7 +122,7 @@ export function WhatsAppButtonMenu({
                                             )}
                                             <div className="space-y-1">
                                                 {section.rows?.map((row, rIdx) => (
-                                                    <div key={rIdx} className="px-2 py-3 hover:bg-[#cbe5c8] dark:hover:bg-[#182229] rounded-lg transition-colors cursor-default group">
+                                                    <div key={rIdx} className="px-2 py-3 hover:bg-gray-100 dark:hover:bg-[#182229] rounded-lg transition-colors cursor-default group">
                                                         <p className="text-[15px] text-slate-700 dark:text-slate-200 font-medium group-hover:text-[#00a884]">{row.title}</p>
                                                         {row.description && (
                                                             <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">{row.description}</p>
@@ -137,7 +137,7 @@ export function WhatsAppButtonMenu({
                                 <>
                                     {/* Action Buttons */}
                                     {actionButtons.map((btn, idx) => (
-                                        <div key={btn.id || `action-${idx}`} className="flex items-center gap-3 p-3 hover:bg-[#cbe5c8] dark:hover:bg-[#182229] rounded-lg cursor-default transition-colors group">
+                                        <div key={btn.id || `action-${idx}`} className="flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-[#182229] rounded-lg cursor-default transition-colors group">
                                             <div className="text-slate-500 group-hover:text-[#00a884]">
                                                 {btn.type === "PHONE_NUMBER" && <Phone size={18} />}
                                                 {btn.type === "VISIT_WEBSITE" && <ExternalLink size={18} />}
@@ -154,7 +154,7 @@ export function WhatsAppButtonMenu({
 
                                     {/* Custom Buttons */}
                                     {customButtons.map((btn, idx) => (
-                                        <div key={btn.id || `custom-${idx}`} className="flex items-center gap-3 p-3 hover:bg-[#cbe5c8] dark:hover:bg-[#182229] rounded-lg cursor-default transition-colors group">
+                                        <div key={btn.id || `custom-${idx}`} className="flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-[#182229] rounded-lg cursor-default transition-colors group">
                                             <div className="text-slate-500 group-hover:text-[#00a884]">
                                                 <Reply size={18} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
                                             </div>

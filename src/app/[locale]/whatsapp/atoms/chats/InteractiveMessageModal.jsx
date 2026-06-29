@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import {
     Dialog,
     DialogContent,
@@ -16,6 +16,9 @@ import { useConversation } from "./ConversationContext";
 import { useLocale } from "next-intl";
 import { LayoutGrid } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
+import { useForm, Controller } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 export default function InteractiveMessageModal() {
     const t = useTranslations("chats");
@@ -23,54 +26,74 @@ export default function InteractiveMessageModal() {
     const {
         showInteractiveModal,
         setShowInteractiveModal,
-        interactiveMessage,
-        setInteractiveMessage,
         handleSendMessage,
-        headerMediaFile,
-        setHeaderMediaFile
     } = useConversation();
-
-    const isSendDisabled = useMemo(() => {
-        return (
-            !interactiveMessage.bodyText ||
-            interactiveMessage.buttons.length === 0 ||
-            interactiveMessage.buttons.some(btn => !btn.text)
-        );
-    }, [interactiveMessage]);
-
-    const handleSend = () => {
-        handleSendMessage({
-            type: "interactive",
-            interactive: {
-                type: "button",
-                header: interactiveMessage.headerType !== "NONE" ? {
-                    type: interactiveMessage.headerType.toLowerCase(),
-                    [interactiveMessage.headerType.toLowerCase()]: interactiveMessage.headerType === "TEXT"
-                        ? interactiveMessage.headerText
-                        : { 
-                            link: interactiveMessage.headerUrl,
-                            file: headerMediaFile || undefined
-                         }
-                } : undefined,
-                body: { text: interactiveMessage.bodyText },
-                footer: interactiveMessage.footerText ? { text: interactiveMessage.footerText } : undefined,
-                action: {
-                    buttons: interactiveMessage.buttons.map((btn, idx) => ({
-                        type: "reply",
-                        reply: { id: `btn_${idx}`, title: btn.text }
-                    }))
-                }
+    const [headerMediaFile, setHeaderMediaFile] = useState(null);
+    const schema = useMemo(() => yup.object({
+        headerType: yup.string().oneOf(["NONE", "TEXT", "IMAGE", "VIDEO", "DOCUMENT"]).default("NONE"),
+        headerText: yup.string().default(""),
+        headerUrl: yup.string().default(""),
+        bodyText: yup.string().required(t("validation.bodyTextRequired")),
+        footerText: yup.string().default(""),
+        buttons: yup.array().of(
+            yup.object({
+                text: yup.string().required(t("validation.buttonTextRequired"))
+            })
+        ).min(1, t("validation.buttonsRequired")).test(
+            "no-duplicate-buttons",
+            t("validation.buttonTextDuplicate"),
+            (buttons) => {
+                if (!buttons || buttons.length === 0) return true;
+                const texts = buttons.map((b) => b.text);
+                return new Set(texts).size === texts.length;
             }
-        });
-        setShowInteractiveModal(false);
-        setInteractiveMessage({
+        )
+    }), [t]);
+
+    const {  handleSubmit, watch, setValue, reset, formState: { errors } } = useForm({
+        resolver: yupResolver(schema),
+        defaultValues: {
             headerType: "NONE",
             headerText: "",
             headerUrl: "",
             bodyText: "",
             footerText: "",
             buttons: []
+        }
+    });
+
+    const watchAllFields = watch();
+
+
+
+    const onSubmit = (data) => {
+        handleSendMessage({
+            type: "interactive",
+            interactive: {
+                type: "button",
+                header: data.headerType !== "NONE" ? {
+                    type: data.headerType.toLowerCase(),
+                    [data.headerType.toLowerCase()]: data.headerType === "TEXT"
+                        ? data.headerText
+                        : { 
+                            link: data.headerUrl,
+                            file: headerMediaFile || undefined
+                         }
+                } : undefined,
+                body: { text: data.bodyText },
+                footer: data.footerText ? { text: data.footerText } : undefined,
+                action: {
+                    buttons: data.buttons.map((btn, idx) => ({
+                        type: "reply",
+                        reply: { id: `btn_${idx}`, title: btn.text }
+                    }))
+                }
+            }
         });
+
+        reset({});
+        setHeaderMediaFile(null);
+        setShowInteractiveModal(false);
     };
 
     return (
@@ -92,9 +115,13 @@ export default function InteractiveMessageModal() {
                     {/* Builder Section */}
                     <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar border-b md:border-b-0 md:border-e border-border bg-card">
                         <InteractiveMessageBuilder
-                            value={interactiveMessage}
+                            value={watchAllFields}
                             setHeaderMediaFile={setHeaderMediaFile}
-                            onChange={setInteractiveMessage}
+                            onChange={(newValue) => {
+                                Object.entries(newValue).forEach(([key, value]) => {
+                                    setValue(key, value);
+                                });
+                            }}
                             config={{
                                 minButtons: 1,
                                 maxButtons: 3,
@@ -102,6 +129,7 @@ export default function InteractiveMessageModal() {
                                 allowVariables: false,
                                 buttonStyles: []
                             }}
+                            errors={errors}
                         />
                     </div>
 
@@ -116,12 +144,12 @@ export default function InteractiveMessageModal() {
                                     isInteractive={true}
                                     seeAllOptionsLabel={t("viewOptions")}
                                     template={{
-                                        headerType: interactiveMessage.headerType,
-                                        headerText: interactiveMessage.headerText,
-                                        headerUrl: interactiveMessage.headerUrl,
-                                        bodyText: interactiveMessage.bodyText,
-                                        footerText: interactiveMessage.footerText,
-                                        buttons: interactiveMessage.buttons.map(b => ({
+                                        headerType: watchAllFields.headerType,
+                                        headerText: watchAllFields.headerText,
+                                        headerUrl: watchAllFields.headerUrl,
+                                        bodyText: watchAllFields.bodyText,
+                                        footerText: watchAllFields.footerText,
+                                        buttons: (watchAllFields.buttons || []).map(b => ({
                                             type: "QUICK_REPLY",
                                             text: b.text
                                         })),
@@ -143,8 +171,7 @@ export default function InteractiveMessageModal() {
                     />
                     <Button_
                         type="button"
-                        disabled={isSendDisabled}
-                        onClick={handleSend}
+                        onClick={handleSubmit(onSubmit)}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                         label={t("sendMessage")}
                     />

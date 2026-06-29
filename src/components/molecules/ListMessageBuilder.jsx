@@ -32,7 +32,8 @@ function SortableRow({
   row,
   tc,
   handleRowChange,
-  handleRemoveRow
+  handleRemoveRow,
+  errors
 }) {
   const {
     attributes,
@@ -54,6 +55,8 @@ function SortableRow({
     transition: isDragging ? undefined : transition,
     zIndex: isDragging ? 999 : "auto",
   };
+  
+  const rowError = errors?.[sIdx]?.rows?.[rIdx]?.title?.message || errors?.[sIdx]?.rows?.[rIdx]?.title;
 
   return (
     <div
@@ -80,8 +83,9 @@ function SortableRow({
             maxLength={24}
             value={row.title}
             onChange={(e) => handleRowChange(sIdx, rIdx, "title", e.target.value)}
-            className="h-9 border-none shadow-none focus-visible:ring-0 px-0 font-bold"
+            className={cn("h-9 border-none shadow-none focus-visible:ring-0 px-0 font-bold")}
           />
+          {rowError && <p className="text-[11px] text-red-500">{rowError}</p>}
           <div className="h-px bg-slate-50 dark:bg-slate-800" />
         </div>
         <textarea
@@ -200,7 +204,11 @@ export default function ListMessageBuilder({
       handleUpdate({ sections: next });
     }
   };
-
+  
+  const bodyError = errors.bodyText?.message;
+  const menuLabelError = errors.menuLabel?.message;
+  const sectionsError = errors.sections?.message;
+  
   return (
     <div className="space-y-8">
       {/* Header Settings */}
@@ -260,7 +268,9 @@ export default function ListMessageBuilder({
         label={t("body")}
         placeholder={t("bodyPlaceholder")}
         allowVariables={config.allowVariables}
+        error={bodyError}
       />
+      {/* {bodyError && <p className="text-[11px] text-red-500">{bodyError}</p>} */}
 
       {/* Footer Settings */}
       <div className="space-y-3">
@@ -284,7 +294,9 @@ export default function ListMessageBuilder({
             maxLength={200}
             value={menuLabel}
             onChange={(e) => handleUpdate({ menuLabel: e.target.value })}
+            className={cn(menuLabelError && "border-red-500 focus-visible:ring-red-500")}
           />
+          {menuLabelError && <p className="text-[11px] text-red-500">{menuLabelError}</p>}
         </div>
 
         <div className="space-y-4">
@@ -309,8 +321,13 @@ export default function ListMessageBuilder({
               )}
             </div>
           </div>
+          
+          {sectionsError && <p className="text-[11px] text-red-500">{sectionsError}</p>}
 
-          {sections.map((section, sIdx) => (
+          {sections.map((section, sIdx) => {
+            const sectionError = errors?.sections?.[sIdx]?.title?.message || errors?.sections?.[sIdx]?.title;
+            const rowsError =  errors?.sections?.[sIdx]?.rows?.message;
+            return (
             <div key={sIdx} className="space-y-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-white/5 relative group/section">
               {sections.length > 1 && (
                 <button
@@ -330,10 +347,13 @@ export default function ListMessageBuilder({
                   maxLength={24}
                   value={section.title}
                   onChange={(e) => handleSectionTitleChange(sIdx, e.target.value)}
-                  className="h-9 bg-white dark:bg-slate-950"
+                  className={cn("h-9 bg-white dark:bg-slate-950", sectionError && "border-red-500 focus-visible:ring-red-500")}
                   required
                 />
+                {sectionError && <p className="text-[11px] text-red-500">{sectionError}</p>}
               </div>
+              
+              {rowsError && <p className="text-[11px] text-red-500">{rowsError}</p>}
 
               <div className="space-y-3">
                 <DndContext
@@ -356,6 +376,7 @@ export default function ListMessageBuilder({
                           tc={tc}
                           handleRowChange={handleRowChange}
                           handleRemoveRow={handleRemoveRow}
+                          errors={errors?.sections}
                         />
                       ))}
                     </div>
@@ -374,7 +395,7 @@ export default function ListMessageBuilder({
                 )}
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
     </div>

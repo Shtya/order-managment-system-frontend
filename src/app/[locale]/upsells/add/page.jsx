@@ -182,7 +182,15 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
         yup.object({
           text: yup.string().required(t("validation.buttonTextRequired"))
         })
-      ).min(2, t("validation.buttonsRequired"))
+      ).min(2, t("validation.buttonsRequired")).test(
+        "no-duplicate-buttons",
+        t("validation.buttonTextDuplicate"),
+        (buttons) => {
+          if (!buttons || buttons.length === 0) return true;
+          const texts = buttons.map((b) => b.text);
+          return new Set(texts).size === texts.length;
+        }
+      )
     })
   }), [t, tValidation]);
 

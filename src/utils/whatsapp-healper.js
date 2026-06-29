@@ -194,6 +194,40 @@ export  const handleMediaClick = (type, content) => {
     }
 };
 
+// Media URL Cache
+const mediaUrlCache = new Map();
+
+export const cacheMediaUrl = (mediaId, url) => {
+    if (mediaId && url) {
+        mediaUrlCache.set(mediaId, url);
+    }
+};
+
+export const getCachedMediaUrl = (mediaId) => {
+    return mediaId ? mediaUrlCache.get(mediaId) : null;
+};
+
+export const getMediaUrlWithCache = (content, type, message) => {
+    const media = content[type];
+    
+    // Check if we have a local URL (optimistic UI)
+    if (media?.localUrl) {
+        return media.localUrl;
+    }
+    
+    // Check cache first
+    const mediaId = media?.id || content?.id;
+    if (mediaId) {
+        const cachedUrl = getCachedMediaUrl(mediaId);
+        if (cachedUrl) {
+            return cachedUrl;
+        }
+    }
+    
+    // Fall back to original getMediaUrl
+    return getMediaUrl(content, type, message);
+};
+
 export const formatMessagePreview = (message, t = (key) => key) => {
     if (!message) return "";
     

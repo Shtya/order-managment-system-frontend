@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { BASE_URL } from "@/utils/api";
 import TemplatePreview from "../TemplatePreview";
-import { formatText, handleMediaClick, getMediaUrl, formatMessagePreview } from "@/utils/whatsapp-healper";
+import { formatText, handleMediaClick, getMediaUrl, getMediaUrlWithCache, formatMessagePreview } from "@/utils/whatsapp-healper";
 import { useTranslations, useLocale } from "next-intl";
 import { useClipboard } from "@/hook/useClipboard";
 import { useConversation } from "./ConversationContext";
@@ -221,7 +221,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                 </div>
                             ) : (
                                 <img
-                                    src={getMediaUrl(mediaContent, "image", message)}
+                                    src={getMediaUrlWithCache(mediaContent, "image", message)}
                                     alt="image"
                                     className={cn(
                                         "rounded-lg w-full h-auto cursor-pointer transition-opacity duration-300",
@@ -269,7 +269,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                 </div>
                             ) : (
                                 <img
-                                    src={getMediaUrl(mediaContent, "sticker", message)}
+                                    src={getMediaUrlWithCache(mediaContent, "sticker", message)}
                                     alt="sticker"
                                     className={cn(
                                         "w-48 h-48 object-contain cursor-pointer transition-opacity duration-300",
@@ -313,7 +313,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                 </div>
                             ) : (
                                 <video
-                                    src={getMediaUrl(mediaContent, "video", message)}
+                                    src={getMediaUrlWithCache(mediaContent, "video", message)}
                                     controls
                                     className={cn(
                                         "rounded-lg w-full h-auto transition-opacity duration-300",
@@ -409,7 +409,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                     <div className="flex items-center gap-3 py-1 min-w-[200px]">
                         <audio
                             ref={audioRef}
-                            src={getMediaUrl(content, "audio", message)}
+                            src={getMediaUrlWithCache(content, "audio", message)}
                             onTimeUpdate={handleAudioTimeUpdate}
                             onEnded={handleAudioEnded}
                             onCanPlayThrough={() => setAudioLoading(false)}

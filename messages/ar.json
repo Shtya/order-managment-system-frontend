@@ -11508,7 +11508,10 @@
     "home": "منزل",
     "chooseOption": "إختر",
     "from": "من",
-    "to": "إلي"
+    "to": "إلي",
+    "messageNotFoundError": "لم يتم العثور على الرسالة",
+    "today": "اليوم",
+    "yesterday": "أمس"
   },
   "failedToLoadImage": "فشل تحميل الصورة",
   "failedToLoadVideo": " فشل تحميل الفيديو",

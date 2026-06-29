@@ -23,6 +23,8 @@ import { formatText, handleMediaClick, getMediaUrl, formatMessagePreview } from 
 import { useTranslations, useLocale } from "next-intl";
 import { useClipboard } from "@/hook/useClipboard";
 import { useConversation } from "./ConversationContext";
+import toast from "react-hot-toast";
+import { alarmToast } from "@/utils/healpers";
 
 function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted, onMediaLoad,scrollToMessage }) {
     const {
@@ -110,15 +112,19 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
     }, [caption]);
 
 
-
-    useEffect(() => {
-        const handleScrollToMsg = (e) => {
-            scrollToMessage(e.detail?.id);
-            
-        };
-        window.addEventListener("whatsapp:scroll-to-message", handleScrollToMsg);
-        return () => window.removeEventListener("whatsapp:scroll-to-message", handleScrollToMsg);
-    }, [id, message.id]);
+    const handleScrollToMsg = (messageId) => {
+        let element = null;
+        if(id){
+            element = document.getElementById(`msg-${id}`);
+        }
+        if(element){
+            scrollToMessage(messageId);
+        } else {
+            alarmToast(t("messageNotFoundError"));
+        }
+        
+    }
+    
 
     useEffect(() => {
         const handleGlobalPlay = (e) => {
@@ -817,8 +823,9 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
     }, [message?.replyTo, t]);
     return (
         <div id={id} className={cn(
-            "flex w-full mb-4 group",
-            isOutbound ? "justify-start" : "justify-end"
+            "flex w-full mb-4 group transition-colors duration-150",
+            isOutbound ? "justify-start" : "justify-end",
+            isHighlighted && "bg-whatsapp-message/20 rounded-lg"
         )}>
             <div className="relative flex items-center">
                 {/* Hover Actions - Positioned absolute to avoid layout shift */}
@@ -878,7 +885,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                     {/* Reply Preview */}
                     {message.replyTo && (
                         <div
-                            onClick={() => message.replyTo && window.dispatchEvent(new CustomEvent("whatsapp:scroll-to-message", { detail: { id: message.replyTo.id } }))}
+                            onClick={() => handleScrollToMsg(message?.replyTo?.id)}
                             className={cn(
                                 "mb-2 p-2 rounded-lg border-s-4 bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors",
                                 isOutbound ? "border-primary" : "border-blue-500"

@@ -55,8 +55,8 @@ function MessageSkeleton() {
     return (
         <div className="space-y-4">
             {skeletonConfig.map((config, index) => (
-                <div 
-                    key={index} 
+                <div
+                    key={index}
                     className={cn("flex", config.type === "outbound" ? "justify-start" : "justify-end")}
                 >
                     <div className={cn(
@@ -66,7 +66,7 @@ function MessageSkeleton() {
                             : "bg-card border border-border"
                     )}>
                         {config.lines.map((lineWidth, lineIndex) => (
-                            <div 
+                            <div
                                 key={lineIndex}
                                 className={cn(
                                     "h-3 rounded mb-2",
@@ -89,7 +89,7 @@ function MessageSkeleton() {
 export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const t = useTranslations("chats");
     const { hasPermission } = useAuth();
-    const scrollRef = useRef(null);
+
     const {
         selectedAccount,
         selectedConversation,
@@ -110,7 +110,9 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         handleReaction: onReaction,
         replyTo,
         setReplyTo,
-        setMobileView
+        setMobileView,
+        prevScrollHeight,
+        scrollRef
     } = useConversation();
 
     const locale = useLocale();
@@ -132,7 +134,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
 
     const customer = selectedConversation?.customer;
-    const prevScrollHeight = useRef(0);
+
     const prevMessagesCount = useRef(0);
     const lastConversationId = useRef(null);
     const lastMessage = useMemo(() => messages[messages.length - 1], [messages.length]);
@@ -144,7 +146,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
 
     const scrollToMessage = (messageId, behavior = "smooth") => {
-        console.log(messageId);
+        
         const element = document.getElementById(`msg-${messageId}`);
         if (element) {
             element.scrollIntoView({ behavior, block: "center" });
@@ -167,14 +169,61 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         lastConversationId.current = null;
         setReplyTo(null);
 
-        // No setTimeout! Execute the scroll immediately before the paint.
+        
         if (scrollRef.current) {
+            console.log("scrollHeight,", scrollRef.current.scrollHeight,);
             scrollRef.current.scrollTo({
                 top: scrollRef.current.scrollHeight,
                 behavior: "instant"
             });
         }
+
+        if (!initialMessagesLoading && scrollRef.current) {
+            
+            const performInstantScroll = () => {
+                if (scrollRef.current) {
+                    scrollRef.current.scrollTo({
+                        top: scrollRef.current.scrollHeight,
+                        behavior: "instant"
+                    });
+                }
+            };
+
+            // Execute immediately before the paint (handles 95% of the height)
+            performInstantScroll();
+
+            // Safety Net: Run on the next animation frames/ticks to catch 
+            // any post-paint layout shifts (like those hidden 3 messages)
+            requestAnimationFrame(() => {
+                performInstantScroll();
+                
+                // Final fallback for async components/images adjusting late
+                setTimeout(performInstantScroll, 30);
+            });
+        }
     }, [selectedConversation?.id, initialMessagesLoading]);
+
+
+    useLayoutEffect(() => {
+
+        if (prevScrollHeight.current > 0 && scrollRef.current) {
+
+
+            const heightDifference = scrollRef.current.scrollHeight - prevScrollHeight.current;
+
+
+            const targetScrollTop = scrollRef.current.scrollTop + heightDifference;
+            console.log("targetScrollTop", targetScrollTop);
+            // Force an instant jump to the target position, overriding any CSS smooth scrolling
+            scrollRef.current.scrollTo({
+                top: targetScrollTop,
+                behavior: "instant"
+            });
+
+
+            prevScrollHeight.current = 0;
+        }
+    }, [messages]);
 
     const handleMediaLoad = useCallback(() => {
         // if (!scrollRef.current) return;
@@ -189,7 +238,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         // }
 
         // prevScrollHeight.current = container.scrollHeight;
-        
+
 
     }, []);
 

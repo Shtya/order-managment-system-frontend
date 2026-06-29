@@ -145,8 +145,8 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     }, [lastMessage?.id]);
 
 
-    const scrollToMessage = (messageId, behavior = "smooth") => {
-        
+    const scrollToMessage = (messageId, behavior = "instant") => {
+
         const element = document.getElementById(`msg-${messageId}`);
         if (element) {
             element.scrollIntoView({ behavior, block: "center" });
@@ -169,9 +169,9 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         lastConversationId.current = null;
         setReplyTo(null);
 
-        
+
         if (scrollRef.current) {
-            console.log("scrollHeight,", scrollRef.current.scrollHeight,);
+
             scrollRef.current.scrollTo({
                 top: scrollRef.current.scrollHeight,
                 behavior: "instant"
@@ -179,7 +179,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         }
 
         if (!initialMessagesLoading && scrollRef.current) {
-            
+
             const performInstantScroll = () => {
                 if (scrollRef.current) {
                     scrollRef.current.scrollTo({
@@ -196,7 +196,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             // any post-paint layout shifts (like those hidden 3 messages)
             requestAnimationFrame(() => {
                 performInstantScroll();
-                
+
                 // Final fallback for async components/images adjusting late
                 setTimeout(performInstantScroll, 30);
             });
@@ -213,7 +213,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
 
             const targetScrollTop = scrollRef.current.scrollTop + heightDifference;
-            console.log("targetScrollTop", targetScrollTop);
+
             // Force an instant jump to the target position, overriding any CSS smooth scrolling
             scrollRef.current.scrollTo({
                 top: targetScrollTop,
@@ -242,7 +242,66 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
     }, []);
 
-    const filteredMessages = messages;
+    // Helper function to format date like WhatsApp
+    const formatDateLabel = useCallback((dateStr) => {
+        if (!dateStr) return '';
+
+        const date = new Date(dateStr);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        // Check if it's today
+        if (date.toDateString() === today.toDateString()) {
+            return t('today') || 'Today';
+        }
+
+        // Check if it's yesterday
+        if (date.toDateString() === yesterday.toDateString()) {
+            return t('yesterday') || 'Yesterday';
+        }
+
+        // Check if it's this year
+        if (date.getFullYear() === today.getFullYear()) {
+            // Format as "June 21"
+            return date.toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Format as "June 21, 2026"
+        return date.toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }, [locale, t]);
+
+    // Group messages by date
+    const groupedMessages = useMemo(() => {
+        const groups = [];
+        let currentGroup = null;
+
+        for (const msg of messages) {
+            const dateKey = new Date(msg.createdAt).toDateString();
+
+            if (!currentGroup || currentGroup.dateKey !== dateKey) {
+                currentGroup = {
+                    dateKey,
+                    date: msg.createdAt,
+                    messages: [msg]
+                };
+                groups.push(currentGroup);
+            } else {
+                currentGroup.messages.push(msg);
+            }
+        }
+
+        return groups;
+    }, [messages]);
+
+
 
     if (!selectedConversation) {
         return (
@@ -394,9 +453,11 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             {/* Messages Area */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-2 scroll-smooth"
+                className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-2 scroll-smooth relative"
 
             >
+
+
                 {hasMoreMessages && (
                     <div className="flex justify-center pb-4">
                         <button
@@ -419,20 +480,37 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                     </span>
                 </div> */}
 
-                {filteredMessages.length > 0 ? (
-                    filteredMessages.map((msg) => (
-                        <MessageBubble
-                            key={msg.id}
-                            id={`msg-${msg.id}`}
-                            message={msg}
-                            isOutbound={msg.direction === "outbound"}
-                            onReply={(m) => setReplyTo(m)}
-                            onReaction={onReaction}
-                            onRetry={onRetry}
-                            scrollToMessage={scrollToMessage}
-                            onMediaLoad={handleMediaLoad}
-                            isHighlighted={highlightedMessageId === msg.id}
-                        />
+                {groupedMessages.length > 0 ? (
+                    groupedMessages.map((group, groupIndex) => (
+                        <div
+                            key={group.dateKey}
+                            data-date-key={group.dateKey}
+                            className="space-y-2 relative"
+                        >
+                            {/* Date Divider (No longer has the ref) */}
+                            <div className="sticky top-2 z-10 flex justify-center my-4 pointer-events-none">
+                                <span className="bg-white/80 dark:bg-slate-800/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-widest shadow-sm border border-gray-200 dark:border-slate-700">
+                                    {formatDateLabel(group.date)}
+                                </span>
+                            </div>
+
+
+                            {/* Messages in this group */}
+                            {group.messages.map((msg) => (
+                                <MessageBubble
+                                    key={msg.id}
+                                    id={`msg-${msg.id}`}
+                                    message={msg}
+                                    isOutbound={msg.direction === "outbound"}
+                                    onReply={(m) => setReplyTo(m)}
+                                    onReaction={onReaction}
+                                    onRetry={onRetry}
+                                    scrollToMessage={scrollToMessage}
+                                    onMediaLoad={handleMediaLoad}
+                                    isHighlighted={highlightedMessageId === msg.id}
+                                />
+                            ))}
+                        </div>
                     ))
                 ) : isMessagesLoading ? (
                     <MessageSkeleton />

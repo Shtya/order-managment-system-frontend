@@ -11478,7 +11478,10 @@
     "chooseOption": "Choose",
     "unsupportedMessage": "Unsupported message",
     "from": "From",
-    "to": "To"
+    "to": "To",
+    "messageNotFoundError": "Couldn't find message",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "failedToLoadImage": "Failed to load image",
   "failedToLoadVideo": "Failed to load video",

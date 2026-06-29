@@ -6,6 +6,7 @@ import { useSocket } from "@/context/SocketContext";
 import toast from "react-hot-toast";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useTranslations } from "next-intl";
+import { cacheMediaUrl } from "@/utils/whatsapp-healper";
 
 const ConversationContext = createContext();
 
@@ -343,7 +344,7 @@ export const ConversationProvider = ({ children }) => {
     // Private function to check if media upload is needed for template or interactive messages
     const checkIfMediaUploadNeeded = useCallback((msg) => {
         let mediaInfo = null;
-
+        
         if (msg.type === "template" && msg.template?.components) {
             const headerComponent = msg.template.components.find(c => c.type === "header");
             const param = headerComponent?.parameters?.[0];
@@ -410,6 +411,15 @@ export const ConversationProvider = ({ children }) => {
                 const newId = uploadRes.data.id;
                 const mediaType = mediaInfo.mediaType;
                 const mediaObj = mediaInfo.mediaObj;
+                
+                // Cache the local URL with the new media ID
+                if (mediaObj?.localUrl) {
+                    cacheMediaUrl(newId, mediaObj.localUrl);
+                } else if (mediaObj?.link) {
+                    cacheMediaUrl(newId, mediaObj.link);
+                } else if (mediaObj?.url) {
+                    cacheMediaUrl(newId, mediaObj.url);
+                }
 
                 // Update the local message content
                 setMessages(prev => prev.map(m => {
@@ -552,6 +562,13 @@ export const ConversationProvider = ({ children }) => {
                 mediaId = uploadRes.data?.id;
 
                 if (!mediaId) throw new Error("Failed to get media ID from upload");
+                
+                // Cache the local URL with the new media ID
+                if (content[msg.type]?.localUrl) {
+                    cacheMediaUrl(mediaId, content[msg.type].localUrl);
+                } else if (content[msg.type]?.url) {
+                    cacheMediaUrl(mediaId, content[msg.type].url);
+                }
 
                 // Update content with real media ID and clear localUrl for sending
                 content[msg.type].id = mediaId;

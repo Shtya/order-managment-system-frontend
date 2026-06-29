@@ -26,6 +26,7 @@ import {
     replaceVariables,
     formatText,
     getMediaUrl,
+    getMediaUrlWithCache,
     handleMediaClick,
 } from "@/utils/whatsapp-healper";
 import { avatarSrc } from "@/components/atoms/UserSelect";
@@ -394,7 +395,7 @@ export default function TemplatePreview({
         switch (headerType) {
             case "IMAGE":
                 const imageContent = createMediaContent('image', headerUrl);
-                const imageUrl = headerUrl ? getMediaUrl(imageContent, 'image', mockMessage) : null;
+                const imageUrl = headerUrl ? getMediaUrlWithCache(imageContent, 'image', mockMessage) : null;
                 return (
                     <div className={mediaClass}>
                         {uploadOverlay}

@@ -1075,7 +1075,7 @@ export default function CallCenterPage() {
     const tCommon = useTranslations("common");
 
     const t = useTranslations();
-    const { settings, patch, saving, handleSave } = useOrdersSettings();
+    const { tempSettings, patch, saving, handleSave } = useOrdersSettings();
 
     const [viewMode, setViewMode] = useState("manual"); // "manual" | "automatic"
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -1825,14 +1825,14 @@ export default function CallCenterPage() {
 
                             <div className="space-y-3">
                                 <div
-                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "disabled"
+                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${tempSettings.assignmentMode === "disabled"
                                         ? "border-primary bg-primary/5"
                                         : "border-slate-200 dark:border-slate-700"
                                         }`}
                                     onClick={() => patch({ assignmentMode: "disabled" })}
                                 >
-                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "disabled" ? "#6366f1" : "#d1d5db" }}>
-                                        {settings.assignmentMode === "disabled" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
+                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: tempSettings.assignmentMode === "disabled" ? "#6366f1" : "#d1d5db" }}>
+                                        {tempSettings.assignmentMode === "disabled" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
                                     </div>
                                     <div className="flex-1">
                                         <div className="font-medium">{t("orders.retrySettings.autoAssignment.disabled")}</div>
@@ -1841,14 +1841,14 @@ export default function CallCenterPage() {
                                 </div>
 
                                 <div
-                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "immediate"
+                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${tempSettings.assignmentMode === "immediate"
                                         ? "border-primary bg-primary/5"
                                         : "border-slate-200 dark:border-slate-700"
                                         }`}
                                     onClick={() => patch({ assignmentMode: "immediate" })}
                                 >
-                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "immediate" ? "#6366f1" : "#d1d5db" }}>
-                                        {settings.assignmentMode === "immediate" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
+                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: tempSettings.assignmentMode === "immediate" ? "#6366f1" : "#d1d5db" }}>
+                                        {tempSettings.assignmentMode === "immediate" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
                                     </div>
                                     <div className="flex-1">
                                         <div className="font-medium">{t("orders.retrySettings.autoAssignment.immediate")}</div>
@@ -1857,14 +1857,14 @@ export default function CallCenterPage() {
                                 </div>
 
                                 <div
-                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "delayed"
+                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${tempSettings.assignmentMode === "delayed"
                                         ? "border-primary bg-primary/5"
                                         : "border-slate-200 dark:border-slate-700"
                                         }`}
                                     onClick={() => patch({ assignmentMode: "delayed" })}
                                 >
-                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "delayed" ? "#6366f1" : "#d1d5db" }}>
-                                        {settings.assignmentMode === "delayed" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
+                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: tempSettings.assignmentMode === "delayed" ? "#6366f1" : "#d1d5db" }}>
+                                        {tempSettings.assignmentMode === "delayed" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
                                     </div>
                                     <div className="flex-1">
                                         <div className="font-medium">{t("orders.retrySettings.autoAssignment.delayed")}</div>
@@ -1873,7 +1873,7 @@ export default function CallCenterPage() {
                                 </div>
                             </div>
 
-                            {settings.assignmentMode === "delayed" && (
+                            {tempSettings.assignmentMode === "delayed" && (
                                 <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 space-y-3">
                                     <label className="text-sm font-medium">{t("orders.retrySettings.autoAssignment.delayTime")}</label>
                                     <div className="flex gap-3">
@@ -1881,13 +1881,13 @@ export default function CallCenterPage() {
                                             <input
                                                 type="number"
                                                 min="1"
-                                                value={settings.assignmentDelay}
+                                                value={tempSettings.assignmentDelay}
                                                 onChange={(e) => patch({ assignmentDelay: Math.max(1, parseInt(e.target.value) || 1) })}
                                                 className="w-full px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                                             />
                                         </div>
                                         <select
-                                            value={settings.assignmentDelayUnit}
+                                            value={tempSettings.assignmentDelayUnit}
                                             onChange={(e) => patch({ assignmentDelayUnit: e.target.value })}
                                             className="px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                                         >

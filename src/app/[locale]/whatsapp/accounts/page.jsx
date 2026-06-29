@@ -48,6 +48,7 @@ import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import { useSocket } from "@/context/SocketContext";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useAuth } from "@/context/AuthContext";
 
 function normalizeAxiosError(err) {
@@ -1056,15 +1057,15 @@ function WhatsAppGuideModal({ open, onOpenChange }) {
     <>
       <Dialog open={open} onOpenChange={(v) => !v && onOpenChange()}>
         <DialogContent
-         onEscapeKeyDown={(e) => {
-      if (previewImage) {
-        // 1. Stop Radix from closing the main dialog
-        e.preventDefault(); 
-        
-        // 2. Close your image preview instead
-        setPreviewImage(null); 
-      }
-    }}
+          onEscapeKeyDown={(e) => {
+            if (previewImage) {
+              // 1. Stop Radix from closing the main dialog
+              e.preventDefault();
+
+              // 2. Close your image preview instead
+              setPreviewImage(null);
+            }
+          }}
           onPointerDownOutside={(e) => {
             if (previewImage) {
               e.preventDefault();
@@ -1436,6 +1437,7 @@ export default function WhatsAppAccountsPage() {
   const tCommon = useTranslations("common");
   const t = useTranslations("whatsApp.accounts");
   const { settings, isSettingsLoading } = usePlatformSettings();
+  const { patch, saveSetting, refreshOrdersSettings } = useOrdersSettings();
   const [guideModalOpen, setGuideModalOpen] = useState(false);
   const [manualModalOpen, setManualModalOpen] = useState(false);
 
@@ -1726,6 +1728,7 @@ export default function WhatsAppAccountsPage() {
   useEffect(() => {
     const unsubscribe = subscribe("WHATSAPP_SIGNUP_STATUS", (payload) => {
       if (!payload) return;
+      
       setSignupSteps(prev => ({
         ...prev,
         [payload.step]: {
@@ -1734,10 +1737,15 @@ export default function WhatsAppAccountsPage() {
           error: payload.error
         }
       }));
+      
+      if (payload.step === 'COMPLETED' || (payload.step === 'SYNCING_TEMPLATES' && payload.status === "warning")) {
+        // Update the default WhatsApp account in the context and save it
+        refreshOrdersSettings();
+      }
     });
 
     return unsubscribe;
-  }, [subscribe]);
+  }, [subscribe, patch, saveSetting]);
 
   const trySend = async () => {
     if (!authRef.current || !wabaRef.current) return;
@@ -1963,6 +1971,7 @@ export default function WhatsAppAccountsPage() {
           setManualModalOpen(null);
           fetchAccounts({ page: 1, per_page: pager.per_page });
           fetchStats();
+          refreshOrdersSettings();
         }}
       />
 
@@ -1981,6 +1990,7 @@ export default function WhatsAppAccountsPage() {
           setManualModalOpen(null);
           fetchAccounts({ page: 1, per_page: pager.per_page });
           fetchStats();
+          refreshOrdersSettings();
         }}
       />
       <WhatsAppGuideModal

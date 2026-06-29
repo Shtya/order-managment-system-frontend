@@ -91,7 +91,7 @@ export default function GlobalRetrySettingsModal({
   const t = useTranslations("orders");
   const [activeTab, setActiveTab] = useState("general");
   const {
-    settings,
+    tempSettings,
     loading,
     saving,
     patch,
@@ -222,12 +222,12 @@ export default function GlobalRetrySettingsModal({
                 className="p-6 space-y-5"
               >
                 {activeTab === "general" && (
-                  <GeneralTab settings={settings} patch={patch} t={t} />
+                  <GeneralTab settings={tempSettings} patch={patch} t={t} />
                 )}
 
                 {activeTab === "automation" && (
                   <AutomationTab
-                    settings={settings}
+                    settings={tempSettings}
                     statuses={statuses}
                     patch={patch}
                     toggleCode={toggleCode}
@@ -237,7 +237,7 @@ export default function GlobalRetrySettingsModal({
 
                 {activeTab === "shipping" && (
                   <ShippingTab
-                    settings={settings}
+                    settings={tempSettings}
                     statuses={statuses}
                     patchShipping={patchShipping}
                     patch={patch}
@@ -246,15 +246,15 @@ export default function GlobalRetrySettingsModal({
                 )}
 
                 {activeTab === "warehouse" && (
-                  <WarehouseTab settings={settings} patch={patch} t={t} />
+                  <WarehouseTab settings={tempSettings} patch={patch} t={t} /> 
                 )}
 
                 {activeTab === "notifications" && (
-                  <NotificationsSettingsTab settings={settings} patch={patch} t={t} />
+                  <NotificationsSettingsTab settings={tempSettings} patch={patch} t={t} />
                 )}
 
                 {activeTab === "sync" && (
-                  <SyncSettingsTab settings={settings} patch={patch} t={t} />
+                  <SyncSettingsTab settings={tempSettings} patch={patch} t={t} />
                 )}
               </motion.div>
             </AnimatePresence>

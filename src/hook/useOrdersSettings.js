@@ -18,15 +18,9 @@ const DEFAULT_NOTIFICATION_SETTINGS = {
   wallet: true,
   other: true,
 };
-// 2. إنشاء الـ Provider
-export function OrdersSettingsProvider({ children }) {
-  const t = useTranslations("orders");
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [savedSettings, setSavedSettings] = useState(null);
 
-  const [settings, setSettings] = useState({
+const defaultSettings =  {
     assignmentMode: "immediate",
     assignmentDelay: 1,
     assignmentDelayUnit: "minutes",
@@ -64,7 +58,97 @@ export function OrdersSettingsProvider({ children }) {
       warehouseDefaultShippingCompanyId: "",
       //   allowReturnCreation: true,
     },
-  });
+  };
+
+const buildSettingsObject = (data, prevSettings) => ({
+  // تحديث القيم الأساسية يدوياً
+  assignmentMode: data.assignmentMode ?? prevSettings.assignmentMode,
+  assignmentDelay: data.assignmentDelay ?? prevSettings.assignmentDelay,
+  assignmentDelayUnit: data.assignmentDelayUnit ?? prevSettings.assignmentDelayUnit,
+  enabled: data.enabled ?? prevSettings.enabled,
+  maxRetries: data.maxRetries ?? prevSettings.maxRetries,
+  retryInterval: data.retryInterval ?? prevSettings.retryInterval,
+  autoMoveStatus: data.autoMoveStatus ?? prevSettings.autoMoveStatus,
+  notificationSettings: {
+    ...DEFAULT_NOTIFICATION_SETTINGS,
+    ...(data.notificationSettings ?? {}),
+  },
+  retryStatuses: data.retryStatuses ?? prevSettings.retryStatuses,
+  confirmationStatuses:
+    data.confirmationStatuses ?? prevSettings.confirmationStatuses,
+  notifyEmployee: data.notifyEmployee ?? prevSettings.notifyEmployee,
+  notifyAdmin: data.notifyAdmin ?? prevSettings.notifyAdmin,
+  
+  notifyLowStock: data.notifyLowStock ?? prevSettings.notifyLowStock,
+  notifyMarketing: data.notifyMarketing ?? prevSettings.notifyMarketing,
+  stockDeductionStrategy:
+    data.stockDeductionStrategy ?? prevSettings.stockDeductionStrategy,
+  reservedEnabled:
+    data.reservedEnabled ?? prevSettings.reservedEnabled ?? false,
+  duplicateWindowHours:
+    data.duplicateWindowHours ?? prevSettings.duplicateWindowHours ?? 24,
+  autoCancelDuplicates:
+    data.autoCancelDuplicates ?? prevSettings.autoCancelDuplicates ?? false,
+  orderFlowPath: data.orderFlowPath ?? prevSettings.orderFlowPath,
+  storeOrderSkuFallback:
+    data.storeOrderSkuFallback ?? prevSettings.storeOrderSkuFallback ?? true,
+  automationMigrationStrategy:
+    data.automationMigrationStrategy ?? prevSettings.automationMigrationStrategy ?? "latest_patch",
+  defaultWhatsAppAccountId:
+    data.defaultWhatsAppAccountId ?? prevSettings.defaultWhatsAppAccountId ?? "",
+
+  // تحديث الكائنات المتداخلة (Nested Objects)
+  workingHours: {
+    enabled: data.workingHours?.enabled ?? prevSettings.workingHours.enabled,
+    start: data.workingHours?.start ?? prevSettings.workingHours.start,
+    end: data.workingHours?.end ?? prevSettings.workingHours.end,
+  },
+
+  shipping: data.shipping
+    ? {
+      shippingCompanyId:
+        data.shipping?.shippingCompanyId ??
+        prevSettings.shipping.shippingCompanyId,
+      triggerStatus:
+        data.shipping?.triggerStatus ?? prevSettings.shipping.triggerStatus,
+      //   requirePaymentConfirm:
+      //     data.shipping?.requirePaymentConfirm ??
+      //     prevSettings.shipping.requirePaymentConfirm,
+      notifyOnShipment:
+        data.shipping?.notifyOnShipment ??
+        prevSettings.shipping.notifyOnShipment,
+      autoGenerateLabel:
+        data.shipping?.autoGenerateLabel ??
+        prevSettings.shipping.autoGenerateLabel,
+      partialPaymentThreshold:
+        data.shipping?.partialPaymentThreshold ??
+        prevSettings.shipping.partialPaymentThreshold,
+      requireFullPayment:
+        data.shipping?.requireFullPayment ??
+        prevSettings.shipping.requireFullPayment,
+      autoShipAfterWarehouse:
+        data.shipping?.autoShipAfterWarehouse ??
+        prevSettings.shipping.autoShipAfterWarehouse,
+      warehouseDefaultShippingCompanyId:
+        data.shipping?.warehouseDefaultShippingCompanyId ??
+        prevSettings.shipping.warehouseDefaultShippingCompanyId,
+      //   allowReturnCreation:
+      //     data.shipping?.allowReturnCreation ??
+      //     prevSettings.shipping.allowReturnCreation,
+    }
+    : { ...prevSettings.shipping },
+});
+// 2. إنشاء الـ Provider
+export function OrdersSettingsProvider({ children }) {
+  const t = useTranslations("orders");
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  const [refreshFlag, setRefreshFlag] = useState(0);
+
+  const [settings, setSettings] = useState(defaultSettings);
+  const [tempSettings, setTempSettings] = useState(defaultSettings);
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -92,103 +176,33 @@ export function OrdersSettingsProvider({ children }) {
     (async () => {
       const data = await fetchSettings();
       
-      setSavedSettings(data);
-      if (data)
-        setSettings((prev) => ({
-          // تحديث القيم الأساسية يدوياً
-          assignmentMode: data.assignmentMode ?? prev.assignmentMode,
-          assignmentDelay: data.assignmentDelay ?? prev.assignmentDelay,
-          assignmentDelayUnit: data.assignmentDelayUnit ?? prev.assignmentDelayUnit,
-          enabled: data.enabled ?? prev.enabled,
-          maxRetries: data.maxRetries ?? prev.maxRetries,
-          retryInterval: data.retryInterval ?? prev.retryInterval,
-          autoMoveStatus: data.autoMoveStatus ?? prev.autoMoveStatus,
-          notificationSettings: {
-            ...DEFAULT_NOTIFICATION_SETTINGS,
-            ...(data.notificationSettings ?? {}),
-          },
-          retryStatuses: data.retryStatuses ?? prev.retryStatuses,
-          confirmationStatuses:
-            data.confirmationStatuses ?? prev.confirmationStatuses,
-          notifyEmployee: data.notifyEmployee ?? prev.notifyEmployee,
-          notifyAdmin: data.notifyAdmin ?? prev.notifyAdmin,
-          
-          notifyLowStock: data.notifyLowStock ?? prev.notifyLowStock,
-          notifyMarketing: data.notifyMarketing ?? prev.notifyMarketing,
-          stockDeductionStrategy:
-            data.stockDeductionStrategy ?? prev.stockDeductionStrategy,
-          reservedEnabled:
-            data.reservedEnabled ?? prev.reservedEnabled ?? false,
-          duplicateWindowHours:
-            data.duplicateWindowHours ?? prev.duplicateWindowHours ?? 24,
-          autoCancelDuplicates:
-            data.autoCancelDuplicates ?? prev.autoCancelDuplicates ?? false,
-          orderFlowPath: data.orderFlowPath ?? prev.orderFlowPath,
-          storeOrderSkuFallback:
-            data.storeOrderSkuFallback ?? prev.storeOrderSkuFallback ?? true,
-          automationMigrationStrategy:
-            data.automationMigrationStrategy ?? prev.automationMigrationStrategy ?? "latest_patch",
-          defaultWhatsAppAccountId:
-            data.defaultWhatsAppAccountId ?? prev.defaultWhatsAppAccountId ?? "",
-
-          // تحديث الكائنات المتداخلة (Nested Objects)
-          workingHours: {
-            enabled: data.workingHours?.enabled ?? prev.workingHours.enabled,
-            start: data.workingHours?.start ?? prev.workingHours.start,
-            end: data.workingHours?.end ?? prev.workingHours.end,
-          },
-
-          shipping: data.shipping
-            ? {
-              shippingCompanyId:
-                data.shipping?.shippingCompanyId ??
-                prev.shipping.shippingCompanyId,
-              triggerStatus:
-                data.shipping?.triggerStatus ?? prev.shipping.triggerStatus,
-              //   requirePaymentConfirm:
-              //     data.shipping?.requirePaymentConfirm ??
-              //     prev.shipping.requirePaymentConfirm,
-              notifyOnShipment:
-                data.shipping?.notifyOnShipment ??
-                prev.shipping.notifyOnShipment,
-              autoGenerateLabel:
-                data.shipping?.autoGenerateLabel ??
-                prev.shipping.autoGenerateLabel,
-              partialPaymentThreshold:
-                data.shipping?.partialPaymentThreshold ??
-                prev.shipping.partialPaymentThreshold,
-              requireFullPayment:
-                data.shipping?.requireFullPayment ??
-                prev.shipping.requireFullPayment,
-              autoShipAfterWarehouse:
-                data.shipping?.autoShipAfterWarehouse ??
-                prev.shipping.autoShipAfterWarehouse,
-              warehouseDefaultShippingCompanyId:
-                data.shipping?.warehouseDefaultShippingCompanyId ??
-                prev.shipping.warehouseDefaultShippingCompanyId,
-              //   allowReturnCreation:
-              //     data.shipping?.allowReturnCreation ??
-              //     prev.shipping.allowReturnCreation,
-            }
-            : { ...prev.shipping },
-        }));
+      // setSavedSettings(data);
+      if (data) {
+        const newSettings = buildSettingsObject(data, defaultSettings);
+        setSettings(newSettings);
+        setTempSettings(newSettings);
+      }
     })();
-  }, [isOnboarding]);
-  const patch = (p) => setSettings((prev) => ({ ...prev, ...p }));
+  }, [isOnboarding, refreshFlag]);
+  
+  const refreshOrdersSettings = useCallback(() => {
+    setRefreshFlag(prev => prev + 1);
+  }, []);
+  const patch = (p) => setTempSettings((prev) => ({ ...prev, ...p }));
   const patchShipping = (p) =>
-    setSettings((prev) => ({ ...prev, shipping: { ...prev.shipping, ...p } }));
+    setTempSettings((prev) => ({ ...prev, shipping: { ...prev.shipping, ...p } }));
 
   const toggleCode = (field, code) =>
     patch({
-      [field]: settings[field].includes(code)
-        ? settings[field].filter((c) => c !== code)
-        : [...settings[field], code],
+      [field]: tempSettings[field].includes(code)
+        ? tempSettings[field].filter((c) => c !== code)
+        : [...tempSettings[field], code],
     });
 
   const handleSave = async (onSuccess) => {
     setSaving(true);
     try {
-      const payload = { ...settings };
+      const payload = { ...tempSettings };
 
       if (payload.shipping) {
         payload.shipping = {
@@ -231,45 +245,48 @@ export function OrdersSettingsProvider({ children }) {
         }
       }
 
-      await api.post("/orders/retry-settings", payload);
+      const res = await api.post("/orders/retry-settings", payload);
       toast.success(t("messages.settingsSaved"));
 
       if (typeof onSuccess === "function")
         onSuccess?.();
-      const data = await fetchSettings();
+      if (res.data) {
+        const updatedSettings = buildSettingsObject(res.data, tempSettings);
+        setSettings(updatedSettings);
+        setTempSettings(updatedSettings);
+      }
       
-      setSavedSettings(data);
     } catch (e) {
       toast.error(normalizeAxiosError(e));
     } finally {
       setSaving(false);
     }
   };
+  
   const saveSetting = async (settingToSave, onSuccess) => {
     setSaving(true);
     try {
-
-
+      // Update tempSettings with the new value first
+      setTempSettings((prev) => ({ ...prev, ...settingToSave }));
+      
       const res = await api.post("/orders/retry-settings", settingToSave);
 
       if (res.data) {
-        setSettings((prev) => ({
-          ...prev,
-          ...res.data,
-        }));
+        const updatedSettings = buildSettingsObject(res.data, tempSettings);
+        setSettings(updatedSettings);
+        setTempSettings(updatedSettings);
       }
       toast.success(t("messages.settingsSaved"));
       if (typeof onSuccess === "function")
         onSuccess?.();
-      const data = await fetchSettings();
-      setSavedSettings(data);
+      
     } catch (e) {
       toast.error(normalizeAxiosError(e));
     } finally {
       setSaving(false);
     }
   };
-  const isDirectShippingEnabled = savedSettings?.orderFlowPath === "shipping";
+  const isDirectShippingEnabled = settings?.orderFlowPath === "shipping";
 
   const calculateAvailableStock = useCallback(
   (stockOnHand, reserved) => {
@@ -290,8 +307,9 @@ export function OrdersSettingsProvider({ children }) {
   // القيم التي سيتم مشاركتها
   const value = {
     settings,
+    tempSettings,
     isDirectShippingEnabled,
-    staticSettings: savedSettings,
+   
     reservedEnabled: settings?.reservedEnabled ?? false,
     loading,
     saving,
@@ -301,6 +319,7 @@ export function OrdersSettingsProvider({ children }) {
     saveSetting,
     toggleCode,
     calculateAvailableStock,
+    refreshOrdersSettings,
   };
 
   return (

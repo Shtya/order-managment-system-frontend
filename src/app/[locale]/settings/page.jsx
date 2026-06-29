@@ -614,7 +614,7 @@ export function WhatsAppTab({ hideAccount = false, onSave }) {
   const tSettings = useTranslations("settings");
   const t = useTranslations("settings.tabs.whatsappTab");
   const {
-    settings,
+    tempSettings,
     patch,
     saving,
     handleSave,
@@ -640,7 +640,7 @@ export function WhatsAppTab({ hideAccount = false, onSave }) {
 
         <WhatsAppAccountSelect
           label={t("defaultAccountLabel")}
-          value={settings?.defaultWhatsAppAccountId}
+          value={tempSettings?.defaultWhatsAppAccountId}
           onChange={(val) => patch({ defaultWhatsAppAccountId: val })}
         />
       </div>
@@ -654,7 +654,7 @@ export function AutomationsTab({ hideAccount = false, onSave }) {
   const tSettings = useTranslations("settings");
   const t = useTranslations("settings.automationSettings");
   const {
-    settings,
+    tempSettings,
     patch,
     saving,
     handleSave,
@@ -692,7 +692,7 @@ export function AutomationsTab({ hideAccount = false, onSave }) {
           </p>
 
           <RadioGroup
-            value={settings?.automationMigrationStrategy}
+            value={tempSettings?.automationMigrationStrategy}
             onValueChange={(val) => patch({ automationMigrationStrategy: val })}
             className="flex flex-col-reverse text-end gap-4"
           >
@@ -702,7 +702,7 @@ export function AutomationsTab({ hideAccount = false, onSave }) {
                 htmlFor={opt.id}
                 className={cn(
                   "flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all duration-200",
-                  settings?.automationMigrationStrategy === opt.id
+                  tempSettings?.automationMigrationStrategy === opt.id
                     ? "border-primary bg-primary/[0.02] ring-1 ring-primary/20"
                     : "border-border/40 bg-background/60 hover:bg-muted/50"
                 )}
@@ -1005,7 +1005,7 @@ function SettingsTab() {
   }, []);
 
   const {
-    settings,
+    tempSettings,
     loading,
     saving,
     shippingCompanies,
@@ -1045,11 +1045,11 @@ function SettingsTab() {
             className="min-h-[280px]"
           >
             {activeTab === "general" && (
-              <GeneralTab settings={settings} patch={patch} t={tOrders} />
+              <GeneralTab settings={tempSettings} patch={patch} t={tOrders} />
             )}
             {activeTab === "automation" && (
               <AutomationTab
-                settings={settings}
+                settings={tempSettings}
                 statuses={statuses}
                 patch={patch}
                 toggleCode={toggleCode}
@@ -1058,7 +1058,7 @@ function SettingsTab() {
             )}
             {activeTab === "shipping" && (
               <ShippingTab
-                settings={settings}
+                settings={tempSettings}
                 statuses={statuses}
                 shippingCompanies={shippingCompanies}
                 patchShipping={patchShipping}
@@ -1067,13 +1067,13 @@ function SettingsTab() {
               />
             )}
             {activeTab === "warehouse" && (
-              <WarehouseTab settings={settings} patch={patch} t={tOrders} />
+              <WarehouseTab settings={tempSettings} patch={patch} t={tOrders} />
             )}
             {activeTab === "notifications" && (
-              <NotificationsSettingsTab settings={settings} patch={patch} t={tOrders} />
+              <NotificationsSettingsTab settings={tempSettings} patch={patch} t={tOrders} />
             )}
             {activeTab === "sync" && (
-              <SyncSettingsTab settings={settings} patch={patch} t={tOrders} />
+              <SyncSettingsTab settings={tempSettings} patch={patch} t={tOrders} />
             )}
           </motion.div>
           <SaveFooter
@@ -1094,7 +1094,7 @@ function NotificationsTab() {
   const tSettings = useTranslations("settings");
   const t = useTranslations("settings.notifications");
   const {
-    settings,
+    tempSettings,
     patch,
     saving,
     handleSave,
@@ -1124,10 +1124,10 @@ function NotificationsTab() {
         {notifications.map((n, idx) => {
           const Icon = n.icon;
           const isNotificationSettings = n.isNotificationSettings;
-          console.log(n.field, isNotificationSettings, settings?.notificationSettings?.[n.field]);
+          
           const isChecked = isNotificationSettings
-            ? settings?.notificationSettings?.[n.field]
-            : settings?.[n.field];
+            ? tempSettings?.notificationSettings?.[n.field]
+            : tempSettings?.[n.field];
           return (
             <motion.div
               key={n.id}
@@ -1160,7 +1160,7 @@ function NotificationsTab() {
                     isNotificationSettings
                       ? {
                           notificationSettings: {
-                            ...settings.notificationSettings,
+                            ...tempSettings.notificationSettings,
                             [n.field]: val,
                           },
                         }

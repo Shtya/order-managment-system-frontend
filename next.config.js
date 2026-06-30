@@ -23,15 +23,10 @@ const nextConfig = {
   }
 };
 
-module.exports = withNextIntl(nextConfig);
-
 module.exports = withSentryConfig(withNextIntl(nextConfig), {
   org: "shtya",
   project: "javascript-nextjs",
   authToken: process.env.SENTRY_AUTH_TOKEN,
-
-  // Route Sentry requests through your server (avoids ad-blockers)
-  tunnelRoute: "/sentry-tunnel",
 
   silent: !process.env.CI,
   widenClientFileUpload: true,

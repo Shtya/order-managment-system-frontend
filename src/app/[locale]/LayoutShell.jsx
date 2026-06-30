@@ -18,22 +18,27 @@ import { useAuthInterceptor } from "@/hook/useAuthInterceptor";
 import { motion, AnimatePresence } from "framer-motion";
 import "flatpickr/dist/flatpickr.min.css";
 import { OrdersSettingsProvider } from "@/hook/useOrdersSettings";
+import { TutorialProvider, useTutorial } from "@/context/TutorialContext";
+import "@/utils/pdfFonts";
+
 
 export default function LayoutShell({ children }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <AuthProvider>
-        <OrdersSettingsProvider>
-          <AuthInterceptorWrapper>
-            <SocketProvider>
-              <NotificationProvider>
-                <PlatformSettingsProvider>
-                  <DashboardLayout>{children}</DashboardLayout>
-                </PlatformSettingsProvider>
-              </NotificationProvider>
-            </SocketProvider>
-          </AuthInterceptorWrapper>
-        </OrdersSettingsProvider>
+        <TutorialProvider>
+          <OrdersSettingsProvider>
+            <AuthInterceptorWrapper>
+              <SocketProvider>
+                <NotificationProvider>
+                  <PlatformSettingsProvider>
+                    <DashboardLayout>{children}</DashboardLayout>
+                  </PlatformSettingsProvider>
+                </NotificationProvider>
+              </SocketProvider>
+            </AuthInterceptorWrapper>
+          </OrdersSettingsProvider>
+        </TutorialProvider>
       </AuthProvider>
     </ThemeProvider>
   );
@@ -90,6 +95,7 @@ function DashboardLayout({ children }) {
     return localStorage.getItem("ui_sidebar") === "expanded";
   });
   const [isMobile, setIsMobile] = useState(false);
+  const { isTutorialMode, setIsTutorialMode, exitTutorialMode } = useTutorial();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -197,7 +203,9 @@ function DashboardLayout({ children }) {
         />
 
         {/* Scrollable page content */}
-        <main className=" z-[10] flex-1 overflow-y-auto overflow-x-hidden relative layout-content ">
+        <main className={`z-[10] flex-1 overflow-y-auto overflow-x-hidden relative layout-content ${isTutorialMode ? '' : ''}`}>
+          {/* Tutorial mode overlay */}
+          {/* Tutorial mode overlay */}
           <div
             className="pointer-events-none absolute inset-0"
             style={{ zIndex: 0 }}
@@ -213,6 +221,66 @@ function DashboardLayout({ children }) {
             />
           </div>
           <div className="relative min-h-full flex flex-col" style={{ zIndex: 1 }}>
+            {isTutorialMode && (
+              <div
+                className="absolute inset-0 z-40 pointer-events-none"
+                style={{
+                  background: "rgba(0, 0, 0, 0.4)",
+                }}
+              />
+            )}
+
+            {/* Tutorial mode indicator */}
+            {isTutorialMode && (
+              <div
+                className="sticky top-0 z-70 w-full px-6 py-2 flex items-center justify-between"
+                style={{
+                  background: "linear-gradient(90deg, var(--primary), var(--secondary))",
+                  color: "var(--primary-foreground)",
+                }}
+              >
+
+
+                <div className="flex items-center gap-3">
+
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      background: "rgba(255, 255, 255, 0.15)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold">وضع الشرح مفعّل</div>
+                    <div className="text-xs opacity-80">تعرف على كل عنصر في النظام وطريقة العمل</div>
+                  </div>
+                </div>
+
+                <button
+                    onClick={() => exitTutorialMode()}
+                    className="px-4 py-2 rounded-md text-xs font-semibold flex items-center gap-2 transition-all hover:opacity-80"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.15)",
+                      border: "1px solid rgba(255, 255, 255, 0.25)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                    خروج وضع الشرح
+                  </button>
+              </div>
+            )}
 
             {isLocked ? <SubscriptionLock /> : children}
           </div>

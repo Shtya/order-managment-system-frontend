@@ -4676,6 +4676,7 @@
     "minutes": "دقائق",
     "hour": "ساعة",
     "hours": "ساعات",
+    "printError": "فشل طباعة التقرير",
     "languages": {
       "ar": "العربية (Arabic)",
       "en": "الإنجليزية (English)",

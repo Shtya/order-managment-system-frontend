@@ -17,6 +17,8 @@ import {
   Globe,
   LogOut,
   List,
+  GraduationCap,
+  XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +32,7 @@ import api from "@/utils/api";
 import { getNotificationLink } from "@/app/[locale]/notifications/page";
 import { useNotification } from "@/context/NotificationContext";
 import { useAuth } from "@/context/AuthContext";
+import { useTutorial } from "@/context/TutorialContext";
 import toast from "react-hot-toast";
 import BrandLogo from "../atoms/BrandLogo";
 
@@ -117,6 +120,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
   const {  resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
+  const { isTutorialMode, toggleTutorialMode } = useTutorial();
 
   const {
     notifications,
@@ -216,6 +220,25 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
                 transition={{ duration: 0.25 }}
               >
                 {isDark ? <Sun size={14} /> : <Moon size={14} />}
+              </motion.span>
+            </AnimatePresence>
+          </IconBtn>
+
+          {/* Tutorial Mode */}
+          <IconBtn
+            onClick={toggleTutorialMode}
+            label={isTutorialMode ? "Exit tutorial" : "Tutorial mode"}
+            className={isTutorialMode ? "bg-primary/10 border-primary/35 text-primary" : ""}
+          >
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={isTutorialMode ? "active" : "inactive"}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.5, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                {isTutorialMode ? <XCircle size={14} /> : <GraduationCap size={14} />}
               </motion.span>
             </AnimatePresence>
           </IconBtn>

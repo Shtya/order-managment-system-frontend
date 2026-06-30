@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   Building2,
@@ -36,6 +36,9 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import SupplierClosingPDF from "../atoms/SupplierClosingPDF";
+import { pdf } from "@react-pdf/renderer";
+import SupplierStatementPDF from "../atoms/SupplierStatementPDF";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Small Helper Components
@@ -67,7 +70,7 @@ export default function SupplierAccountsTab() {
   const { handleExport, exportLoading } = useExport();
 
   // Modals Visibility
-  const [statementSupplier, setStatementSupplier] = useState(null);
+  
   const [closingSupplier, setClosingSupplier] = useState(null);
   const [historySupplier, setHistorySupplier] = useState(null);
 
@@ -158,7 +161,6 @@ export default function SupplierAccountsTab() {
             {
               icon: <FileText />,
               tooltip: t("supplierAccounts.actions.statement"),
-              // onClick: (r) => setStatementSupplier(r),
               onClick: (r) => router.push(`/suppliers/${r.id}`),
               variant: "primary",
             },
@@ -219,13 +221,6 @@ export default function SupplierAccountsTab() {
         onPageChange={handlePageChange}
       />
 
-      <AccountStatementModal
-        supplier={statementSupplier}
-        onClose={() => setStatementSupplier(null)}
-        t={t}
-        tCommon={tCommon}
-        router={router}
-      />
 
       <CloseAccountPeriodModal
         supplier={closingSupplier}
@@ -291,165 +286,48 @@ function MiniTable({ columns, data, maxH = "auto", t }) {
 // Shared Supplier Statement View & Print Logic
 // ─────────────────────────────────────────────────────────────────────────
 
-const handlePrintSupplierStatement = (data, supplier, filters, t, tCommon) => {
+const handlePrintSupplierStatement = async (data, supplier, filters, t, tCommon, locale, setPrinting) => {
   if (!data || !supplier) return;
 
-  // Generate rows for purchases
-  const purchaseRows = data.purchaseInvoices.length > 0
-    ? data.purchaseInvoices.map(inv => `
-        <tr>
-          <td>${inv.ref || '-'}</td>
-          <td>${inv.date}</td>
-          <td>${Number(inv.subtotal || 0).toLocaleString()}</td>
-          <td style="color: #10b981; font-weight: 500;">${Number(inv.paidAmount || 0).toLocaleString()}</td>
-          <td style="font-weight: 500; color: ${inv.remainingAmount > 0 ? '#ea580c' : '#6b7280'};">${Number(inv.remainingAmount || 0).toLocaleString()}</td>
-        </tr>
-      `).join('')
-    : `<tr><td colspan="5" style="text-align:center; padding: 15px;">${t("supplierAccounts.noPurchasesPeriod")}</td></tr>`;
+  setPrinting(true);
+  try {
+    // 1. Generate PDF Blob via React-PDF
+    const blob = await pdf(
+      <SupplierStatementPDF
+        data={data}
+        supplier={supplier}
+        filters={filters}
+        t={t}
+        tCommon={tCommon}
+        locale={locale} // Ensure you pass your app's current locale here
+      />
+    ).toBlob();
 
-  // Generate rows for returns
-  const returnRows = data.returnInvoices.length > 0
-    ? data.returnInvoices.map(inv => {
-      const remaining = Number(inv.totalReturn || 0) - Number(inv.paidAmount || 0);
-      return `
-          <tr>
-            <td>${inv.ref || '-'}</td>
-            <td>${inv.date}</td>
-            <td>${Number(inv.subtotal || 0).toLocaleString()}</td>
-            <td>${Number(inv.taxTotal || 0).toLocaleString()}</td>
-            <td style="color: #ef4444; font-weight: bold;">${Number(inv.totalReturn || 0).toLocaleString()}</td>
-            <td style="color: #10b981; font-weight: 600;">${Number(inv.paidAmount || 0).toLocaleString()}</td>
-            <td style="font-weight: bold; color: ${remaining > 0 ? '#ea580c' : '#6b7280'};">${remaining.toLocaleString()}</td>
-          </tr>
-        `;
-    }).join('')
-    : `<tr><td colspan="7" style="text-align:center; padding: 15px;">${t("supplierAccounts.noReturnsPeriod")}</td></tr>`;
-
-  const netBalanceColor = (data.summary.finalBalance || 0) > 0 ? '#ef4444' : '#10b981';
-
-  const printContent = `
-    <html dir="rtl" lang="ar">
-      <head>
-        <title>${t("supplierAccounts.statement.title")} - ${supplier?.name}</title>
-        <style>
-          body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #111827; direction: rtl; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
-          .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #1f2937; }
-          .header p { margin: 0; color: #6b7280; font-size: 14px; }
-          
-          .summary-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; }
-          .summary-box { flex: 1; min-width: 120px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background-color: #f9fafb; }
-          .summary-box.purple { background-color: #faf5ff; border-color: #e9d5ff; color: #7c3aed; }
-          .summary-box.emerald { background-color: #f0fdf4; border-color: #d1fae5; color: #059669; }
-          .summary-box.red { background-color: #fef2f2; border-color: #fecaca; color: #dc2626; }
-          .summary-box.final { background-color: ${netBalanceColor}10; border-color: ${netBalanceColor}50; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1); }
-          .summary-box .title { font-size: 14px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 800; }
-          .summary-box .value { font-size: 18px; font-weight: 800; }
-          .summary-box.final .value { color: ${netBalanceColor}; font-size: 20px; }
-
-          .section { margin-bottom: 40px; page-break-inside: avoid; }
-          .section h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; display: inline-block;}
-          
-          table { width: 100%; border-collapse: collapse; font-size: 13px; }
-          th, td { border: 1px solid #e5e7eb; padding: 10px; text-align: right; }
-          th { background-color: #f3f4f6; color: #374151; font-weight: bold; }
-          tbody tr:nth-child(even) { background-color: #f9fafb; }
-          
-          @media print {
-            body { padding: 0; }
-            @page { margin: 1cm; }
-            .summary-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>${t("supplierAccounts.statement.title")} - ${supplier?.name}</h1>
-          <p>${t("filters.dateRange")}: ${filters.startDate ? new Date(filters.startDate).toLocaleDateString() : ''} 
-             ${tCommon("to")} 
-             ${filters.endDate ? new Date(filters.endDate).toLocaleDateString() : ''}</p>
-        </div>
-
-        <div class="summary-grid">
-          <div class="summary-box purple">
-            <div class="title">${t("supplierAccounts.statement.totalPurchases")}</div>
-            <div class="value">${data.summary.totalPurchases?.toLocaleString() || 0}</div>
-          </div>
-          <div class="summary-box emerald">
-            <div class="title">${t("supplierAccounts.statement.totalPaid")}</div>
-            <div class="value">${data.summary.totalPaid?.toLocaleString() || 0}</div>
-          </div>
-          <div class="summary-box purple">
-            <div class="title">${t("supplierAccounts.statement.totalReturns")}</div>
-            <div class="value">${data.summary.totalReturns?.toLocaleString() || 0}</div>
-          </div>
-          <div class="summary-box red">
-            <div class="title">${t("supplierAccounts.statement.totalTaken")}</div>
-            <div class="value">${data.summary.totalTaken?.toLocaleString() || 0}</div>
-          </div>
-          <div class="summary-box final">
-            <div class="title">${t("supplierAccounts.statement.netBalance")}</div>
-            <div class="value">${data.summary.finalBalance?.toLocaleString() || 0}</div>
-          </div>
-        </div>
-
-        <div class="section">
-          <h2>${t("supplierAccounts.statement.detailedPurchases")}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>${t("supplierAccounts.statement.invoiceRef")}</th>
-                <th>${t("supplierAccounts.statement.date")}</th>
-                <th>${t("table.subtotal")}</th>
-                <th>${t("table.paidAmount")}</th>
-                <th>${t("table.remainingAmount")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${purchaseRows}
-            </tbody>
-          </table>
-        </div>
-
-        <div class="section">
-          <h2>${t("supplierAccounts.statement.detailedReturns")}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>${t("supplierAccounts.statement.invoiceRef")}</th>
-                <th>${t("supplierAccounts.statement.date")}</th>
-                <th>${t("table.subtotal")}</th>
-                <th>${t("table.tax")}</th>
-                <th>${t("table.totalReturn")}</th>
-                <th>${t("table.takanAmount")}</th>
-                <th>${t("table.remainingAmount")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${returnRows}
-            </tbody>
-          </table>
-        </div>
-      </body>
-    </html>
-  `;
-
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-    };
-  } else {
-    toast.error(tCommon("allowPopups"));
+    // 2. Download PDF
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `statement_${supplier.name}_${new Date().getTime()}.pdf`;
+    
+    document.body.appendChild(a);
+    a.click();
+    
+    // 3. Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+  } catch (err) {
+    console.error("Error generating supplier statement PDF:", err);
+    toast.error(tCommon("printError") || "An error occurred while generating the PDF");
+  } finally {
+    setPrinting(false);
   }
 };
 
 function SupplierStatementReportView({ data, supplier, filters, onChangeDate, loading, t, tCommon, router, extraActions }) {
   const { currency, formatCurrency } = usePlatformSettings();
+  const locale = useLocale();
+  const [printing, setPrinting] = useState(false);
   
   const purchaseMiniColumns = [
     { key: "ref", header: t("supplierAccounts.statement.invoiceRef"), cell: (row) => <span className="font-mono text-xs">{row.ref}</span> },
@@ -593,10 +471,10 @@ function SupplierStatementReportView({ data, supplier, filters, onChangeDate, lo
             size="sm"
             variant="outline"
             label={t("supplierAccounts.actions.printPdf")}
-            icon={<Download size={14} />}
+            icon={printing ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
             className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:border-blue-900 dark:hover:bg-blue-950"
-            onClick={() => handlePrintSupplierStatement(data, supplier, filters, t, tCommon)}
-            disabled={loading || !data}
+            onClick={() => handlePrintSupplierStatement(data, supplier, filters, t, tCommon, locale, setPrinting)}
+            disabled={loading || !data || printing}
           />
           {extraActions}
         </div>
@@ -670,93 +548,6 @@ function SupplierStatementReportView({ data, supplier, filters, onChangeDate, lo
   );
 }
 
-// MODALS FOR SUPPLIER ACCOUNTS
-function AccountStatementModal({ supplier, onClose, t, tCommon, router }) {
-  const [filters, setFilters] = useState({
-    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    endDate: new Date(),
-  });
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
-
-  const fetchStatement = useCallback(async () => {
-    if (!supplier) return;
-    setLoading(true);
-    try {
-      const params = {
-        supplierId: supplier.id,
-        startDate: filters.startDate ? filters.startDate : undefined,
-        endDate: filters.endDate ? filters.endDate : undefined,
-      };
-      // 1. Fetch Summary Stats
-      const statsRes = await api.get("/accounting/supplier-closings/supplier-preview", { params });
-
-      // 2. Fetch Invoices & Returns
-      const [purchasesRes, returnsRes] = await Promise.all([
-        api.get("/purchases", { params: { ...params, status: "accepted", closed: "false" } }),
-        api.get("/purchases-return", { params: { ...params, status: "accepted", closed: "false" } }),
-      ]);
-
-      setData({
-        summary: statsRes.data,
-        purchaseInvoices: (purchasesRes.data.records || []).map(p => ({
-          id: p.id,
-          url: `/purchases?detials=${p.id}`,
-          ref: p.receiptNumber || p.invoiceNumber, // Fallback if needed
-          date: new Date(p.statusUpdateDate).toLocaleDateString(),
-          subtotal: Number(p.subtotal),
-          paidAmount: Number(p.paidAmount),
-          remainingAmount: Number(p.remainingAmount),
-          amount: Number(p.total)
-        })),
-        returnInvoices: (returnsRes.data.records || []).map(r => ({
-          id: r.id,
-          url: `/purchases-return?detials=${r.id}`,
-          ref: r.returnNumber,
-          date: new Date(r.statusUpdateDate).toLocaleDateString(),
-          subtotal: Number(r.subtotal),
-          taxTotal: Number(r.taxTotal),
-          totalReturn: Number(r.totalReturn),
-          paidAmount: Number(r.paidAmount),
-          amount: Number(r.totalReturn)
-        }))
-      });
-    } catch (err) {
-      console.error("Error fetching statement:", err);
-      toast.error(t("supplierAccounts.fetchInvoicesError"));
-    } finally {
-      setLoading(false);
-    }
-  }, [supplier, filters, t]);
-
-  useEffect(() => {
-    if (supplier) fetchStatement();
-  }, [supplier, fetchStatement]);
-
-  return (
-    <Dialog open={!!supplier} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[850px] overflow-auto max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="text-primary" size={20} />
-            {t("supplierAccounts.statement.title")} - {supplier?.name}
-          </DialogTitle>
-        </DialogHeader>
-
-        <SupplierStatementReportView
-          data={data}
-          supplier={supplier}
-          filters={filters}
-          loading={loading}
-          onChangeDate={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
-          t={t}
-          tCommon={tCommon}
-          router={router}
-        />
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, router }) {
   const [filters, setFilters] = useState({
@@ -898,6 +689,7 @@ function ClosingHistoryModal({ supplier, onClose, t, tCommon }) {
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
+  const locale = useLocale();
   const { currency } = usePlatformSettings();
 
   // Track which specific closing record is currently fetching for print
@@ -942,136 +734,33 @@ function ClosingHistoryModal({ supplier, onClose, t, tCommon }) {
       const purchases = purchasesRes.data.records || [];
       const returns = returnsRes.data.records || [];
 
-      // 2. Build HTML Rows
-      const purchaseRows = purchases.length > 0
-        ? purchases.map(inv => `
-            <tr>
-              <td>${inv.receiptNumber || inv.invoiceNumber || '-'}</td>
-              <td>${new Date(inv.statusUpdateDate || inv.created_at).toLocaleDateString()}</td>
-              <td style="font-weight: bold;">${Number(inv.total).toLocaleString()} </td>
-            </tr>
-          `).join('')
-        : `<tr><td colspan="3" style="text-align:center; padding: 15px;">${t("supplierAccounts.noPurchases")}</td></tr>`;
+      // 2. Generate PDF Blob via React-PDF
+      const blob = await pdf(
+        <SupplierClosingPDF
+          closingRow={closingRow}
+          supplier={supplier}
+          purchases={purchases}
+          returns={returns}
+          t={t}
+          tCommon={tCommon}
+          locale={locale} 
+        />
+      ).toBlob();
 
-      const returnRows = returns.length > 0
-        ? returns.map(inv => `
-            <tr>
-              <td>${inv.returnNumber || '-'}</td>
-              <td>${new Date(inv.statusUpdateDate || inv.created_at).toLocaleDateString()}</td>
-              <td style="font-weight: bold; color: #ef4444;">${Number(inv.totalReturn).toLocaleString()} </td>
-            </tr>
-          `).join('')
-        : `<tr><td colspan="3" style="text-align:center; padding: 15px;">${t("supplierAccounts.noReturns")}</td></tr>`;
+      // 3. Download PDF
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `closing_statement_${closingRow.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
 
-      // 3. Build Print HTML Document
-      const printContent = `
-        <html dir="rtl" lang="ar">
-          <head>
-            <title>${t("supplierAccounts.history.title")} - ${supplier?.name}</title>
-            <style>
-              body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #111827; direction: rtl; }
-              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
-              .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #1f2937; }
-              .header p { margin: 0; color: #6b7280; font-size: 14px; }
-              
-              .summary-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; }
-              .summary-box { flex: 1; min-width: 130px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background-color: #f9fafb; }
-              .summary-box .title { font-size: 13px; color: #6b7280; margin-bottom: 8px; }
-              .summary-box .value { font-size: 20px; font-weight: bold; color: #111827; }
-              .summary-box.final { border-color: #ef4444; background-color: #fef2f2; }
-              .summary-box.final .value { color: #ef4444; }
+      // 4. Cleanup
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-              .section { margin-bottom: 40px; page-break-inside: avoid; }
-              .section h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; display: inline-block;}
-              
-              table { width: 100%; border-collapse: collapse; font-size: 14px; }
-              th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: right; }
-              th { background-color: #f3f4f6; color: #374151; font-weight: bold; }
-              tbody tr:nth-child(even) { background-color: #f9fafb; }
-              
-              @media print {
-                body { padding: 0; }
-                @page { margin: 1cm; }
-                .summary-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1>${t("supplierAccounts.history.title")} - ${supplier?.name}</h1>
-              <p>${t("supplierAccounts.history.period")}: ${new Date(closingRow.startDate).toLocaleDateString()} ${tCommon("to")} ${new Date(closingRow.endDate).toLocaleDateString()}</p>
-              <p>${t("supplierAccounts.history.closedAt")}: ${new Date(closingRow.createdAt).toLocaleDateString()}</p>
-            </div>
-
-            <div class="summary-grid">
-              <div class="summary-box">
-                <div class="title">${t("supplierAccounts.close.totalPurchases")}</div>
-                <div class="value">${Number(closingRow.totalPurchases).toLocaleString()}</div>
-              </div>
-              <div class="summary-box">
-                <div class="title">${t("supplierAccounts.close.totalReturns")}</div>
-                <div class="value">${Number(closingRow.totalReturns).toLocaleString()}</div>
-              </div>
-              <div class="summary-box">
-                <div class="title">${t("supplierAccounts.close.totalPayments")}</div>
-                <div class="value">${Number(closingRow.totalPaid).toLocaleString()}</div>
-              </div>
-              <div class="summary-box final">
-                <div class="title">${t("supplierAccounts.history.balance")}</div>
-                <div class="value">${Number(closingRow.finalBalance).toLocaleString()}</div>
-              </div>
-            </div>
-
-            <div class="section">
-              <h2>${t("supplierAccounts.statement.detailedPurchases")}</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>${t("supplierAccounts.statement.invoiceRef")}</th>
-                    <th>${t("supplierAccounts.statement.date")}</th>
-                    <th>${t("supplierAccounts.statement.amount")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${purchaseRows}
-                </tbody>
-              </table>
-            </div>
-
-            <div class="section">
-              <h2>${t("supplierAccounts.statement.detailedReturns")}</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>${t("supplierAccounts.statement.invoiceRef")}</th>
-                    <th>${t("supplierAccounts.statement.date")}</th>
-                    <th>${t("supplierAccounts.statement.amount")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${returnRows}
-                </tbody>
-              </table>
-            </div>
-          </body>
-        </html>
-      `;
-
-      // 4. Trigger Print
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.open();
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-        printWindow.onload = () => {
-          printWindow.focus();
-          printWindow.print();
-        };
-      } else {
-        toast.error(tCommon("allowPopups"));
-      }
     } catch (err) {
-      console.error("Error fetching closing details:", err);
+      console.error("Error fetching/printing closing details:", err);
       toast.error(t("supplierAccounts.fetchInvoicesError"));
     } finally {
       setPrintingId(null);

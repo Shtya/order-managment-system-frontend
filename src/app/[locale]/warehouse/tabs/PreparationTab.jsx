@@ -25,7 +25,6 @@ import ActionButtons from "@/components/atoms/Actions";
 import Button_ from "@/components/atoms/Button";
 import { STATUS, CARRIERS, CARRIER_STYLES, CARRIER_META } from "./data";
 import { OrderDetailModal } from "./DistributionTab";
-import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
@@ -34,6 +33,8 @@ import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useClipboard } from "@/hook/useClipboard";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
+import { pdf } from "@react-pdf/renderer";
+import WrongScanLogPDF from "../atoms/WrongScanLogPDF";
 
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS — Single source of truth for the whole page
@@ -71,463 +72,45 @@ const DS = {
 	}
 };
 
-const WRONG_SCAN_PDF_STYLE = `
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+const handlePrintWrongScanLog = async (logs, row, wrongLogLabels, locale) => {
+  if (!logs || logs.length === 0) return;
 
-  :root {
-    --primary: var(--primary);
-    --primary-soft: #fff4e6;
-    --err: #ef4444;
-    --err-mid: #b91c1c;
-    --err-soft: #fef2f2;
-    --err-bg: #fff5f5;
-    --err-rule: #fee2e2;
-    --cream: #fdfcfb;
-    --cream-warm: #faf9f6;
-    --cream-deep: #f5f2ed;
-    --charcoal: #1e293b;
-    --charcoal-soft: #475569;
-    --charcoal-mid: #64748b;
-    --charcoal-muted: #94a3b8;
-    --charcoal-faint: #cbd5e1;
-    --white: #ffffff;
-    --rule: #e2e8f0;
-    --rule-soft: #f1f5f9;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'Tajawal', sans-serif;
+  try {
+    // 1. Prepare data matching what was previously passed to buildWrongScanLogPDF
+    const carrier = row?.shippingCompany?.name || "-";
+    const now = new Date().toLocaleString();
+    const orderInfo = row; // Passing the whole row if it acts as orderInfo context
+
+    // 2. Generate Blob
+    const blob = await pdf(
+      <WrongScanLogPDF
+        logs={logs}
+        carrier={carrier}
+        now={now}
+        labels={wrongLogLabels}
+        orderInfo={orderInfo}
+        locale={locale}
+      />
+    ).toBlob();
+
+    // 3. Initiate Download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `wrong-scan-log-${new Date().getTime()}.pdf`;
+    
+    document.body.appendChild(a);
+    a.click();
+    
+    // 4. Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+  } catch (error) {
+    console.error("Error generating Wrong Scan PDF:", error);
   }
+};
 
-  body {
-    font-family: var(--sans);
-    background: var(--white);
-    color: var(--charcoal);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     HEADER BAND
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  .header-band {
-    background: var(--cream);
-    border-bottom: 2px solid var(--cream-deep);
-  }
-
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: stretch;
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .header-brand {
-    padding: 24px 32px;
-    border-left: 1px solid var(--rule);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .brand-icon {
-    width: 42px; height: 42px;
-    background: var(--err);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .brand-icon svg {
-    width: 22px; height: 22px;
-    fill: none; stroke: #fdf5f4;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
-
-  .doc-title {
-    font-family: var(--sans);
-    font-size: 19px; font-weight: 700;
-    color: var(--charcoal);
-    line-height: 1.1; letter-spacing: -0.3px;
-  }
-
-  .doc-subtitle {
-    font-family: var(--mono);
-    font-size: 11px; font-weight: 400;
-    color: var(--charcoal-soft);
-    margin-top: 3px; letter-spacing: 0.3px;
-  }
-
-  .header-ref {
-    padding: 24px 32px;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: flex-start;
-    gap: 5px;
-  }
-
-  .ref-badge {
-    font-family: var(--mono);
-    font-size: 10px; font-weight: 600;
-    color: var(--err-mid);
-    background: var(--err-soft);
-    padding: 3px 9px; border-radius: 4px;
-    letter-spacing: 0.8px; text-transform: uppercase;
-    border: 1px solid var(--err-rule);
-  }
-
-  .ref-date     { font-family: var(--mono); font-size: 11px; color: var(--charcoal-muted); }
-  .ref-employee { font-family: var(--sans); font-size: 12px; color: var(--charcoal-mid); font-weight: 500; }
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     META STRIP
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  .meta-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    background: var(--cream-warm);
-  }
-
-  .meta-cell { padding: 16px 20px; border-left: 1px solid var(--rule); position: relative; }
-  .meta-cell:last-child { border-left: none; }
-
-  .meta-cell.highlight::before {
-    content: '';
-    position: absolute;
-    top: 0; right: 0;
-    width: 3px; height: 100%;
-    background: var(--err);
-  }
-
-  .meta-label {
-    font-family: var(--mono);
-    font-size: 8.5px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 1.4px;
-    color: var(--charcoal-faint); margin-bottom: 6px;
-  }
-
-  .meta-value {
-    font-family: var(--sans);
-    font-size: 15px; font-weight: 700;
-    color: var(--charcoal); line-height: 1;
-  }
-
-  .meta-value.mono { font-family: var(--mono); font-size: 13px; }
-  .meta-value.err  { color: var(--err); }
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     ALERT BANNER (appears only on print)
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  .print-alert {
-    display: none;
-    margin: 20px 32px 0;
-    padding: 12px 18px;
-    border: 1.5px solid var(--err-rule);
-    border-radius: 6px;
-    background: var(--err-bg);
-  }
-
-  .print-alert-inner {
-    display: flex; align-items: center; gap: 10px;
-  }
-
-  .print-alert-icon {
-    width: 18px; height: 18px;
-    border: 1.5px solid var(--err);
-    border-radius: 50%;
-    color: var(--err);
-    font-family: var(--mono);
-    font-size: 11px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .print-alert-text {
-    font-family: var(--sans);
-    font-size: 12px; font-weight: 500;
-    color: var(--err-mid);
-    line-height: 1.4;
-  }
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     TABLE SECTION
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  .table-wrap { padding: 24px 32px 32px; }
-
-  .section-label {
-    display: flex; align-items: center;
-    gap: 12px; margin-bottom: 16px;
-  }
-
-  .section-label-text {
-    font-family: var(--mono);
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: var(--charcoal-faint); white-space: nowrap;
-  }
-
-  .section-label-line { flex: 1; height: 1px; background: var(--rule-soft); }
-
-  .table-card {
-    border: 1.5px solid var(--rule);
-    border-radius: 8px; overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
-
-  table { width: 100%; border-collapse: collapse; }
-
-  thead tr {
-    background: var(--cream-warm);
-    border-bottom: 1px solid var(--rule);
-  }
-
-  th {
-    font-family: var(--mono);
-    font-size: 8.5px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 1.2px;
-    color: var(--charcoal-muted);
-    padding: 10px 16px; text-align: right;
-  }
-
-  th.center { text-align: center; }
-
-  tbody tr { border-bottom: 1px solid var(--rule-soft); }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:nth-child(even) td { background: #fdfcfb; }
-
-  td {
-    font-family: var(--sans);
-    font-size: 12.5px; color: var(--charcoal-mid);
-    padding: 11px 16px;
-    text-align: right; vertical-align: middle;
-  }
-
-  td.idx-cell {
-    font-family: var(--mono);
-    font-size: 10px; color: var(--charcoal-faint);
-    text-align: center; font-weight: 500;
-    width: 42px;
-  }
-
-  td.code-cell {
-    font-family: var(--mono);
-    font-size: 12px; font-weight: 600;
-    color: var(--err);
-    letter-spacing: 0.3px;
-  }
-
-  .badge-error {
-    display: inline-block;
-    font-family: var(--sans);
-    font-size: 11px; font-weight: 600;
-    color: var(--err-mid);
-    background: var(--err-soft);
-    border: 1px solid var(--err-rule);
-    padding: 3px 10px;
-    border-radius: 20px;
-    line-height: 1.4;
-    white-space: nowrap;
-  }
-
-  td.time-cell {
-    font-family: var(--mono);
-    font-size: 10px; color: var(--charcoal-muted);
-    letter-spacing: 0.2px;
-  }
-
-  td.time-cell span {
-    background: var(--cream-warm);
-    border: 1px solid var(--rule);
-    padding: 2px 8px; border-radius: 4px;
-  }
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     FOOTER
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  .doc-footer {
-    background: var(--cream);
-    border-top: 1px solid var(--rule);
-    padding: 12px 32px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-
-  .footer-left { display: flex; align-items: center; gap: 8px; }
-
-  .footer-mark {
-    width: 16px; height: 16px;
-    background: var(--err);
-    border-radius: 3px;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  .footer-mark svg {
-    width: 9px; height: 9px;
-    stroke: var(--cream); stroke-width: 2.2;
-    fill: none; stroke-linecap: round;
-  }
-
-  .footer-text { font-family: var(--mono); font-size: 9px; color: var(--charcoal-muted); letter-spacing: 0.5px; }
-  .footer-divider { width: 1px; height: 10px; background: var(--rule); margin: 0 2px; }
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     PRINT OVERRIDES
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  @media print {
-    body { background: white; }
-    .print-alert { display: block !important; }
-    .header-band, .meta-strip, .meta-cell, thead tr, .badge-error, .doc-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    tbody tr { page-break-inside: avoid; }
-    .table-card { box-shadow: none; }
-  }
-</style>`;
-
-function buildWrongScanLogPDF(logs, carrier, employee, now, labels, orderInfo = null) {
-	const rows = logs.map((l, i) => `
-    <tr>
-      <td class="idx-cell">${i + 1}</td>
-      <td class="code-cell">${l.orderNumber}</td>
-      <td class="code-cell">${l.sku}</td>
-      <td>${l.userName}</td>
-      <td><span class="badge-error">${labels.reasons?.[l.reason] || l.reason}</span></td>
-      <td class="time-cell"><span>${l.time}</span></td>
-    </tr>`
-	).join("");
-
-	let orderHeader = "";
-	if (orderInfo) {
-		orderHeader = `
-    <div style="padding: 20px 32px; border-bottom: 1px solid var(--rule); background: var(--cream-warm);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="margin: 0; font-size: 16px; color: var(--charcoal);">${labels.orderInfo}</h3>
-        <span style="font-family: var(--mono); font-weight: 700; color: var(--primary);">${orderInfo.orderNumber}</span>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-        <div>
-          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.customer}</div>
-          <div style="font-weight: 600; font-size: 13px;">${orderInfo.customerName}</div>
-        </div>
-        <div>
-          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.city}</div>
-          <div style="font-weight: 600; font-size: 13px;">${orderInfo.city}</div>
-        </div>
-        <div>
-          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.phone}</div>
-          <div style="font-weight: 600; font-size: 13px; font-family: var(--mono);">${orderInfo.phoneNumber}</div>
-        </div>
-      </div>
-    </div>`;
-	}
-
-	return `<!DOCTYPE html>
-<html lang="ar" >
-<head>
-  <meta charset="UTF-8">
-  <title>${labels.title}</title>
-  ${WRONG_SCAN_PDF_STYLE}
-</head>
-<body>
-
-  <!-- ── HEADER ── -->
-  <div class="header-band">
-    <div class="header-top">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </div>
-        <div>
-          <div class="doc-title">${labels.title}</div>
-          <div class="doc-subtitle">WRONG SCAN LOG · ${carrier}</div>
-        </div>
-      </div>
-      <div class="header-ref">
-        <div class="ref-badge">ERR · ${now.replace(/\D/g, '').slice(0, 8)}</div>
-        <div class="ref-date">${now}</div>
-        
-      </div>
-    </div>
-
-    ${orderHeader}
-
-    <div class="meta-strip">
-      <div class="meta-cell">
-        <div class="meta-label">${labels.carrier}</div>
-        <div class="meta-value">${carrier}</div>
-      </div>
-      
-      <div class="meta-cell">
-        <div class="meta-label">${labels.date}</div>
-        <div class="meta-value mono">${now}</div>
-      </div>
-      <div class="meta-cell highlight">
-        <div class="meta-label">${labels.totalFailedAttempts}</div>
-        <div class="meta-value err">${logs.length} ${labels.attemptUnit}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── PRINT-ONLY ALERT BANNER ── -->
-  <div class="print-alert">
-    <div class="print-alert-inner">
-      <div class="print-alert-icon">!</div>
-      <div class="print-alert-text">
-        ${labels.printAlertText}
-      </div>
-    </div>
-  </div>
-
-  <!-- ── TABLE ── -->
-  <div class="table-wrap">
-    <div class="section-label">
-      <span class="section-label-text">${labels.totalAttempts}: ${logs.length}</span>
-      <div class="section-label-line"></div>
-    </div>
-
-    <div class="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th class="center">#</th>
-            <th>${labels.orderNumber}</th>
-            <th>${labels.scannedCode}</th>
-            <th>${labels.userName}</th>
-            <th>${labels.failReason}</th>
-            <th>${labels.time}</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ── FOOTER ── -->
-  <div class="doc-footer">
-    <div class="footer-left">
-      <div class="footer-mark">
-        <svg viewBox="0 0 10 10">
-          <line x1="3" y1="3" x2="7" y2="7"/>
-          <line x1="7" y1="3" x2="3" y2="7"/>
-        </svg>
-      </div>
-      <span class="footer-text">${labels.title}</span>
-      <div class="footer-divider"></div>
-      <span class="footer-text">${labels.system}</span>
-    </div>
-    <span class="footer-text">${now}</span>
-  </div>
-
-</body>
-</html>`;
-}
-
-function openPrintWindow(html) {
-	const win = window.open("", "_blank", "width=900,height=700");
-	if (!win) return;
-	win.document.write(html);
-	win.document.close();
-	win.focus();
-	setTimeout(() => win.print(), 600);
-}
 
 
 // ─────────────────────────────────────────────────────────────
@@ -1925,11 +1508,13 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fetchStats }) {
 	const tongoining = useTranslations("warehouse.outgoing");
 	const t = useTranslations("warehouse.preparation");
-
+	const locale = useLocale();
+		
 	const [search, setSearch] = useState("");
-	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
+	const [debouncedSearch, setDebouncedSearch] = useState("");
+	const searchTimer = useRef(null);
 	const [filters, setFilters] = useState({ store: "all", carrier: "all", productId: "all", date: "" });
-	const [appliedFilters, setAppliedFilters] = useState({ store: "all", carrier: "all", productId: "all", date: "" });
+
 	const [selectedOrders, setSelectedOrders] = useState([]);
 	const [detailModal, setDetailModal] = useState(null);
 	const [rejectModal, setRejectModal] = useState(null);
@@ -1943,6 +1528,16 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 	const [ordersLoading, setOrdersLoading] = useState(false);
 	const [downloadingWrongLog, setDownloadingWrongLog] = useState({});
 	const { handleExport, exportLoading } = useExport();
+
+	useEffect(() => {
+		clearTimeout(searchTimer.current);
+		searchTimer.current = setTimeout(() => setDebouncedSearch(search), 350);
+		return () => clearTimeout(searchTimer.current);
+	}, [search]);
+
+	useEffect(() => {
+		handlePageChange(1, pager.per_page);
+	}, [debouncedSearch, resetToken]);
 
 	const wrongLogLabels = {
 		title: t("pdf.wrongLog.title"),
@@ -1986,16 +1581,8 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 				time: new Date(l.createdAt).toLocaleTimeString()
 			}));
 
-			openPrintWindow(
-				buildWrongScanLogPDF(
-					logs,
-					row.shippingCompany?.name || "-",
-					null,
-					new Date().toLocaleString(),
-					wrongLogLabels,
-					row
-				)
-			);
+			 await handlePrintWrongScanLog(logs, row, wrongLogLabels, locale);
+			
 		} catch (error) {
 			console.error("Error downloading wrong log", error);
 			toast.error(t("messages.errorDownloadingLogs") || "Error downloading logs");
@@ -2004,23 +1591,24 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 		}
 	};
 
-	const buildParams = useCallback((page = pager.current_page, per_page = pager.per_page) => {
+	const buildParams = (page = pager.current_page, per_page = pager.per_page) => {
 		const params = {
 			page,
 			limit: per_page,
 			status: 'preparing,printed',
-		};
-
-		if (debouncedSearch) params.search = debouncedSearch;
-		if (appliedFilters.store !== "all") params.storeId = appliedFilters.store;
-		if (appliedFilters.carrier !== "all") params.shippingCompanyId = appliedFilters.carrier;
-		if (appliedFilters.date) params.startDate = appliedFilters.date;
-		if (appliedFilters.productId !== "all") params.productId = appliedFilters.productId;
+		};	
+		
+		
+		if (search) params.search = search;
+		if (filters.store !== "all") params.storeId = filters.store;
+		if (filters.carrier !== "all") params.shippingCompanyId = filters.carrier;
+		if (filters.date) params.startDate = filters.date;
+		if (filters.productId !== "all") params.productId = filters.productId;
 
 		return params;
-	}, [pager.current_page, pager.per_page, debouncedSearch, appliedFilters]);
+	};
 
-	const fetchOrders = useCallback(async (page = pager.current_page, per_page = pager.per_page) => {
+	const fetchOrders = async (page = pager.current_page, per_page = pager.per_page) => {
 		try {
 			setOrdersLoading(true);
 			const params = buildParams(page, per_page);
@@ -2037,18 +1625,14 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 		} finally {
 			setOrdersLoading(false);
 		}
-	}, [buildParams, pager.current_page, pager.per_page]);
-
-	useEffect(() => {
-		fetchOrders(1, pager.per_page);
-	}, [debouncedSearch, appliedFilters, resetToken, fetchOrders]);
+	};
 
 	const handlePageChange = ({ page, per_page }) => {
 		fetchOrders(page, per_page);
 	};
 
 	const applyFilters = () => {
-		setAppliedFilters({ ...filters });
+		  fetchOrders(1, pager.per_page);
 	};
 
 	const onExport = async () => {
@@ -2065,12 +1649,12 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 	const toggleOrder = (orderNumber) => setSelectedOrders(prev => prev.includes(orderNumber) ? prev.filter(c => c !== orderNumber) : [...prev, orderNumber]);
 	const selectAll = () => setSelectedOrders(selectedOrders.length === pager.records.length ? [] : pager.records.map((o) => o.orderNumber));
 
-	const handleConfirmReject = useCallback((code, p) => {
+	const handleConfirmReject = (code, p) => {
 		fetchOrders();
 		fetchStats?.();
 		const now = new Date().toISOString().slice(0, 16).replace("T", " ");
 		pushOp({ id: `OP-${Date.now()}`, operationType: "REJECT_ORDER", orderCode: code, carrier: "-", employee: "System", result: "FAILED", details: p.notes || "Rejected", createdAt: now });
-	}, [fetchStats, pushOp, fetchOrders]);
+	};
 
 	const columns = useMemo(() => [
 		// {
@@ -2111,7 +1695,7 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 		},
 	], [pager.records, selectedOrders, t, onPrepareOrder]);
 
-	const hasActiveFilters = appliedFilters.carrier !== "all" || appliedFilters.store !== "all" || !!appliedFilters.date || appliedFilters.productId !== "all";
+	const hasActiveFilters = filters.carrier !== "all" || filters.store !== "all" || !!filters.date || filters.productId !== "all";
 
 	return (
 		<div className="space-y-4">
@@ -2119,7 +1703,8 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("inProgress.emptyTitle"), emptySubtitle: "" }}
 				actions={[{ key: "export", label: t("export"), icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" }]}
-				hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
+				hasActiveFilters={hasActiveFilters} 
+				onApplyFilters={applyFilters}
 				filters={
 					<>
 						<ShippingCompanyFilter value={filters.carrier} onChange={(v) => setFilters(f => ({ ...f, carrier: v }))} />

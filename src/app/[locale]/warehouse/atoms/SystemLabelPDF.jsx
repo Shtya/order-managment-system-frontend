@@ -1,31 +1,9 @@
 "use client";
 
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, Image, Font, Svg, Rect } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
+import { WHITE,BORDER,DANGER_BG,DANGER_BORDER,DANGER_TEXT,PRIMARY,SKELETON_BG,TEXT_DARK,TEXT_MUTED,SECONDARY } from "@/utils/colors";
 
-// Register Cairo font (same as order analysis)
-Font.register({
-  family: "Cairo",
-  fonts: [
-    { src: "/fonts/Cairo-ExtraLight.ttf", fontWeight: 200 },
-    { src: "/fonts/Cairo-Light.ttf", fontWeight: 300 },
-    { src: "/fonts/Cairo-Regular.ttf", fontWeight: 400 },
-    { src: "/fonts/Cairo-Medium.ttf", fontWeight: 500 },
-    { src: "/fonts/Cairo-SemiBold.ttf", fontWeight: 600 },
-    { src: "/fonts/Cairo-Bold.ttf", fontWeight: 700 },
-    { src: "/fonts/Cairo-ExtraBold.ttf", fontWeight: 800 },
-    { src: "/fonts/Cairo-Black.ttf", fontWeight: 900 },
-  ],
-});
-
-// Constants for colors
-const PRIMARY = "#6763AF";
-const SECONDARY = "#5750a0";
-const SKELETON_BG = "#f8fafc";
-const BORDER = "#e2e8f0";
-const TEXT_DARK = "#1e293b";
-const TEXT_MUTED = "#64748b";
-const WHITE = "#ffffff";
 
 const pdfStyles = StyleSheet.create({
   page: {

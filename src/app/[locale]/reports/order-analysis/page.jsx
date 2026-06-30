@@ -62,7 +62,6 @@ import {
   StyleSheet,
   Image as PdfImage,
   pdf,
-  Font,
   Svg, // <-- Add this
   Path // <-- Add this
 } from "@react-pdf/renderer";
@@ -104,49 +103,13 @@ ChartJS.register(
   Tooltip,
 );
 
-Font.register({
-  family: "Cairo",
-  fonts: [
-    {
-      src: "/fonts/Cairo-ExtraLight.ttf",
-      fontWeight: 200,
-    },
-    {
-      src: "/fonts/Cairo-Light.ttf",
-      fontWeight: 300,
-    },
-    {
-      src: "/fonts/Cairo-Regular.ttf",
-      fontWeight: 400,
-    },
-    {
-      src: "/fonts/Cairo-Medium.ttf",
-      fontWeight: 500,
-    },
-    {
-      src: "/fonts/Cairo-SemiBold.ttf",
-      fontWeight: 600,
-    },
-    {
-      src: "/fonts/Cairo-Bold.ttf",
-      fontWeight: 700,
-    },
-    {
-      src: "/fonts/Cairo-ExtraBold.ttf",
-      fontWeight: 800,
-    },
-    {
-      src: "/fonts/Cairo-Black.ttf",
-      fontWeight: 900,
-    },
-  ],
-});
+
 // PDF Styles
 const pdfStyles = StyleSheet.create({
   page: {
     padding: 20,
     backgroundColor: "#ffffff",
-    fontFamily: "Helvetica",
+    fontFamily: "Cairo",
   },
   header: {
     flexDirection: "row",
@@ -402,7 +365,7 @@ const OrderAnalysisPDF = ({
                       marginTop: 4
                     }}
                   >
-                    {/* 1. The Arrow (Using standard Helvetica to ensure it renders) */}
+                    {/* 1. The Arrow (Using standard Cairo to ensure it renders) */}
                     {stat.trend.isUp ? (
                       <PDFArrowUp color="#059669" /> // Green for up
                     ) : (

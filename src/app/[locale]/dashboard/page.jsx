@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ChevronLeft,
@@ -22,9 +22,12 @@ import {
   CreditCard,
   Info,
   Filter,
+  Printer,
 } from "lucide-react";
 import api from "@/utils/api";
 import PageHeader from "@/components/atoms/Pageheader";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
+import { useTutorial } from "@/context/TutorialContext";
 import { useFormatter, useTranslations } from "next-intl";
 import {
   Card,
@@ -48,8 +51,8 @@ import DateRangePicker from "@/components/atoms/DateRangePicker";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 
-// ── FilterField wrapper (matches the one in OrdersStatisticsPage) ─────────────
 
+// ── FilterField wrapper (matches the one in OrdersStatisticsPage) ─────────────
 function FilterField({ label, icon: FieldIcon, children }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -69,6 +72,7 @@ function FilterField({ label, icon: FieldIcon, children }) {
 export default function DashboardPage() {
   const tDates = useTranslations("orderAnalysis");
   const t = useTranslations("dashboard");
+  const { toggleTutorialMode } = useTutorial();
 
   const [quickRange, setQuickRange] = useState("this_month");
   const [filters, setFilters] = useState({
@@ -163,6 +167,11 @@ export default function DashboardPage() {
       description: t("kpiDescription.totalSales"),
       icon: TrendingUp,
       color: "#6366f1",
+      tutorial: {
+        title: "إجمالي المبيعات",
+        description: "يعرض إجمالي الإيرادات المتولدة من المبيعات ضمن النطاق الزمني المحدد.",
+        example: "إذا اخترت 'هذا الشهر' وكانت مبيعاتك 50,000 دولار، ستعرض هذه البطاقة 50,000 دولار."
+      }
     },
     {
       key: "costOfGoods",
@@ -171,6 +180,11 @@ export default function DashboardPage() {
       icon: Briefcase,
       color: "#f59e0b",
       isInverse: true,
+      tutorial: {
+        title: "تكلفة البضائع",
+        description: "يعرض إجمالي تكلفة المنتجات المباعة، مما يساعدك في حساب الربح الإجمالي.",
+        example: "إذا بعت منتجات بتكلفة 30,000 دولار، ستعرض هذه البطاقة 30,000 دولار."
+      }
     },
     {
       key: "totalProfit",
@@ -178,6 +192,11 @@ export default function DashboardPage() {
       description: t("kpiDescription.totalProfit"),
       icon: DollarSign,
       color: "#8b5cf6",
+      tutorial: {
+        title: "إجمالي الربح",
+        description: "يحسب الربح بطرح تكلفة البضائع من إجمالي المبيعات.",
+        example: "إذا كانت إجمالي المبيعات 50,000 دولار وتكلفة البضائع 30,000 دولار، فإن الربح هو 20,000 دولار."
+      }
     },
     {
       key: "profitMargin",
@@ -186,6 +205,11 @@ export default function DashboardPage() {
       icon: Percent,
       color: "#06b6d4",
       pct: true,
+      tutorial: {
+        title: "هامش الربح",
+        description: "يعرض النسبة المئوية للربح مقارنة بإجمالي المبيعات، مما يشير إلى الربحية.",
+        example: "هامش 40% يعني أن 40 سنتًا من كل دولار في المبيعات هو ربح."
+      }
     },
     {
       key: "confirmRate",
@@ -194,6 +218,11 @@ export default function DashboardPage() {
       icon: CheckCircle,
       color: "#3b82f6",
       pct: true,
+      tutorial: {
+        title: "نسبة التأكيد",
+        description: "النسبة المئوية للطلبات التي تم تأكيدها من قبل العميل أو المسؤول.",
+        example: "إذا تم تأكيد 90 من 100 طلب، فإن النسبة هي 90%."
+      }
     },
     {
       key: "deliveryRate",
@@ -202,6 +231,11 @@ export default function DashboardPage() {
       icon: Truck,
       color: "#10b981",
       pct: true,
+      tutorial: {
+        title: "نسبة التوصيل",
+        description: "النسبة المئوية للطلبات التي تم توصيلها بنجاح إلى العملاء.",
+        example: "إذا تم توصيل 85 من 100 طلب، فإن النسبة هي 85%."
+      }
     },
     {
       key: "cancelled",
@@ -211,15 +245,25 @@ export default function DashboardPage() {
       color: "#ef4444",
       pct: true,
       isInverse: true,
+      tutorial: {
+        title: "الطلبات الملغاة",
+        description: "النسبة المئوية للطلبات التي تم إلغاؤها قبل الانتهاء.",
+        example: "إذا تم إلغاء 10 من 100 طلب، فإن النسبة هي 10%."
+      }
     },
     {
       key: "returned",
       title: t("kpi.returned"),
       description: t("kpiDescription.returned"),
       icon: RotateCcw,
-      color: "#607D8B",
+      color: "#607d8b",
       pct: true,
       isInverse: true,
+      tutorial: {
+        title: "الطلبات المرتجعة",
+        description: "النسبة المئوية للطلبات التي تم إرجاعها من قبل العملاء بعد التوصيل.",
+        example: "إذا تم إرجاع 5 من 100 طلب، فإن النسبة هي 5%."
+      }
     },
     {
       key: "inDelivery",
@@ -227,6 +271,11 @@ export default function DashboardPage() {
       description: t("kpiDescription.inDelivery"),
       icon: Activity,
       color: "#f97316",
+      tutorial: {
+        title: "قيد التوصيل",
+        description: "عدد الطلبات الموجودة حاليًا في الطريق إلى العميل.",
+        example: "إذا كان هناك 15 طلبًا في الطريق للتوصيل، ستعرض هذه البطاقة 15."
+      }
     },
     {
       key: "newOrders",
@@ -234,6 +283,11 @@ export default function DashboardPage() {
       description: t("kpiDescription.newOrders"),
       icon: ShoppingCart,
       color: "#ec4899",
+      tutorial: {
+        title: "الطلبات الجديدة",
+        description: "عدد الطلبات الجديدة المستلمة ضمن النطاق الزمني المحدد.",
+        example: "إذا استلمت 50 طلبًا جديدًا اليوم، ستعرض هذه البطاقة 50."
+      }
     },
     {
       key: "totalOrders",
@@ -241,6 +295,11 @@ export default function DashboardPage() {
       description: t("kpiDescription.totalOrders"),
       icon: BarChart3,
       color: "#475569",
+      tutorial: {
+        title: "إجمالي الطلبات",
+        description: "الإجمالي للطلبات المقدمة ضمن النطاق الزمني المحدد.",
+        example: "إذا كان لديك 200 طلبًا هذا الشهر، ستعرض هذه البطاقة 200."
+      }
     },
     {
       key: "totalCollected",
@@ -248,6 +307,11 @@ export default function DashboardPage() {
       description: t("kpiDescription.totalCollected"),
       icon: CreditCard,
       color: "#0ea5e9",
+      tutorial: {
+        title: "المجموع المحصل",
+        description: "إجمالي المبلغ المحصل من العملاء مقابل الطلبات.",
+        example: "إذا جمعت 45,000 دولار في المدفوعات، ستعرض هذه البطاقة 45,000 دولار."
+      }
     },
   ];
 
@@ -276,7 +340,7 @@ export default function DashboardPage() {
       return KPI_CONFIG.map((card) => {
         const current = summary?.[card.key] ?? 0;
         const previous = summary?.comparison?.[card.key]; // Assume API returns comparison data here
-        
+
         let change = null;
         if (previous !== undefined && previous !== null && previous !== 0) {
           change = ((current - previous) / previous) * 100;
@@ -304,6 +368,7 @@ export default function DashboardPage() {
           icon: card.icon,
           color: card.color,
           description: card.description,
+          tutorial: card.tutorial,
           trend: {
             label: hasComparison ? comparisonLabel : t("common.noComparisonData"),
             value: hasComparison ? `${Math.abs(Math.round(change))}%` : "",
@@ -424,11 +489,12 @@ export default function DashboardPage() {
     { id: "last_month", label: tDates("ranges.last_month") },
     { id: "this_year", label: tDates("ranges.this_year") },
   ];
-
+  const pageRef = useRef(null);
   // ── Render ──────────────────────────────────────────────────────────────────
 
+
   return (
-    <div className="min-h-screen p-4 md:p-5 space-between">
+    <div className="min-h-screen p-4 md:p-5 space-between" ref={pageRef}> 
       {/* Page header */}
       <PageHeader
         breadcrumbs={[
@@ -436,12 +502,16 @@ export default function DashboardPage() {
         ]}
         itemsCompact={false}
         buttons={
-          <Button_
-            size="sm"
-            label={t("actions.howToUse")}
-            variant="ghost"
-            icon={<Info size={18} />}
-          />
+          <>
+            <Button_
+              size="sm"
+              label={t("actions.howToUse")}
+              variant="ghost"
+              icon={<Info size={18} />}
+              onClick={toggleTutorialMode}
+            />
+           
+          </>
         }
         stats={statsData}
         items={QUICK_RANGES}
@@ -481,17 +551,23 @@ export default function DashboardPage() {
           transition={{ delay: 0.15 }}
           className="lg:col-span-2"
         >
-          <Card
-            title={t("charts.generalReports")}
-            icon={TrendingUp}
-            color={PRIMARY}
+          <TutorialSpotlight
+            title="مخطط التقارير العامة"
+            description="يعرض هذا المخطط اتجاه المبيعات والطلبات بمرور الوقت، مما يساعدك في تحديد الأنماط وفترات الذروة."
+            example="إذا اخترت 'هذا الأسبوع'، يمكنك معرفة كيف تغيرت المبيعات يومًا بعد يوم."
           >
-            <TrendChart
-              data={trendData}
-              loading={loading}
-              configs={orderConfigs}
-            />
-          </Card>
+            <Card
+              title={t("charts.generalReports")}
+              icon={TrendingUp}
+              color={PRIMARY}
+            >
+              <TrendChart
+                data={trendData}
+                loading={loading}
+                configs={orderConfigs}
+              />
+            </Card>
+          </TutorialSpotlight>
         </motion.div>
 
         <motion.div
@@ -499,19 +575,25 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card title={t("charts.topProducts")} icon={PieIcon} color={PRIMARY}>
-            <StatusDonut
-              data={topProductsData}
-              loading={loading}
-              config={{
-                key: "count",
-                imageKey: "image",
-                label: "name",
-                hasPercentage: true,
-              }}
-              allowImage={true} x
-            />
-          </Card>
+          <TutorialSpotlight
+            title="مخطط المنتجات الأكثر مبيعًا"
+            description="يعرض هذا المخطط الدائري منتجاتك الأكثر مبيعًا، مما يساعدك في التركيز على ما يدفع الإيرادات."
+            example="إذا كان للمنتج أ 30% من المبيعات، سيكون الشريحة الأكبر في المخطط."
+          >
+            <Card title={t("charts.topProducts")} icon={PieIcon} color={PRIMARY}>
+              <StatusDonut
+                data={topProductsData}
+                loading={loading}
+                config={{
+                  key: "count",
+                  imageKey: "image",
+                  label: "name",
+                  hasPercentage: true,
+                }}
+                allowImage={true}
+              />
+            </Card>
+          </TutorialSpotlight>
         </motion.div>
       </div>
 
@@ -521,29 +603,35 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
       >
-        <Card
-          title={t("profitTable.title")}
-          icon={DollarSign}
-          color={PRIMARY}
-          action={
-            <ExportBtn
-              loading={exProds}
-              onClick={() =>
-                doExport(
-                  "/dashboard/profit-report/export",
-                  setExProds,
-                  "profit_report",
-                )
-              }
-            />
-          }
+        <TutorialSpotlight
+          title="جدول تقرير الربح"
+          description="يُحلل هذا الجدول الربح حسب الفترة الزمنية، مع عرض المبيعات والتكاليف وهامش الربح لمساعدتك في تحليل الأداء."
+          example="يمكنك معرفة أن الأسبوع الماضي كان لديه 10,000 دولار في المبيعات، 6,000 دولار في التكاليف، و4,000 دولار في الربح (هامش 40%)."
         >
-          <MiniTable
-            columns={profitCols}
-            data={profitTableData}
-            loading={loading}
-          />
-        </Card>
+          <Card
+            title={t("profitTable.title")}
+            icon={DollarSign}
+            color={PRIMARY}
+            action={
+              <ExportBtn
+                loading={exProds}
+                onClick={() =>
+                  doExport(
+                    "/dashboard/profit-report/export",
+                    setExProds,
+                    "profit_report",
+                  )
+                }
+              />
+            }
+          >
+            <MiniTable
+              columns={profitCols}
+              data={profitTableData}
+              loading={loading}
+            />
+          </Card>
+        </TutorialSpotlight>
       </motion.div>
     </div>
   );

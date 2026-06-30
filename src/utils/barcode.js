@@ -27,3 +27,29 @@ export const renderBarcode = (element, value, overrides = {}) => {
         ...overrides
     });
 };
+
+
+export const getBarcodeDataUrl = (value, overrides = {}) => {
+    if (!value) return "";
+
+    // 1. Create an off-screen canvas
+    const canvas = document.createElement("canvas");
+
+    try {
+        // 2. Render barcode to the canvas
+        JsBarcode(canvas, value, {
+            ...BARCODE_CONFIG, // Ensure this constant is imported
+            ...overrides,
+            // Ensure width/height are appropriate for printing
+            width: 2,
+            height: 40,
+            displayValue: false // Set to true if you want the text under the bars
+        });
+
+        // 3. Return as a Base64 string
+        return canvas.toDataURL("image/png");
+    } catch (error) {
+        console.error("Barcode generation failed:", error);
+        return "";
+    }
+};

@@ -2,7 +2,8 @@
 
 import React, { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page, pdfjs } from "react-pdf";
+import { pdf } from "@react-pdf/renderer";
 import {
   Printer, CheckCircle2, Package, Truck, FileDown, Info, X,
   MapPin, Phone, User, Hash, ShoppingBag, TrendingUp, AlertCircle,
@@ -35,6 +36,9 @@ import { OrderDetailModal } from "./DistributionTab";
 import BarcodeCell from "@/components/atoms/BarcodeCell";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import SystemLabelPDF from "../atoms/SystemLabelPDF";
+import { useLocale } from "next-intl";
+import { renderBarcode } from "@/utils/barcode";
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -118,6 +122,7 @@ export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
 function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
   const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.print");
+  
   const { shippingCompanies } = usePlatformSettings();
   const printRef = useRef(null);
   const { formatCurrency } = usePlatformSettings()
@@ -126,6 +131,7 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
   const [numPages, setNumPages] = useState(null);
+  const locale = useLocale();
 
   const bostaOrders = useMemo(() => orders?.filter(o => o.shippingCompany?.code?.toLowerCase() === 'bosta') || [], [orders]);
   const bostaCount = bostaOrders.length;
@@ -167,45 +173,95 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
     }
   }, [source, open, bostaCount]);
 
-  const handlePrint = () => {
+  
+  const handlePrint = async () => {
     if (source === "system" || source === "all") {
-      const printContent = printRef.current?.innerHTML;
-      if (!printContent) return;
-      const w = window.open("", "_blank");
-      w.document.write(`
-        <html class="light">
-          <head>
-            <title>${t("printPreview.tabTitle")}</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <script>tailwind.config = { darkMode: 'class' }</script>
-            <style>
-              @page { size: auto; margin: 0mm; }
-              * { box-sizing: border-box; margin: 0; padding: 0; }
-              body { background: white !important; width: 100%; }
-              .page { page-break-inside: avoid; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 100%; padding: 20px; }
-              @media print {
-                body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                .page { min-height: 0 !important; padding: 5mm !important; display: block !important; }
-                .page:last-child { page-break-after: auto !important; }
-              }
-            </style>
-          </head>
-          <body class="bg-white">
-            ${printContent}
-            <script>setTimeout(function() { window.print(); }, 1000);</script>
-          </body>
-        </html>
-      `);
-      w.document.close();
-      w.focus();
+      try {
+        setLoading(true);
+        
+        // Generate barcode data URLs for all orders
+        const barcodeUrls = {};
+        for (const order of orders) {
+          // Create a temporary canvas and SVG
+          const canvas = document.createElement('canvas');
+          const tempDiv = document.createElement('div');
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          tempDiv.appendChild(svg);
+          document.body.appendChild(tempDiv);
+          
+          // Render barcode to SVG using our existing renderBarcode utility
+          renderBarcode(svg, order.orderNumber, {
+            width: 2,
+            height: 50,
+            displayValue: false,
+            margin: 0,
+            background: "#ffffff",
+            lineColor: "#000000"
+          });
+          
+          // Convert SVG to data URL
+          const serializer = new XMLSerializer();
+          const svgStr = serializer.serializeToString(svg);
+          const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(svgBlob);
+          
+          // Draw SVG to canvas to convert to PNG (more reliable for PDF)
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = () => {
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0);
+              const pngUrl = canvas.toDataURL('image/png');
+              barcodeUrls[order.orderNumber] = pngUrl;
+              resolve();
+            };
+            img.onerror = reject;
+            img.src = url;
+          });
+          
+          // Cleanup
+          URL.revokeObjectURL(url);
+          document.body.removeChild(tempDiv);
+        }
+        
+        // Generate PDF
+        const blob = await pdf(
+          <SystemLabelPDF
+            orders={orders}
+            t={t}
+            formatCurrency={formatCurrency}
+            locale={locale}
+            barcodeUrls={barcodeUrls}
+          />
+        ).toBlob();
+        
+        // Download PDF
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = orders.length === 1 ? `system_waybill_${orders[0].orderNumber}.pdf` : `system_waybills.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        toast.error("Failed to generate PDF");
+      } finally {
+        setLoading(false);
+      }
     }
 
     if ((source === "bosta" || source === "all") && bostaPdf) {
       const linkSource = `data:application/pdf;base64,${bostaPdf}`;
       const downloadLink = document.createElement("a");
       const fileName = bostaCount === 1
-        ? `waybill_${bostaOrders[0].orderNumber}.pdf`
-        : `waybills_bulk_${Date.now()}.pdf`;
+        ? `bosta_waybill_${bostaOrders[0].orderNumber}.pdf`
+        : `bosta_waybills.pdf`;
       downloadLink.href = linkSource;
       downloadLink.download = fileName;
       downloadLink.click();
@@ -214,6 +270,8 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
     onConfirmPrint(orders.map((o) => o.orderNumber));
     onClose();
   };
+
+  
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);

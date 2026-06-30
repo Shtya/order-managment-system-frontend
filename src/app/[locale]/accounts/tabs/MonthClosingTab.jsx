@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Calendar,
   DollarSign,
@@ -36,11 +36,13 @@ import toast from "react-hot-toast";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import StoreClosingPDF from "../atoms/StoreClosingPDF";
+import { pdf } from "@react-pdf/renderer";
 
 export default function MonthClosingTab() {
   const tCommon = useTranslations("common");
   const t = useTranslations("accounts.monthClosing");
-  const { formatCurrency,currency } = usePlatformSettings();
+  const { formatCurrency, currency } = usePlatformSettings();
 
   // State
   const [search, setSearch] = useState("");
@@ -400,87 +402,42 @@ function ClosingDetailsModal({ closing, onClose, t, tCommon, formatCurrency }) {
 // Shared Summary View mapped to Backend fields
 // ─────────────────────────────────────────────────────────────────────────
 
-const handlePrintClosing = (closing, formatCurrency, t, tCommon) => {
+const handlePrintClosing = async (closing, formatCurrency, t, tCommon, locale) => {
   if (!closing) return;
 
-  const printContent = `
-    <html dir="rtl" lang="ar">
-      <head>
-        <title>${t("details.title")} ${closing.month} / ${closing.year}</title>
-        <style>
-          body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #111827; direction: rtl; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
-          .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #1f2937; }
-          .header p { margin: 0; color: #6b7280; font-size: 14px; }
-          
-          .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
-          .summary-box { padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb; display: flex; justify-content: space-between; align-items: center;}
-          .summary-box .title { font-size: 14px; color: #4b5563; font-weight: bold;}
-          .summary-box .value { font-size: 16px; font-weight: black; color: #111827; }
-          
-          .summary-box.positive .value { color: #059669; }
-          .summary-box.negative .value { color: #dc2626; }
-          
-          .final-box { grid-column: span 2; background-color: #f0fdf4; border-color: #86efac; text-align: center; padding: 20px; flex-direction: column; gap: 10px;}
-          .final-box .title { font-size: 16px; color: #166534; }
-          .final-box .value { font-size: 32px; color: #166534; }
+  try {
+    // 1. Generate PDF Blob via React-PDF
+    const blob = await pdf(
+      <StoreClosingPDF
+        closing={closing}
+        formatCurrency={formatCurrency}
+        t={t}
+        tCommon={tCommon}
+        locale={locale} // Ensure you pass the app's current locale here
+      />
+    ).toBlob();
 
-          @media print {
-            body { padding: 0; }
-            @page { margin: 1cm; }
-            .summary-box, .final-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>${t("details.title")}</h1>
-          <p>${t("columns.period")}: ${closing.month} / ${closing.year}</p>
-          <p>${t("columns.closedAt")}: ${new Date(closing.createdAt || new Date()).toLocaleDateString()}</p>
-        </div>
+    // 2. Download PDF
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `store_closing_${closing.month}_${closing.year}.pdf`;
 
-        <div class="summary-grid">
-          <div class="summary-box positive">
-            <span class="title">${t("columns.totalSelling")}</span>
-            <span class="value">${formatCurrency(closing.revenue || 0)}</span>
-          </div>
-          <div class="summary-box negative">
-            <span class="title">${t("columns.productCost")}</span>
-            <span class="value">-${formatCurrency(closing.cogs || 0)}</span>
-          </div>
-          <div class="summary-box negative">
-            <span class="title">${t("columns.operationalExpenses")}</span>
-            <span class="value">-${formatCurrency(closing.operationalExpenses || 0)}</span>
-          </div>
-          <div class="summary-box negative">
-            <span class="title">${t("columns.totalReturn")}</span>
-            <span class="value">-${formatCurrency(closing.returnsCost || 0)}</span>
-          </div>
-          <div class="summary-box final-box">
-            <span class="title">${t("columns.finalBalance")}</span>
-            <span class="value">${formatCurrency(closing.netProfit || 0)}</span>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+    document.body.appendChild(a);
+    a.click();
 
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-    };
-  } else {
-    toast.error(tCommon("allowPopups"));
+    // 3. Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error("Error generating store closing PDF:", err);
+    toast.error(tCommon("printError") || "An error occurred while generating the PDF");
   }
 };
 
 function ClosingSummaryView({ summary, t, formatCurrency }) {
-  const {currency} = usePlatformSettings();
+  const { currency } = usePlatformSettings();
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
@@ -493,7 +450,7 @@ function ClosingSummaryView({ summary, t, formatCurrency }) {
         />
         <MiniSummaryCard
           title={t("columns.productCost")}
-          value={summary.cogs}
+          value={summary.productCost}
           icon={Package}
           formatCurrency={formatCurrency}
           color="orange"
@@ -537,7 +494,7 @@ function ClosingSummaryView({ summary, t, formatCurrency }) {
 
 function ClosingReportView({ closing, t, tCommon, formatCurrency, extraActions }) {
   const { handleExport, exportLoading } = useExport();
-
+  const locale = useLocale();
   const onExportDetailed = async () => {
     if (!closing) return;
     await handleExport({
@@ -574,7 +531,7 @@ function ClosingReportView({ closing, t, tCommon, formatCurrency, extraActions }
             variant="outline"
             label={tCommon("printReport")}
             icon={<Download size={14} />}
-            onClick={() => handlePrintClosing(closing, formatCurrency, t, tCommon)}
+            onClick={() => handlePrintClosing(closing, formatCurrency, t, tCommon, locale)}
           />
           {extraActions}
         </div>
@@ -803,7 +760,7 @@ function CompareRow({ label, valA, valB, formatCurrency, inverse = false }) {
 // ─────────────────────────────────────────────────────────────────────────
 
 function MiniSummaryCard({ title, value, icon: Icon, color, trend, formatCurrency }) {
-
+  
   const colors = {
     emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
     red: "bg-red-50 text-red-600 border-red-100",

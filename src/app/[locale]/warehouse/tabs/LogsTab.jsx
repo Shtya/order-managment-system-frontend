@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   ClipboardList,
   CheckCircle2,
@@ -22,7 +22,7 @@ import {
   FileStack,
   Loader2,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
@@ -39,12 +39,14 @@ import {
 } from "@/components/ui/select";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import api from "@/utils/api";
-import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import ProductFilter from "@/components/atoms/ProductFilter";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { pdf } from "@react-pdf/renderer";
+import GenericOpPDF from "../atoms/GenericOpPDF";
+
 
 const DS = {
   radius: "rounded-lg",
@@ -108,60 +110,6 @@ function HeaderIconBtn({ onClick, children }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// PDF HELPERS
-// ─────────────────────────────────────────────────────────────
-function openPrintWindow(htmlContent, popupMessage) {
-  const win = window.open("", "_blank", "width=900,height=700");
-  if (!win) {
-    alert(popupMessage);
-    return;
-  }
-  win.document.write(htmlContent);
-  win.document.close();
-  win.focus();
-  setTimeout(() => {
-    win.print();
-  }, 600);
-}
-
-const PDF_STYLE = `
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, sans-serif; direction: rtl; color: #1e293b; background: #fff; padding: 28px 32px; }
-    h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-    h2 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; color: #334155; }
-    .subtitle { font-size: 12px; color: #64748b; margin-bottom: 20px; }
-    .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; }
-    .badge-ok { background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; }
-    .badge-err { background:#fee2e2; color:#dc2626; border:1px solid #fecaca; }
-    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
-    .info-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; }
-    .info-label { font-size:10px; color:#94a3b8; text-transform:uppercase; margin-bottom:3px; letter-spacing:.05em; }
-    .info-value { font-size:13px; font-weight:600; }
-    table { width:100%; border-collapse:collapse; font-size:13px; }
-    thead { background:#f1f5f9; }
-    th { text-align:right; padding:9px 12px; font-weight:600; color:#475569; border-bottom:2px solid #e2e8f0; }
-    td { padding:8px 12px; border-bottom:1px solid #f1f5f9; }
-    tr:last-child td { border-bottom:none; }
-    .complete { color:#16a34a; font-weight:600; }
-    .incomplete { color:#d97706; font-weight:600; }
-    .err-row { background:#fff7f7; }
-    .err-msg { font-weight:600; color:#dc2626; }
-    .err-reason { font-size:11px; color:#94a3b8; }
-    .sig-box { margin-top:32px; border:2px dashed #cbd5e1; border-radius:12px; padding:22px; }
-    .sig-title { font-size:13px; font-weight:700; margin-bottom:14px; color:#334155; }
-    .sig-row { display:flex; gap:20px; margin-top:10px; }
-    .sig-field { flex:1; border-bottom:1px solid #94a3b8; padding-bottom:6px; }
-    .sig-field-label { font-size:11px; color:#94a3b8; margin-bottom:28px; }
-    .header-bar { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; padding:16px 20px; border-radius:12px; margin-bottom:20px; }
-    .header-bar.err-bar { background:linear-gradient(135deg,#dc2626,#b91c1c); }
-    .header-bar.info-bar { background:linear-gradient(135deg,#3b82f6,#6366f1); }
-    .ts { font-size:11px; color:#94a3b8; font-family:monospace; }
-    @media print { body { padding:16px; } button { display:none; } }
-  </style>
-`;
-
-// ─────────────────────────────────────────────────────────────
 // MAIN LOGS TAB
 // ─────────────────────────────────────────────────────────────
 export default function LogsTab({ orders = [] }) {
@@ -169,23 +117,14 @@ export default function LogsTab({ orders = [] }) {
   const { formatCurrency } = usePlatformSettings();
 
   const [search, setSearch] = useState("");
-  const { debouncedValue: debouncedSearch } = useDebounce({
-    value: search,
-    delay: 350,
-  });
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchTimer = useRef(null);
   const [filters, setFilters] = useState({
     actionType: "all",
     result: "all",
     carrier: "all",
     date: "",
   });
-  const [appliedFilters, setAppliedFilters] = useState({
-    actionType: "all",
-    result: "all",
-    carrier: "all",
-    date: "",
-  });
-
   const [pager, setPager] = useState({
     total_records: 0,
     current_page: 1,
@@ -203,74 +142,77 @@ export default function LogsTab({ orders = [] }) {
 
   const [orderLogModal, setOrderLogModal] = useState(null);
   const [genericOpModal, setGenericOpModal] = useState(null);
-  const [sessionModal, setSessionModal] = useState(null);
 
-  const buildParams = useCallback(
-    (page = pager.current_page, per_page = pager.per_page) => {
-      const params = {
-        page,
-        limit: per_page,
-      };
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(searchTimer.current);
+  }, [search]);
 
-      if (debouncedSearch) params.search = debouncedSearch;
-      if (appliedFilters.actionType !== "all")
-        params.actionType = appliedFilters.actionType;
-      if (appliedFilters.result !== "all")
-        params.result = appliedFilters.result;
-      if (appliedFilters.carrier !== "all")
-        params.shippingCompanyId = appliedFilters.carrier;
-      if (appliedFilters.date) {
-        params.startDate = appliedFilters.date;
-        params.endDate = appliedFilters.date;
-      }
+  const buildParams = (page = pager.current_page, per_page = pager.per_page) => {
+    const params = {
+      page,
+      limit: per_page,
+    };
 
-      return params;
-    },
-    [pager.current_page, pager.per_page, debouncedSearch, appliedFilters],
-  );
+    if (search) params.search = search;
+    if (filters.actionType !== "all")
+      params.actionType = filters.actionType;
+    if (filters.result !== "all")
+      params.result = filters.result;
+    if (filters.carrier !== "all")
+      params.shippingCompanyId = filters.carrier;
+    if (filters.date) {
+      params.startDate = filters.date;
+      params.endDate = filters.date;
+    }
 
-  const fetchStats = useCallback(async () => {
+    return params;
+  };
+
+  const fetchStats = async () => {
     try {
       const res = await api.get("/orders/stats/logs");
       if (res.data) setLogStats(res.data);
     } catch (e) {
       console.error("Error fetching log stats", e);
     }
-  }, []);
-
-  const fetchLogs = useCallback(
-    async (page = pager.current_page, per_page = pager.per_page) => {
-      try {
-        setLoading(true);
-        const params = buildParams(page, per_page);
-        const res = await api.get("/orders/logs", { params });
-        const data = res.data || {};
-        setPager({
-          total_records: data.total_records || 0,
-          current_page: data.current_page || page,
-          per_page: data.per_page || per_page,
-          records: Array.isArray(data.records) ? data.records : [],
-        });
-      } catch (e) {
-        console.error("Error fetching logs", e);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [buildParams, pager.current_page, pager.per_page],
-  );
+  };
 
   useEffect(() => {
-    fetchLogs(1, pager.per_page);
     fetchStats();
-  }, [debouncedSearch, appliedFilters, fetchLogs, fetchStats]);
+  }, []);
+
+  const fetchLogs = async (page = pager.current_page, per_page = pager.per_page) => {
+    try {
+      setLoading(true);
+      const params = buildParams(page, per_page);
+      const res = await api.get("/orders/logs", { params });
+      const data = res.data || {};
+      setPager({
+        total_records: data.total_records || 0,
+        current_page: data.current_page || page,
+        per_page: data.per_page || per_page,
+        records: Array.isArray(data.records) ? data.records : [],
+      });
+    } catch (e) {
+      console.error("Error fetching logs", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handlePageChange(1, pager.per_page);
+    
+  }, [debouncedSearch]);
 
   const handlePageChange = ({ page, per_page }) => {
     fetchLogs(page, per_page);
   };
 
   const applyFilters = () => {
-    setAppliedFilters({ ...filters });
+     fetchLogs(1, per_page);
   };
 
   const onExport = async () => {
@@ -285,10 +227,10 @@ export default function LogsTab({ orders = [] }) {
   };
 
   const hasActiveFilters =
-    appliedFilters.actionType !== "all" ||
-    appliedFilters.result !== "all" ||
-    appliedFilters.carrier !== "all" ||
-    !!appliedFilters.date;
+    filters.actionType !== "all" ||
+    filters.result !== "all" ||
+    filters.carrier !== "all" ||
+    !!filters.date;
 
   const stats = [
     {
@@ -554,138 +496,15 @@ export default function LogsTab({ orders = [] }) {
         formatCurrency={formatCurrency}
       />
 
-      <PrepSessionModal
-        open={!!sessionModal}
-        onClose={() => setSessionModal(null)}
-        sessionOps={sessionModal}
-        t={t}
-      />
     </div>
   );
-}
-function buildCorrectPDF(prepOps, labels) {
-  const now = new Date().toLocaleString("en-US");
-
-  const ordersHTML = prepOps
-    .map((op) => {
-      const order = op.orderSnapshot || {};
-      const products = op.productsSnapshot || [];
-      const correctLogs = (op.scanLogs || []).filter((l) => l.success);
-
-      const productsRows = products
-        .map((p) => {
-          const done = (p.scannedQty || 0) >= p.requestedQty;
-          return `
-            <tr>
-              <td><code>${p.sku}</code></td>
-              <td>${p.name}</td>
-              <td style="text-align:center">${p.requestedQty}</td>
-              <td style="text-align:center" class="${done ? "complete" : "incomplete"}">${p.scannedQty || 0}</td>
-              <td><span class="badge ${done ? "badge-ok" : "badge-err"}">${done ? labels.completed : labels.incomplete}</span></td>
-            </tr>
-          `;
-        })
-        .join("");
-
-      return `
-        <div style="margin-bottom:28px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
-          <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-size:15px;font-weight:700;font-family:monospace;">${op.orderCode}</div>
-              <div style="font-size:12px;color:#64748b;margin-top:2px;">${order.customer || ""} — ${order.city || ""}</div>
-            </div>
-            <div style="text-align:left;">
-              <div style="font-size:11px;color:#94a3b8;">${labels.carrier}</div>
-              <div style="font-size:13px;font-weight:600;">${op.carrier || "—"}</div>
-            </div>
-          </div>
-          <div style="padding:14px 16px;">
-            <table>
-              <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>${labels.productName}</th>
-                  <th style="text-align:center">${labels.requested}</th>
-                  <th style="text-align:center">${labels.scanned}</th>
-                  <th>${labels.status}</th>
-                </tr>
-              </thead>
-              <tbody>${productsRows}</tbody>
-            </table>
-            <div style="margin-top:10px;font-size:11px;color:#94a3b8;">${labels.correctScans}: <strong>${correctLogs.length}</strong></div>
-          </div>
-        </div>
-      `;
-    })
-    .join("");
-
-  return `<!DOCTYPE html><html lang="ar" ><head><meta charset="UTF-8"><title>${labels.title}</title>${PDF_STYLE}</head><body><div class="header-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.ordersCount}: ${prepOps.length}</div></div>${ordersHTML}<div class="sig-box"><div class="sig-title">${labels.signatureTitle}</div><p style="font-size:12px;color:#64748b;margin-bottom:12px;">${labels.signatureText}</p><div class="sig-row"><div class="sig-field"><div class="sig-field-label">${labels.signerName}</div></div><div class="sig-field"><div class="sig-field-label">${labels.signature}</div></div><div class="sig-field"><div class="sig-field-label">${labels.date}</div></div></div></div></body></html>`;
-}
-
-function buildErrorsPDF(prepOps, labels) {
-  const now = new Date().toLocaleString("en-US");
-  const hasErrors = prepOps.some((op) =>
-    (op.scanLogs || []).some((l) => !l.success),
-  );
-  if (!hasErrors) return null;
-
-  const ordersHTML = prepOps
-    .map((op) => {
-      const errorLogs = (op.scanLogs || []).filter((l) => !l.success);
-      if (errorLogs.length === 0) return "";
-
-      const rows = errorLogs
-        .map(
-          (log, i) => `
-          <tr class="err-row">
-            <td>${i + 1}</td>
-            <td class="err-msg">${log.message}</td>
-            <td class="err-reason">${log.reason || "—"}</td>
-            <td class="ts">${log.timestamp ? log.timestamp.slice(11, 19) : "—"}</td>
-          </tr>
-        `,
-        )
-        .join("");
-
-      return `
-        <div style="margin-bottom:24px;border:1px solid #fecaca;border-radius:12px;overflow:hidden;">
-          <div style="background:#fff7f7;padding:10px 16px;border-bottom:1px solid #fecaca;display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-family:monospace;font-size:14px;font-weight:700;color:#dc2626;">${op.orderCode}</div>
-            <span class="badge badge-err">${errorLogs.length} ${labels.errorUnit}</span>
-          </div>
-          <div style="padding:12px 16px;">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:36px">#</th>
-                  <th>${labels.error}</th>
-                  <th>${labels.reason}</th>
-                  <th>${labels.time}</th>
-                </tr>
-              </thead>
-              <tbody>${rows}</tbody>
-            </table>
-          </div>
-        </div>
-      `;
-    })
-    .join("");
-
-  return `<!DOCTYPE html><html lang="ar" ><head><meta charset="UTF-8"><title>${labels.title}</title>${PDF_STYLE}</head><body><div class="header-bar err-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.ordersCount}: ${prepOps.length}</div></div><p style="font-size:13px;color:#64748b;margin-bottom:20px;">${labels.description}</p>${ordersHTML}</body></html>`;
-}
-
-function buildGenericOpPDF(op, order, labels, formatCurrency) {
-  const now = new Date().toLocaleString("en-US");
-  const resultColor = op.result === "SUCCESS" ? "#16a34a" : "#dc2626";
-  const resultLabel = op.result === "SUCCESS" ? labels.success : labels.failed;
-
-  return `<!DOCTYPE html><html lang="ar" ><head><meta charset="UTF-8"><title>${labels.title} ${op.id}</title>${PDF_STYLE}</head><body><div class="header-bar info-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title} — ${labels.opTypeLabel}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.opNumber}: ${op.id}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">${labels.opNumber}</div><div class="info-value" style="font-family:monospace">${op.id}</div></div><div class="info-card"><div class="info-label">${labels.opType}</div><div class="info-value">${labels.opTypeLabel}</div></div><div class="info-card"><div class="info-label">${labels.orderNumber}</div><div class="info-value" style="font-family:monospace">${op.orderCode || "—"}</div></div><div class="info-card"><div class="info-label">${labels.carrier}</div><div class="info-value">${op.carrier || "—"}</div></div><div class="info-card"><div class="info-label">${labels.employee}</div><div class="info-value">${op.employee || "—"}</div></div><div class="info-card"><div class="info-label">${labels.result}</div><div class="info-value" style="color:${resultColor}">${resultLabel}</div></div><div class="info-card"><div class="info-label">${labels.datetime}</div><div class="info-value" style="font-family:monospace;font-size:12px">${op.createdAt || "—"}</div></div><div class="info-card"><div class="info-label">${labels.details}</div><div class="info-value">${op.details || "—"}</div></div></div>${order ? `<h2>${labels.orderInfo}</h2><div class="info-grid"><div class="info-card"><div class="info-label">${labels.customer}</div><div class="info-value">${order.customer || "—"}</div></div><div class="info-card"><div class="info-label">${labels.city}</div><div class="info-value">${order.city || "—"}</div></div><div class="info-card"><div class="info-label">${labels.total}</div><div class="info-value">${order.finalTotal ? formatCurrency(order.finalTotal) : "—"}</div></div><div class="info-card"><div class="info-label">${labels.status}</div><div class="info-value">${order.status || "—"}</div></div></div>` : ""}</body></html>`;
 }
 
 // ─────────────────────────────────────────────────────────────
 // GENERIC OP MODAL
 // ─────────────────────────────────────────────────────────────
 function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
+  const locale = useLocale();
   if (!op) return null;
 
   const order = op.order;
@@ -784,10 +603,10 @@ function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
                 value: op.details || "—",
                 textWrap: true,
                 icon: Info,
-                
+
                 color: DS.primary,
               },
-            ].map(({ label, value, icon: Icon, color,textWrap }) => (
+            ].map(({ label, value, icon: Icon, color, textWrap }) => (
               <div
                 key={label}
                 className={cn(
@@ -870,50 +689,61 @@ function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
           )}
 
           <button
-            onClick={() =>
-              openPrintWindow(
-                buildGenericOpPDF(
-                  {
-                    ...op,
-                    id: op.operationNumber,
-                    carrier: op.shippingCompany?.name,
-                    employee: op.user?.name,
-                    createdAt: op.createdAt
-                      ? new Date(op.createdAt).toLocaleString()
-                      : "—",
-                  },
-                  {
-                    ...order,
-                    customer: order.customerName,
-                    total: order.finalTotal,
-                    status: order.status?.name,
-                  },
-                  {
-                    title: t("genericPdf.title"),
-                    printedAt: t("genericPdf.printedAt"),
-                    opNumber: t("genericPdf.opNumber"),
-                    opType: t("genericPdf.opType"),
-                    opTypeLabel,
-                    orderNumber: t("genericPdf.orderNumber"),
-                    carrier: t("genericPdf.carrier"),
-                    employee: t("genericPdf.employee"),
-                    result: t("genericPdf.result"),
-                    datetime: t("genericPdf.datetime"),
-                    details: t("genericPdf.details"),
-                    orderInfo: t("genericPdf.orderInfo"),
-                    customer: t("genericPdf.customer"),
-                    city: t("genericPdf.city"),
-                    total: t("genericPdf.total"),
-                    status: t("genericPdf.status"),
-                    currency: t("common.currency"),
-                    success: t("result.success"),
-                    failed: t("result.failed"),
-                  },
-                  formatCurrency,
-                ),
-                t("popupBlocked"),
-              )
-            }
+            onClick={async () => {
+              try {
+                const blob = await pdf(
+                  <GenericOpPDF
+                    op={{
+                      ...op,
+                      id: op.operationNumber,
+                      carrier: op.shippingCompany?.name,
+                      employee: op.user?.name,
+                      createdAt: op.createdAt
+                        ? new Date(op.createdAt).toLocaleString()
+                        : "—",
+                    }}
+                    order={{
+                      ...order,
+                      customer: order.customerName,
+                      total: order.finalTotal,
+                      status: order.status?.name,
+                    }}
+                    labels={{
+                      title: t("genericPdf.title"),
+                      printedAt: t("genericPdf.printedAt"),
+                      opNumber: t("genericPdf.opNumber"),
+                      opType: t("genericPdf.opType"),
+                      opTypeLabel,
+                      orderNumber: t("genericPdf.orderNumber"),
+                      carrier: t("genericPdf.carrier"),
+                      employee: t("genericPdf.employee"),
+                      result: t("genericPdf.result"),
+                      datetime: t("genericPdf.datetime"),
+                      details: t("genericPdf.details"),
+                      orderInfo: t("genericPdf.orderInfo"),
+                      customer: t("genericPdf.customer"),
+                      city: t("genericPdf.city"),
+                      total: t("genericPdf.total"),
+                      status: t("genericPdf.status"),
+                      success: t("result.success"),
+                      failed: t("result.failed"),
+                    }}
+                    formatCurrency={formatCurrency}
+                    locale={locale}
+                  />
+                ).toBlob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `generic-operation-${op.operationNumber}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              } catch (error) {
+                console.error("Error generating PDF:", error);
+              }
+            }}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-blue-200 bg-blue-50 dark:bg-blue-950/20 text-blue-700 font-semibold text-sm hover:bg-blue-100 transition-colors"
           >
             <Download className="w-4 h-4" />
@@ -935,6 +765,7 @@ function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
 // ORDER LOG MODAL
 // ─────────────────────────────────────────────────────────────
 function OrderLogModal({ open, onClose, op, t }) {
+  const locale = useLocale();
   const [signerName, setSignerName] = useState("");
   const [signed, setSigned] = useState(false);
 
@@ -1033,59 +864,92 @@ function OrderLogModal({ open, onClose, op, t }) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() =>
-                openPrintWindow(
-                  buildCorrectPDF([op], {
-                    title: t("correctPdf.title"),
-                    printedAt: t("correctPdf.printedAt"),
-                    ordersCount: t("correctPdf.ordersCount"),
-                    carrier: t("correctPdf.carrier"),
-                    productName: t("correctPdf.productName"),
-                    requested: t("correctPdf.requested"),
-                    scanned: t("correctPdf.scanned"),
-                    status: t("correctPdf.status"),
-                    completed: t("correctPdf.completed"),
-                    incomplete: t("correctPdf.incomplete"),
-                    correctScans: t("correctPdf.correctScans"),
-                    signatureTitle: t("correctPdf.signatureTitle"),
-                    signatureText: t("correctPdf.signatureText"),
-                    signerName: t("correctPdf.signerName"),
-                    signature: t("correctPdf.signature"),
-                    date: t("correctPdf.date"),
-                  }),
-                  t("popupBlocked"),
-                )
-              }
+            {/* <button
+              onClick={async () => {
+                try {
+                  const blob = await pdf(
+                    <CorrectPrepPDF
+                      prepOps={[op]}
+                      labels={{
+                        title: t("correctPdf.title"),
+                        printedAt: t("correctPdf.printedAt"),
+                        ordersCount: t("correctPdf.ordersCount"),
+                        carrier: t("correctPdf.carrier"),
+                        productName: t("correctPdf.productName"),
+                        requested: t("correctPdf.requested"),
+                        scanned: t("correctPdf.scanned"),
+                        status: t("correctPdf.status"),
+                        completed: t("correctPdf.completed"),
+                        incomplete: t("correctPdf.incomplete"),
+                        correctScans: t("correctPdf.correctScans"),
+                        signatureTitle: t("correctPdf.signatureTitle"),
+                        signatureText: t("correctPdf.signatureText"),
+                        signerName: t("correctPdf.signerName"),
+                        signature: t("correctPdf.signature"),
+                        date: t("correctPdf.date"),
+                      }}
+                      locale={locale}
+                    />
+                  ).toBlob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `correct-prep-${op.orderCode}.pdf`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } catch (error) {
+                  console.error("Error generating PDF:", error);
+                }
+              }}
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 font-semibold text-sm hover:bg-emerald-100 transition-colors"
             >
               <Download className="w-4 h-4" />
               {t("orderLogModal.correctPdf")}
-            </button>
+            </button> */}
 
-            <button
-              onClick={() => {
-                const html = buildErrorsPDF([op], {
-                  title: t("errorsPdf.title"),
-                  printedAt: t("errorsPdf.printedAt"),
-                  ordersCount: t("errorsPdf.ordersCount"),
-                  description: t("errorsPdf.description"),
-                  errorUnit: t("errorsPdf.errorUnit"),
-                  error: t("errorsPdf.error"),
-                  reason: t("errorsPdf.reason"),
-                  time: t("errorsPdf.time"),
-                });
-                if (!html) {
+            {/* <button
+              onClick={async () => {
+                const hasErrors = [op].some(op => (op.scanLogs || []).some(l => !l.success));
+                if (!hasErrors) {
                   alert(t("orderLogModal.noErrors"));
                   return;
                 }
-                openPrintWindow(html, t("popupBlocked"));
+                try {
+                  const blob = await pdf(
+                    <ErrorsPrepPDF
+                      prepOps={[op]}
+                      labels={{
+                        title: t("errorsPdf.title"),
+                        printedAt: t("errorsPdf.printedAt"),
+                        ordersCount: t("errorsPdf.ordersCount"),
+                        description: t("errorsPdf.description"),
+                        errorUnit: t("errorsPdf.errorUnit"),
+                        error: t("errorsPdf.error"),
+                        reason: t("errorsPdf.reason"),
+                        time: t("errorsPdf.time"),
+                      }}
+                      locale={locale}
+                    />
+                  ).toBlob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `errors-prep-${op.orderCode}.pdf`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } catch (error) {
+                  console.error("Error generating PDF:", error);
+                }
               }}
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-red-300 bg-red-50 dark:bg-red-950/20 text-red-700 font-semibold text-sm hover:bg-red-100 transition-colors"
             >
               <FileX className="w-4 h-4" />
               {t("orderLogModal.errorsPdf", { count: errorLogs.length })}
-            </button>
+            </button> */}
           </div>
 
           {products.length > 0 && (
@@ -1249,220 +1113,6 @@ function OrderLogModal({ open, onClose, op, t }) {
 
           <div className="flex justify-end">
             <Button variant="outline" onClick={handleClose}>
-              {t("close")}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
-// PREP SESSION MODAL
-// ─────────────────────────────────────────────────────────────
-function PrepSessionModal({ open, onClose, sessionOps, t }) {
-  if (!sessionOps || sessionOps.length === 0) return null;
-
-  const totalErrors = sessionOps.reduce(
-    (s, op) => s + (op.scanLogs || []).filter((l) => !l.success).length,
-    0,
-  );
-  const totalCorrect = sessionOps.reduce(
-    (s, op) => s + (op.scanLogs || []).filter((l) => l.success).length,
-    0,
-  );
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent
-        className="!max-w-xl rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
-
-      >
-        <div
-          className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden"
-          style={{ background: DS.headerGradient }}
-        >
-          <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
-          <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
-
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  "w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm",
-                  DS.radiusSm,
-                )}
-              >
-                <FileStack className="text-white" size={22} />
-              </div>
-              <div>
-                <p className="text-white/70 text-xs font-medium mb-0.5">
-                  {t("sessionModal.sessionLabel")}
-                </p>
-                <h2 className="text-white text-xl font-black">
-                  {t("sessionModal.title")}
-                </h2>
-              </div>
-            </div>
-
-            <HeaderIconBtn onClick={onClose}>
-              <X size={15} className="text-white" />
-            </HeaderIconBtn>
-          </div>
-
-          <div className="relative mt-3 flex items-center gap-2 flex-wrap">
-            <HeaderBadge>
-              {t("sessionModal.ordersCount", { count: sessionOps.length })}
-            </HeaderBadge>
-          </div>
-        </div>
-
-        <div className="pt-4 p-6 space-y-5">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold">{sessionOps.length}</p>
-              <p className="text-xs text-slate-500 mt-1">
-                {t("sessionModal.preparedOrders")}
-              </p>
-            </div>
-            <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-xl p-3 text-center border border-emerald-200">
-              <p className="text-2xl font-bold text-emerald-700">
-                {totalCorrect}
-              </p>
-              <p className="text-xs text-emerald-600 mt-1">
-                {t("sessionModal.correctScans")}
-              </p>
-            </div>
-            <div className="bg-red-50 dark:bg-red-950/20 rounded-xl p-3 text-center border border-red-200">
-              <p className="text-2xl font-bold text-red-600">{totalErrors}</p>
-              <p className="text-xs text-red-500 mt-1">
-                {t("sessionModal.errorScans")}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {sessionOps.map((op) => {
-              const errs = (op.scanLogs || []).filter((l) => !l.success).length;
-              const prods = op.productsSnapshot || [];
-              const done = prods.every(
-                (p) => (p.scannedQty || 0) >= p.requestedQty,
-              );
-
-              return (
-                <div
-                  key={op.orderCode}
-                  className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-                >
-                  <div className="flex items-center gap-2">
-                    {done ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-amber-500" />
-                    )}
-                    <span className="font-mono font-bold text-sm">
-                      {op.orderCode}
-                    </span>
-                    <span className="text-xs text-slate-400">{op.carrier}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {errs > 0 && (
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
-                        {t("sessionModal.errorsBadge", { count: errs })}
-                      </span>
-                    )}
-                    <Badge
-                      className={cn(
-                        "rounded-full text-xs border",
-                        done
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200",
-                      )}
-                    >
-                      {done
-                        ? t("sessionModal.completed")
-                        : t("sessionModal.incomplete")}
-                    </Badge>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            <button
-              onClick={() =>
-                openPrintWindow(
-                  buildCorrectPDF(sessionOps, {
-                    title: t("correctPdf.title"),
-                    printedAt: t("correctPdf.printedAt"),
-                    ordersCount: t("correctPdf.ordersCount"),
-                    carrier: t("correctPdf.carrier"),
-                    productName: t("correctPdf.productName"),
-                    requested: t("correctPdf.requested"),
-                    scanned: t("correctPdf.scanned"),
-                    status: t("correctPdf.status"),
-                    completed: t("correctPdf.completed"),
-                    incomplete: t("correctPdf.incomplete"),
-                    correctScans: t("correctPdf.correctScans"),
-                    signatureTitle: t("correctPdf.signatureTitle"),
-                    signatureText: t("correctPdf.signatureText"),
-                    signerName: t("correctPdf.signerName"),
-                    signature: t("correctPdf.signature"),
-                    date: t("correctPdf.date"),
-                  }),
-                  t("popupBlocked"),
-                )
-              }
-              className="flex items-center justify-center gap-3 px-5 py-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 font-semibold hover:bg-emerald-100 transition-colors"
-            >
-              <Download className="w-5 h-5" />
-              <div className="text-right">
-                <p className="font-bold text-sm">
-                  {t("sessionModal.correctPdfTitle")}
-                </p>
-                <p className="text-xs font-normal opacity-75">
-                  {t("sessionModal.correctPdfDesc")}
-                </p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => {
-                const html = buildErrorsPDF(sessionOps, {
-                  title: t("errorsPdf.title"),
-                  printedAt: t("errorsPdf.printedAt"),
-                  ordersCount: t("errorsPdf.ordersCount"),
-                  description: t("errorsPdf.description"),
-                  errorUnit: t("errorsPdf.errorUnit"),
-                  error: t("errorsPdf.error"),
-                  reason: t("errorsPdf.reason"),
-                  time: t("errorsPdf.time"),
-                });
-                if (!html) {
-                  alert(t("sessionModal.noErrors"));
-                  return;
-                }
-                openPrintWindow(html, t("popupBlocked"));
-              }}
-              disabled={totalErrors === 0}
-              className="flex items-center justify-center gap-3 px-5 py-4 rounded-xl border-2 border-red-300 bg-red-50 dark:bg-red-950/20 text-red-700 font-semibold hover:bg-red-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <FileX className="w-5 h-5" />
-              <div className="text-right">
-                <p className="font-bold text-sm">
-                  {t("sessionModal.errorsPdfTitle", { count: totalErrors })}
-                </p>
-                <p className="text-xs font-normal opacity-75">
-                  {t("sessionModal.errorsPdfDesc")}
-                </p>
-              </div>
-            </button>
-          </div>
-
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={onClose}>
               {t("close")}
             </Button>
           </div>

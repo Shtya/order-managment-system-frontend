@@ -61,6 +61,8 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { playBeep } from "./PreparationTab";
 import { Badge } from "@/components/ui/badge";
 import { OrderDetailModal } from "./DistributionTab";
+import { pdf } from "@react-pdf/renderer";
+import ReturnPDF from "../atoms/ReturnPDF";
 const RETURN_CONDITIONS_KEYS = [
   "intact",
   "opened",
@@ -287,850 +289,6 @@ function formatTimeForLogs(locale = "en") {
 }
 
 
-
-const PDF_STYLE_WARM = `
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Tajawal:wght@300;400;500;700&display=swap');
-
-  :root {
-    --charcoal:       #2c2c2e;
-    --charcoal-mid:   #48484a;
-    --charcoal-soft:  #6c6c70;
-    --charcoal-muted: #98989d;
-    --charcoal-faint: #c7c7cc;
-    --cream:          #f5f4f0;
-    --cream-warm:     #efede8;
-    --cream-deep:     #e8e5de;
-    --white:          #ffffff;
-    --rule:           #dddad3;
-    --rule-soft:      #eceae4;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'Tajawal', sans-serif;
-  }
-
-  body {
-    font-family: var(--sans);
-    background: var(--white);
-    color: var(--charcoal);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* ── HEADER ── */
-  .header-band { background: var(--cream); border-bottom: 2px solid var(--cream-deep); }
-
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: stretch;
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .header-brand {
-    padding: 26px 32px;
-    border-left: 1px solid var(--rule);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .brand-icon {
-    width: 40px; height: 40px;
-    background: var(--charcoal);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .brand-icon svg {
-    width: 20px; height: 20px;
-    fill: none; stroke: #f5f4f0;
-    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-  }
-
-  .doc-title {
-    font-family: var(--sans);
-    font-size: 19px; font-weight: 700;
-    color: var(--charcoal);
-    line-height: 1.1; letter-spacing: -0.3px;
-  }
-
-  .doc-subtitle {
-    font-family: var(--mono);
-    font-size: 11px; font-weight: 400;
-    color: var(--charcoal-soft);
-    margin-top: 3px; letter-spacing: 0.3px;
-  }
-
-  .header-ref {
-    padding: 26px 32px;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: flex-start;
-    gap: 5px;
-  }
-
-  .ref-badge {
-    font-family: var(--mono);
-    font-size: 10px; font-weight: 600;
-    color: var(--charcoal-soft);
-    background: var(--cream-deep);
-    padding: 3px 9px; border-radius: 4px;
-    letter-spacing: 0.8px; text-transform: uppercase;
-  }
-
-  .ref-date  { font-family: var(--mono); font-size: 11px; color: var(--charcoal-muted); }
-  .ref-employee { font-family: var(--sans); font-size: 12px; color: var(--charcoal-mid); font-weight: 500; }
-
-  /* ── META STRIP ── */
-  .meta-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    background: var(--cream-warm);
-  }
-
-  .meta-cell { padding: 16px 20px; border-left: 1px solid var(--rule); position: relative; }
-  .meta-cell:last-child { border-left: none; }
-  .meta-cell.highlight::before {
-    content: ''; position: absolute;
-    top: 0; right: 0;
-    width: 3px; height: 100%;
-    background: var(--charcoal);
-  }
-
-  .meta-label {
-    font-family: var(--mono);
-    font-size: 8.5px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 1.4px;
-    color: var(--charcoal-faint); margin-bottom: 6px;
-  }
-
-  .meta-value {
-    font-family: var(--sans);
-    font-size: 15px; font-weight: 700;
-    color: var(--charcoal); line-height: 1;
-  }
-
-  .meta-value.mono { font-family: var(--mono); font-size: 13px; }
-
-  /* ── SECTION LABEL ── */
-  .orders-wrap { padding: 28px 32px; background: var(--white); }
-
-  .section-label {
-    display: flex; align-items: center;
-    gap: 12px; margin-bottom: 20px;
-  }
-
-  .section-label-text {
-    font-family: var(--mono);
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: var(--charcoal-faint); white-space: nowrap;
-  }
-
-  .section-label-line { flex: 1; height: 1px; background: var(--rule-soft); }
-
-  /* ── ORDER CARD ── */
-  .order-card {
-    margin-bottom: 14px;
-    border: 1.5px solid var(--rule);
-    border-radius: 8px; overflow: hidden;
-    background: var(--white);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
-  .order-card:last-child { margin-bottom: 0; }
-
-  .order-head {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 16px;
-    background: var(--cream);
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .order-head-left { display: flex; align-items: center; gap: 10px; }
-
-  .order-index {
-    width: 22px; height: 22px;
-    background: var(--charcoal); color: var(--white);
-    border-radius: 50%;
-    font-family: var(--mono); font-size: 10px; font-weight: 600;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .order-code { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--charcoal); letter-spacing: 0.3px; }
-  .order-sep  { width: 1px; height: 14px; background: var(--rule); }
-  .order-customer { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--charcoal-mid); }
-  .order-city {
-    font-family: var(--mono); font-size: 10px;
-    color: var(--charcoal-muted);
-    background: var(--cream-deep);
-    padding: 2px 8px; border-radius: 20px; letter-spacing: 0.3px;
-  }
-
-  /* ── TABLE ── */
-  table { width: 100%; border-collapse: collapse; }
-
-  thead tr { background: var(--cream-warm); border-bottom: 1px solid var(--rule); }
-
-  th {
-    font-family: var(--mono);
-    font-size: 8.5px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 1.2px;
-    color: var(--charcoal-muted);
-    padding: 9px 16px; text-align: right;
-  }
-
-  th.center, td.center { text-align: center; }
-
-  tbody tr { border-bottom: 1px solid var(--rule-soft); }
-  tbody tr:last-child { border-bottom: none; }
-
-  td {
-    font-family: var(--sans);
-    font-size: 12.5px; color: var(--charcoal-mid);
-    padding: 10px 16px;
-    text-align: right; vertical-align: middle;
-  }
-
-  td.sku-cell   { font-family: var(--mono); font-size: 11px; color: var(--charcoal); font-weight: 500; }
-  td.qty-cell   { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--charcoal); text-align: center; }
-  td.track-cell { font-family: var(--mono); font-size: 10px; color: var(--charcoal-muted); }
-  td.track-cell span {
-    background: var(--cream-warm);
-    padding: 2px 8px; border-radius: 4px;
-    border: 1px solid var(--rule);
-  }
-
-  /* ── SIGNATURE ── */
-  .sig-wrap {
-    margin: 4px 32px 32px;
-    border: 1.5px solid var(--rule);
-    border-radius: 8px; overflow: hidden;
-  }
-
-  .sig-head {
-    padding: 11px 18px;
-    background: var(--cream-warm);
-    border-bottom: 1px solid var(--rule);
-    display: flex; align-items: center; gap: 10px;
-  }
-
-  .sig-head-dot { width: 7px; height: 7px; background: var(--charcoal-soft); border-radius: 50%; }
-
-  .sig-head-text {
-    font-family: var(--mono);
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--charcoal-soft);
-  }
-
-  .sig-fields { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--white); }
-
-  .sig-field { padding: 22px 20px 16px; border-left: 1px solid var(--rule-soft); }
-  .sig-field:last-child { border-left: none; }
-
-  .sig-field-label {
-    font-family: var(--mono);
-    font-size: 8.5px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 1.2px;
-    color: var(--charcoal-faint); margin-bottom: 28px;
-  }
-
-  .sig-line {
-    height: 1px;
-    background: linear-gradient(to left, var(--rule), var(--charcoal-faint));
-    border-radius: 1px;
-  }
-
-  /* ── FOOTER ── */
-  .doc-footer {
-    background: var(--cream);
-    border-top: 1px solid var(--rule);
-    padding: 12px 32px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-
-  .footer-left { display: flex; align-items: center; gap: 8px; }
-
-  .footer-mark {
-    width: 16px; height: 16px;
-    background: var(--charcoal-mid);
-    border-radius: 3px;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  .footer-mark svg { width: 9px; height: 9px; stroke: var(--cream); stroke-width: 2; fill: none; stroke-linecap: round; }
-  .footer-divider { width: 1px; height: 10px; background: var(--rule); margin: 0 2px; }
-  .footer-text { font-family: var(--mono); font-size: 9px; color: var(--charcoal-muted); letter-spacing: 0.5px; }
-
-  @media print { body { background: white; } }
-</style>`;
-
-
-function buildReturnPDF(orders, carrier, employee, now, labels) {
-  const ordersHTML = orders
-    .map((o, idx) => {
-      // Use lastReturn items if available, otherwise fallback to products
-      const returnItems = o.lastReturn?.items || [];
-      const rows = returnItems
-        .map(
-          (p) => `
-      <tr>
-        <td class="sku-cell">${p.sku || p.returnedVariant?.sku || "—"}</td>
-        <td>${p.name || p.returnedVariant?.product?.name || "—"}</td>
-        <td class="qty-cell">${p.quantity || p.returnedQty || 1}</td>
-        <td class="track-cell"><span>${o.trackingNumber || o.trackingCode || "—"}</span></td>
-      </tr>`
-        )
-        .join("");
-
-      return `
-      <div class="order-card">
-        <div class="order-head">
-          <div class="order-head-left">
-            <div class="order-index">${idx + 1}</div>
-            <span class="order-code">${o.code || o.orderNumber}</span>
-            <div class="order-sep"></div>
-            <span class="order-customer">${o.customer || o.customerName || "—"}</span>
-          </div>
-          <span class="order-city">${o.city || "—"}</span>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>${labels.sku}</th>
-              <th>${labels.product}</th>
-              <th class="center">${labels.qty}</th>
-              <th>${labels.trackingCode}</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <div style="padding:10px 16px;border-top:1px solid #eceae4;background:#faf9f7;display:flex;justify-content:space-between;align-items:center;">
-          <span class="condition-badge">${labels.condition}: ${o.lastReturn?.reason || labels.conditions?.intact || "Intact"}</span>
-        
-        </div>
-      </div>`;
-    })
-    .join("");
-
-  return `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>${labels.title}</title>
-  ${PDF_STYLE_WARM}
-</head>
-<body>
-
-  <div class="header-band">
-    <div class="header-top">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
-            <path d="m7.5 4.27 9 5.15M3.29 7 12 12l8.71-5M12 22V12"/>
-            <path d="M18 15l3 3-3 3M15 18h6"/>
-          </svg>
-        </div>
-        <div>
-          <div class="doc-title">${labels.title}</div>
-          <div class="doc-subtitle">RETURN RECEIPT · ${carrier}</div>
-        </div>
-      </div>
-      <div class="header-ref">
-        <div class="ref-badge">${labels.refPrefix}-${now.replace(/\D/g, "").slice(0, 8)}</div>
-        <div class="ref-date">${now}</div>
-        <div class="ref-employee">${employee}</div>
-      </div>
-    </div>
-
-    <div class="meta-strip">
-      <div class="meta-cell">
-        <div class="meta-label">${labels.carrier}</div>
-        <div class="meta-value">${carrier}</div>
-      </div>
-      <div class="meta-cell">
-        <div class="meta-label">${labels.returnDate}</div>
-        <div class="meta-value mono">${now}</div>
-      </div>
-      <div class="meta-cell">
-        <div class="meta-label">${labels.employee}</div>
-        <div class="meta-value">${employee}</div>
-      </div>
-      <div class="meta-cell highlight">
-        <div class="meta-label">${labels.totalOrders}</div>
-        <div class="meta-value">${orders.length} ${labels.orderUnit}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="orders-wrap">
-    <div class="section-label">
-      <span class="section-label-text">${labels.ordersDetail}</span>
-      <div class="section-label-line"></div>
-    </div>
-    ${ordersHTML}
-  </div>
-
-  <div class="sig-wrap">
-    <div class="sig-head">
-      <div class="sig-head-dot"></div>
-      <span class="sig-head-text">${labels.receiptConfirmation}</span>
-    </div>
-    <div class="sig-fields">
-      <div class="sig-field">
-        <div class="sig-field-label">${labels.courierName}</div>
-        <div class="sig-line"></div>
-      </div>
-      <div class="sig-field">
-        <div class="sig-field-label">${labels.signature}</div>
-        <div class="sig-line"></div>
-      </div>
-      <div class="sig-field">
-        <div class="sig-field-label">${labels.dateTime}</div>
-        <div class="sig-line"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="doc-footer">
-    <div class="footer-left">
-      <div class="footer-mark">
-        <svg viewBox="0 0 10 10"><polyline points="2,5 4,7 8,3"/></svg>
-      </div>
-      <span class="footer-text">${labels.title}</span>
-      <div class="footer-divider"></div>
-      <span class="footer-text">${labels.system}</span>
-    </div>
-    <span class="footer-text">${now}</span>
-  </div>
-
-</body>
-</html>`;
-}
-
-const WRONG_SCAN_PDF_STYLE = `
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Tajawal:wght@300;400;500;700&display=swap');
-
-  :root {
-    --charcoal:       #2c2c2e;
-    --charcoal-mid:   #48484a;
-    --charcoal-soft:  #6c6c70;
-    --charcoal-muted: #98989d;
-    --charcoal-faint: #c7c7cc;
-    --cream:          #f5f4f0;
-    --cream-warm:     #efede8;
-    --cream-deep:     #e8e5de;
-    --white:          #ffffff;
-    --rule:           #dddad3;
-    --rule-soft:      #eceae4;
-    --err:            #9b3a2f;
-    --err-mid:        #b34335;
-    --err-soft:       #e8d5d2;
-    --err-bg:         #fdf5f4;
-    --err-rule:       #dfc8c5;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'Tajawal', sans-serif;
-  }
-
-  body {
-    font-family: var(--sans);
-    background: var(--white);
-    color: var(--charcoal);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  .header-band {
-    background: var(--cream);
-    border-bottom: 2px solid var(--cream-deep);
-  }
-
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: stretch;
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .header-brand {
-    padding: 24px 32px;
-    border-left: 1px solid var(--rule);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .brand-icon {
-    width: 42px; height: 42px;
-    background: var(--err);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .brand-icon svg {
-    width: 22px; height: 22px;
-    fill: none; stroke: #fdf5f4;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
-
-  .doc-title {
-    font-family: var(--sans);
-    font-size: 19px; font-weight: 700;
-    color: var(--charcoal);
-    line-height: 1.1; letter-spacing: -0.3px;
-  }
-
-  .doc-subtitle {
-    font-family: var(--mono);
-    font-size: 11px; font-weight: 400;
-    color: var(--charcoal-soft);
-    margin-top: 3px; letter-spacing: 0.3px;
-  }
-
-  .header-ref {
-    padding: 24px 32px;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: flex-start;
-    gap: 5px;
-  }
-
-  .ref-badge {
-    font-family: var(--mono);
-    font-size: 10px; font-weight: 600;
-    color: var(--err-mid);
-    background: var(--err-soft);
-    padding: 3px 9px; border-radius: 4px;
-    letter-spacing: 0.8px; text-transform: uppercase;
-    border: 1px solid var(--err-rule);
-  }
-
-  .ref-date     { font-family: var(--mono); font-size: 11px; color: var(--charcoal-muted); }
-  .ref-employee { font-family: var(--sans); font-size: 12px; color: var(--charcoal-mid); font-weight: 500; }
-
-  .meta-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    background: var(--cream-warm);
-  }
-
-  .meta-cell { padding: 16px 20px; border-left: 1px solid var(--rule); position: relative; }
-  .meta-cell:last-child { border-left: none; }
-
-  .meta-cell.highlight::before {
-    content: '';
-    position: absolute;
-    top: 0; right: 0;
-    width: 3px; height: 100%;
-    background: var(--err);
-  }
-
-  .meta-label {
-    font-family: var(--mono);
-    font-size: 8.5px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 1.4px;
-    color: var(--charcoal-faint); margin-bottom: 6px;
-  }
-
-  .meta-value {
-    font-family: var(--sans);
-    font-size: 15px; font-weight: 700;
-    color: var(--charcoal); line-height: 1;
-  }
-
-  .meta-value.mono { font-family: var(--mono); font-size: 13px; }
-  .meta-value.err  { color: var(--err); }
-
-  .print-alert {
-    display: none;
-    margin: 20px 32px 0;
-    padding: 12px 18px;
-    border: 1.5px solid var(--err-rule);
-    border-radius: 6px;
-    background: var(--err-bg);
-  }
-
-  .print-alert-inner {
-    display: flex; align-items: center; gap: 10px;
-  }
-
-  .print-alert-icon {
-    width: 18px; height: 18px;
-    border: 1.5px solid var(--err);
-    border-radius: 50%;
-    color: var(--err);
-    font-family: var(--mono);
-    font-size: 11px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .print-alert-text {
-    font-family: var(--sans);
-    font-size: 12px; font-weight: 500;
-    color: var(--err-mid);
-    line-height: 1.4;
-  }
-
-  .table-wrap { padding: 24px 32px 32px; }
-
-  .section-label {
-    display: flex; align-items: center;
-    gap: 12px; margin-bottom: 16px;
-  }
-
-  .section-label-text {
-    font-family: var(--mono);
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: var(--charcoal-faint); white-space: nowrap;
-  }
-
-  .section-label-line { flex: 1; height: 1px; background: var(--rule-soft); }
-
-  .table-card {
-    border: 1.5px solid var(--rule);
-    border-radius: 8px; overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
-
-  table { width: 100%; border-collapse: collapse; }
-
-  thead tr {
-    background: var(--cream-warm);
-    border-bottom: 1px solid var(--rule);
-  }
-
-  th {
-    font-family: var(--mono);
-    font-size: 8.5px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 1.2px;
-    color: var(--charcoal-muted);
-    padding: 10px 16px; text-align: right;
-  }
-
-  th.center { text-align: center; }
-
-  tbody tr { border-bottom: 1px solid var(--rule-soft); }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:nth-child(even) td { background: #fdfcfb; }
-
-  td {
-    font-family: var(--sans);
-    font-size: 12.5px; color: var(--charcoal-mid);
-    padding: 11px 16px;
-    text-align: right; vertical-align: middle;
-  }
-
-  td.idx-cell {
-    font-family: var(--mono);
-    font-size: 10px; color: var(--charcoal-faint);
-    text-align: center; font-weight: 500;
-    width: 42px;
-  }
-
-  td.code-cell {
-    font-family: var(--mono);
-    font-size: 12px; font-weight: 600;
-    color: var(--err);
-    letter-spacing: 0.3px;
-  }
-
-  .badge-error {
-    display: inline-block;
-    font-family: var(--sans);
-    font-size: 11px; font-weight: 600;
-    color: var(--err-mid);
-    background: var(--err-soft);
-    border: 1px solid var(--err-rule);
-    padding: 3px 10px;
-    border-radius: 20px;
-    line-height: 1.4;
-    white-space: nowrap;
-  }
-
-  td.time-cell {
-    font-family: var(--mono);
-    font-size: 10px; color: var(--charcoal-muted);
-    letter-spacing: 0.2px;
-  }
-
-  td.time-cell span {
-    background: var(--cream-warm);
-    border: 1px solid var(--rule);
-    padding: 2px 8px; border-radius: 4px;
-  }
-
-  .doc-footer {
-    background: var(--cream);
-    border-top: 1px solid var(--rule);
-    padding: 12px 32px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-
-  .footer-left { display: flex; align-items: center; gap: 8px; }
-
-  .footer-mark {
-    width: 16px; height: 16px;
-    background: var(--err);
-    border-radius: 3px;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  .footer-mark svg {
-    width: 9px; height: 9px;
-    stroke: var(--cream); stroke-width: 2.2;
-    fill: none; stroke-linecap: round;
-  }
-
-  .footer-text { font-family: var(--mono); font-size: 9px; color: var(--charcoal-muted); letter-spacing: 0.5px; }
-  .footer-divider { width: 1px; height: 10px; background: var(--rule); margin: 0 2px; }
-
-  @media print {
-    body { background: white; }
-    .print-alert { display: block !important; }
-    .header-band,
-    .meta-strip,
-    .meta-cell,
-    thead tr,
-    .badge-error,
-    .doc-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    tbody tr { page-break-inside: avoid; }
-    .table-card { box-shadow: none; }
-  }
-</style>`;
-
-
-function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
-  const rows = logs.map((l, i) => `
-    <tr>
-      <td class="idx-cell">${i + 1}</td>
-      <td class="code-cell">${l.orderNumber}</td>
-      <td class="code-cell">${l.sku}</td>
-      <td><span class="badge-error">${labels.reasons?.[l.reason] || l.reason}</span></td>
-      <td class="time-cell"><span>${l.time}</span></td>
-    </tr>`
-  ).join("");
-
-  return `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>${labels.title}</title>
-  ${WRONG_SCAN_PDF_STYLE}
-</head>
-<body>
-
-  <!-- ── HEADER ── -->
-  <div class="header-band">
-    <div class="header-top">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </div>
-        <div>
-          <div class="doc-title">${labels.title}</div>
-          <div class="doc-subtitle">WRONG SCAN LOG · ${carrier}</div>
-        </div>
-      </div>
-      <div class="header-ref">
-        <div class="ref-badge">ERR · ${now.replace(/\D/g, '').slice(0, 8)}</div>
-        <div class="ref-date">${now}</div>
-        <div class="ref-employee">${employee}</div>
-      </div>
-    </div>
-
-    <div class="meta-strip">
-      <div class="meta-cell">
-        <div class="meta-label">${labels.carrier}</div>
-        <div class="meta-value">${carrier}</div>
-      </div>
-      <div class="meta-cell">
-        <div class="meta-label">${labels.employee}</div>
-        <div class="meta-value">${employee}</div>
-      </div>
-      <div class="meta-cell">
-        <div class="meta-label">${labels.date}</div>
-        <div class="meta-value mono">${now}</div>
-      </div>
-      <div class="meta-cell highlight">
-        <div class="meta-label">${labels.totalFailedAttempts}</div>
-        <div class="meta-value err">${logs.length} ${labels.attemptUnit}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── PRINT-ONLY ALERT BANNER ── -->
-  <div class="print-alert">
-    <div class="print-alert-inner">
-      <div class="print-alert-icon">!</div>
-      <div class="print-alert-text">
-        ${labels.printAlertText}
-      </div>
-    </div>
-  </div>
-
-  <!-- ── TABLE ── -->
-  <div class="table-wrap">
-    <div class="section-label">
-      <span class="section-label-text">${labels.totalAttempts}: ${logs.length}</span>
-      <div class="section-label-line"></div>
-    </div>
-
-    <div class="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th class="center">#</th>
-            <th>${labels.orderNumber}</th>
-            <th>${labels.scannedCode}</th>
-            <th>${labels.failReason}</th>
-            <th>${labels.time}</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ── FOOTER ── -->
-  <div class="doc-footer">
-    <div class="footer-left">
-      <div class="footer-mark">
-        <svg viewBox="0 0 10 10">
-          <line x1="3" y1="3" x2="7" y2="7"/>
-          <line x1="7" y1="3" x2="3" y2="7"/>
-        </svg>
-      </div>
-      <span class="footer-text">${labels.title}</span>
-      <div class="footer-divider"></div>
-      <span class="footer-text">${labels.system}</span>
-    </div>
-    <span class="footer-text">${now}</span>
-  </div>
-
-</body>
-</html>`;
-}
-
-function openPrintWindow(html) {
-  const win = window.open("", "_blank", "width=900,height=700");
-  if (!win) return;
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 600);
-}
-
 // ─────────────────────────────────────────────────────────────
 // ROOT EXPORT
 // ─────────────────────────────────────────────────────────────
@@ -1171,7 +329,7 @@ export default function ReturnsTab({
   }, [fetchStats, resetToken]);
 
   return (
-    <div className="space-y-4" dir="rtl">
+    <div className="space-y-4" >
       <PageHeader
         breadcrumbs={[
           { name: t("breadcrumbs.home"), href: "dashboard/" },
@@ -1317,7 +475,7 @@ function ReturnsScanInputBar({
       animate={errorFlash ? { x: [0, -5, 6, -4, 2, 0] } : { x: 0 }}
       transition={{ duration: 0.35 }}
       className="relative"
-      dir="rtl"
+      
     >
       {[
         "absolute -top-[3px] -left-[3px]",
@@ -1481,7 +639,7 @@ function ReturnsScanInputBar({
             placeholder={placeholder}
             autoFocus
             disabled={disabled}
-            dir="rtl"
+            
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
@@ -1587,286 +745,7 @@ function ReturnsScanInputBar({
 }
 
 
-// ─────────────────────────────────────────────────────────────
-// ORDERS LIST
-// ─────────────────────────────────────────────────────────────
-function OrdersList({
-  orders,
-  scannedOrders,
-  lastHighlight,
-  onSelectOrder,
-}) {
-  const tOrder = useTranslations("orders");
-  const t = useTranslations("warehouse.returns");
-  const [expanded, setExpanded] = useState({});
-  const { formatCurrency } = usePlatformSettings();
-  const toggle = (code) => setExpanded((p) => ({ ...p, [code]: !p[code] }));
 
-  if (orders.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <div className="w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex items-center justify-center mb-3">
-          <Package size={22} className="text-slate-300 dark:text-slate-600" />
-        </div>
-        <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">{t("scan.empty.title")}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="overflow-x-auto scrollbar-none">
-      <div className="min-w-[800px]">
-        <div
-          className="grid text-[10px] font-extrabold uppercase tracking-[0.07em] text-slate-400 px-5 py-2.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/60 dark:bg-slate-800/30"
-          style={{ gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr 1fr 1fr 1fr" }}
-        >
-          <span />
-          <span>{t("scan.table.orderNumber")}</span>
-          <span>{t("scan.table.customer")}</span>
-          <span>{t("scan.table.city")}</span>
-          <span>{t("scan.table.status")}</span>
-          <span className="text-center">{t("scan.table.products")}</span>
-          <span className="text-center">{t("scan.table.total")}</span>
-          <span />
-        </div>
-
-        <div className="divide-y divide-slate-100/80 dark:divide-slate-700/20">
-          {orders.map((order, idx) => {
-            const code = order.orderNumber;
-            const isScanned = scannedOrders.some((o) => o.code === code);
-            const isFlash = lastHighlight?.code === code;
-            const isOpen = !!expanded[code];
-            const prodCount = order.items?.length ?? 0;
-
-            return (
-              <motion.div
-                key={code}
-                layout
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.025, duration: 0.18 }}
-              >
-                <div
-                  className={cn(
-                    "relative grid items-center px-5 py-3 transition-all duration-200 cursor-pointer select-none",
-                    isScanned
-                      ? "bg-emerald-50/60 dark:bg-emerald-950/10"
-                      : "hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
-                  )}
-                  style={{ gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr 1fr 1fr 1fr" }}
-                  onClick={() => prodCount > 0 && toggle(code)}
-                >
-                  <AnimatePresence>
-                    {isFlash && (
-                      <motion.div
-                        initial={{ opacity: 0.45 }}
-                        animate={{ opacity: 0 }}
-                        transition={{ duration: 0.9 }}
-                        className={cn(
-                          "absolute inset-0 pointer-events-none",
-                          lastHighlight?.ok ? "bg-emerald-400/20" : "bg-red-400/20"
-                        )}
-                      />
-                    )}
-                  </AnimatePresence>
-
-                  {isScanned && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-teal-500" />
-                  )}
-
-                  <div className="flex items-center justify-center">
-                    <div
-                      className={cn(
-                        "w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200",
-                        isScanned
-                          ? "bg-emerald-500 text-white shadow-[0_2px_8px_-2px_#10b98160]"
-                          : "bg-slate-100 dark:bg-slate-800"
-                      )}
-                    >
-                      {isScanned ? (
-                        <CheckCircle2 size={14} className="text-white" />
-                      ) : (
-                        <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 tabular-nums">
-                          {idx + 1}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span
-                      className={cn(
-                        "font-black font-mono text-[13px] transition-colors",
-                        isScanned
-                          ? "text-emerald-800 dark:text-emerald-300"
-                          : "text-slate-800 dark:text-slate-100"
-                      )}
-                    >
-                      {code}
-                    </span>
-                    {isScanned && (
-                      <motion.span
-                        initial={{ scale: 0.7, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/50"
-                      >
-                        ✓ {t("scan.table.selected")}
-                      </motion.span>
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="text-[12px] font-semibold text-slate-700 dark:text-slate-200 truncate">
-                      {order.customerName || "—"}
-                    </div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium tabular-nums">
-                      {order.phoneNumber || "—"}
-                    </div>
-                  </div>
-
-                  <Badge className={cn("rounded-xl")}>
-                    {order.status.system
-                      ? tOrder(`statuses.${order.status.code}`)
-                      : order.status.name || order.status.code}
-                  </Badge>
-
-                  <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
-                    {order.city || "—"}
-                  </div>
-
-                  <div className="flex justify-center">
-                    <span
-                      className="inline-flex items-center justify-center px-2 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-black text-slate-600 dark:text-slate-300 min-w-[32px]"
-                    >
-                      {prodCount}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-center">
-                    <span className="text-[12px] font-black text-slate-800 dark:text-slate-100 tabular-nums">
-                      {formatCurrency(order.finalTotal)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-end">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectOrder?.(order);
-                      }}
-                      className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/20 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
-                    >
-                      <ScanLine size={20} />
-                    </button>
-                  </div>
-                </div>
-
-                <AnimatePresence initial={false}>
-                  {isOpen && prodCount > 0 && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                      style={{ overflow: "hidden" }}
-                    >
-                      <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20">
-                        <div
-                          className="grid text-[9px] font-extrabold uppercase tracking-[0.07em] px-5 py-2.5 border-b text-slate-400 border-slate-100 dark:border-slate-800"
-                          style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
-                        >
-                          <span>{t("scan.table.productName")}</span>
-                          <span className="text-center">SKU</span>
-                          <span className="text-center">{t("scan.table.qty")}</span>
-                          <span className="text-center">{t("scan.table.price")}</span>
-                          <span className="text-center">{t("scan.table.total")}</span>
-                        </div>
-
-                        <div className="divide-y divide-slate-100/60 dark:divide-slate-800/40">
-                          {order.items.map((p, pi) => (
-                            <motion.div
-                              key={p.sku || pi}
-                              initial={{ opacity: 0, x: -4 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: pi * 0.04 }}
-                              className="grid items-center px-5 py-3 hover:bg-white/70 dark:hover:bg-slate-800/40 transition-colors"
-                              style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <div
-                                  className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0"
-                                  style={{ background: "#ff8b0012" }}
-                                >
-                                  <Package size={11} style={{ color: "var(--primary)" }} />
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-[12px] font-semibold text-slate-700 dark:text-slate-200 truncate">
-                                    {p.variant?.product?.name || p.name}
-                                  </p>
-                                  {p.variant?.sku && (
-                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                                      {p.variant.sku}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="text-center">
-                                <code className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-700">
-                                  {p.sku || p.variant?.sku || "—"}
-                                </code>
-                              </div>
-
-                              <div className="flex justify-center">
-                                <span
-                                  className="inline-flex items-center justify-center w-7 h-7 rounded-xl text-[11px] font-black"
-                                  style={{ background: "#ff8b0015", color: "var(--primary)" }}
-                                >
-                                  {p.quantity}
-                                </span>
-                              </div>
-
-                              <div className="text-center">
-                                <span className="text-[12px] font-bold text-slate-600 dark:text-slate-300 tabular-nums">
-                                  {p.unitPrice ? formatCurrency(p.unitPrice) : "—"}
-                                </span>
-                              </div>
-
-                              <div className="text-center">
-                                {p.unitPrice && p.quantity ? (
-                                  <span className="text-[12px] font-black text-slate-800 dark:text-slate-100 tabular-nums">
-                                    {formatCurrency(p.unitPrice * p.quantity)}
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
-                                )}
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-
-                        <div className="flex items-center justify-between px-5 py-2.5 border-t border-slate-100 dark:border-slate-800 text-[11px] font-semibold text-slate-500 bg-slate-50 dark:bg-slate-900/40">
-                          <span>
-                            {prodCount} {t("scan.table.productUnit")}
-                          </span>
-                          {order.totalPrice && (
-                            <span className="font-black text-[13px] text-slate-700 dark:text-slate-200">
-                              {formatCurrency(order.totalPrice)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChange, onSelectAll, onUnselectAll, selectedItems, returnReason, onReasonChange, onSave, isSaving }) {
   const t = useTranslations("warehouse.returns");
@@ -1991,7 +870,7 @@ function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChang
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm" dir="rtl">
+        <table className="w-full text-sm" >
           <thead>
             <tr className="border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/60 dark:bg-slate-800/30">
               {[
@@ -2333,7 +1212,7 @@ export function ScanReturnsSubtab({
   const t = useTranslations("warehouse.returns");
 
   const { shippingCompanies } = usePlatformSettings();
-  
+
 
   const [scanInput, setScanInput] = useState("");
 
@@ -2532,15 +1411,15 @@ export function ScanReturnsSubtab({
       )
     },
     {
-        key: "status",
-        header: t("table.status"),
-        cell: (row) => (
-          <Badge className={cn("rounded-xl")}>
-            {row.status.system
-              ? tOrder(`statuses.${row.status.code}`)
-              : row.status.name || row.status.code}
-          </Badge>
-        ),
+      key: "status",
+      header: t("table.status"),
+      cell: (row) => (
+        <Badge className={cn("rounded-xl")}>
+          {row.status.system
+            ? tOrder(`statuses.${row.status.code}`)
+            : row.status.name || row.status.code}
+        </Badge>
+      ),
     },
     {
       header: t("scan.table.date"),
@@ -2601,7 +1480,7 @@ export function ScanReturnsSubtab({
       // Validation: order must be shipped or delivered
       if (!order || (order.status?.code !== 'shipped' && order.status?.code !== 'delivered')) {
         if (soundEnabled) playBeep("error");
-        showFeedback("error", t("scan.messages.notFound", {code: idOrCode}) || "Order not found or not in valid status for return");
+        showFeedback("error", t("scan.messages.notFound", { code: idOrCode }) || "Order not found or not in valid status for return");
         setScanInput("");
         return;
       }
@@ -2745,7 +1624,7 @@ export function ScanReturnsSubtab({
 
       await api.post('/order-returns/return-request', payload);
 
-      
+
       toast.success(t("scan.messages.returnSuccess", { code: activeOrder.orderNumber }));
 
       if (soundEnabled) playBeep("success");
@@ -3061,11 +1940,10 @@ export function ScanReturnsSubtab({
                   return (
                     <div
                       key={order.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                        isSelected 
-                          ? "bg-primary/10 border-primary/30" 
+                      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${isSelected
+                          ? "bg-primary/10 border-primary/30"
                           : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-                      }`}
+                        }`}
                     >
                       <Checkbox
                         checked={isSelected}
@@ -3171,6 +2049,7 @@ function ReturnsFilesSubtab({
 }) {
   const t = useTranslations("warehouse.returns");
   const [search, setSearch] = useState("");
+  const locale = useLocale();
   const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
   const [filterCarrier, setFilterCarrier] = useState("all");
   const [filterIsPrinted, setFilterIsPrinted] = useState("all");
@@ -3243,28 +2122,6 @@ function ReturnsFilesSubtab({
     condition: t("pdf.condition"),
   };
 
-  const wrongLogLabels = {
-    title: t("wrongPdf.title"),
-    printDate: t("wrongPdf.date"),
-    employee: t("wrongPdf.employee"),
-    totalAttempts: t("wrongPdf.totalAttempts"),
-    carrier: t("wrongPdf.carrier"),
-    date: t("wrongPdf.date"),
-    totalFailedAttempts: t("wrongPdf.totalFailedAttempts"),
-    attemptUnit: t("wrongPdf.attemptUnit"),
-    scannedCode: t("wrongPdf.scannedCode"),
-    orderNumber: t("wrongPdf.orderNumber"),
-    failReason: t("wrongPdf.failReason"),
-    time: t("wrongPdf.time"),
-    printAlertText: t("wrongPdf.printAlertText"),
-    system: t("wrongPdf.system"),
-    reasons: {
-      SKU_NOT_IN_ORDER: t("scan.reasons.SKU_NOT_IN_ORDER"),
-      ALREADY_FULLY_SCANNED: t("scan.reasons.ALREADY_FULLY_SCANNED"),
-      INVALID_STATUS: t("scan.reasons.INVALID_STATUS"),
-      OTHER: t("scan.reasons.OTHER"),
-    }
-  };
 
   const handleDownload = async (id) => {
     setDownloading((p) => ({ ...p, [id]: true }));
@@ -3272,8 +2129,8 @@ function ReturnsFilesSubtab({
       const res = await api.get(`/orders/manifests/${id}`);
       const manifest = res.data;
 
+      // Format the data explicitly for the component
       const ordersSnapshot = manifest.orders.map(o => {
-        // Use lastReturn if available, otherwise fallback to manifest snapshot or items
         const returnData = o.lastReturn || {};
         const returnItems = returnData.items || o.items || [];
 
@@ -3284,8 +2141,8 @@ function ReturnsFilesSubtab({
           carrier: manifest.shippingCompany?.name,
           lastReturn: returnData,
           products: returnItems.map(i => ({
-            sku: i.sku || i.variant?.sku || i.originalItem?.variant?.sku || "—",
-            name: i.name || i.variant?.product?.name || i.originalItem?.variant?.product?.name || "—",
+            sku: i.sku || i.returnedVariant?.sku || i.originalItem?.variant?.sku || "—",
+            name: i.name || i.returnedVariant?.product?.name || i.originalItem?.variant?.product?.name || "—",
             quantity: i.quantity || i.returnedQty || 0
           })),
           trackingNumber: o.trackingNumber,
@@ -3293,18 +2150,39 @@ function ReturnsFilesSubtab({
         };
       });
 
-      openPrintWindow(
-        buildReturnPDF(
-          ordersSnapshot,
-          manifest.shippingCompany?.name || "-",
-          manifest.changedByUser?.name || "System",
-          new Date(manifest.createdAt).toLocaleString(),
-          returnPdfLabels
-        )
-      );
+      const carrier = manifest.shippingCompany?.name || "-";
+      const employee = manifest.changedByUser?.name || "System";
+      const now = new Date(manifest.createdAt).toLocaleString();
 
+      // 1. Generate PDF Blob via React-PDF
+      const blob = await pdf(
+        <ReturnPDF
+          orders={ordersSnapshot}
+          carrier={carrier}
+          employee={employee}
+          now={now}
+          labels={returnPdfLabels}
+          locale={locale} // Ensure you have access to locale from your scope or hook
+        />
+      ).toBlob();
+
+      // 2. Download PDF
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `return_manifest_${id}_${new Date().getTime()}.pdf`;
+
+      document.body.appendChild(a);
+      a.click();
+
+      // 3. Cleanup Memory
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // 4. Update the server and refresh table
       await api.patch(`/orders/${id}/mark-manifest-printed`);
       fetchManifests();
+
     } catch (error) {
       console.error("Error downloading return manifest", error);
       toast.error(t("scan.messages.errorLoadingFile"));
@@ -3331,38 +2209,6 @@ function ReturnsFilesSubtab({
       params.toString() ? `${pathname}?${params}` : pathname
     );
   }, []);
-
-  const handleDownloadWrongLog = async (row) => {
-    setDownloadingWrongLog((p) => ({ ...p, [row.id]: true }));
-    try {
-      const res = await api.get(`/orders/${row.id}/return-manifests/scan-logs`);
-      const logsData = res.data || [];
-
-      const logs = logsData.map(l => ({
-        sku: l.sku || "-",
-        reason: l.reason || "-",
-        orderNumber: l.order?.orderNumber || "-",
-        time: new Date(l.createdAt).toLocaleTimeString()
-      }));
-
-      openPrintWindow(
-        buildWrongScanLogPDF(
-          logs,
-          row.shippingCompany?.name || "-",
-          row.order?.user?.name || "System",
-          new Date().toLocaleString(),
-          wrongLogLabels
-        )
-      );
-    } catch (error) {
-      console.error("Error downloading return wrong log", error);
-      toast.error(t("scan.messages.errorLoadingLogs"));
-    } finally {
-      setDownloadingWrongLog((p) => ({ ...p, [row.id]: false }));
-    }
-  };
-
-
 
 
   const columns = useMemo(

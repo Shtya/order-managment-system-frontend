@@ -20,10 +20,12 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { renderBarcode } from "@/utils/barcode";
+import { getBarcodeDataUrl, renderBarcode } from "@/utils/barcode";
 import { Input } from "@/components/ui/input";
 import SafeHtmlRenderer from "@/components/atoms/SafeHtmlRenderer";
 import { cn } from "@/utils/cn";
+import SkuLabelsPDF from "./SkuLabelsPDF";
+import { pdf } from "@react-pdf/renderer";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -730,6 +732,7 @@ export function SkuPrintModal({ open, onClose, product }) {
 	const { formatCurrency } = usePlatformSettings();
 	const [selectedSkus, setSelectedSkus] = useState([]);
 	const [quantities, setQuantities] = useState({});
+	const [printing, setPrinting] = useState(false);
 
 	const skus = product?.skus || [];
 
@@ -761,94 +764,56 @@ export function SkuPrintModal({ open, onClose, product }) {
 		}));
 	};
 
-	const handlePrint = () => {
+
+	const handlePrint = async () => {
 		const selectedData = skus.filter(s => selectedSkus.includes(s.id));
 		if (selectedData.length === 0) return;
 
-		// Create a temporary container for barcode generation
-		const tempDiv = document.createElement('div');
-		tempDiv.style.display = 'none';
-		document.body.appendChild(tempDiv);
+		setPrinting(true);
+		try {
+			// 1. Flatten the data based on quantities and prepare barcode images
+			const labelsData = [];
 
-		let labelsHtml = '';
+			for (const s of selectedData) {
+				const attrs = s?.attributes ? Object.entries(s.attributes) : [];
+				const attrStr = attrs.map(([k, v]) => `${k}: ${v}`).join(" | ");
+				const qty = quantities[s.id] || 1;
+				
+				const barcodeDataUrl = await getBarcodeDataUrl(s.sku);
 
-		selectedData.forEach(s => {
-			const attrs = s?.attributes ? Object.entries(s.attributes) : [];
-			const attrStr = attrs.map(([k, v]) => `${k}: ${v}`).join(" | ");
-			const qty = quantities[s.id] || 1;
-
-			// Generate barcode SVG string using our shared utility
-			const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-			renderBarcode(svg, s.sku);
-			const barcodeSvgStr = svg.outerHTML;
-
-			for (let i = 0; i < qty; i++) {
-				labelsHtml += `
-					<div class="label-item">
-						<div class="text-[10px] font-bold text-slate-800 mb-1 truncate w-full text-center">
-							${product?.name || ''}
-						</div>
-						<div class="text-[8px] text-slate-600 mb-1 truncate w-full text-center">
-							${attrStr}
-						</div>
-						<div class="barcode-container w-full flex justify-center">
-							${barcodeSvgStr}
-						</div>
-						<div class="text-[9px] font-mono mt-1 font-bold">
-							${s.sku}
-						</div>
-					</div>
-				`;
+				for (let i = 0; i < qty; i++) {
+					labelsData.push({
+						name: product?.name || "",
+						attributes: attrStr,
+						sku: s.sku,
+						barcodeDataUrl: barcodeDataUrl,
+					});
+				}
 			}
-		});
 
-		document.body.removeChild(tempDiv);
+			// 2. Generate PDF Blob via React-PDF
+			const blob = await pdf(<SkuLabelsPDF labelsData={labelsData} />).toBlob();
 
-		const w = window.open("", "_blank");
-		w.document.write(`
-      <html class="light">
-        <head>
-          <title>${t("printSku.title")}</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-          <script>tailwind.config = { darkMode: 'class' }</script>
-          <style>
-            @page { size: auto; margin: 0mm; }
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { background: white !important; width: 100%; font-family: sans-serif; }
-            .print-container { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; }
-            .label-item { 
-                width: 50mm; 
-                height: 30mm; 
-                border: 1px dashed #ccc; 
-                display: flex; 
-                flex-direction: column; 
-                align-items: center; 
-                justify-content: center; 
-                padding: 5px;
-                page-break-inside: avoid;
-            }
-            .barcode-container svg {
-                width: 100%;
-                height: auto;
-                max-height: 40px;
-            }
-            @media print {
-              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-              .label-item { border: none !important; }
-              .no-print { display: none !important; }
-            }
-          </style>
-        </head>
-        <body class="bg-white">
-          <div class="print-container">
-            ${labelsHtml}
-          </div>
-          <script>setTimeout(function() { window.print(); window.close(); }, 1000);</script>
-        </body>
-      </html>
-    `);
-		w.document.close();
-		w.focus();
+			// 3. Trigger Download
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `sku-labels-${new Date().getTime()}.pdf`;
+
+			document.body.appendChild(a);
+			a.click();
+
+			// 4. Cleanup
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+
+			// Close modal after printing
+			onClose();
+		} catch (error) {
+			console.error("Error generating SKU Labels PDF:", error);
+		} finally {
+			setPrinting(false);
+		}
 	};
 
 	if (!open) return null;
@@ -982,11 +947,11 @@ export function SkuPrintModal({ open, onClose, product }) {
 							{t("common.cancel")}
 						</Button>
 						<Button
-							disabled={selectedSkus.length === 0}
+							disabled={selectedSkus.length === 0 || printing}
 							onClick={handlePrint}
 							className="rounded-xl px-8 bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95"
 						>
-							<Printer size={18} className="mr-2" />
+							{printing ? <Loader2 size={18} className="mr-2 animate-spin" /> : <Printer size={18} className="mr-2" />}
 							{t("common.print")}
 						</Button>
 					</div>

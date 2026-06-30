@@ -29,3 +29,5 @@ export const dollorSign = "$"
     </div>
   ));
 };
+
+export const DEFAULT_FONT_FAMILY = "Cairo";

@@ -4682,6 +4682,7 @@
     "minutes": "minutes",
     "hour": "hour",
     "hours": "hours",
+    "printError": "Failed to print report",
     "languages": {
       "ar": "Arabic",
       "en": "English",

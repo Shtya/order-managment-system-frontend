@@ -10877,6 +10877,7 @@
           "changeTemplate": "تغيير القالب",
           "fillVariables": "تعبئة المتغيرات",
           "fillVariablesDesc": "أدخل قيم ثابتة أو اختر حقول ديناميكية من الطلب",
+          "maxLengthNote": "ملاحظة: يتم اقتطاع جميع قيم المتغيرات تلقائياً إلى 30 حرفاً، مع إزالة الكلمات من النهاية أولاً",
           "locationHeader": "ترويسة الموقع",
           "locationName": "اسم الموقع",
           "locationAddress": "عنوان الموقع",
@@ -10971,7 +10972,7 @@
           "deliveredAt": "تاريخ التوصيل",
           "created_at": "تاريخ إنشاء الطلب",
           "allowOpenPackage": "السماح بفتح الطلب",
-          "items": "المنتجات",
+          "items": "كل المنتجات",
           "productName": "اسم المنتج",
           "sku": "رمز المنتج (SKU)",
           "quantity": "الكمية",
@@ -11010,7 +11011,9 @@
             "price": "250",
             "unitCost": "250",
             "lineTotal": "500"
-          }
+          },
+          "firstitems": "أول منتج",
+          "lastitems": "أخر منتج"
         },
         "runPanel": {
           "title": "معلومات التشغيل",

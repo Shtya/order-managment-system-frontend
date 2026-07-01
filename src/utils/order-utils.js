@@ -28,7 +28,7 @@ export const GEO_CONFIG = {
 export const CARRIER_CONFIG = {
     BOSTA: {
         provider: "bosta",
-        requires: ["customerName", "phoneNumber", "firstLine", "cityId", "districtId", "orderSize"],
+        requires: ["customerName", "phoneNumber", "firstLine", "cityId", "districtId"],
         hasDistrict: true,
         hasZone: false,
     },

@@ -160,7 +160,8 @@ export function OrdersSettingsProvider({ children }) {
 
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      console.error(e)
+      // toast.error(normalizeAxiosError(e));
     } finally {
       setLoading(false);
     }
@@ -257,6 +258,7 @@ export function OrdersSettingsProvider({ children }) {
       }
       
     } catch (e) {
+      console.error(e);
       toast.error(normalizeAxiosError(e));
     } finally {
       setSaving(false);

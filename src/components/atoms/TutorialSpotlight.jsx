@@ -21,13 +21,10 @@ export function TutorialSpotlight({
   const { isTutorialMode } = useTutorial();
   const [hovered, setHovered] = useState(false);
 
-  if (disabled) {
+  if (disabled || !isTutorialMode || !title || !description) {
     return <>{children}</>;
   }
 
-  if (!isTutorialMode) {
-    return <>{children}</>;
-  }
 
   return (
     <TooltipProvider>

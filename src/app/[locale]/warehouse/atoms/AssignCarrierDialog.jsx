@@ -2,6 +2,14 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { CheckCircle2, Layers, Package, Send, Truck, X, AlertCircle, Check, Loader2, Save } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,7 +42,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
         if (config.requires.includes("cityId")) shape.cityId = yup.string().required(t("validation.cityIdRequired"));
         if (config.requires.includes("districtId")) shape.districtId = yup.string().required(t("validation.districtIdRequired"));
         if (config.requires.includes("zoneId")) shape.zoneId = yup.string().required(t("validation.zoneIdRequired"));
-        if (config.requires.includes("orderSize")) shape.orderSize = yup.string().required(t("validation.orderSizeRequired"));
+        if (config.requires.includes("orderSize")) shape.orderSize = yup.string().optional();
 
         return yup.object().shape(shape);
     };
@@ -171,7 +179,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
         );
 
         const ineligible = active.filter(isOrderIneligible);
-
+        
         const needsFix = active.filter(o =>
             !isOrderIneligible(o) && doesOrderNeedFix(o, carrier)
         );
@@ -244,14 +252,17 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
         }
     }, [api]);
 
-    const fetchZonesAndDistricts = useCallback(async (provider, providerCityId, orderId, fetchDistricts = false) => {
-        if (!providerCityId) return;
+    const fetchZonesAndDistricts = useCallback(async (provider, providerCityId, orderIds, fetchDistricts = false) => {
+        if (!providerCityId || orderIds.length === 0) return;
 
-        // Set loading for this specific order
-        setGeoLoading(prev => ({
-            ...prev,
-            [orderId]: { zones: true, districts: fetchDistricts }
-        }));
+        // Set loading for all orderIds
+        setGeoLoading(prev => {
+            const newGeoLoading = { ...prev };
+            orderIds.forEach(orderId => {
+                newGeoLoading[orderId] = { zones: true, districts: fetchDistricts };
+            });
+            return newGeoLoading;
+        });
 
         const promises = [];
 
@@ -278,23 +289,34 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
         } catch (e) {
             console.error("Geo Fetch Error:", e);
         } finally {
-            // Clear loading for this order
-            setGeoLoading(prev => ({
-                ...prev,
-                [orderId]: { zones: false, districts: false }
-            }));
+            // Clear loading for all orderIds
+            setGeoLoading(prev => {
+                const newGeoLoading = { ...prev };
+                orderIds.forEach(orderId => {
+                    newGeoLoading[orderId] = { zones: false, districts: false };
+                });
+                return newGeoLoading;
+            });
 
-            // Update Maps
-            setZonesMap(prev => ({
-                ...prev,
-                [orderId]: geoCache.current[provider].zones[providerCityId] || []
-            }));
+            // Update Maps for all orderIds
+            setZonesMap(prev => {
+                const newZonesMap = { ...prev };
+                const zonesData = geoCache.current[provider].zones[providerCityId] || [];
+                orderIds.forEach(orderId => {
+                    newZonesMap[orderId] = zonesData;
+                });
+                return newZonesMap;
+            });
 
             if (fetchDistricts) {
-                setDistrictsMap(prev => ({
-                    ...prev,
-                    [orderId]: geoCache.current[provider].districts[providerCityId] || []
-                }));
+                setDistrictsMap(prev => {
+                    const newDistrictsMap = { ...prev };
+                    const districtsData = geoCache.current[provider].districts[providerCityId] || [];
+                    orderIds.forEach(orderId => {
+                        newDistrictsMap[orderId] = districtsData;
+                    });
+                    return newDistrictsMap;
+                });
             }
         }
     }, []);
@@ -318,6 +340,8 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
             const latestCities = await fetchCities(config.provider);
 
             const newFixes = {};
+            const cityIdToOrderIds = {};
+
             for (const order of needsFixOrders) {
                 const isSameProvider = order.shippingCompany?.code?.toLowerCase() === config.provider;
                 const meta = isSameProvider && order.shippingMetadata ? order.shippingMetadata : {};
@@ -333,14 +357,21 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                     orderSize: meta.orderSize || "MEDIUM",
                 };
 
-                // Trigger geo fetch for existing cityId
+                // Group orders by city.providerCityId
                 if (order.cityId) {
                     const city = latestCities.find(c => String(c.id) === String(order.cityId));
-                    
                     if (city?.providerCityId) {
-                        fetchZonesAndDistricts(config.provider, city.providerCityId, order.id, config.hasDistrict);
+                        if (!cityIdToOrderIds[city.providerCityId]) {
+                            cityIdToOrderIds[city.providerCityId] = [];
+                        }
+                        cityIdToOrderIds[city.providerCityId].push(order.id);
                     }
                 }
+            }
+
+            // Trigger fetch for each unique city.providerCityId with all orderIds
+            for (const providerCityId of Object.keys(cityIdToOrderIds)) {
+                fetchZonesAndDistricts(config.provider, providerCityId, cityIdToOrderIds[providerCityId], config.hasDistrict);
             }
 
             setFixes(newFixes);
@@ -376,7 +407,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                 const city = cities.find(c => String(c.id) === String(value));
                 
                 if (city?.providerCityId) {
-                    fetchZonesAndDistricts(config.provider, city.providerCityId, orderId, config.hasDistrict);
+                    fetchZonesAndDistricts(config.provider, city.providerCityId, [orderId], config.hasDistrict);
                 }
             }
             if (field === 'zoneId') {
@@ -550,116 +581,183 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                     "!max-w-none w-[min(100vw-1rem,72rem)] sm:w-[min(calc(100vw-2rem),72rem)] max-h-[min(92dvh,92vh)] flex flex-col p-0 gap-0 rounded-2xl border-0 shadow-2xl bg-slate-50 dark:bg-slate-900 overflow-hidden",
                 )}
             >
-                {/* Header & Stats Cards */}
+                {/* Header */}
                 <div className="relative shrink-0 bg-[var(--primary)] px-3 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-6 rounded-t-2xl">
-                    {/* <div className="absolute -top-6 -left-6 w-28 h-28 rounded-full bg-white/10" /> */}
-
-                    <div className="flex items-start justify-between gap-3 mb-4 sm:mb-6">
-                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                                <Layers className="text-white" size={20} />
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                                <Truck className="text-white" size={24} />
                             </div>
                             <div className="min-w-0">
-                                <h2 className="text-white text-base sm:text-xl font-bold leading-tight">{t("modal.assignCarrierTitle")}</h2>
+                                <h2 className="text-white text-lg sm:text-xl font-bold leading-tight">{t("modal.assignCarrierTitle")}</h2>
                             </div>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-8 h-8 shrink-0 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center"
+                            className="w-10 h-10 shrink-0 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
                         >
-                            <X size={16} className="text-white" />
+                            <X size={20} className="text-white" />
                         </button>
                     </div>
+                </div>
 
-                    {/* Metric Cards — glass on brand purple for contrast */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-                        <StatCard title={t("assign.totalSelected")} count={activeOrders.length} icon={<Layers size={14} className="text-white" />} tone="neutral" />
+                <div className="p-3 sm:p-6 space-y-6 flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+
+                    {/* Metric Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard
+                            title={t("assign.totalSelected")}
+                            count={activeOrders.length}
+                            icon={<Layers size={20} />}
+                            tone="neutral"
+                        />
                         <StatCard
                             title={t("assign.ready")}
                             count={readyOrders.length}
                             tone="success"
-                            icon={<CheckCircle2 size={14} className="text-emerald-100" />}
+                            icon={<CheckCircle2 size={20} />}
                         />
-                        <StatCard title={t("assign.needsFix")} count={needsFixOrders.length} tone="warning" icon={<AlertCircle size={14} className="text-amber-100" />} />
-                        <StatCard title={t("assign.ineligible")} count={ineligibleOrders.length} tone="danger" icon={<X size={14} className="text-rose-100" />} />
+                        <StatCard
+                            title={t("assign.needsFix")}
+                            count={needsFixOrders.length}
+                            tone="warning"
+                            icon={<AlertCircle size={20} />}
+                        />
+                        <StatCard
+                            title={t("assign.ineligible")}
+                            count={ineligibleOrders.length}
+                            tone="danger"
+                            icon={<X size={20} />}
+                        />
                     </div>
-                </div>
-
-                <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-
 
                     {/* Tabs */}
-                    <div className="flex flex-wrap gap-1 sm:gap-2 border-b border-slate-200 dark:border-slate-800 pb-px -mx-1 px-1">
-                        <TabButton active={activeTab === 'all'} onClick={() => setActiveTab('all')} label={t("assign.tabAllOrders")} count={activeOrders.length} />
-                        <TabButton active={activeTab === 'fix'} onClick={() => setActiveTab('fix')} label={t("assign.tabNeedsFix")} count={needsFixOrders.length} isWarning={needsFixOrders.length > 0} />
-                        <TabButton active={activeTab === 'ineligible'} onClick={() => setActiveTab('ineligible')} label={t("assign.tabIneligible")} count={ineligibleOrders.length} />
+                    <div className="flex flex-wrap gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+                        <TabButton
+                            active={activeTab === 'all'}
+                            onClick={() => setActiveTab('all')}
+                            label={t("assign.tabAllOrders")}
+                            count={activeOrders.length}
+                        />
+                        <TabButton
+                            active={activeTab === 'fix'}
+                            onClick={() => setActiveTab('fix')}
+                            label={t("assign.tabNeedsFix")}
+                            count={needsFixOrders.length}
+                            isWarning={needsFixOrders.length > 0}
+                        />
+                        <TabButton
+                            active={activeTab === 'ineligible'}
+                            onClick={() => setActiveTab('ineligible')}
+                            label={t("assign.tabIneligible")}
+                            count={ineligibleOrders.length}
+                        />
                     </div>
 
                     {/* Tab Content */}
                     <div className="min-h-[200px] sm:min-h-[300px]">
                         {activeTab === 'all' && (
-                            <div className="space-y-2 max-h-[min(400px,50dvh)] sm:max-h-[400px] overflow-y-auto overflow-x-hidden pr-0.5">
-                                {activeOrders.map((order) => {
-                                    const isReady = readyOrders.some((o) => o.id === order.id);
-                                    const isChecked = selectedReadyIds.has(order.id);
+                            <div className="space-y-4">
 
-                                    if (isReady) {
-                                        return (
-                                            <button
-                                                key={order.id}
-                                                type="button"
-                                                onClick={() => toggleReadySelection(order.id)}
-                                                className={cn(
-                                                    "w-full text-left rounded-xl border-2 p-3 flex items-center gap-3 transition-all",
-                                                    isChecked
-                                                        ? "bg-white dark:bg-slate-900 border-[var(--primary)]/40 shadow-sm"
-                                                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-slate-300",
-                                                )}
-                                            >
-                                                <div
-                                                    className={cn(
-                                                       "w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all",
-                                                        isChecked
-                                                            ? "border-[var(--primary)] bg-[var(--primary)]"
-                                                            : "border-slate-300 dark:border-slate-600",
-                                                    )}
-                                                >
-                                                    {isChecked && <CheckCircle2 size={12} className="text-white" />}
-                                                </div>
-                                                <div className="flex flex-1 items-center justify-between gap-2 min-w-0">
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="font-bold text-primary truncate">{order.orderNumber}</span>
-                                                        <span className="text-xs text-slate-500 truncate">{order.customerName}</span>
-                                                    </div>
-                                                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] rounded-full font-bold shrink-0">
-                                                        {t("assign.ready")}
-                                                    </span>
-                                                </div>
-                                            </button>
-                                        );
-                                    }
+                                <div className="table-container border rounded-xl bg-white dark:bg-slate-950 overflow-hidden shadow-sm">
+                                    <div className="max-h-[400px] overflow-y-auto">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 border-b">
+                                                <tr>
+                                                    <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 w-[60px]"></th>
+                                                    <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
+                                                        {t("field.orderNumber")}
+                                                    </th>
+                                                    <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
+                                                        {t("field.customerName")}
+                                                    </th>
+                                                    <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
+                                                        {t("field.phoneNumber")}
+                                                    </th>
+                                                    <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
+                                                        {t("field.address")}
+                                                    </th>
+                                                    <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
+                                                        {t("status")}
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                                {activeOrders.map((order) => {
+                                                    const isReady = readyOrders.some((o) => o.id === order.id);
+                                                    const isChecked = selectedReadyIds.has(order.id);
+                                                    let status = "ready";
+                                                    let statusColor = "emerald";
+                                                    let statusText = t("assign.ready");
 
-                                    return (
-                                        <div
-                                            key={order.id}
-                                            className="p-3 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between bg-white dark:bg-slate-950"
-                                        >
-                                            <div className="flex flex-col min-w-0">
-                                                <span className="font-bold text-primary truncate">{order.orderNumber}</span>
-                                                <span className="text-xs text-slate-500 truncate">{order.customerName}</span>
-                                            </div>
-                                            <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
-                                                {doesOrderNeedFix(order, carrier) && (
-                                                    <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] rounded-full font-bold">{t("assign.needsFix")}</span>
-                                                )}
-                                                {isOrderIneligible(order) && (
-                                                    <span className="px-2 py-1 bg-red-100 text-red-700 text-[10px] rounded-full font-bold">{t("assign.ineligible")}</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                                    if (isOrderIneligible(order)) {
+                                                        status = "ineligible";
+                                                        statusColor = "red";
+                                                        statusText = t("assign.ineligible");
+                                                    } else if (doesOrderNeedFix(order, carrier)) {
+                                                        status = "needs-fix";
+                                                        statusColor = "amber";
+                                                        statusText = t("assign.needsFix");
+                                                    }
+
+                                                    const handleRowClick = () => {
+                                                        if (isReady) toggleReadySelection(order.id);
+                                                    };
+
+                                                    return (
+                                                        <motion.tr
+                                                            key={order.id}
+                                                            initial={{ opacity: 0, y: 4 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            className={cn(
+                                                                "hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors",
+                                                                isChecked && "bg-primary/5 dark:bg-primary/10"
+                                                            )}
+                                                        >
+                                                            <td className="px-4 py-3">
+                                                                {isReady ? (
+                                                                    <Checkbox
+                                                                        checked={isChecked}
+                                                                        onCheckedChange={() => toggleReadySelection(order.id)}
+                                                                    />
+                                                                ) : null}
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="font-bold text-primary">{order.orderNumber}</span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="text-slate-700 dark:text-slate-200">{order.customerName}</span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="text-slate-600 dark:text-slate-300">{order.phoneNumber}</span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="text-slate-500 dark:text-slate-400 text-xs max-w-[200px] truncate block">
+                                                                    {order.address}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span
+                                                                    className={cn(
+                                                                        "px-3 py-1 rounded-full text-xs font-bold",
+                                                                        statusColor === "emerald"
+                                                                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                                                            : statusColor === "amber"
+                                                                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                                                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                                                    )}
+                                                                >
+                                                                    {statusText}
+                                                                </span>
+                                                            </td>
+                                                        </motion.tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -683,12 +781,15 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                     </div>
                                 ) : (
                                     <div className="table-container border rounded-xl bg-white dark:bg-slate-950 overflow-hidden shadow-sm">
-                                        <div className="max-h-[500px] overflow-y-auto">
+                                        <div className="max-h-[400px] overflow-y-auto">
                                             <table className="w-full text-sm text-left overflow-y-auto">
                                                 <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 border-b">
                                                     <tr>
                                                         <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
                                                             {t("field.orderNumber")}
+                                                        </th>
+                                                        <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
+                                                            {t("status")}
                                                         </th>
                                                         <th className="text-nowrap px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 min-w-[150px] bg-slate-100/50 dark:bg-slate-800/50">
                                                             {t("field.address")} ({t("common.original")})
@@ -753,6 +854,11 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                                 <td className="px-4 py-3 align-top">
                                                                     <span className="font-bold text-primary block mt-2 text-nowrap">{order.orderNumber}</span>
                                                                     {apiErr && <span className="text-[10px] text-red-600 bg-red-100 px-1.5 py-0.5 rounded mt-1 inline-block">{apiErr}</span>}
+                                                                </td>
+                                                                <td className="px-4 py-3 align-top">
+                                                                    <span className="px-3 py-1 text-nowrap bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-full text-xs font-bold">
+                                                                        {t("assign.needsFix")}
+                                                                    </span>
                                                                 </td>
                                                                 <td className="px-4 py-3 align-top bg-slate-50/30 dark:bg-slate-900/30">
                                                                     <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 mt-1">
@@ -901,59 +1007,67 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                         )}
                     </div>
 
-                    {/* Carrier Selection */}
-                    <div className="space-y-3">
-                        <Label className="text-sm font-bold text-slate-700 dark:text-slate-200">
-                            {t("assign.requiredCarrier")} <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                            {['NONE', ...shippingCompanies.map(c => c.provider?.toUpperCase())].map(providerCode => {
-                                const isSelected = carrier === providerCode;
-                                return (
-                                    <button
-                                        key={providerCode}
-                                        onClick={() => setCarrier(providerCode)}
-                                        className={cn(
-                                            "py-2.5 rounded-xl border-2 text-xs font-bold transition-all",
-                                            isSelected ? "border-primary bg-primary/10 text-primary" : "border-slate-200 text-slate-500 hover:border-slate-300"
-                                        )}
+                    {/* Footer: Carrier Selection + Actions */}
+                    <div className="flex flex-col gap-4 pt-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-end">
+                            <div className="space-y-2">
+                                <Label className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                                    {t("assign.requiredCarrier")} <span className="text-red-500">*</span>
+                                </Label>
+                                <Select value={carrier} onValueChange={setCarrier}>
+                                    <SelectTrigger className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                        <SelectValue placeholder={t("select") || "Select..."} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="NONE">NONE</SelectItem>
+                                        {shippingCompanies.map(c => {
+                                            const providerCode = c.provider?.toUpperCase();
+                                            return (
+                                                <SelectItem key={providerCode} value={providerCode}>
+                                                    {providerCode}
+                                                </SelectItem>
+                                            );
+                                        })}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex flex-wrap gap-2 justify-end">
+                                <Button
+                                    variant="outline"
+                                    onClick={onClose}
+                                    disabled={loading || updating}
+                                    className="w-full sm:w-auto"
+                                >
+                                    {t("common.cancel")}
+                                </Button>
+
+                                {needsFixOrders.length > 0 && (
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.97 }}
+                                        onClick={submitFixes}
+                                        disabled={updating}
+                                        type="button"
+                                        className="h-10 px-5 flex items-center gap-2 text-xs font-bold text-white rounded-xl transition-all duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+                                        style={{
+                                            background: `linear-gradient(135deg, rgb(var(--primary-from, 103, 99, 175)), rgb(var(--primary-to, 80, 76, 144)))`,
+                                            boxShadow: `0 4px 14px rgb(var(--primary-shadow, 103, 99, 175) / 0.4)`,
+                                        }}
                                     >
-                                        {providerCode}
-                                    </button>
-                                );
-                            })}
+                                        {updating ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                                        {updating ? t("common.saving") : t("common.saveMissingData")}
+                                    </motion.button>
+                                )}
+
+                                <Button
+                                    onClick={handleAssign}
+                                    disabled={loading || updating || !carrier || selectedReadyOrders.length === 0 || needsFixOrders.length > 0}
+                                    className="w-full sm:w-auto bg-primary"
+                                >
+                                    {loading ? t("assign.assigning") : t("assign.assignOrdersCount", { count: selectedReadyOrders.length })}
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Footer Actions */}
-                    <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4 mb-2 sm:mb-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
-                        <Button variant="outline" onClick={onClose} disabled={loading || updating} className="w-full sm:w-auto">
-                            {t("common.cancel")}
-                        </Button>
-
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={submitFixes}
-                            disabled={updating || needsFixOrders.length === 0}
-                            type="button"
-                            className="h-10 px-5 flex items-center gap-2 text-xs font-bold text-white rounded-xl transition-all duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
-                            style={{
-                                background: `linear-gradient(135deg, rgb(var(--primary-from, 103, 99, 175)), rgb(var(--primary-to, 80, 76, 144)))`,
-                                boxShadow: `0 4px 14px rgb(var(--primary-shadow, 103, 99, 175) / 0.4)`,
-                            }}
-                        >
-                            {updating ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                            {updating ? t("common.saving") : t("common.saveMissingData")}
-                        </motion.button>
-
-                        <Button
-                            onClick={handleAssign}
-                            disabled={loading || updating || !carrier || selectedReadyOrders.length === 0 || needsFixOrders.length > 0}
-                            className="w-full sm:w-auto bg-primary"
-                        >
-                            {loading ? t("assign.assigning") : t("assign.assignOrdersCount", { count: selectedReadyOrders.length })}
-                        </Button>
                     </div>
                 </div>
             </DialogContent>
@@ -964,30 +1078,44 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
 // --- Small UI Sub-components ---
 
 function StatCard({ title, count, subtitle, icon, tone = "neutral" }) {
-    const toneClass =
-        tone === "success"
-            ? "border-emerald-200/35 bg-emerald-500/20"
-            : tone === "warning"
-                ? "border-amber-200/35 bg-amber-500/20"
-                : tone === "danger"
-                    ? "border-rose-200/35 bg-red-500/20"
-                    : "border-white/25 bg-white/10";
+    const toneClasses = {
+        success: "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800",
+        warning: "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800",
+        danger: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800",
+        neutral: "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700",
+    };
+
+    const iconBgClasses = {
+        success: "bg-emerald-500 text-white",
+        warning: "bg-amber-500 text-white",
+        danger: "bg-red-500 text-white",
+        neutral: "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400",
+    };
+
+    const textColorClasses = {
+        success: "text-emerald-700 dark:text-emerald-400",
+        warning: "text-amber-700 dark:text-amber-400",
+        danger: "text-red-700 dark:text-red-400",
+        neutral: "text-slate-700 dark:text-slate-300",
+    };
 
     return (
         <div
             className={cn(
-                "rounded-xl border p-2.5 sm:p-3 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]",
-                toneClass,
+                "rounded-2xl border p-5 flex items-center gap-4",
+                // toneClasses[tone],
             )}
         >
-            <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
+            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", iconBgClasses[tone])}>
                 {icon}
-                <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white/80 leading-tight">{title}</span>
             </div>
-            <p className="text-xl sm:text-2xl font-black text-white tabular-nums">{count}</p>
-            {subtitle != null && subtitle !== "" && (
-                <p className="text-[10px] font-semibold text-white/65 mt-0.5 tabular-nums">{subtitle}</p>
-            )}
+            <div className="flex flex-col">
+                <span className="text-[12px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{title}</span>
+                <p className="text-3xl font-black text-slate-900 dark:text-white tabular-nums">{count}</p>
+                {subtitle != null && subtitle !== "" && (
+                    <p className="text-[10px] font-semibold text-slate-400 mt-0.5 tabular-nums">{subtitle}</p>
+                )}
+            </div>
         </div>
     );
 }
@@ -998,16 +1126,19 @@ function TabButton({ active, onClick, label, count, isWarning }) {
             type="button"
             onClick={onClick}
             className={cn(
-                "min-w-0 flex-1 sm:flex-none px-2 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all inline-flex items-center justify-center gap-1.5 sm:gap-2",
-                active ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
-                isWarning && active ? "border-amber-500 text-amber-600 dark:text-amber-500" : "",
+                "flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all inline-flex items-center justify-center gap-2",
+                active 
+                    ? "bg-white dark:bg-slate-700 text-primary shadow-sm" 
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200",
             )}
         >
-            <span className="truncate">{label}</span>
+            <span>{label}</span>
             <span
                 className={cn(
-                    "shrink-0 text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded-full tabular-nums",
-                    active ? "bg-primary/10 text-primary" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400",
+                    "shrink-0 text-xs px-2 py-0.5 rounded-full tabular-nums font-bold",
+                    active 
+                        ? "bg-primary text-white" 
+                        : "bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200",
                 )}
             >
                 {count}

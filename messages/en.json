@@ -1854,7 +1854,10 @@
         "zone": "Select a zone",
         "district": "Select a district",
         "email": "Enter email address"
-      }
+      },
+      "status": "the condition",
+      "select": "Choose the shipping company..",
+      "selectAll": "Select All"
     },
     "print": {
       "printSource": "Print Source",

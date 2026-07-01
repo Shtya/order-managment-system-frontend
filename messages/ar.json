@@ -428,7 +428,7 @@
     "sections": "الأقسام",
     "subscriptions": "الاشتراكات",
     "profile": "الملف الشخصي",
-    "callCenter": "كول سنتر",
+    "callCenter": "إسناد الطلبات",
     "moderator": "مودريتور",
     "orders-assign-to-you": "الطلبات المسندة إليك",
     "productSuggestions": "اقتراح المنتجات"
@@ -5800,10 +5800,10 @@
   "callCenter": {
     "breadcrumb": {
       "home": "الرئيسية",
-      "callCenter": "مركز الاتصال",
+      "callCenter": "إسناد الطلبات",
       "orders": "الطلبات"
     },
-    "title": "مركز الاتصال",
+    "title": "إسناد الطلبات",
     "stats": {
       "new": "الطلبات الجديدة",
       "confirmed": "المؤكدة اليوم",
@@ -5820,8 +5820,8 @@
     "emptyTitle": "لم يتم العثور على موظفين",
     "emptySubtitle": "لا توجد سجلات تطابق بحثك",
     "tabs": {
-      "manual": "توزيع يدوي",
-      "automatic": "توزيع تلقائي"
+      "manual": "الإسناد اليدوي",
+      "automatic": "قواعد الإسناد الآلي"
     },
     "labels": {
       "searchPlaceholder": "البحث عن طريق اسم القاعدة أو الوصف...",
@@ -5838,11 +5838,11 @@
     },
     "autoAssign": {
       "toolbar": {
-        "addRole": "إضافة قاعدة",
+        "addRole": "إنشاء قاعدة إسناد",
         "export": "تصدير"
       },
       "strategy": {
-        "roundRobin": "توزيع عادل",
+        "roundRobin": "إسناد عادل",
         "leastActiveOrders": "الأقل ضغطاً"
       },
       "days": {
@@ -5857,10 +5857,10 @@
       "form": {
         "name": "اسم القاعدة",
         "description": "الوصف",
-        "priority": "الأولوية",
+        "priority": "أولوية التشغيل",
         "isActive": "نشط",
         "ruleType": "نوع القاعدة",
-        "strategy": "استراتيجية التوزيع",
+        "strategy": "استراتيجية الإسناد",
         "products": "اختر المنتجات",
         "cities": "اختر المدن",
         "stores": "اختر المتاجر",
@@ -5871,14 +5871,16 @@
         "maxAmount": "الحد الأقصى للمبلغ",
         "startTime": "وقت البدء",
         "endTime": "وقت الانتهاء",
-        "weekDays": "أيام الأسبوع",
+        "weekDays": "أيام تطبيق القاعدة",
         "weekDaysNote": "إذا لم يتم اختيار أي أيام، سيتم تفعيل جميع الأيام.",
         "selectAll": "اختيار الكل",
         "deselectAll": "إلغاء اختيار الكل",
         "activeFrom": "نشط من",
         "activeUntil": "نشط حتى",
         "save": "حفظ القاعدة",
-        "cancel": "إلغاء"
+        "cancel": "إلغاء",
+        "timeWindow": "ساعات عمل القاعدة",
+        "dayWindow": "مدة عمل القاعدة"
       },
       "paymentStatuses": {
         "pending": "قيد الانتظار",
@@ -5909,7 +5911,7 @@
       "stats": {
         "total": "إجمالي القواعد",
         "active": "القواعد النشطة",
-        "manual": "يدوي",
+        "manual": "بدون شروط",
         "product": "منتج",
         "city": "مدينة",
         "store": "متجر",
@@ -5920,9 +5922,9 @@
       "columns": {
         "name": "اسم القاعدة",
         "type": "نوع القاعدة",
-        "strategy": "الاستراتيجية",
+        "strategy": "استراتيجية الإسناد",
         "status": "الحالة",
-        "priority": "الأولوية",
+        "priority": "أولوية التشغيل",
         "employees": "الموظفون المستهدفون",
         "actions": "خيارات"
       },

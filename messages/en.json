@@ -428,7 +428,7 @@
     "sections": "Sections",
     "subscriptions": "Subscriptions",
     "profile": "Profile",
-    "callCenter": "Call Center",
+    "callCenter": "Order Assignment",
     "moderator": "Moderator",
     "orders-assign-to-you": "Orders Assigned to You",
     "productSuggestions": "Product Suggestions"
@@ -5806,10 +5806,10 @@
   "callCenter": {
     "breadcrumb": {
       "home": "Home",
-      "callCenter": "Call Center",
+      "callCenter": "Order Assignment",
       "orders": " Orders"
     },
-    "title": "Call Center",
+    "title": "Order Assignment",
     "stats": {
       "new": "New Orders",
       "confirmed": "Confirmed Today",
@@ -5827,7 +5827,7 @@
     "emptySubtitle": "No records match your search criteria",
     "tabs": {
       "manual": "Manual Assignment",
-      "automatic": "Automatic Assignment"
+      "automatic": "Automated Routing Rules"
     },
     "labels": {
       "searchPlaceholder": "Search by rule name or description...",
@@ -5838,13 +5838,13 @@
       "emptyTitle": "No rules found",
       "emptySubtitle": "Try adding a new rule to get started",
       "ruleType": "Rule Type",
-      "strategy": "Strategy",
+      "strategy": "Assignment Strategy",
       "status": "Status",
       "date": "Created Date"
     },
     "autoAssign": {
       "toolbar": {
-        "addRole": "Add Role",
+        "addRole": "Create Assignment Rule",
         "export": "Rules"
       },
       "strategy": {
@@ -5863,7 +5863,7 @@
       "form": {
         "name": "Rule Name",
         "description": "Description",
-        "priority": "Priority",
+        "priority": "Execution Priority",
         "isActive": "Active",
         "ruleType": "Rule Type",
         "strategy": "Assignment Strategy",
@@ -5877,14 +5877,16 @@
         "maxAmount": "Maximum Amount",
         "startTime": "Start Time",
         "endTime": "End Time",
-        "weekDays": "Days of Week",
+        "weekDays": "Rule Working Days",
         "weekDaysNote": "If no days are selected, all days are enabled.",
         "selectAll": "Select All",
         "deselectAll": "Deselect All",
         "activeFrom": "Active From",
         "activeUntil": "Active Until",
         "save": "Save Rule",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "timeWindow": "Rule Operating Hours",
+        "dayWindow": "Rule Validity Period"
       },
       "paymentStatuses": {
         "pending": "Pending",
@@ -5915,7 +5917,7 @@
       "stats": {
         "total": "Total Rules",
         "active": "Active Rules",
-        "manual": "Manual",
+        "manual": "No Conditions",
         "product": "Product",
         "city": "City",
         "store": "Store",
@@ -5926,9 +5928,9 @@
       "columns": {
         "name": "Rule Name",
         "type": "Rule Type",
-        "strategy": "Strategy",
+        "strategy": "Assignment Strategy",
         "status": "Status",
-        "priority": "Priority",
+        "priority": "Execution Priority",
         "employees": "Target Employees",
         "actions": "Actions"
       },

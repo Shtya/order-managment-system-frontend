@@ -37,12 +37,32 @@ export function OrderPropertySelector({ open, onOpenChange, onSelect }) {
     { id: "allowOpenPackage", label: t("allowOpenPackage"), icon: Activity, example: t("examples.allowOpenPackage"), path: "allowOpenPackage" },
     {
         id: "items", label: t("items"), icon: Package, children: [
-            { id: "items[0].productName", label: t("productName"), icon: Package, example: t("examples.productName"), path: "items[0].productName" },
-            { id: "items[0].sku", label: t("sku"), icon: Hash, example: t("examples.sku"), path: "items[0].sku" },
+            { id: "items[].variant.product.name", label: t("productName"), icon: Package, example: t("examples.productName"), path: "items[].variant.product.name" },
+            { id: "items[].variant.sku", label: t("sku"), icon: Hash, example: t("examples.sku"), path: "items[].variant.sku" },
+            { id: "items[].quantity", label: t("quantity"), icon: Package, example: t("examples.quantity"), path: "items[].quantity" },
+            { id: "iitems[].unitPrice", label: t("price"), icon: DollarSign, example: t("examples.price"), path: "iitems[].unitPrice" },
+            { id: "items[].unitCost", label: t("unitCost"), icon: DollarSign, example: t("examples.unitCost"), path: "items[].unitCost" },
+            { id: "items[].lineTotal", label: t("lineTotal"), icon: DollarSign, example: t("examples.lineTotal"), path: "items[].lineTotal" }
+        ]
+    },
+    {
+        id: "items", label: t("firstitems"), icon: Package, children: [
+            { id: "items[0].variant.product.name", label: t("productName"), icon: Package, example: t("examples.productName"), path: "items[0].variant.product.name" },
+            { id: "items[0].variant.sku", label: t("sku"), icon: Hash, example: t("examples.sku"), path: "items[0].variant.sku" },
             { id: "items[0].quantity", label: t("quantity"), icon: Package, example: t("examples.quantity"), path: "items[0].quantity" },
-            { id: "items[0].price", label: t("price"), icon: DollarSign, example: t("examples.price"), path: "items[0].price" },
+            { id: "iitems[0].unitPrice", label: t("price"), icon: DollarSign, example: t("examples.price"), path: "iitems[0].unitPrice" },
             { id: "items[0].unitCost", label: t("unitCost"), icon: DollarSign, example: t("examples.unitCost"), path: "items[0].unitCost" },
             { id: "items[0].lineTotal", label: t("lineTotal"), icon: DollarSign, example: t("examples.lineTotal"), path: "items[0].lineTotal" }
+        ]
+    },
+    {
+        id: "items", label: t("lastitems"), icon: Package, children: [
+            { id: "items[-1].variant.product.name", label: t("productName"), icon: Package, example: t("examples.productName"), path: "items[-1].variant.product.name" },
+            { id: "items[-1].variant.sku", label: t("sku"), icon: Hash, example: t("examples.sku"), path: "items[-1].variant.sku" },
+            { id: "items[-1].quantity", label: t("quantity"), icon: Package, example: t("examples.quantity"), path: "items[-1].quantity" },
+            { id: "iitems[-1].unitPrice", label: t("price"), icon: DollarSign, example: t("examples.price"), path: "iitems[-1].unitPrice" },
+            { id: "items[-1].unitCost", label: t("unitCost"), icon: DollarSign, example: t("examples.unitCost"), path: "items[-1].unitCost" },
+            { id: "items[-1].lineTotal", label: t("lineTotal"), icon: DollarSign, example: t("examples.lineTotal"), path: "items[-1].lineTotal" }
         ]
     }
 ]; 

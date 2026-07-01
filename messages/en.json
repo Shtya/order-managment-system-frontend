@@ -10847,6 +10847,7 @@
           "changeTemplate": "Change Template",
           "fillVariables": "Fill Variables",
           "fillVariablesDesc": "Enter static values or choose dynamic fields from the order",
+          "maxLengthNote": "Note: All variable values are automatically truncated to 30 characters, removing words from the end first",
           "locationHeader": "Location Header",
           "locationName": "Location Name",
           "locationAddress": "Location Address",
@@ -10941,7 +10942,7 @@
           "deliveredAt": "Delivered At",
           "created_at": "Order Created At",
           "allowOpenPackage": "Allow Open Package",
-          "items": "Products",
+          "items": "All products",
           "productName": "Product Name",
           "sku": "SKU",
           "quantity": "Quantity",
@@ -10980,7 +10981,9 @@
             "price": "250",
             "unitCost": "250",
             "lineTotal": "500"
-          }
+          },
+          "firstitems": "First product",
+          "lastitems": "Last product"
         },
         "runPanel": {
           "title": "Run Information",

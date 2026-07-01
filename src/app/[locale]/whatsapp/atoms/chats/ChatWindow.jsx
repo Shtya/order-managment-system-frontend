@@ -115,6 +115,14 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         scrollRef
     } = useConversation();
 
+    const [showInteractiveModal, setShowInteractiveModal] = useState(false);
+    const [showLocationRequestModal, setShowLocationRequestModal] = useState(false);
+    
+    const [showContactModal, setShowContactModal] = useState(false);
+    const [showLocationModal, setShowLocationModal] = useState(false);
+    const [showListModal, setShowListModal] = useState(false);
+    const [showTemplateModal, setShowTemplateModal] = useState(false);
+
     const locale = useLocale();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [localSearch, setLocalSearch] = useState("");
@@ -318,12 +326,31 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     return (
         <div className="flex-1 flex flex-col h-full whatsapp-wallpaper overflow-hidden relative">
             <MediaPreviewOverlay />
-            <InteractiveMessageModal />
-            <LocationRequestModal />
-            <ContactModal />
-            <LocationModal />
-            <ListMessageModal />
-            <TemplateMessageModal selectedAccount={selectedAccount} />
+            <InteractiveMessageModal 
+                open={showInteractiveModal}
+                onOpenChange={setShowInteractiveModal}
+            />
+            <LocationRequestModal 
+                open={showLocationRequestModal}
+                onOpenChange={setShowLocationRequestModal}
+            />
+            <ContactModal 
+                open={showContactModal}
+                onOpenChange={setShowContactModal}
+            />
+            <LocationModal 
+                open={showLocationModal}
+                onOpenChange={setShowLocationModal}
+            />
+            <ListMessageModal 
+                open={showListModal}
+                onOpenChange={setShowListModal}
+            />
+            <TemplateMessageModal 
+                selectedAccount={selectedAccount}
+                open={showTemplateModal}
+                onOpenChange={setShowTemplateModal}
+            />
 
             {/* Filter Bar (Animated) */}
             {isFilterOpen && (
@@ -549,6 +576,12 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                 replyTo={replyTo}
                 onCancelReply={() => setReplyTo(null)}
                 onScrollToMessage={scrollToMessage}
+                setShowInteractiveModal={setShowInteractiveModal}
+                setShowLocationRequestModal={setShowLocationRequestModal}
+                setShowContactModal={setShowContactModal}
+                setShowLocationModal={setShowLocationModal}
+                setShowListModal={setShowListModal}
+                setShowTemplateModal={setShowTemplateModal}
             />
 
             <CustomerModal

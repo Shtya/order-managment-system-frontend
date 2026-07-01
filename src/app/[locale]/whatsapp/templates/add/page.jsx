@@ -214,7 +214,8 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     const tTpl = useTranslations("whatsApp.templates");
     const tForm = useTranslations("whatsApp.templates.form");
     const tCommon = useTranslations("common");
-
+    const [accounts, setAccounts] = useState([]);
+    const [loadAccounts, setLoadAccounts] = useState(true);
     const categories = useMemo(() => CATEGORIES_STATIC(tTpl), [tTpl]);
 
     const { settings } = useOrdersSettings();
@@ -523,7 +524,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     // Derived Body Text for Preview (especially for Authentication)
     const getPreviewBody = useCallback(() => {
         if (templateData.subcategory === "AUTHENTICATION_OTP") {
-            let body = tForm("authOtpBody", { "otp":"123456"  });
+            let body = tForm("authOtpBody", { "otp": "123456" });
 
             if (templateData.addSecurityRecommendation) {
                 body += tForm("authOtpSecurity");
@@ -781,37 +782,48 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                     ]}
                     buttons={
                         <>
-                            {!isEdit && !superAdmin && (
-                                <>
-                                    <Button_
-                                        size="sm"
-                                        label={tForm("internalTemplates")}
-                                        tone="secondary"
-                                        variant="outline"
-                                        onClick={() => setIsInternalDialogOpen(true)}
-                                        icon={<Layout size={18} />}
-                                        className="border-slate-200 dark:border-slate-800"
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2">
+                                {!isEdit && !superAdmin && (
+                                    <>
+                                        <Button_
+                                            size="sm"
+                                            label={tForm("internalTemplates")}
+                                            tone="secondary"
+                                            variant="outline"
+                                            onClick={() => setIsInternalDialogOpen(true)}
+                                            icon={<Layout size={18} />}
+                                            className="border-slate-200 dark:border-slate-800"
+                                        />
+                                        <Button_
+                                            size="sm"
+                                            label={tForm("importMeta")}
+                                            tone="secondary"
+                                            variant="outline"
+                                            onClick={() => setIsMetaDialogOpen(true)}
+                                            icon={<Facebook size={18} />}
+                                            className="border-slate-200 dark:border-slate-800"
+                                            disabled={!loadAccounts && accounts.length === 0}
+                                        />
+                                        </>
+                                        
+                                    )}
+                                <Button_
+                                    size="sm"
+                                    label={superAdmin ? (isEdit ? tForm("update") : tForm("create")) : (isEdit ? tForm("submitUpdate") : tForm("submitCreate"))}
+                                    tone="primary"
+                                    variant="solid"
+                                    disabled={(!loadAccounts && accounts.length === 0) || isSubmitting}
+                                    onClick={handleSubmit(onSubmit)}
+                                    icon={isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                                     />
-                                    <Button_
-                                        size="sm"
-                                        label={tForm("importMeta")}
-                                        tone="secondary"
-                                        variant="outline"
-                                        onClick={() => setIsMetaDialogOpen(true)}
-                                        icon={<Facebook size={18} />}
-                                        className="border-slate-200 dark:border-slate-800"
-                                    />
-                                </>
-                            )}
-                            <Button_
-                                size="sm"
-                                label={superAdmin ? (isEdit ? tForm("update") : tForm("create")) : (isEdit ? tForm("submitUpdate") : tForm("submitCreate"))}
-                                tone="primary"
-                                variant="solid"
-                                disabled={isSubmitting}
-                                onClick={handleSubmit(onSubmit)}
-                                icon={isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
-                            />
+                                    </div>
+                                {!loadAccounts && accounts.length === 0 && (
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                        {tForm("noAccountsInfo")}
+                                    </p>
+                                )}
+                            </div>
                         </>
                     }
                 />
@@ -839,6 +851,8 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                     value={field.value || ""}
                                                     onChange={field.onChange}
                                                     label={tForm("accountLabel")}
+                                                    onLoadChange={setLoadAccounts}
+                                                    onLoaded={setAccounts}
                                                 />
                                             )}
                                         />

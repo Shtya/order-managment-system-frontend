@@ -20,6 +20,7 @@ export const ConversationProvider = ({ children }) => {
 
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [accounts, setAccounts] = useState([]);
+    const [accountsLoading, setAccountsLoading] = useState(false);
     const [replyTo, setReplyTo] = useState(null);
     const { subscribe } = useSocket();
     const [selectedConversation, setSelectedConversation] = useState(null);
@@ -29,36 +30,7 @@ export const ConversationProvider = ({ children }) => {
     const [conversations, setConversations] = useState([]);
     const [messages, setMessages] = useState([]);
     const [pendingMedia, setPendingMedia] = useState(null);
-    const [showInteractiveModal, setShowInteractiveModal] = useState(false);
-    
-    
-    const [showLocationRequestModal, setShowLocationRequestModal] = useState(false);
-    const [locationRequestBody, setLocationRequestBody] = useState("");
-    const [showContactModal, setShowContactModal] = useState(false);
-    const [showLocationModal, setShowLocationModal] = useState(false);
-    const [showListModal, setShowListModal] = useState(false);
     const [cursor, setCursor] = useState(null);
-    const [listMessage, setListMessage] = useState({
-        headerType: "NONE",
-        headerText: "",
-        headerUrl: "",
-        bodyText: "",
-        footerText: "",
-        menuLabel: t("chooseOption"),
-        sections: [{
-            title: "",
-            rows: []
-        }]
-    });
-    const [showTemplateModal, setShowTemplateModal] = useState(false);
-    const [templateMessage, setTemplateMessage] = useState({
-        templateId: null,
-        templateName: "",
-        templateData: null,
-        headerVariables: {},
-        bodyVariables: {},
-        buttonVariables: {}
-    });
 
     // Real Data States
     const [isLoading, setIsLoading] = useState(false);
@@ -79,12 +51,15 @@ export const ConversationProvider = ({ children }) => {
     const previousConversationId = useRef(null);
 
     const fetchAccounts = useCallback(async () => {
+        setAccountsLoading(true);
         try {
             const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1, isActive: "true" } });
             const values = Array.isArray(res.data?.records) ? res.data.records : []
             setAccounts(values);
         } catch (e) {
             console.error("Failed to fetch accounts:", e);
+        } finally {
+            setAccountsLoading(false);
         }
     }, []);
 
@@ -701,6 +676,7 @@ export const ConversationProvider = ({ children }) => {
             selectedAccount,
             setSelectedAccount,
             accounts,
+            accountsLoading,
             showDetails,
             setShowDetails,
             toggleDetails,
@@ -715,24 +691,6 @@ export const ConversationProvider = ({ children }) => {
             handleReaction,
             pendingMedia,
             setPendingMedia,
-            showInteractiveModal,
-            setShowInteractiveModal,
-            showLocationRequestModal,
-            setShowLocationRequestModal,
-            locationRequestBody,
-            setLocationRequestBody,
-            showContactModal,
-            setShowContactModal,
-            showLocationModal,
-            setShowLocationModal,
-            showListModal,
-            setShowListModal,
-            listMessage,
-            setListMessage,
-            showTemplateModal,
-            setShowTemplateModal,
-            templateMessage,
-            setTemplateMessage,
             isLoading,
             hasMore,
             search,

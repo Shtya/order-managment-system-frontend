@@ -10560,6 +10560,7 @@
         "accountPlaceholder": "Select an account",
         "internalTemplates": "System templates",
         "importMeta": "Import from Meta",
+        "noAccountsInfo": "Please add a WhatsApp account first to use these features.",
         "validation": {
           "accountRequired": "WhatsApp account is required",
           "accountIdInvalid": "Select a valid account",

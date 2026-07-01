@@ -47,12 +47,10 @@ const createSchema = (t) =>
             .min(1, t("validation.sectionsRequired"))
     });             
 
-export default function ListMessageModal() {
+export default function ListMessageModal({ open, onOpenChange }) {
     const t = useTranslations("chats");
     const locale = useLocale();
     const {
-        showListModal,
-        setShowListModal,
         handleSendMessage
     } = useConversation();
     
@@ -83,7 +81,7 @@ export default function ListMessageModal() {
     const watchAllFields = watch();
     
     useEffect(() => {
-        if (showListModal) {
+        if (open) {
             reset({
                 headerType: "NONE",
                 headerText: "",
@@ -95,7 +93,7 @@ export default function ListMessageModal() {
             });
             setLocalHeaderMediaFile(null);
         }
-    }, [showListModal, reset, t]);
+    }, [open, reset, t]);
 
     const onSubmit = (data) => {
         handleSendMessage({
@@ -126,11 +124,11 @@ export default function ListMessageModal() {
                 }
             }
         });
-        setShowListModal(false);
+        onOpenChange(false);
     };
 
     return (
-        <Dialog open={showListModal} onOpenChange={setShowListModal}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[900px] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
@@ -189,7 +187,7 @@ export default function ListMessageModal() {
                     <Button_
                         type="button"
                         variant="outline"
-                        onClick={() => setShowListModal(false)}
+                        onClick={() => onOpenChange(false)}
                         label={t("cancel")}
                         className="w-full sm:w-auto"
                     />

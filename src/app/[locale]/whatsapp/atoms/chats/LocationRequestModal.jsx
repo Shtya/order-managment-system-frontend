@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
     Dialog,
     DialogContent,
@@ -18,14 +18,11 @@ import { MapPin } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
 import { FaLocationDot } from "react-icons/fa6";
 
-export default function LocationRequestModal() {
+export default function LocationRequestModal({ open, onOpenChange }) {
     const t = useTranslations("chats");
     const locale = useLocale();
+    const [locationRequestBody, setLocationRequestBody] = useState("");
     const {
-        showLocationRequestModal,
-        setShowLocationRequestModal,
-        locationRequestBody,
-        setLocationRequestBody,
         handleSendMessage
     } = useConversation();
 
@@ -40,12 +37,12 @@ export default function LocationRequestModal() {
                 }
             }
         });
-        setShowLocationRequestModal(false);
+        onOpenChange(false);
         setLocationRequestBody("");
     };
 
     return (
-        <Dialog open={showLocationRequestModal} onOpenChange={setShowLocationRequestModal}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[900px] w-full h-[90vh] md:h-[80vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
             
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
@@ -103,7 +100,7 @@ export default function LocationRequestModal() {
                     <Button_
                         type="button"
                         variant="outline"
-                        onClick={() => setShowLocationRequestModal(false)}
+                        onClick={() => onOpenChange(false)}
                         label={t("cancel")}
                         className="w-full sm:w-auto"
                     />

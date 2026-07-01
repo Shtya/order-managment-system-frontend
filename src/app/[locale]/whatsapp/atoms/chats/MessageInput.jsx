@@ -23,7 +23,7 @@ import {
 import { useConversation } from "./ConversationContext";
 import { useAuth } from "@/context/AuthContext";
 
-export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollToMessage }) {
+export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollToMessage, setShowInteractiveModal, setShowLocationRequestModal, setShowContactModal, setShowLocationModal, setShowListModal, setShowTemplateModal }) {
     const t = useTranslations("chats");
     const { hasPermission } = useAuth();
     const {
@@ -31,13 +31,8 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
         selectedAccount,
         setSelectedAccount,
         accounts,
-        setPendingMedia,
-        setShowInteractiveModal,
-        setShowLocationRequestModal,
-        setShowContactModal,
-        setShowLocationModal,
-        setShowListModal,
-        setShowTemplateModal
+        accountsLoading,
+        setPendingMedia
     } = useConversation();
     const [text, setText] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
@@ -49,6 +44,8 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
     const textareaRef = useRef(null);
     const fileInputRef = useRef(null);
     const [fileType, setFileType] = useState("");
+
+    const isDisabled = accountsLoading || accounts.length === 0;
 
     const handleActionClick = (type) => {
         if (["image", "video", "document"].includes(type)) {
@@ -119,7 +116,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
     };
 
     const handleSend = () => {
-        if (!text.trim() && !isRecording) return;
+        if (isDisabled || (!text.trim() && !isRecording)) return;
 
         if (isRecording) {
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
@@ -267,8 +264,8 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             />
                             <button
                                 onClick={() => setShowEmoji(!showEmoji)}
-                                className={cn("p-2 hover:bg-accent/50 rounded-full transition-colors", showEmoji && "text-primary bg-muted")}
-                                disabled={!hasPermission("whatsapp.send")}
+                                className={cn("p-2 hover:bg-accent/50 rounded-full transition-colors", showEmoji && "text-primary bg-muted", isDisabled && "opacity-50 cursor-not-allowed")}
+                                disabled={!hasPermission("whatsapp.send") || isDisabled}
                             >
                                 <Smile className="w-6 h-6 text-muted-foreground/60" />
                             </button>
@@ -276,7 +273,10 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             {hasPermission("whatsapp.send") && (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className="p-2 hover:bg-accent/50 rounded-full transition-colors group">
+                                        <button 
+                                            className={cn("p-2 hover:bg-accent/50 rounded-full transition-colors group", isDisabled && "opacity-50 cursor-not-allowed")}
+                                            disabled={isDisabled}
+                                        >
                                             <Plus className="w-6 h-6 text-muted-foreground/60 transition-transform group-data-[state=open]:rotate-45 group-data-[state=open]:text-primary" />
                                         </button>
                                     </DropdownMenuTrigger>
@@ -285,8 +285,8 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                                             {actions.map((action, idx) => (
                                                 <DropdownMenuItem
                                                     key={idx}
-                                                    onClick={() => handleActionClick(action.type)}
-                                                    className="flex items-center gap-3 w-full p-2 hover:bg-accent/50 rounded-lg transition-colors cursor-pointer"
+                                                    onClick={() => !isDisabled && handleActionClick(action.type)}
+                                                    className={cn("flex items-center gap-3 w-full p-2 hover:bg-accent/50 rounded-lg transition-colors cursor-pointer", isDisabled && "opacity-50 cursor-not-allowed pointer-events-none")}
                                                 >
                                                     <action.icon className={cn("w-5 h-5", action.color)} />
                                                     <span className="text-sm font-medium text-foreground">{action.label}</span>
@@ -328,12 +328,12 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             autoFocus
                             onChange={(e) => setText(e.target.value)}
                             placeholder={hasPermission("whatsapp.send") ? t("typeMessage") : t("noPermissionToSend")}
-                            disabled={!hasPermission("whatsapp.send")}
+                            disabled={!hasPermission("whatsapp.send") || isDisabled}
                             className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm max-h-32 py-1 outline-none focus-visible:outline-none! text-foreground placeholder:text-muted-foreground/50 disabled:opacity-50"
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();
-                                    handleSend();
+                                    !isDisabled && handleSend();
                                 }
                             }}
                         />
@@ -347,13 +347,13 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                     )}>
                         <button
                             // onClick={text.trim() || isRecording ? handleSend : startRecording}
-                            onClick={handleSend}
-                            disabled={!hasPermission("whatsapp.send")}
+                            onClick={!isDisabled ? handleSend : () => {}}
+                            disabled={!hasPermission("whatsapp.send") || isDisabled}
                             className={cn(
                                 "px-4 flex items-center justify-center min-w-[80px] transition-colors",
                                 (text.trim() || isRecording) ? "hover:bg-green-700" : "hover:bg-gray-300",
                                 accounts.length > 1 && !isRecording && "border-e border-green-500/30",
-                                !hasPermission("whatsapp.send") && "opacity-50 cursor-not-allowed"
+                                (!hasPermission("whatsapp.send") || isDisabled) && "opacity-50 cursor-not-allowed"
                             )}
                         >
                             <div className="flex flex-col items-center">

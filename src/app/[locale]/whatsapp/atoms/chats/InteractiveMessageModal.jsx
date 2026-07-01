@@ -20,12 +20,10 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-export default function InteractiveMessageModal() {
+export default function InteractiveMessageModal({ open, onOpenChange }) {
     const t = useTranslations("chats");
     const locale = useLocale();
     const {
-        showInteractiveModal,
-        setShowInteractiveModal,
         handleSendMessage,
     } = useConversation();
     const [headerMediaFile, setHeaderMediaFile] = useState(null);
@@ -93,11 +91,11 @@ export default function InteractiveMessageModal() {
 
         reset({});
         setHeaderMediaFile(null);
-        setShowInteractiveModal(false);
+        onOpenChange(false);
     };
 
     return (
-        <Dialog open={showInteractiveModal} onOpenChange={setShowInteractiveModal}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[900px] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
@@ -165,7 +163,7 @@ export default function InteractiveMessageModal() {
                     <Button_
                         type="button"
                         variant="outline"
-                        onClick={() => setShowInteractiveModal(false)}
+                        onClick={() => onOpenChange(false)}
                         label={t("cancel")}
                         className="w-full sm:w-auto"
                     />

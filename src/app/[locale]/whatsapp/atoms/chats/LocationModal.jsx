@@ -27,11 +27,9 @@ const createSchema = (t) =>
         longitude: yup.number().required(t("validation.required") || "Required"),
     });
 
-export default function LocationModal() {
+export default function LocationModal({ open, onOpenChange }) {
     const t = useTranslations("chats");
     const {
-        showLocationModal,
-        setShowLocationModal,
         handleSendMessage
     } = useConversation();
 
@@ -70,7 +68,7 @@ export default function LocationModal() {
                 address: data.address
             }
         });
-        setShowLocationModal(false);
+        onOpenChange(false);
         reset();
     };
 
@@ -92,7 +90,7 @@ export default function LocationModal() {
     };
 
     return (
-        <Dialog open={showLocationModal} onOpenChange={setShowLocationModal}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-4xl w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
@@ -136,7 +134,7 @@ export default function LocationModal() {
                         type="button"
                         variant="outline"
                         onClick={() => {
-                            setShowLocationModal(false);
+                            onOpenChange(false);
                             reset();
                         }}
                         label={t("cancel")}

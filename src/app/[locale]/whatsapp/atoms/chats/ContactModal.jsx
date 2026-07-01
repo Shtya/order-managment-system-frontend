@@ -34,11 +34,9 @@ const createSchema = (t) =>
         country: yup.string().optional(),
     });
 
-export default function ContactModal() {
+export default function ContactModal({ open, onOpenChange }) {
     const t = useTranslations("chats");
     const {
-        showContactModal,
-        setShowContactModal,
         handleSendMessage
     } = useConversation();
 
@@ -88,12 +86,12 @@ export default function ContactModal() {
                 phones: [{ phone: data.phoneNumber, type: "MOBILE" }]
             }]
         });
-        setShowContactModal(false);
+        onOpenChange(false);
         reset();
     };
 
     return (
-        <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-2xl w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3">
@@ -252,7 +250,7 @@ export default function ContactModal() {
                             type="button"
                             variant="outline"
                             onClick={() => {
-                                setShowContactModal(false);
+                                onOpenChange(false);
                                 reset();
                             }}
                             label={t("cancel")}

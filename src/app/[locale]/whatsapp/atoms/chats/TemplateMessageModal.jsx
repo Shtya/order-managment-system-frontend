@@ -34,19 +34,21 @@ import LocationFields from "./LocationFields";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import { MapPin } from "lucide-react";
 
-export default function TemplateMessageModal() {
+export default function TemplateMessageModal({ selectedAccount, open, onOpenChange }) {
     const t = useTranslations("chats");
     const locale = useLocale();
     const {
-        selectedAccount,
-        showTemplateModal,
-        setShowTemplateModal,
-        templateMessage,
-        setTemplateMessage,
-        handleSendMessage,
-        selectedConversation
+        handleSendMessage
     } = useConversation();
 
+     const [templateMessage, setTemplateMessage] = useState({
+        templateId: null,
+        templateName: "",
+        templateData: null,
+        headerVariables: {},
+        bodyVariables: {},
+        buttonVariables: {}
+    });
     const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
 
     const extractVariables = useCallback((text) => {
@@ -238,7 +240,7 @@ export default function TemplateMessageModal() {
                 },
             });
 
-        setShowTemplateModal(false);
+        onOpenChange(false);
         setTemplateMessage({
             templateId: null,
             accountId: null,
@@ -294,7 +296,7 @@ export default function TemplateMessageModal() {
     };
 
     return (
-        <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[900px] w-full h-[95vh] md:h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
@@ -463,7 +465,7 @@ export default function TemplateMessageModal() {
                     <Button_
                         type="button"
                         variant="outline"
-                        onClick={() => setShowTemplateModal(false)}
+                        onClick={() => onOpenChange(false)}
                         label={t("cancel")}
                         className="w-full sm:w-auto"
                     />

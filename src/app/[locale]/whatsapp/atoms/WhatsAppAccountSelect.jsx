@@ -18,7 +18,9 @@ export default function WhatsAppAccountSelect({
     noLabel = false,
     value,
     onChange,
-    allowAll = false
+    allowAll = false,
+    onLoaded,
+    onLoadChange
 }) {
     const t = useTranslations("whatsApp.accounts");
     const [accounts, setAccounts] = useState([]);
@@ -31,12 +33,14 @@ export default function WhatsAppAccountSelect({
 
     const fetchAccounts = useCallback(async () => {
         setAccountsLoading(true);
+        onLoadChange?.(true);
         try {
             const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1, isActive: "true" } });
             const values = Array.isArray(res.data?.records) ? res.data.records : []
             // desc by createdAt
             values.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setAccounts(values);
+            onLoaded?.(values);
             // Only set default if no value is currently selected and allowAll is false
             // if (values.length > 0 && !value && !allowAll) {
             //     onChange?.(values[0].id);
@@ -45,8 +49,9 @@ export default function WhatsAppAccountSelect({
             console.error(e);
         } finally {
             setAccountsLoading(false);
+            onLoadChange?.(false);
         }
-    }, [value, allowAll, onChange]);
+    }, [value, allowAll, onChange, onLoaded]);
 
     // Set default value if it's not already set
     useEffect(() => {

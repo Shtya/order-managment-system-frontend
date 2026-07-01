@@ -672,6 +672,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                     <div>
                                                         <h4 className="text-[10px] md:text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">{tConfig('fillVariables')}</h4>
                                                         <p className="text-[9px] md:text-[10px] text-slate-400 font-bold">{tConfig('fillVariablesDesc')}</p>
+                                                        <p className="text-[9px] md:text-[10px] text-slate-400 font-bold mt-1">{tConfig('maxLengthNote')}</p>
                                                     </div>
 
                                                     {tempValue.templateData?.headerType === 'LOCATION' && (

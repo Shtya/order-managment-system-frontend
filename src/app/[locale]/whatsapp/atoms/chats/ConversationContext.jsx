@@ -31,7 +31,91 @@ export const ConversationProvider = ({ children }) => {
     const [messages, setMessages] = useState([]);
     const [pendingMedia, setPendingMedia] = useState(null);
     const [cursor, setCursor] = useState(null);
+    const [isNearBottom, setIsNearBottom] = useState(true);
 
+    const [currentUnreadCount, setCurrentUnreadCount] = useState(0);
+
+    // Unified function to check isNearBottom
+    const checkIsNearBottom = useCallback(() => {
+        if (!scrollRef.current) return true;
+        return (scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight) <= 200;
+    }, []);
+
+    const markAsRead = useCallback(async (conversationId, onFailIncreaseOne = false) => {
+        if (!conversationId) return;
+
+        // Optimistic update for unread count in the list
+        let previousUnreadCount = 0;
+        setConversations(prev => prev.map(c => {
+            if (c.id === conversationId) {
+                previousUnreadCount = c.unreadCount || 0;
+                return { ...c, unreadCount: 0 };
+            }
+            return c;
+        }));
+
+        try {
+            await api.post("/whatsapp/messages/mark-as-read", { conversationId });
+        } catch (error) {
+            console.error("Failed to mark as read:", error);
+            // On fail increase the one (as requested by user)
+            setConversations(prev => prev.map(c =>
+                c.id === conversationId ? { ...c, unreadCount: previousUnreadCount ? previousUnreadCount : onFailIncreaseOne ? 1 : 0 } : c
+            ));
+        }
+    }, []);
+
+
+    // Scroll handler to check if we enter near bottom area
+    const handleScroll = useCallback(() => {
+        if (!!isAutoScrolling.current) return;
+        const nearBottom = checkIsNearBottom();
+
+        setIsNearBottom(nearBottom);
+        if (!scrollRef.current || !selectedConversation) return;
+
+        const currentConversation = conversations.find(c => c.id === selectedConversation.id);
+
+        if (nearBottom && currentConversation && (currentConversation.unreadCount || 0) > 0) {
+            markAsRead(selectedConversation.id);
+        }
+    }, [selectedConversation, conversations, markAsRead, checkIsNearBottom]);
+
+
+    // Attach scroll listener
+    useEffect(() => {
+        if (!scrollRef.current) return;
+
+        const currentRef = scrollRef.current;
+        currentRef.addEventListener("scroll", handleScroll);
+        // Check initial state
+        setIsNearBottom(checkIsNearBottom());
+
+        return () => {
+            currentRef.removeEventListener("scroll", handleScroll);
+        };
+    }, [handleScroll, checkIsNearBottom]);
+
+    // Keep currentUnreadCount in sync with selectedConversation
+    useEffect(() => {
+        if (!selectedConversation) {
+            setCurrentUnreadCount(0);
+            return;
+        }
+        const conv = conversations.find(c => c.id === selectedConversation.id);
+        setCurrentUnreadCount(conv?.unreadCount || 0);
+    }, [selectedConversation?.id, conversations]);
+
+    const scrollToBottom = useCallback((behavior = "smooth") => {
+        const element = document.getElementById("messages-end");
+
+        if (element) {
+            element.scrollIntoView({
+                behavior,
+                block: "end",
+            });
+        }
+    }, []);
     // Real Data States
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(false);
@@ -49,7 +133,7 @@ export const ConversationProvider = ({ children }) => {
     const [messageAccount, setMessageAccount] = useState("all");
     const MESSAGES_LIMIT = 50;
     const previousConversationId = useRef(null);
-
+    const isAutoScrolling = useRef(false);
     const fetchAccounts = useCallback(async () => {
         setAccountsLoading(true);
         try {
@@ -77,29 +161,7 @@ export const ConversationProvider = ({ children }) => {
         }
     }, [accounts, settings?.defaultWhatsAppAccountId, selectedAccount]);
 
-    const markAsRead = useCallback(async (conversationId, onFailIncreaseOne = false) => {
-        if (!conversationId) return;
 
-        // Optimistic update for unread count in the list
-        let previousUnreadCount = 0;
-        setConversations(prev => prev.map(c => {
-            if (c.id === conversationId) {
-                previousUnreadCount = c.unreadCount || 0;
-                return { ...c, unreadCount: 0 };
-            }
-            return c;
-        }));
-
-        try {
-            await api.post("/whatsapp/messages/mark-as-read", { conversationId });
-        } catch (error) {
-            console.error("Failed to mark as read:", error);
-            // On fail increase the one (as requested by user)
-            setConversations(prev => prev.map(c =>
-                c.id === conversationId ? { ...c, unreadCount: previousUnreadCount ? previousUnreadCount : onFailIncreaseOne ? 1 : 0 } : c
-            ));
-        }
-    }, []);
 
     const fetchConversations = useCallback(async (searchQuery = "", tab = activeTab, append = false) => {
         setIsLoading(true);
@@ -221,23 +283,50 @@ export const ConversationProvider = ({ children }) => {
             const localId = msg.metadata?.localId;
             const isReaction = msg.messageType === "reaction";
 
+            let shouldMarkAsRead = false;
+            let shouldIncrementUnread = false;
+            let shouldScrollToBottom = false;
             // Update conversations list (last preview, unread count, etc.)
             setConversations(prev => {
                 const existing = prev.find(c => c.id === msg.conversationId);
                 if (!existing) return prev;
 
                 const isConversationOpen = selectedConversation?.id === msg.conversationId;
-                const shouldIncrementUnread = msg.direction === "inbound" && !isConversationOpen;
+
+                if (msg.direction === "inbound") {
+                    if (!isConversationOpen) {
+                        shouldMarkAsRead = false;
+                        shouldIncrementUnread = true;
+                        shouldScrollToBottom = false;
+
+                    } else {
+                        // Open conversation: check scroll position using our unified function
+                        const nearBottom = checkIsNearBottom();
+
+
+                        if (nearBottom) {
+                            // Near bottom: mark as read and scroll
+                            shouldMarkAsRead = true;
+                            shouldIncrementUnread = false;
+                            shouldScrollToBottom = true;
+                        } else {
+                            // Away from bottom: don't mark, increment unread
+                            shouldMarkAsRead = false;
+                            shouldIncrementUnread = true;
+                            shouldScrollToBottom = false;
+                        }
+                    }
+                }
 
                 const updated = {
                     ...existing,
                     lastMessage: msg,
                     lastMessageAt: msg.createdAt,
                     lastMessagePreview: msg.messageType === "text" ? msg.content?.text?.body : (isReaction ? `Reaction: ${msg.content?.reaction?.emoji}` : `[${msg.messageType.toUpperCase()}]`),
-                    unreadCount: shouldIncrementUnread ? (existing.unreadCount || 0) + 1 : (isConversationOpen ? 0 : existing.unreadCount)
+                    unreadCount: shouldIncrementUnread ? (existing.unreadCount || 0) + 1 : (shouldMarkAsRead ? 0 : existing.unreadCount)
                 };
 
-                if (isConversationOpen && msg.direction === "inbound") {
+                if (shouldMarkAsRead) {
                     markAsRead(msg.conversationId, true);
                 }
 
@@ -274,6 +363,19 @@ export const ConversationProvider = ({ children }) => {
                         }
 
                         if (exists) return prevMsgs;
+
+                        if (shouldScrollToBottom && scrollRef.current) {
+                            // Use setTimeout to allow DOM to update
+                            isAutoScrolling.current = { id: msg.id };
+                            setTimeout(() => {
+                                scrollToBottom("instant")
+                                setTimeout(() => {
+                                    if (isAutoScrolling.current?.id === msg.id)
+                                        isAutoScrolling.current = null;
+                                }, 50);
+                            }, 0);
+                        }
+
                         return [...prevMsgs, msg];
                     });
                 }
@@ -312,7 +414,7 @@ export const ConversationProvider = ({ children }) => {
     // Private function to check if media upload is needed for template or interactive messages
     const checkIfMediaUploadNeeded = useCallback((msg) => {
         let mediaInfo = null;
-        
+
         if (msg.type === "template" && msg.template?.components) {
             const headerComponent = msg.template.components.find(c => c.type === "header");
             const param = headerComponent?.parameters?.[0];
@@ -379,7 +481,7 @@ export const ConversationProvider = ({ children }) => {
                 const newId = uploadRes.data.id;
                 const mediaType = mediaInfo.mediaType;
                 const mediaObj = mediaInfo.mediaObj;
-                
+
                 // Cache the local URL with the new media ID
                 if (mediaObj?.localUrl) {
                     cacheMediaUrl(newId, mediaObj.localUrl);
@@ -530,7 +632,7 @@ export const ConversationProvider = ({ children }) => {
                 mediaId = uploadRes.data?.id;
 
                 if (!mediaId) throw new Error("Failed to get media ID from upload");
-                
+
                 // Cache the local URL with the new media ID
                 if (content[msg.type]?.localUrl) {
                     cacheMediaUrl(mediaId, content[msg.type].localUrl);
@@ -710,7 +812,11 @@ export const ConversationProvider = ({ children }) => {
             replyTo,
             setReplyTo,
             prevScrollHeight,
-            scrollRef
+            scrollRef,
+            scrollToBottom,
+            isNearBottom,
+            currentUnreadCount,
+            isAutoScrolling
         }}>
             {children}
         </ConversationContext.Provider>

@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     MoreVertical, Phone, Video,
-    Search, Star, Info, MessageCircleOff, X, Edit, UserMinus, UserCheck, Loader2, ChevronLeft
+    Search, Star, Info, MessageCircleOff, X, Edit, UserMinus, UserCheck, Loader2, ChevronLeft, ChevronDown
 } from "lucide-react";
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
@@ -112,12 +113,15 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         setReplyTo,
         setMobileView,
         prevScrollHeight,
-        scrollRef
+        scrollRef,
+        scrollToBottom,
+        isNearBottom,
+        currentUnreadCount
     } = useConversation();
 
     const [showInteractiveModal, setShowInteractiveModal] = useState(false);
     const [showLocationRequestModal, setShowLocationRequestModal] = useState(false);
-    
+
     const [showContactModal, setShowContactModal] = useState(false);
     const [showLocationModal, setShowLocationModal] = useState(false);
     const [showListModal, setShowListModal] = useState(false);
@@ -148,7 +152,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const lastMessage = useMemo(() => messages[messages.length - 1], [messages.length]);
 
     useEffect(() => {
-        if (!lastMessage?.id) return;
+        if (!lastMessage?.id || lastMessage.direction === "inbound") return;
         scrollToBottom("smooth");
     }, [lastMessage?.id]);
 
@@ -163,12 +167,6 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         }
     };
 
-    const scrollToBottom = (behavior = "smooth") => {
-        const element = document.getElementById("messages-end");
-        if (element) {
-            element.scrollIntoView({ behavior, block: "end" });
-        }
-    };
 
     useLayoutEffect(() => {
         // Reset scroll tracking when conversation changes
@@ -322,31 +320,31 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             </div>
         );
     }
-
+    console.log(isNearBottom)
     return (
         <div className="flex-1 flex flex-col h-full whatsapp-wallpaper overflow-hidden relative">
             <MediaPreviewOverlay />
-            <InteractiveMessageModal 
+            <InteractiveMessageModal
                 open={showInteractiveModal}
                 onOpenChange={setShowInteractiveModal}
             />
-            <LocationRequestModal 
+            <LocationRequestModal
                 open={showLocationRequestModal}
                 onOpenChange={setShowLocationRequestModal}
             />
-            <ContactModal 
+            <ContactModal
                 open={showContactModal}
                 onOpenChange={setShowContactModal}
             />
-            <LocationModal 
+            <LocationModal
                 open={showLocationModal}
                 onOpenChange={setShowLocationModal}
             />
-            <ListMessageModal 
+            <ListMessageModal
                 open={showListModal}
                 onOpenChange={setShowListModal}
             />
-            <TemplateMessageModal 
+            <TemplateMessageModal
                 selectedAccount={selectedAccount}
                 open={showTemplateModal}
                 onOpenChange={setShowTemplateModal}
@@ -478,13 +476,10 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             </div>
 
             {/* Messages Area */}
+            {/* <div className="relative"> */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-2 scroll-smooth relative"
-
-            >
-
-
+                className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-2 scroll-smooth relative">
                 {hasMoreMessages && (
                     <div className="flex justify-center pb-4">
                         <button
@@ -568,7 +563,14 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                 )}
 
                 <div id="messages-end"></div>
+
+                {/* Floating scroll to bottom button */}
             </div>
+            {/* {( 
+                
+                )}
+            </div>
+             */}
 
             {/* Input Area */}
             <MessageInput
@@ -599,6 +601,38 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                     setSelectedConversation(prev => prev.customer?.id === updatedCustomer.id ? { ...prev, customer: updatedCustomer } : prev);
                 }}
             />
+            <AnimatePresence>
+                {!isNearBottom && selectedConversation && (
+                    <motion.button
+                        key="scroll-to-bottom-btn"
+                        onClick={() => scrollToBottom("instant")}
+                        // Cleaned up the manual scale/opacity classes since Framer Motion handles them now
+                        className={cn(
+                            "absolute bottom-24 end-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-lg"
+                        )}
+                        // 1. Define the start, middle, and end animation states
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        // 2. Replicated your exact custom cubic-bezier ease for that snappy pop effect
+                        transition={{
+                            duration: 0.15,
+                            ease: [0.34, 1.56, 0.64, 1]
+                        }}
+                        // Bonus: Simple hover effect to make it feel tactile
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        {currentUnreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-green-500 px-1 text-[10px] font-bold leading-none text-white dark:border-slate-800">
+                                {currentUnreadCount > 99 ? "99+" : currentUnreadCount}
+                            </span>
+                        )}
+
+                        <ChevronDown className="h-5 w-5 text-slate-700 dark:text-slate-200" />
+                    </motion.button>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

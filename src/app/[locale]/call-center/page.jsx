@@ -559,7 +559,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                         />
                                     )}
                                 />
-                                <Label className="text-sm font-semibold">{t("form.startTime")} / {t("form.endTime")}</Label>
+                                <Label className="text-sm font-semibold">{t("form.timeWindow")}</Label>
                             </div>
                             {(watch("timeWindowEnabled") || watch("startTime") || watch("endTime")) && (
                                 <div className="grid grid-cols-2 gap-4">
@@ -603,7 +603,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                         />
                                     )}
                                 />
-                                <Label className="text-sm font-semibold">{t("form.activeFrom")} / {t("form.activeUntil")}</Label>
+                                <Label className="text-sm font-semibold">{t("form.dayWindow")}</Label>
                             </div>
                             {(watch("dateRangeEnabled") || watch("activeFrom") || watch("activeUntil")) && (
                                 <div className="grid grid-cols-2 gap-4">
@@ -976,7 +976,7 @@ function RuleViewDialog({ open, onOpenChange, rule }) {
                     {/* New Fields */}
                     {(rule?.startTime || rule?.endTime) && (
                         <div className="space-y-2 border-t pt-4">
-                            <span className="text-sm text-muted-foreground font-medium block">{t("form.startTime")} / {t("form.endTime")}</span>
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.timeWindow")}</span>
                             <div className="flex items-center gap-4">
                                 <div className="bg-muted/50 p-3 rounded-xl flex-1 border border-border/50">
                                     <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">{t("form.startTime")}</span>
@@ -1005,7 +1005,7 @@ function RuleViewDialog({ open, onOpenChange, rule }) {
 
                     {(rule?.activeFrom || rule?.activeUntil) && (
                         <div className="space-y-2 border-t pt-4">
-                            <span className="text-sm text-muted-foreground font-medium block">{t("form.activeFrom")} / {t("form.activeUntil")}</span>
+                            <span className="text-sm text-muted-foreground font-medium block">{t("form.dayWindow")}</span>
                             <div className="flex items-center gap-4">
                                 <div className="bg-muted/50 p-3 rounded-xl flex-1 border border-border/50">
                                     <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">{t("form.activeFrom")}</span>

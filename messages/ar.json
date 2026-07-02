@@ -10466,6 +10466,7 @@
         "language": "اللغة"
       },
       "form": {
+        "selectLanguage" :"اختر اللغة",
         "addExpirationTime": "إضافة وقت انتهاء صلاحية",
         "title": "إنشاء قالب واتساب",
         "editTitle": "تعديل قالب واتساب",
@@ -10494,6 +10495,11 @@
         "footerText": "نص التذييل",
         "footerTextPlaceholder": "أدخل نص التذييل (اختياري)...",
         "bodyPlaceholder": "أدخل نص الرسالة...",
+        "parameterFormat": {
+          "title": "تنسيق المتغيرات",
+          "positional": "رقمي (مثال: '{{1}}'، '{{2}}')",
+          "named": "('{{name}}'، '{{email}}' :مثال) بالاسم"
+        },
         "variable": "متغير",
         "addVariable": "إضافة متغير",
         "variableSample": "مثال للمتغير {var}",
@@ -10573,8 +10579,13 @@
             "CUSTOM": "مخصص (رد سريع)",
             "VISIT_WEBSITE": "زيارة موقع ويب",
             "PHONE_NUMBER": "اتصال برقم هاتف",
-            "WHATSAPP_CALL": "اتصال عبر واتساب"
+            "WHATSAPP_CALL": "اتصال عبر واتساب",
+            "COPY_CODE": "نسخ الكود"
           },
+          "copyCodeExample": "مثال لـ نسخ الكود",
+          "copyCodeExampleInfo": "لمساعدتنا في مراجعة قالب رسالتك، يرجى إضافة مثال لكود النسخ. لا تستخدم معلومات حقيقية للعملاء.",
+          "copyCodeExamplePlaceholder": "أدخل مثال لكود النسخ (مثل: SAVE20)",
+          "copyCodeExampleRequired": "يرجى إدخال مثال صالح لكود النسخ",
           "urlTypes": {
             "Static": "ثابت",
             "Dynamic": "ديناميكي"
@@ -10625,9 +10636,13 @@
           "mediaHeaderFileRequired": "ارفع ملفاً لهذا النوع من الرأس (صورة أو فيديو أو PDF)",
           "mediaHeaderMustReupload": "اختر ملف الرأس من جديد أو احتفظ بالوسائط المحفوظة مسبقاً",
           "variableSampleRequired": "قيم العيّنات مطلوبة لكل المتغيرات في هذا القسم",
+          "invalidParameterFormatNumber": "يحتوي هذا القالب على متغيرات بتنسيق غير صحيح. يجب أن تكون المتغيرات أرقامًا صحيحة محاطة بقوسين معقوفين مزدوجين، مثل '{{1}}' و'{{2}}'.",
+          "invalidParameterFormatNamed": "يحتوي هذا القالب على متغيرات بتنسيق غير صحيح. يجب أن تتكون أسماء المتغيرات من أحرف إنجليزية صغيرة وأرقام وشرطات سفلية (_) فقط، وأن تكون محاطة بقوسين معقوفين مزدوجين، مثل '{{customer_name}}' و'{{order_id}}'.",
           "urlExampleRequired": "الرابط المثالي مطلوب",
           "urlExampleInvalid": "الرابط المثالي غير صالح",
-          "validityPeriodInvalid": "اختر فترة صلاحية صالحة للرسالة"
+          "validityPeriodInvalid": "اختر فترة صلاحية صالحة للرسالة",
+          "copyCodeExampleRequired": "مثال لكود النسخ مطلوب",
+          "copyCodeExampleMax": "مثال لكود النسخ يجب أن لا يتجاوز 20 حرفًا"
         }
       },
       "messages": {

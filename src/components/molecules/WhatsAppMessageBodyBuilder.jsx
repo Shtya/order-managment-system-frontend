@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 export default function WhatsAppMessageBodyBuilder({
   ref,
   value = "",
+  language,
   onChange,
   label,
   placeholder,
@@ -24,7 +25,7 @@ export default function WhatsAppMessageBodyBuilder({
 }) {
   const t = useTranslations("whatsApp.templates.form");
   const textareaRef = useRef(null);
-
+  const dir = !!language ? language === "ar" ? "rtl" : "ltr" : undefined;
   const displayLabel = label || t("body");
   const displayPlaceholder = placeholder || t("bodyPlaceholder");
 
@@ -93,6 +94,7 @@ export default function WhatsAppMessageBodyBuilder({
           if (textareaRef) textareaRef.current = el;
           if (ref) ref.current = el;
         }}
+        dir={dir}
         placeholder={displayPlaceholder}
         className={cn(
           "min-h-[140px] resize-y bg-white dark:bg-slate-950 border-slate-200 focus:ring-primary/20",

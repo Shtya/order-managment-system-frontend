@@ -20,7 +20,8 @@ import {
     ExternalLink,
     Type,
     Link as LinkIcon,
-    MessageSquare
+    MessageSquare,
+    Copy
 } from "lucide-react";
 import { useConversation } from "./ConversationContext";
 import Button_ from "@/components/atoms/Button";
@@ -41,7 +42,7 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
         handleSendMessage
     } = useConversation();
 
-     const [templateMessage, setTemplateMessage] = useState({
+    const [templateMessage, setTemplateMessage] = useState({
         templateId: null,
         templateName: "",
         templateData: null,
@@ -51,17 +52,22 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
     });
     const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
 
-    const extractVariables = useCallback((text) => {
+    const extractVariables = useCallback((text, type) => {
         if (!text) return [];
-        const matches = extractVariableNames(text, 'number');
-        return [...new Set(matches)].sort((a, b) => Number(a) - Number(b));
+        const matches = extractVariableNames(text, type);
+        const uniqueMatches = [...new Set(matches)];
+        // Only sort numerically if it's positional format
+        if (type === 'positional' || !type) {
+            return uniqueMatches.sort((a, b) => Number(a) - Number(b));
+        }
+        return uniqueMatches;
     }, []);
 
     const handleSelectTemplate = (template) => {
         const config = template.templateConfig || {};
-        const headerVars = extractVariables(config.headerText);
-        const bodyVars = extractVariables(config.bodyText);
-
+        const headerVars = extractVariables(config.headerText, template.templateConfig?.parameterFormat);
+        const bodyVars = extractVariables(config.bodyText, template.templateConfig?.parameterFormat);
+        
         const headerVariables = {};
         headerVars.forEach(num => {
             headerVariables[num] = { type: 'direct', value: '', example: config.headerVariables?.[num] || '' };
@@ -71,19 +77,30 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
         bodyVars.forEach(num => {
             bodyVariables[num] = { type: 'direct', value: '', example: config.bodyVariables?.[num] || '' };
         });
-
+        
+        
         const buttonVariables = {};
         config.buttons?.forEach((btn, idx) => {
             if (btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') {
                 buttonVariables[String(idx)] = {
                     type: 'Dynamic',
+                    buttonType: 'url',
                     value: '',
                     label: btn.text || '',
                     example: btn.url || ''
                 };
+            } else if (btn.type === 'COPY_CODE') {
+                const staticText = template.language === 'ar' ? 'نسخ رمز العرض' : 'Copy offer code';
+                buttonVariables[String(idx)] = {
+                    type: 'COPY_CODE',
+                    buttonType: 'copy_code',
+                    value: '',
+                    label: staticText,
+                    example: btn.example || ''
+                };
             }
         });
-
+        
         setTemplateMessage({
             templateId: template.id,
             accountId: template.accountId,
@@ -92,6 +109,7 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
             templateData: config,
             category: template.category,
             subCategory: template.subCategory,
+            parameterFormat: template?.templateConfig?.parameterFormat,
             headerVariables,
             bodyVariables,
             buttonVariables,
@@ -143,17 +161,18 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
     };
 
     const headerVars = useMemo(() => {
-        return extractVariables(templateMessage.templateData?.headerText);
-    }, [templateMessage.templateData?.headerText, extractVariables]);
+        console.log(templateMessage.templateData?.headerText, templateMessage.parameterFormat)
+        return extractVariables(templateMessage.templateData?.headerText, templateMessage.parameterFormat);
+    }, [templateMessage.templateData?.headerText, extractVariables, templateMessage.parameterFormat]);
 
     const bodyVars = useMemo(() => {
-        return extractVariables(templateMessage.templateData?.bodyText);
-    }, [templateMessage.templateData?.bodyText, extractVariables]);
+        return extractVariables(templateMessage.templateData?.bodyText, templateMessage.parameterFormat);
+    }, [templateMessage.templateData?.bodyText, extractVariables, templateMessage.parameterFormat]);
 
     const buttonVarsIndices = useMemo(() => {
         const buttons = templateMessage.templateData?.buttons || [];
         return buttons
-            .map((btn, idx) => (btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic' ? String(idx) : null))
+            .map((btn, idx) => ((btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') || btn.type === 'COPY_CODE' ? String(idx) : null))
             .filter(Boolean);
     }, [templateMessage.templateData?.buttons]);
 
@@ -185,10 +204,16 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
                 components: [
                     ...(headerVars.length > 0 ? [{
                         type: "header",
-                        parameters: headerVars.map(num => ({
-                            type: "text",
-                            text: templateMessage.headerVariables[num].value
-                        }))
+                        parameters: headerVars.map(num => {
+                            const param = {
+                                type: "text",
+                                text: templateMessage.headerVariables[num].value
+                            };
+                            if (templateMessage.parameterFormat === 'named') {
+                                param.parameter_name = num;
+                            }
+                            return param;
+                        })
                     }] : []),
                     ...(templateMessage.templateData?.headerType === 'IMAGE' || templateMessage.templateData?.headerType === 'VIDEO' || templateMessage.templateData?.headerType === 'DOCUMENT' ? [{
                         type: "header",
@@ -213,20 +238,43 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
                     }] : []),
                     {
                         type: "body",
-                        parameters: bodyVars.map(num => ({
-                            type: "text",
-                            text: templateMessage.bodyVariables[num].value
-                        }))
+                        parameters: bodyVars.map(num => {
+                            const param = {
+                                type: "text",
+                                text: templateMessage.bodyVariables[num].value
+                            };
+                            if (templateMessage.parameterFormat === 'named') {
+                                param.parameter_name = num;
+                            }
+                            return param;
+                        })
                     },
-                    ...buttonVarsIndices.map(idx => ({
-                        type: "button",
-                        sub_type: "url",
-                        index: Number(idx),
-                        parameters: [{
-                            type: "text",
-                            text: templateMessage.buttonVariables[idx].value
-                        }]
-                    }))
+                    ...buttonVarsIndices.map(idx => {
+                        const buttonData = templateMessage.buttonVariables[idx];
+                        const button = templateMessage.templateData?.buttons?.[Number(idx)];
+                        
+                        if (button?.type === 'COPY_CODE' || buttonData?.buttonType === 'copy_code') {
+                            return {
+                                type: "button",
+                                sub_type: "copy_code",
+                                index: Number(idx),
+                                parameters: [{
+                                    type: "coupon_code",
+                                    coupon_code: templateMessage.buttonVariables[idx].value
+                                }]
+                            };
+                        }
+                        
+                        return {
+                            type: "button",
+                            sub_type: "url",
+                            index: Number(idx),
+                            parameters: [{
+                                type: "text",
+                                text: templateMessage.buttonVariables[idx].value
+                            }]
+                        };
+                    })
                 ]
             }
 
@@ -245,13 +293,14 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
             templateId: null,
             accountId: null,
             templateName: "",
+            parameterFormat: "positional",
             templateData: null,
             headerVariables: {},
             bodyVariables: {},
             buttonVariables: {}
         });
     };
-    
+
 
     const renderVariableInput = (type, num, buttonLabel) => {
         const varData = (
@@ -262,15 +311,16 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
 
         const badgeLabel = type === 'header' ? t("header") : type === 'body' ? t("body") : buttonLabel || `${t("button")} ${num}`;
         const isButtonType = type === 'button';
-        
+        const isCopyCode = varData.buttonType === 'copy_code';
+
         const placeholder = varData.example
             ? isButtonType ? varData.example : t("enterValueFor", { example: varData.example })
             : t("enterValue");
 
         return (
             <div key={`${type}-${num}`} className="flex gap-2 md:gap-3 items-start group">
-                <div className="w-12 md:w-[60px] h-9 md:h-10 text-center rounded-lg md:rounded-xl bg-muted border border-border flex items-center justify-center text-[10px] md:text-xs font-black text-muted-foreground/60 shrink-0 shadow-sm">
-                    {isButtonType ? <LinkIcon size={12} className="md:size-[14px]" /> : `{{${num}}}`}
+                <div className="min-w-12 md:min-w-[60px] h-9 md:h-10 text-center rounded-lg md:rounded-xl bg-muted border border-border flex items-center justify-center text-[10px] md:text-xs font-black text-muted-foreground/60 shrink-0 shadow-sm">
+                    {isButtonType ? (isCopyCode ? <Copy size={12} className="md:size-[14px]" /> : <LinkIcon size={12} className="md:size-[14px]" />) : `{{${num}}}`}
                 </div>
                 <div className="flex-1 min-w-0">
                     <Input
@@ -278,7 +328,7 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
                         value={varData.value || ""}
                         onChange={(e) => {
                             let val = e.target.value;
-                            if (isButtonType) {
+                            if (isButtonType && !isCopyCode) {
                                 val = val.replace(/\s/g, '_');
                             }
                             handleVariableChange(type, num, { value: val });
@@ -294,7 +344,7 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
             </div>
         );
     };
-
+    
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[900px] w-full h-[95vh] md:h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
@@ -430,34 +480,31 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
 
                         {/* Preview Section */}
                         <div className="w-full lg:w-[320px] bg-muted/30 flex flex-col items-center p-4 md:p-6 border-t lg:border-t-0 lg:border-s border-border shrink-0">
-                        <div className="w-full flex flex-col items-center">
-                            <p className="text-[10px] md:text-xs font-bold text-muted-foreground/40 uppercase tracking-widest mb-4 md:mb-6">
-                                {t("preview")}
-                            </p>
-                            {templateMessage.templateId ? (
-                                <div className="scale-90 md:scale-95 lg:scale-100 origin-top transform-gpu w-full max-w-[350px] lg:max-w-none">
-                                    <TemplatePreview
-                                        template={{
-                                            ...templateMessage.templateData,
-                                            preview: {
+                            <div className="w-full flex flex-col items-center">
+                                <p className="text-[10px] md:text-xs font-bold text-muted-foreground/40 uppercase tracking-widest mb-4 md:mb-6">
+                                    {t("preview")}
+                                </p>
+                                {templateMessage.templateId ? (
+                                    <div className="scale-90 md:scale-95 lg:scale-100 origin-top transform-gpu w-full max-w-[350px] lg:max-w-none">
+                                        <TemplatePreview
+                                            template={{
                                                 ...templateMessage.templateData,
+                                                headerExample: templateMessage.headerVariables?.["1"]?.value ||  Object.values(templateMessage.headerVariables || {})?.[0]?.value,
                                                 examples: {
-                                                    ...Object.keys(templateMessage.headerVariables).reduce((acc, k) => ({ ...acc, [k]: templateMessage.headerVariables[k].value }), {}),
-                                                    ...Object.keys(templateMessage.bodyVariables).reduce((acc, k) => ({ ...acc, [k]: templateMessage.bodyVariables[k].value }), {}),
+                                                    ...Object.keys(templateMessage.bodyVariables).reduce((acc, k) => ({ ...acc, [k]: templateMessage.bodyVariables[k].value }), {})
                                                 }
-                                            }
-                                        }}
-                                        flat
-                                        forceShowExamples={true}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="w-full aspect-[3/4] max-w-[300px] rounded-2xl border-2 border-dashed border-border flex items-center justify-center bg-card/50">
-                                    <p className="text-xs font-bold text-muted-foreground/40">{t("noPreviewAvailable") || "No Preview"}</p>
-                                </div>
-                            )}
+                                            }}
+                                            flat
+                                            forceShowExamples={true}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="w-full aspect-[3/4] max-w-[300px] rounded-2xl border-2 border-dashed border-border flex items-center justify-center bg-card/50">
+                                        <p className="text-xs font-bold text-muted-foreground/40">{t("noPreviewAvailable") || "No Preview"}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
                     </div>
                 </div>
 

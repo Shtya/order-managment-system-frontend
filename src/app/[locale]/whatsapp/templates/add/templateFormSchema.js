@@ -72,12 +72,12 @@ export function hasInvalidVariablePlacement(text = "") {
   return trimmed.startsWith("{{") || trimmed.endsWith("}}");
 }
 
-export function hasTooManyVariablesForText(text = "") {
-  const varCount = getVariableMatches(text)?.length || 0;
+export function hasTooManyVariablesForText(text = "", type) {
+  const varCount = getVariableMatches(text, type)?.length || 0;
   const words = String(text)
     .trim()
     .split(/\s+/)
-    .filter((w) => !isCorrectVariableFormat(w, "number")).length;
+    .filter((w) => !isCorrectVariableFormat(w, type)).length;
   return words < 3 * varCount + 1;
 }
 
@@ -87,7 +87,7 @@ function buttonSchema(t) {
       type: yup
         .string()
         .oneOf(
-          ["CUSTOM", "PHONE_NUMBER", "VISIT_WEBSITE", "WHATSAPP_CALL"],
+          ["CUSTOM", "PHONE_NUMBER", "VISIT_WEBSITE", "WHATSAPP_CALL", "COPY_CODE"],
           t("validation.buttonTypeInvalid")
         )
         .required(),
@@ -127,6 +127,13 @@ function buttonSchema(t) {
         .max(30, t("validation.activeForDaysMax"))
         .optional()
         .nullable(),
+      // if type is COPY_CODE, example is required
+      example: yup.string()
+        .when("type", {
+          is: "COPY_CODE",
+          then: (s) => s.required(t("validation.copyCodeExampleRequired")).max(20, t("validation.copyCodeExampleMax")),
+          otherwise: (s) => s.optional().nullable(),
+        }).optional().nullable(),
     })
     .test("btn-url", t("validation.visitWebsiteUrlRequired"), (val) => {
       if (!val || val.type !== "VISIT_WEBSITE") return true;
@@ -141,6 +148,10 @@ function buttonSchema(t) {
       const raw = val.activeForDays ?? val.activeDays;
       const d = raw != null && raw !== "" ? Number(raw) : NaN;
       return Number.isFinite(d) && d >= 1 && d <= 30;
+    })
+    .test("btn-copy-code", t("validation.copyCodeExampleRequired"), (val) => {
+      if (!val || val.type !== "COPY_CODE") return true;
+      return Boolean(val.example && String(val.example).trim());
     });
 }
 
@@ -150,16 +161,17 @@ function sharedTemplateFields(t) {
     headerText: yup
       .string()
       .max(MAX_HEADER_TEXT, t("validation.headerTextMax"))
-      .test("header-var-count", t("validation.headerVarMax"), (val) => {
+      .test("header-var-count", t("validation.headerVarMax"), (val,testContext) => {
+        const { parameterFormat } = testContext.parent;
         if (!val) return true;
-        const n = getVariableMatches(val, "number").length;
-        // const nm = getVariableMatches(val, "named").length;
+        const n = getVariableMatches(val, parameterFormat).length;
 
         return n <= 1;
       })
       .optional()
       .nullable(),
     headerUrl: yup.string().optional().nullable(),
+    parameterFormat: yup.string().optional().nullable(),
     bodyText: yup.string().when("subcategory", {
       is: "AUTHENTICATION_OTP",
       then: (s) => s.optional().nullable(),
@@ -167,8 +179,24 @@ function sharedTemplateFields(t) {
         s
           .required(t("validation.bodyRequired"))
           .max(MAX_BODY_LENGTH, t("validation.bodyMax", { max: MAX_BODY_LENGTH }))
-          .test("no-start-end-var", t("validation.bodyVarEdges"), (val) => !hasInvalidVariablePlacement(val))
-          .test("min-words", t("validation.bodyVarDensity"), (val) => !hasTooManyVariablesForText(val)),
+          .test(
+            "no-start-end-var",
+            t("validation.bodyVarEdges"),
+            function (value,testContext) {
+              const { parameterFormat } = testContext.parent;
+
+              return !hasInvalidVariablePlacement(value, parameterFormat);
+            }
+          )
+          .test(
+            "min-words",
+            t("validation.bodyVarDensity"),
+            function (value,testContext) {
+              const { parameterFormat } = testContext.parent;
+
+              return !hasTooManyVariablesForText(value, parameterFormat);
+            }
+          )
     }),
     footerText: yup.string().max(MAX_FOOTER, t("validation.footerMax")).optional().nullable(),
     buttons: yup.array().of(buttonSchema(t)).max(10, t("validation.buttonsMax")).optional().default([]),
@@ -217,14 +245,14 @@ export function createTemplateFormSchema(t, mode = "create", superAdmin) {
       .string()
       .required(t("validation.nameRequired"))
       .max(MAX_NAME, t("validation.nameMax", { max: MAX_NAME })),
-    language: yup.mixed().oneOf(["ar", "en"], t("validation.languageInvalid")).required(),
+    language: yup.mixed().required(),
     category: yup.string().required(t("validation.categoryRequired")),
     subcategory: yup.string().required(t("validation.subcategoryRequired")),
     ...shared,
   });
 }
 
-export function stripButtonIds(buttons = []) {
+export function stripButtonIds(buttons = [], language = "en") {
   return (Array.isArray(buttons) ? buttons : []).map(({ id: _id, activeDays, ...rest }) => {
     const out = { ...rest };
     if (out.urlType === "STATIC") out.urlType = "Static";
@@ -232,6 +260,9 @@ export function stripButtonIds(buttons = []) {
     if (out.activeForDays == null && activeDays != null) {
       const n = Number(activeDays);
       if (Number.isFinite(n)) out.activeForDays = n;
+    }
+    if (out.type === "COPY_CODE") {
+      out.text = language === "ar" ? "نسخ رمز العرض" : "Copy offer code";
     }
     return out;
   });
@@ -254,11 +285,11 @@ export function buildExamplesMap(variableSamples) {
  * @param {string} [forcedHeaderUrl] — server path after upload
  */
 export function buildTemplateConfigPayload(data, variableSamples, forcedHeaderUrl) {
-  console.log(data)
+  
   const examples = buildExamplesMap(variableSamples);
   const headerType =
     data.headerType === "NONE" || !data.headerType ? undefined : data.headerType;
-
+  const parameterFormat = data.category?.toLowerCase() === "authentication" ? undefined : data.parameterFormat || "positional";
   let headerUrl =
     forcedHeaderUrl != null && forcedHeaderUrl !== ""
       ? forcedHeaderUrl
@@ -274,22 +305,21 @@ export function buildTemplateConfigPayload(data, variableSamples, forcedHeaderUr
         : undefined,
     headerUrl:
       headerType && ["IMAGE", "VIDEO", "DOCUMENT"].includes(headerType) ? headerUrl : undefined,
+    parameterFormat,
+    headerNamedKey: parameterFormat === "positional" ? undefined :  Object.keys(variableSamples?.header || {})?.[0],
     bodyText: data.category?.toLowerCase() === "authentication" ? undefined : data.bodyText?.trim(),
     footerText: data.footerText?.trim() || undefined,
     examples: Object.keys(examples).length ? examples : undefined,
-    buttons: stripButtonIds(data.buttons || []).filter((b) => b?.text),
+    buttons: stripButtonIds(data.buttons || [], data.language).filter((b) => b?.text),
     uiSubcategory: data.subcategory || undefined,
     useCustomValidity: !!data.useCustomValidity,
     validityPeriod: data.validityPeriod || "10m",
   };
 
   if (headerType === "TEXT" && data.headerText) {
-    const nums = extractVariableNames(data.headerText, "number");
-    const named = extractVariableNames(data.headerText, "named");
-    if (nums.length && examples[nums[0]]) {
-      cfg.headerExample = examples[nums[0]];
-    } else if (named.length && examples[named[0]]) {
-      cfg.headerExample = examples[named[0]];
+    const vars = extractVariableNames(data.headerText, parameterFormat);
+    if (vars.length && examples[vars[0]]) {
+      cfg.headerExample = examples[vars[0]];
     }
   }
 

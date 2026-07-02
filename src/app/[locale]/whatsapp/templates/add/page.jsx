@@ -58,12 +58,12 @@ import TemplateButtonBuilder from "../../atoms/TemplateButtonBuilder";
 import MetaTemplateDialog from "../../atoms/MetaTemplateDialog";
 import { InternalTemplateDialog } from "../../atoms/InternalTemplateDialog";
 import Script from "next/script";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
     getVariableMatches,
     extractVariableNames,
     replaceVariables,
-    isCorrectVariableFormat
+    isCorrectVariableFormat,
+    isPotentialVariable
 } from "@/utils/whatsapp-healper";
 
 import {
@@ -92,12 +92,12 @@ const hasInvalidVariablePlacement = (text = "") => {
     );
 };
 
-const hasTooManyVariablesForText = (text = "") => {
-    const varCount = getVariableMatches(text)?.length;
+const hasTooManyVariablesForText = (text = "", type = "positional") => {
+    const varCount = getVariableMatches(text, type)?.length;
     const words = text
         .trim()
         .split(/\s+/)
-        .filter((w) => !isCorrectVariableFormat(w))
+        .filter((w) => !isCorrectVariableFormat(w, type))
         .length;
     return words < (3 * varCount) + 1;
 };
@@ -220,7 +220,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
     const { settings } = useOrdersSettings();
     const defaultWhatsAppAccountId = settings?.defaultWhatsAppAccountId || "";
-    const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+
     const textareaRef = useRef(null);
     const [variableSamples, setVariableSamples] = useState({ body: {}, header: {} });
     const [variableSamplesErrors, setVariableSamplesErrors] = useState({ header: "", body: "" });
@@ -240,6 +240,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
             name: "",
             language: "ar",
             category: "UTILITY",
+            parameterFormat: "positional",
             subcategory: "UTILITY_DEFAULT",
             headerType: "NONE",
             headerText: "",
@@ -255,13 +256,16 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
             validityPeriod: "10m",
             otpCopyButtonText: "",
         }
-    });
+    }); 
+
+    console.log("errors: ",errors)
 
     useEffect(() => {
         if (isEdit) return;
         setValue("accountId", defaultWhatsAppAccountId);
     }, [defaultWhatsAppAccountId]);
     const templateData = watch();
+    const language = watch("language");
     // Helper to get active category and subcategory objects
     const activeCategory = categories.find(c => c.id === templateData.category);
 
@@ -270,23 +274,23 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     const activeSubcategory = selectedCategory || activeCategory?.subcategories?.[0];
 
     useEffect(() => {
-
         if (!isEdit || !initialTemplate) return;
         const tpl = initialTemplate;
         const cfg = tpl.templateConfig || {};
         const uiCat = apiCategoryToUi(tpl.category);
         const uiSub = apiSubToUiSub(tpl.subCategory, tpl.category, cfg) || activeSubcategory?.id;
         const body = cfg.bodyText || "";
-        const bodyMatches = getVariableMatches(body);
-        const headerMatches = getVariableMatches(cfg.headerText || "");
+        const currentParameterFormat = cfg.parameterFormat || "positional";
+        const bodyMatches = getVariableMatches(body, currentParameterFormat);
+        const headerMatches = getVariableMatches(cfg.headerText || "", currentParameterFormat);
         const newBodySamples = {};
         bodyMatches.forEach((m) => {
-            const num = extractVariableNames(m)[0];
+            const num = extractVariableNames(m, currentParameterFormat)?.[0];
             newBodySamples[num] = cfg.examples?.[num] ?? "";
         });
         const newHeaderSamples = {};
         headerMatches.forEach((m) => {
-            const num = extractVariableNames(m)[0];
+            const num = extractVariableNames(m, currentParameterFormat)?.[0];
             newHeaderSamples[num] = cfg.examples?.[num] ?? "";
         });
         setVariableSamples({ body: newBodySamples, header: newHeaderSamples });
@@ -305,6 +309,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
             headerType: cfg.headerType || "NONE",
             headerText: cfg.headerText || "",
             headerUrl: cfg.headerUrl || "",
+            parameterFormat: cfg.parameterFormat || "positional",
             bodyText: body,
             footerText: cfg.footerText || "",
             buttons: buttonsWithIds,
@@ -320,6 +325,69 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     }, [isEdit, initialTemplate, reset, activeSubcategory]);
 
 
+      const validateHeader = useCallback((text, currentParameterFormat) => {
+        // Check for invalid variable formats
+        const parts = text.split(/(\{[^{}]*\}|\{\{[^{}]*\}\})/g);
+        const hasInvalidVariable = parts.some((part) => {
+            if (isPotentialVariable(part)) {
+                return !isCorrectVariableFormat(part, currentParameterFormat);
+            }
+            return false;
+        });
+        
+        if (hasInvalidVariable) {
+            const errorKey = currentParameterFormat === "positional" 
+                ? "invalidParameterFormatNumber" 
+                : "invalidParameterFormatNamed";
+            setError("headerText", {
+                type: "manual",
+                message: tForm(`validation.${errorKey}`)
+            });
+            return false;
+        }
+
+        clearErrors("headerText");
+        return true;
+    }, [setError, clearErrors, tForm]);
+
+    const validateBody = useCallback((text, currentParameterFormat) => {
+        // First check for invalid variable formats
+        const parts = text.split(/(\{[^{}]*\}|\{\{[^{}]*\}\})/g);
+        const hasInvalidVariable = parts.some((part) => {
+            if (isPotentialVariable(part)) {
+                return !isCorrectVariableFormat(part, currentParameterFormat);
+            }
+            return false;
+        });
+        
+        if (hasInvalidVariable) {
+            const errorKey = currentParameterFormat === "positional" 
+                ? "invalidParameterFormatNumber" 
+                : "invalidParameterFormatNamed";
+            setError("bodyText", {
+                type: "manual",
+                message: tForm(`validation.${errorKey}`)
+            });
+            return false;
+        }
+
+        if (hasInvalidVariablePlacement(text)) {
+            setError("bodyText", {
+                type: "manual",
+                message: tForm("validation.bodyVarEdges")
+            });
+            return false;
+        } else if (hasTooManyVariablesForText(text, currentParameterFormat)) {
+            setError("bodyText", {
+                type: "manual",
+                message: tForm("validation.bodyVarDensity")
+            });
+            return false;
+        } else {
+            clearErrors("bodyText");
+            return true;
+        }
+    }, [setError, clearErrors, tForm]);
 
     const previewHeaderUrl = useMemo(() => {
         const u = templateData.headerUrl;
@@ -330,10 +398,21 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         return `${root}/${String(u).replace(/^\/+/, "")}`;
     }, [templateData.headerUrl]);
 
+    // Revalidate body and header when parameter format changes
+    useEffect(() => {
+        const currentParameterFormat = templateData?.parameterFormat;
+        if (templateData.bodyText) {
+            validateBody(templateData.bodyText, currentParameterFormat);
+        }
+        if (templateData.headerText) {
+            validateHeader(templateData.headerText, currentParameterFormat);
+        }
+    }, [templateData?.parameterFormat, validateBody, validateHeader]);
+
     const headerHasVariable = React.useMemo(() => {
-        const matches = getVariableMatches(templateData.headerText || "");
+        const matches = getVariableMatches(templateData.headerText || "", templateData?.parameterFormat);
         return matches.length >= 1;
-    }, [templateData.headerText]);
+    }, [templateData.headerText, templateData?.parameterFormat]);
 
     const handleHeaderTypeChange = (type) => {
         setValue("headerType", type);
@@ -354,6 +433,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     };
 
     const normalizeVariables = (text) => {
+        if (templateData?.parameterFormat === "named") {
+            return text; // don't normalize named variables
+        }
         const seen = new Map();
         let count = 0;
         return replaceVariables(text, (match, num) => {
@@ -363,11 +445,11 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
             count++;
             seen.set(num, count);
             return `{{${count}}}`;
-        });
+        }, "positional");
     };
 
     const updateSamples = (text, type = "body") => {
-        const matches = getVariableMatches(text);
+        const matches = getVariableMatches(text, templateData?.parameterFormat);
 
         const newSamples = { ...variableSamples[type] };
 
@@ -380,8 +462,8 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
         // Add new variables
         matches.forEach((m) => {
-            const varNames = extractVariableNames(m);
-            const num = varNames[0];
+            const varNames = extractVariableNames(m, templateData?.parameterFormat);
+            const num = varNames?.[0];
 
             if (!(num in newSamples)) {
                 newSamples[num] = "";
@@ -394,34 +476,18 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         }));
     };
 
-    const validateBody = (text) => {
-        if (hasInvalidVariablePlacement(text)) {
-            setError("bodyText", {
-                type: "manual",
-                message: tForm("validation.bodyVarEdges")
-            });
-            return false;
-        } else if (hasTooManyVariablesForText(text)) {
-            setError("bodyText", {
-                type: "manual",
-                message: tForm("validation.bodyVarDensity")
-            });
-            return false;
-        } else {
-            clearErrors("bodyText");
-            return true;
-        }
-    };
+  
 
     const handleBodyChange = (value) => {
         const val = value;
+        const currentParameterFormat = templateData?.parameterFormat;
 
         if (val.length <= MAX_BODY_LENGTH) {
             const normalized = normalizeVariables(val);
             setValue("bodyText", normalized);
             updateSamples(normalized, "body");
-            validateBody(normalized);
-            if (getVariableMatches(normalized).length === 0) {
+            validateBody(normalized, currentParameterFormat);
+            if (getVariableMatches(normalized, currentParameterFormat).length === 0) {
                 setVariableSamplesErrors((err) => ({ ...err, body: "" }));
             }
         }
@@ -429,12 +495,14 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
     const handleHeaderTextChange = (e) => {
         const val = e.target.value;
-        const matches = getVariableMatches(val);
+        const currentParameterFormat = templateData?.parameterFormat;
+        const matches = getVariableMatches(val, currentParameterFormat);
         if (matches.length <= 1) {
             const normalized = normalizeVariables(val);
             setValue("headerText", normalized);
             updateSamples(normalized, 'header');
-            if (getVariableMatches(normalized).length === 0) {
+            validateHeader(normalized, currentParameterFormat);
+            if (getVariableMatches(normalized, currentParameterFormat).length === 0) {
                 setVariableSamplesErrors((err) => ({ ...err, header: "" }));
             }
         }
@@ -450,6 +518,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         const fieldName = target === 'body' ? "bodyText" : "headerText";
         const text = watch(fieldName) || "";
         const selection = text.substring(start, end);
+        const currentParameterFormat = templateData?.parameterFormat;
 
         let startTag = "";
         let endTag = "";
@@ -462,15 +531,19 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
             case "mono": startTag = "```"; endTag = "```"; break;
             case "variable":
                 if (target === 'header') {
-                    const matches = getVariableMatches(text);
+                    const matches = getVariableMatches(text, currentParameterFormat);
                     if (matches.length >= 1) return; // Only 1 variable allowed in header
-                    startTag = `{{1}}`;
+                    startTag = currentParameterFormat === "positional" ? `{{1}}` : `{{}}`;
                 } else {
                     // Find the highest variable number in the body
-                    const matches = getVariableMatches(text);
-                    const nums = matches.map(m => parseInt(extractVariableNames(m)[0]));
-                    const nextNum = nums.length > 0 ? Math.max(...nums) + 1 : 1;
-                    startTag = `{{${nextNum}}}`;
+                    if (currentParameterFormat === "named")
+                        startTag = `{{}}`;
+                    else {
+                        const matches = getVariableMatches(text, currentParameterFormat);
+                        const nums = matches.map(m => parseInt(extractVariableNames(m, currentParameterFormat)?.[0]));
+                        const nextNum = nums.length > 0 ? Math.max(...nums) + 1 : 1;
+                        startTag = `{{${nextNum}}}`;
+                    }
                 }
                 isVariable = true;
                 break;
@@ -490,7 +563,11 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         updateSamples(newText, target);
 
         if (target === 'body') {
-            validateBody(newText);
+            validateBody(newText, currentParameterFormat);
+        }
+
+        if(target === "header") {
+            validateHeader(newText, currentParameterFormat);
         }
 
         setTimeout(() => {
@@ -499,26 +576,6 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
             textarea.setSelectionRange(start + finalInsertion.length, start + finalInsertion.length);
         }, 0);
     };
-
-    const addEmoji = (emoji) => {
-        const textarea = textareaRef.current;
-        if (!textarea) return;
-
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const text = templateData.bodyText || "";
-
-        const newText = text.substring(0, start) + emoji.native + text.substring(end);
-        setValue("bodyText", newText);
-        setEmojiPickerOpen(false);
-
-        setTimeout(() => {
-            textarea.focus();
-            textarea.setSelectionRange(start + emoji.native.length, start + emoji.native.length);
-        }, 0);
-    };
-
-
 
 
     // Derived Body Text for Preview (especially for Authentication)
@@ -551,16 +608,17 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         const sections = activeSubcategory?.sections || [];
         let headerErr = "";
         let bodyErr = "";
+        const currentParameterFormat = data.parameterFormat || "positional";
 
         if (sections.includes("header") && data.headerType === "TEXT") {
-            const nums = [...new Set(extractVariableNames(data.headerText || ""))];
+            const nums = [...new Set(extractVariableNames(data.headerText || "", currentParameterFormat))];
             if (nums.some((n) => !(variableSamples.header?.[n] ?? "").toString().trim())) {
                 headerErr = tForm("validation.variableSampleRequired");
             }
         }
 
         if (sections.includes("body") && data.subcategory !== "AUTHENTICATION_OTP") {
-            const nums = [...new Set(extractVariableNames(data.bodyText || ""))];
+            const nums = [...new Set(extractVariableNames(data.bodyText || "", currentParameterFormat))];
             if (nums.some((n) => !(variableSamples.body?.[n] ?? "").toString().trim())) {
                 bodyErr = tForm("validation.variableSampleRequired");
             }
@@ -589,6 +647,13 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         }
 
         if (!validateVariableSamplesForSubmit(data)) {
+            return;
+        }
+
+        const isBodyValid = validateBody(data.bodyText, data.parameterFormat);
+        const isHeaderValid = validateHeader(data.headerText, data.parameterFormat);
+
+        if(!isBodyValid || !isHeaderValid) {
             return;
         }
 
@@ -622,7 +687,8 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                 // 3. بناء الـ templateConfig وإضافته كـ stringified JSON داخل الـ FormData
                 const templateConfig = buildTemplateConfigPayload(data, variableSamples, forcedUrl);
                 fdUp.append("templateConfig", JSON.stringify(templateConfig));
-
+                console.log("final templateConfig: ", templateConfig)
+                
                 // 4. إرسال طلب التحديث كـ FormData ليتعامل معه الـ Backend بسلاسة
                 await api.patch(`/whatsapp-templates/${templateId}`, fdUp, {
                     headers: { "Content-Type": "multipart/form-data" }
@@ -655,7 +721,8 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                 }
 
                 fd.append("templateConfig", JSON.stringify(templateConfig));
-
+                console.log("final templateConfig: ", templateConfig)
+        
                 await api.post("/whatsapp-templates", fd, {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
@@ -712,9 +779,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
     // 3. Handle selection
     const handleMetaTemplateSelect = (selectedTpl) => {
-        console.log(selectedTpl);
-        const { templateConfig: tplData, name, category, subCategory, language } = selectedTpl;
 
+        const { templateConfig: tplData, name, category, subCategory, language } = selectedTpl;
+        const selectedParameterFormat = tplData?.parameterFormat || "positional";
         // Ensure buttons have unique IDs for the builder
         const buttonsWithIds = (tplData?.buttons || []).map(btn => ({
             ...btn,
@@ -735,20 +802,21 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         setValue("bodyText", tplData?.bodyText || "");
         setValue("footerText", tplData?.footerText || "");
         setValue("buttons", buttonsWithIds);
+        setValue("parameterFormat", selectedParameterFormat);
 
         // 2. Update Samples State
-        const bodyMatches = getVariableMatches(tplData?.bodyText || "");
-        const headerMatches = getVariableMatches(tplData?.headerText || "");
+        const bodyMatches = getVariableMatches(tplData?.bodyText || "", selectedParameterFormat);
+        const headerMatches = getVariableMatches(tplData?.headerText || "", selectedParameterFormat);
 
         const newBodySamples = {};
         bodyMatches.forEach(m => {
-            const num = extractVariableNames(m)[0];
+            const num = extractVariableNames(m, selectedParameterFormat)?.[0];
             newBodySamples[num] = tplData?.examples?.[num] || "";
         });
 
         const newHeaderSamples = {};
         headerMatches.forEach(m => {
-            const num = extractVariableNames(m)[0];
+            const num = extractVariableNames(m, selectedParameterFormat)?.[0];
             newHeaderSamples[num] = tplData?.examples?.[num] || "";
         });
 
@@ -761,7 +829,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         clearErrors();
         setVariableSamplesErrors({ header: "", body: "" });
     };
-
+    
     return (
         <>
             <Script
@@ -784,40 +852,40 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                         <>
                             <div className="flex flex-col gap-2">
                                 <div className="flex items-center gap-2">
-                                {!isEdit && !superAdmin && (
-                                    <>
-                                        <Button_
-                                            size="sm"
-                                            label={tForm("internalTemplates")}
-                                            tone="secondary"
-                                            variant="outline"
-                                            onClick={() => setIsInternalDialogOpen(true)}
-                                            icon={<Layout size={18} />}
-                                            className="border-slate-200 dark:border-slate-800"
-                                        />
-                                        <Button_
-                                            size="sm"
-                                            label={tForm("importMeta")}
-                                            tone="secondary"
-                                            variant="outline"
-                                            onClick={() => setIsMetaDialogOpen(true)}
-                                            icon={<Facebook size={18} />}
-                                            className="border-slate-200 dark:border-slate-800"
-                                            disabled={!loadAccounts && accounts.length === 0}
-                                        />
+                                    {!isEdit && !superAdmin && (
+                                        <>
+                                            <Button_
+                                                size="sm"
+                                                label={tForm("internalTemplates")}
+                                                tone="secondary"
+                                                variant="outline"
+                                                onClick={() => setIsInternalDialogOpen(true)}
+                                                icon={<Layout size={18} />}
+                                                className="border-slate-200 dark:border-slate-800"
+                                            />
+                                            <Button_
+                                                size="sm"
+                                                label={tForm("importMeta")}
+                                                tone="secondary"
+                                                variant="outline"
+                                                onClick={() => setIsMetaDialogOpen(true)}
+                                                icon={<Facebook size={18} />}
+                                                className="border-slate-200 dark:border-slate-800"
+                                                disabled={!loadAccounts && accounts.length === 0}
+                                            />
                                         </>
-                                        
+
                                     )}
-                                <Button_
-                                    size="sm"
-                                    label={superAdmin ? (isEdit ? tForm("update") : tForm("create")) : (isEdit ? tForm("submitUpdate") : tForm("submitCreate"))}
-                                    tone="primary"
-                                    variant="solid"
-                                    disabled={(!loadAccounts && accounts.length === 0) || isSubmitting}
-                                    onClick={handleSubmit(onSubmit)}
-                                    icon={isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
+                                    <Button_
+                                        size="sm"
+                                        label={superAdmin ? (isEdit ? tForm("update") : tForm("create")) : (isEdit ? tForm("submitUpdate") : tForm("submitCreate"))}
+                                        tone="primary"
+                                        variant="solid"
+                                        disabled={(!loadAccounts && accounts.length === 0) || isSubmitting}
+                                        onClick={handleSubmit(onSubmit)}
+                                        icon={isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                                     />
-                                    </div>
+                                </div>
                                 {!loadAccounts && accounts.length === 0 && (
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
                                         {tForm("noAccountsInfo")}
@@ -966,6 +1034,22 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                     <h2 className="text-lg font-bold text-slate-800 dark:text-white">{tForm("sections.content")}</h2>
                                 </div>
 
+                                {/* Parameter Format */}
+                                {activeSubcategory?.sections.includes("body") && templateData.category?.toLowerCase() !== "authentication" && (
+                                    <div className="space-y-2 mb-6">
+                                        <Label className="text-sm text-slate-700 dark:text-slate-300">{tForm("parameterFormat.title")}</Label>
+                                        <Select value={templateData?.parameterFormat} onValueChange={(v) => setValue("parameterFormat", v)}>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="positional">{tForm("parameterFormat.positional")}</SelectItem>
+                                                <SelectItem value="named">{tForm("parameterFormat.named")}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+
                                 {/* Header Settings */}
                                 {activeSubcategory?.sections.includes("header") && (
                                     <div className="space-y-4 mb-8">
@@ -1009,6 +1093,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                 </div>
                                                 <Input
                                                     id="header-text-input"
+                                                    dir={language === "ar" ? "rtl" : "ltr"}
                                                     placeholder={tForm("headerTextPlaceholder")}
                                                     maxLength={60}
                                                     onChange={handleHeaderTextChange}
@@ -1025,7 +1110,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                             ...prev,
                                                             header: nextHeader
                                                         }));
-                                                        const nums = [...new Set(extractVariableNames(templateData.headerText || ""))];
+                                                        const nums = [...new Set(extractVariableNames(templateData.headerText || "", templateData?.parameterFormat))];
                                                         if (nums.length && nums.every((n) => (nextHeader[n] ?? "").toString().trim())) {
                                                             setVariableSamplesErrors((err) => ({ ...err, header: "" }));
                                                         }
@@ -1073,6 +1158,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                     <>
                                         <WhatsAppMessageBodyBuilder
                                             ref={textareaRef}
+                                            language={language}
                                             value={templateData.bodyText}
                                             onChange={handleBodyChange}
                                             label={tForm("body")}
@@ -1092,7 +1178,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                     ...prev,
                                                     body: nextBody
                                                 }));
-                                                const nums = [...new Set(extractVariableNames(templateData.bodyText || ""))];
+                                                const nums = [...new Set(extractVariableNames(templateData.bodyText || "", templateData?.parameterFormat))];
                                                 if (nums.length && nums.every((n) => (nextBody[n] ?? "").toString().trim())) {
                                                     setVariableSamplesErrors((err) => ({ ...err, body: "" }));
                                                 }
@@ -1291,6 +1377,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                             errors={errors}
                                             value={field.value || []}
                                             onChange={field.onChange}
+                                            category={watch("category")}
                                         />
                                     )}
                                 />
@@ -1319,11 +1406,12 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                             subCategory: templateData.subcategory,
                                             headerType: templateData.headerType,
                                             headerText: templateData.headerText,
+                                            parameterFormat: templateData?.parameterFormat,
                                             headerUrl: previewHeaderUrl,
                                             bodyText: getPreviewBody(),
                                             footerText: getPreviewFooter(),
                                             buttons: templateData.buttons,
-                                            headerExample: variableSamples.header["1"],
+                                            headerExample: variableSamples.header["1"] ||  Object.values(variableSamples?.header || {})?.[0],
                                             useCustomValidity: templateData.useCustomValidity,
                                             validityPeriod: templateData.validityPeriod,
                                             otpCopyButtonText: templateData.otpCopyButtonText,
@@ -1363,6 +1451,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                         </div>
                     </div>
                 </div>
+
                 <MetaTemplateDialog
                     open={isMetaDialogOpen}
                     onOpenChange={setIsMetaDialogOpen}
@@ -1422,7 +1511,7 @@ function VariableSamplesSection({ type, samples, onSampleChange }) {
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{type === 'header' ? t("header") : t("body")}</p>
                 {varKeys.map((num) => (
                     <div key={num} className="flex gap-3 items-start group">
-                        <div className="w-[80px] h-10 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xs font-mono text-slate-400 shrink-0">
+                        <div className="min-w-[80px] h-10 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xs font-mono text-slate-400 shrink-0">
                             {`{{${num}}}`}
                         </div>
                         <div className="flex-1 space-y-1">

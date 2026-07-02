@@ -23,26 +23,25 @@ import {
  */
 
 export const VAR_REGEX = {
-    number: /\{\{(\d+)\}\}/g,
-    named: /\{\{([\w_]+)\}\}/g,
-    any: /\{\{([\w\d_]+)\}\}/g,
-    malformed: /\{[^{}]*\}|\{\{[^{}]*\}\}/g
+    positional: /\{\{(\d+)\}\}/,
+    named: /\{\{([a-z][a-z0-9_]*)\}\}/,
+    any: /\{\{([\w\d_]+)\}\}/,
+    malformed: /\{[^{}]*\}|\{\{[^{}]*\}\}/
 };
 
 /**
  * Get all variable matches from text
  */
 // type =  'number' | 'named' | 'any'
-export const getVariableMatches = (text = "", type = 'number') => {
-    const regex = VAR_REGEX[type];
-
-    return text?.match(regex) || [];
+export const getVariableMatches = (text = "", type = "positional") => {
+  const regex = new RegExp(VAR_REGEX[type].source, "g");
+  return text.match(regex) || [];
 };
 
 /**
  * Extract variable names/numbers from text
  */
-export const extractVariableNames = (text = "", type = 'number') => {
+export const extractVariableNames = (text = "", type = 'positional') => {
     const regex = VAR_REGEX[type];
     const matches = [];
     let match;
@@ -50,6 +49,7 @@ export const extractVariableNames = (text = "", type = 'number') => {
     while ((match = searchRegex.exec(text)) !== null) {
         matches.push(match[1]);
     }
+    
     return matches;
 };
 
@@ -136,7 +136,7 @@ export const formatText = (content) => {
 /**
  * Validate if a part is a correct variable format
  */
-export const isCorrectVariableFormat = (part, type = 'number') => {
+export const isCorrectVariableFormat = (part, type = 'positional') => {
     const regex = new RegExp(`^${VAR_REGEX[type].source}$`);
     return regex.test(part);
 };

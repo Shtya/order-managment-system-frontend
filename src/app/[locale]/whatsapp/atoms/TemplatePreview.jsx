@@ -28,9 +28,11 @@ import {
     getMediaUrl,
     getMediaUrlWithCache,
     handleMediaClick,
+    VAR_REGEX,
 } from "@/utils/whatsapp-healper";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { FaLocationDot } from "react-icons/fa6";
+import { useClipboard } from "@/hook/useClipboard";
 
 // --- Sub-components ---
 
@@ -271,6 +273,7 @@ export default function TemplatePreview({
     const [mediaLoading, setMediaLoading] = useState(true);
     const [mediaError, setMediaError] = useState(false);
     const locale = useLocale();
+    const { handleCopy } = useClipboard();
 
     useEffect(() => {
         if (forceShowExamples) setShowExamples(true);
@@ -301,6 +304,7 @@ export default function TemplatePreview({
         headerText = "",
         headerExample = "",
         headerUrl = "",
+        parameterFormat = "positional",
         locationData = null,
         bodyText = "",
         footerText = "",
@@ -314,18 +318,21 @@ export default function TemplatePreview({
     } = cfgSource != null
             ? { bodyText: "", buttons: [], examples: {}, ...cfgSource }
             : { bodyText: "", buttons: [], examples: {} };
-
+    
+    const isPositional = parameterFormat === "positional";
     const isArabic = /[\u0600-\u06FF]/.test(bodyText || "");
-    const language = raw.language ?? isArabic ? "ar" : "en";
+    const language = !!raw.language ? raw.language : isArabic ? "ar" : "en";
+    
     const parsedBodyParts = useMemo(() => {
         const text =
             bodyText && String(bodyText).trim()
                 ? bodyText
                 : t("preview.bodyPlaceholder");
 
-        const parts = text.split(/(\{[\w]*\}|\{\{[\w\d_]+\}\})/g).map((part) => {
-            if (isCorrectVariableFormat(part, "number")) {
-                const m = part.match(/\{\{(\d+)\}\}/);
+        const parts = text.split(/(\{[^{}]*\}|\{\{[^{}]*\}\})/g).map((part) => {
+            
+            if (isPositional && isCorrectVariableFormat(part, "positional")) {
+                const m = part.match(VAR_REGEX.positional);
                 const variableName = m?.[1];
                 return {
                     type: "variable",
@@ -335,8 +342,8 @@ export default function TemplatePreview({
                     exampleValue: examples?.[variableName] ?? `{{${variableName}}}`,
                 };
             }
-            if (isCorrectVariableFormat(part, "named")) {
-                const m = part.match(/\{\{([\w_]+)\}\}/);
+            if (!isPositional && isCorrectVariableFormat(part, "named")) {
+                const m = part.match(VAR_REGEX.named);
                 const variableName = m?.[1];
                 return {
                     type: "variable",
@@ -363,6 +370,53 @@ export default function TemplatePreview({
             return part;
         });
     }, [bodyText, examples, t]);
+
+    const parsedHeaderParts = useMemo(() => {
+        if (!headerText) return [];
+
+        const text = headerText;
+
+        const parts = text.split(/(\{[^{}]*\}|\{\{[^{}]*\}\})/g).map((part) => {
+            
+            if (isPositional && isCorrectVariableFormat(part, "positional")) {
+                const m = part.match(VAR_REGEX.positional);
+                const variableName = m?.[1];
+                return {
+                    type: "variable",
+                    variableName,
+                    raw: part,
+                    isValid: true,
+                    exampleValue: headerExample ?? examples?.[variableName] ?? `{{${variableName}}}`,
+                };
+            }
+            if (!isPositional && isCorrectVariableFormat(part, "named")) {
+                const m = part.match(VAR_REGEX.named);
+                const variableName = m?.[1];
+                return {
+                    type: "variable",
+                    variableName,
+                    raw: part,
+                    isValid: true,
+                    exampleValue: headerExample ?? examples?.[variableName] ?? part,
+                };
+            }
+            if (isPotentialVariable(part)) {
+                return {
+                    type: "variable",
+                    raw: part,
+                    isValid: false,
+                };
+            }
+            return { type: "text", value: part };
+        });
+
+        return parts.map(part => {
+            if (part.type === 'text') {
+                return { ...part, formatted: formatText(part.value) };
+            }
+            return part;
+        });
+    }, [headerText, headerExample, examples, isPositional, t]);
    useEffect(() => {
         setMediaLoading(true);
         setMediaError(false);
@@ -555,22 +609,40 @@ export default function TemplatePreview({
             case "TEXT":
                 if (!headerText) return null;
 
-                const hasHeaderVars = /\{\{[\w\d_]+\}\}/.test(headerText);
-                const headerVarType = /\{\{\d+\}\}/.test(headerText) ? "number" : "named";
-                const processedHeaderText = hasHeaderVars
-                    ? replaceVariables(
-                        headerText,
-                        (match, varName) =>
-                            showExamples
-                                ? (examples?.[varName] ?? headerExample ?? match)
-                                : match,
-                        headerVarType
-                    )
-                    : headerText;
-
                 return (
                     <div className="pb-2 font-bold text-[#111b21] dark:text-white leading-tight break-all">
-                        {processedHeaderText}
+                        {parsedHeaderParts.map((part, index) => {
+                            if (part.type === "text") {
+                                return (
+                                    <React.Fragment key={index}>
+                                        {part.formatted}
+                                    </React.Fragment>
+                                );
+                            }
+
+                            // Variable Rendering
+                            if (showExamples && part.isValid) {
+                                return (
+                                    <React.Fragment key={index}>
+                                        {part.exampleValue}
+                                    </React.Fragment>
+                                );
+                            }
+
+                            return (
+                                <span
+                                    key={index}
+                                    className={cn(
+                                        "inline-block px-1 rounded mx-0.5 transition-all duration-300 align-baseline",
+                                        !part.isValid
+                                            ? "bg-red-100 text-red-600 border border-red-200 font-mono text-[10px]"
+                                            : "bg-slate-100 dark:bg-slate-800 text-[#282828] dark:text-slate-200 font-mono text-[10px]"
+                                    )}
+                                >
+                                    {part.raw}
+                                </span>
+                            );
+                        })}
                     </div>
                 );
             default:
@@ -707,13 +779,16 @@ export default function TemplatePreview({
                                         <>
                                             {visibleButtons.map((btn, idx) => {
                                                 const btnText = btn.text ? btn.text : locale === "ar" ? btn.textAr : btn.textEn;
-                                                return (<div
+                                                const ButtonComponent = btn.type === "COPY_CODE" ? "button" : "div";
+                                                return (<ButtonComponent
                                                     key={btn.id || idx}
                                                     className={cn(
-                                                        "py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] cursor-default transition-colors",
+                                                        "py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] transition-colors",
+                                                        btn.type === "COPY_CODE" ? "cursor-pointer w-full" : "cursor-default",
                                                         "hover:bg-template-btn-hover",
                                                         idx > 0 && "border-t border-whatsapp-button-border",
                                                     )}
+                                                    onClick={btn.type === "COPY_CODE" ? () => handleCopy(btn.example || "SAVE20") : undefined}
                                                 >
 
                                                     {btn.type === "CUSTOM" || btn.type === "QUICK_REPLY" || !btn.type && (
@@ -733,11 +808,12 @@ export default function TemplatePreview({
                                                         color="#00a884"
                                                         strokeWidth={1.8}
                                                     />}
+                                                    {btn.type === "COPY_CODE" && <Copy size={14} />}
 
                                                     {btnText || (
                                                         <span className="opacity-40 italic">{t("preview.actionButtonPlaceholder")}</span>
                                                     )}
-                                                </div>)
+                                                </ButtonComponent>)
                                             })}
 
                                             {showMenuButton && (

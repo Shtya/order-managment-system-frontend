@@ -404,14 +404,14 @@ export default function WhatsAppTemplatesPage() {
                 hidden: row.status === TemplateStatus.DISABLED,
                 permission: "whatsapp.templates.delete",
               },
-              {
-                icon: <History size={16} />,
-                tooltip: t("actions.appeal"),
-                onClick: () => toast.success("Appeal requested"),
-                variant: "orange",
-                hidden: row.status !== "rejected" && row.status !== "disabled",
-                permission: "whatsapp.templates.update",
-              },
+              // {
+              //   icon: <History size={16} />,
+              //   tooltip: t("actions.appeal"),
+              //   onClick: () => toast.success("Appeal requested"),
+              //   variant: "orange",
+              //   hidden: row.status !== "rejected" && row.status !== "disabled",
+              //   permission: "whatsapp.templates.update",
+              // },
             ]}
           />
         ),

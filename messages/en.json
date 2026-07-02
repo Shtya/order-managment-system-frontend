@@ -10436,6 +10436,7 @@
         "language": "Language"
       },
       "form": {
+        "selectLanguage": "Choose language",
         "addExpirationTime": "Add Expiration Time",
         "title": "Create WhatsApp Template",
         "editTitle": "Edit WhatsApp Template",
@@ -10464,6 +10465,11 @@
         "footerText": "Footer Text",
         "footerTextPlaceholder": "Enter footer text (optional)...",
         "bodyPlaceholder": "Enter message body...",
+        "parameterFormat": {
+          "title": "Parameter Format",
+          "positional": "Positional (e.g. '{{1}}', '{{2}}')",
+          "named": "Named (e.g. '{{name}}', '{{email}}')"
+        },
         "variable": "Variable",
         "addVariable": "Add Variable",
         "variableSample": "Sample for {var}",
@@ -10543,8 +10549,13 @@
             "CUSTOM": "Custom (Quick Reply)",
             "VISIT_WEBSITE": "Visit Website",
             "PHONE_NUMBER": "Call Phone Number",
-            "WHATSAPP_CALL": "Call via WhatsApp"
+            "WHATSAPP_CALL": "Call via WhatsApp",
+            "COPY_CODE": "Copy Code"
           },
+          "copyCodeExample": "Copy Code Example",
+          "copyCodeExampleInfo": "To help us review your message template, please add an example copy code. Do not use real customer information.",
+          "copyCodeExamplePlaceholder": "Enter copy code example (e.g., SAVE20)",
+          "copyCodeExampleRequired": "Please enter a valid copy code example",
           "urlTypes": {
             "Static": "Static",
             "Dynamic": "Dynamic"
@@ -10592,12 +10603,16 @@
           "mediaHeaderFileRequired": "Upload a file for this header type (image, video, or PDF)",
           "mediaHeaderMustReupload": "Choose a header file again or keep the existing saved media",
           "variableSampleRequired": "Example values are required for every variable in this section",
+          "invalidParameterFormatNumber": "This template contains variable parameters with incorrect formatting. Variable parameters must be whole numbers with two sets of curly brackets (for example, {{1}}, {{2}}).",
+          "invalidParameterFormatNamed": "This template contains variable parameters with incorrect formatting. Variable parameters must contain only lowercase letters, numbers, and underscores, enclosed in double curly braces, for example '{{customer_name}}' and '{{order_id}}'.",
           "countryCodeMax": "Country code must be at most 10 characters",
           "phoneNumberMax": "Phone number must be at most 20 characters",
           "buttonUrlRequired": "URL is required for website buttons",
           "urlExampleRequired": "URL example is required",
           "urlExampleInvalid": "URL example is invalid",
-          "validityPeriodInvalid": "Select a valid message validity period"
+          "validityPeriodInvalid": "Select a valid message validity period",
+          "copyCodeExampleRequired": "Copy code example is required",
+          "copyCodeExampleMax": "Copy code example must be at most 20 characters"
         }
       },
       "messages": {

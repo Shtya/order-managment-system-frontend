@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
@@ -395,10 +395,11 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         if (!tempValue.templateId) return false;
         
         const config = tempValue.templateData || {};
-        const headerVars = extractVariableNames(config.headerText || '', 'number');
-        const bodyVars = extractVariableNames(config.bodyText || '', 'number');
+        const parameterFormat = config.parameterFormat || 'positional';
+        const headerVars = extractVariableNames(config.headerText || '', parameterFormat);
+        const bodyVars = extractVariableNames(config.bodyText || '', parameterFormat);
         const dynamicButtonIndexes = config.buttons
-            ?.map((btn, idx) => btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic' ? String(idx) : null)
+            ?.map((btn, idx) => ((btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') || btn.type === 'COPY_CODE') ? String(idx) : null)
             .filter(Boolean) || [];
 
         return [
@@ -414,8 +415,9 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
 
     const handleSelectTemplate = (template) => {
         const config = template.templateConfig || {};
-        const headerVars = extractVariableNames(config.headerText || '', 'number');
-        const bodyVars = extractVariableNames(config.bodyText || '', 'number');
+        const parameterFormat = config.parameterFormat || 'positional';
+        const headerVars = extractVariableNames(config.headerText || '', parameterFormat);
+        const bodyVars = extractVariableNames(config.bodyText || '', parameterFormat);
 
         const headerVariables = {};
         headerVars.forEach(num => {
@@ -433,6 +435,15 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                 buttonVariables[String(idx)] = {
                     type: 'direct', value: '', label: btn.text || '', example: btn.url || '', url: btn.url
                 };
+            } else if (btn.type === 'COPY_CODE') {
+                const staticText = template.language === 'ar' ? 'نسخ رمز العرض' : 'Copy offer code';
+                buttonVariables[String(idx)] = {
+                    type: 'direct',
+                    value: '',
+                    buttonType: 'copy_code',
+                    label: staticText,
+                    example: btn.example || ''
+                };
             }
         });
         
@@ -448,6 +459,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
             templateId: template.id,
             templateName: template.name,
             templateData: config,
+            parameterFormat,
             headerVariables,
             bodyVariables,
             buttonVariables,
@@ -526,16 +538,18 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                         tempValue.buttonVariables
         )?.[num] || {};
         const isDynamic = varData.type === 'variable';
-        
-        const badgeLabel = type === 'header' ? tConfig('messageHeader') : type === 'body' ? tConfig('messageBody') : buttonLabel || `${tConfig('linkButtons')} ${num}`;
         const isButtonType = type === 'button';
+        const isCopyCode = varData.buttonType === 'copy_code';
         
-        const placeholder = isButtonType ? tChats("enterValueFor", { example: varData.url }) : tConfig("enterValue");
+        const badgeLabel = type === 'header' ? tConfig('messageHeader') : type === 'body' ? tConfig('messageBody') : buttonLabel || `${isCopyCode ? tConfig('copyCodeButton') : tConfig('linkButtons')} ${num}`;
+        const placeholder = isButtonType 
+            ? (isCopyCode ? varData.example : tChats("enterValueFor", { example: varData.url })) 
+            : tConfig("enterValue");
 
         return (
             <div key={`${type}-${num}`} className="flex gap-2 md:gap-3 items-start group">
-                <div className="w-12 md:w-[60px] h-9 md:h-10 text-center rounded-lg md:rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-[10px] md:text-xs font-black text-slate-400 shrink-0 shadow-sm">
-                    {isButtonType ? <LinkIcon size={12} className="md:size-[14px]" /> : `{{${num}}}`}
+                <div className="min-w-12 md:min-w-[60px] h-9 md:h-10 text-center rounded-lg md:rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-[10px] md:text-xs font-black text-slate-400 shrink-0 shadow-sm">
+                    {isButtonType ? (isCopyCode ? <Copy size={12} className="md:size-[14px]" /> : <LinkIcon size={12} className="md:size-[14px]" />) : `{{${num}}}`}
                 </div>
                 <div className="flex-1 min-w-0">
                      {isDynamic ? (
@@ -556,7 +570,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                         value={varData.value || ""}
                         onChange={(e) => {
                             let val = e.target.value;
-                            if (isButtonType) {
+                            if (isButtonType && !isCopyCode) {
                                 val = val.replace(/\s/g, '_');
                             }
                             handleVariableChange(type, num, { value: val });
@@ -565,7 +579,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                     />)}
                     {isButtonType && (
                         <div className="space-y-1 mt-1 px-1">
-                            <p className="text-[9px] md:text-[10px] text-slate-400 font-medium truncate">{`${badgeLabel} - ${varData.url}`}</p>
+                            <p className="text-[9px] md:text-[10px] text-slate-400 font-medium truncate">{`${badgeLabel} - ${isCopyCode ? varData.example : varData.url}`}</p>
                         </div>
                     )}
                     
@@ -588,11 +602,11 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         );
     };
 
-    const headerVars = useMemo(() => extractVariableNames(tempValue.templateData?.headerText || '', 'number'), [tempValue.templateData?.headerText]);
-    const bodyVars = useMemo(() => extractVariableNames(tempValue.templateData?.bodyText || '', 'number'), [tempValue.templateData?.bodyText]);
+    const headerVars = useMemo(() => extractVariableNames(tempValue.templateData?.headerText || '', tempValue.templateData?.parameterFormat), [tempValue.templateData?.headerText, tempValue.templateData?.parameterFormat]);
+    const bodyVars = useMemo(() => extractVariableNames(tempValue.templateData?.bodyText || '', tempValue.templateData?.parameterFormat), [tempValue.templateData?.bodyText, tempValue.templateData?.parameterFormat]);
     const buttonVarsIndices = useMemo(() => {
         return tempValue.templateData?.buttons
-        ?.map((btn, idx) => btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic' ? String(idx) : null)
+        ?.map((btn, idx) => ((btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') || btn.type === 'COPY_CODE') ? String(idx) : null)
         .filter(Boolean) || [];
     }, [tempValue.templateData?.buttons]);
     

@@ -489,7 +489,8 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                         if (comp.type === "header" && comp.parameters) {
                             comp.parameters.forEach((param, idx) => {
                                 if (param.type === "text") {
-                                    dynamicExamples[idx + 1] = param.text;
+                                    const key = param.parameter_name || (idx + 1);
+                                    dynamicExamples[key] = param.text;
                                 } else if (["image", "video", "document"].includes(param.type?.toLowerCase())) {
                                     headerMediaUrl = param[param.type]?.link || headerMediaUrl;
                                 } else if (param.type === "location") {
@@ -498,7 +499,8 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                             });
                         } else if (comp.type === "body" && comp.parameters) {
                             comp.parameters.forEach((param, idx) => {
-                                dynamicExamples[idx + 1] = param.text;
+                                const key = param.parameter_name || (idx + 1);
+                                dynamicExamples[key] = param.text;
                             });
                         }
                     });

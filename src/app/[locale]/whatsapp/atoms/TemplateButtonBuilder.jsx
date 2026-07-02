@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useEffect } from "react";
 import {
     GripVertical,
     Trash2,
@@ -9,6 +9,7 @@ import {
     Globe,
     MessageSquare,
     Info,
+    Copy,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import {
@@ -58,6 +59,7 @@ const BUTTON_LIMITS = {
     URL: 2,
     PHONE_NUMBER: 1,
     WHATSAPP_CALL: 1,
+    COPY_CODE: 1,
 };
 
 /** Align legacy / API values with form schema (Static | Dynamic). */
@@ -80,6 +82,7 @@ function normalizeButtonFieldErrors(btnErr) {
         urlExample: "",
         phone: "",
         callDays: "",
+        example: "",
     };
     if (!btnErr || typeof btnErr !== "object") return out;
 
@@ -91,6 +94,7 @@ function normalizeButtonFieldErrors(btnErr) {
     out.urlExample = pick(btnErr.urlExample);
     out.phone = pick(btnErr.phoneNumber);
     out.callDays = pick(btnErr.activeForDays);
+    out.example = pick(btnErr.example);
 
     const rootMsg = "message" in btnErr && typeof btnErr.message === "string" ? btnErr.message : "";
     const rootType = btnErr.type;
@@ -179,15 +183,53 @@ function SortableButtonCard({
 /**
  * Main TemplateButtonBuilder Component
  */
-export default function TemplateButtonBuilder({ value = [], onChange, errors }) {
-    const t = useTranslations("whatsApp.templates.form.buttonsBuilder");
+export default function TemplateButtonBuilder({ value = [], onChange, errors, category }) {
+  const t = useTranslations("whatsApp.templates.form.buttonsBuilder");
+  const locale = useLocale();
 
-    const BUTTON_TYPES = useMemo(() => [
-        { id: "CUSTOM", label: t("types.CUSTOM"), icon: MessageSquare, limit: null },
-        { id: "VISIT_WEBSITE", label: t("types.VISIT_WEBSITE"), icon: Globe, limit: BUTTON_LIMITS.URL },
-        { id: "PHONE_NUMBER", label: t("types.PHONE_NUMBER"), icon: Phone, limit: BUTTON_LIMITS.PHONE_NUMBER },
-        { id: "WHATSAPP_CALL", label: t("types.WHATSAPP_CALL"), icon: MessageSquare, limit: BUTTON_LIMITS.WHATSAPP_CALL },
-    ], [t]);
+    const staticCopyCodeText = useMemo(() => {
+        return locale === "ar" ? "نسخ رمز العرض" : "Copy offer code";
+    }, [locale]);
+
+    useEffect(() => {
+        const updatedButtons = value.map(btn => {
+            if (btn.type === "COPY_CODE" && btn.text !== staticCopyCodeText) {
+                return { ...btn, text: staticCopyCodeText };
+            }
+            return btn;
+        });
+
+        // Only update if any button changed
+        const hasChanged = updatedButtons.some((btn, idx) => btn.text !== value[idx].text);
+        if (hasChanged) {
+            onChange(updatedButtons);
+        }
+    }, [value, staticCopyCodeText]);
+
+    useEffect(() => {
+        // Remove COPY_CODE buttons when category is not MARKETING
+        if (category !== "MARKETING") {
+            const hasCopyCodeButtons = value.some(btn => btn.type === "COPY_CODE");
+            if (hasCopyCodeButtons) {
+                const filteredButtons = value.filter(btn => btn.type !== "COPY_CODE");
+                onChange(filteredButtons);
+            }
+        }
+    }, [category, value, onChange]);
+
+    const BUTTON_TYPES = useMemo(() => {
+    const types = [
+      { id: "CUSTOM", label: t("types.CUSTOM"), icon: MessageSquare, limit: null },
+      { id: "VISIT_WEBSITE", label: t("types.VISIT_WEBSITE"), icon: Globe, limit: BUTTON_LIMITS.URL },
+      { id: "PHONE_NUMBER", label: t("types.PHONE_NUMBER"), icon: Phone, limit: BUTTON_LIMITS.PHONE_NUMBER },
+      { id: "WHATSAPP_CALL", label: t("types.WHATSAPP_CALL"), icon: MessageSquare, limit: BUTTON_LIMITS.WHATSAPP_CALL },
+    ];
+    // Only show COPY_CODE for MARKETING category
+    if (category === "MARKETING") {
+      types.push({ id: "COPY_CODE", label: t("types.COPY_CODE"), icon: Copy, limit: BUTTON_LIMITS.COPY_CODE });
+    }
+    return types;
+  }, [t, category]);
 
     const URL_TYPES = useMemo(() => [
         { id: "Static", label: t("urlTypes.Static") },
@@ -200,7 +242,7 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
-    const locale = useLocale();
+  
 
     const rawButtonsErrors = errors?.buttons;
     const buttonsItemErrors = Array.isArray(rawButtonsErrors) ? rawButtonsErrors : [];
@@ -232,11 +274,12 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
         const newButton = {
             id: `btn-${Math.random().toString(36).substr(2, 9)}`,
             type: typeId,
-            text: "",
+            text: typeId === "COPY_CODE" ? staticCopyCodeText : "",
             // Type specific defaults
             ...(typeId === "VISIT_WEBSITE" && { urlType: "Static", url: "", urlExample: "" }),
             ...(typeId === "PHONE_NUMBER" && { countryCode: "+20", phoneNumber: "" }),
             ...(typeId === "WHATSAPP_CALL" && { activeForDays: 7 }),
+            ...(typeId === "COPY_CODE" && { example: "" }),
         };
 
         onChange([...value, newButton]);
@@ -289,19 +332,22 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
 
                 {/* 2. Button Text */}
                 <div className="md:col-span-3 space-y-1.5">
-                    <Label className="text-[11px] text-slate-400 ">{t("text")}</Label>
+                    <Label className="text-[11px] text-slate-400">{t("text")}</Label>
                     <div className="relative ">
                         <Input
                             placeholder={t("textPlaceholder")}
                             maxLength={25}
-                            value={btn.text}
+                            value={btn.type === "COPY_CODE" ? staticCopyCodeText : btn.text}
                             onChange={(e) => handleUpdate(btn.id, { text: e.target.value })}
                             style={{ paddingLeft: locale === 'ar' ? 45 : 10, paddingRight: locale === 'ar' ? 10 : 45 }}
                             className={cn("text-sm", fe.text && "border-red-500 focus-visible:ring-red-500")}
+                            disabled={btn.type === "COPY_CODE"}
                         />
-                        <span className="absolute end-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
-                            25/{btn.text.length}
-                        </span>
+                        {btn.type !== "COPY_CODE" && (
+                            <span className="absolute end-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+                                25/{btn.text.length}
+                            </span>
+                        )}
                     </div>
                     {fe.text ? <p className="text-[11px] text-red-500 mt-1">{fe.text}</p> : null}
                 </div>
@@ -435,6 +481,37 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                                 </SelectContent>
                             </Select>
                             {fe.callDays ? <p className="text-[11px] text-red-500 mt-1">{fe.callDays}</p> : null}
+                        </div>
+                    </>
+                )}
+
+                {type === "COPY_CODE" && (
+                    <>
+                        <div className="md:col-span-6 space-y-1.5">
+                            <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
+                                <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200">
+                                    <Info size={14} className="text-primary" />
+                                    {t("copyCodeExample")}
+                                </div>
+                                <p className="text-[11px] text-slate-500 leading-relaxed">
+                                    {t("copyCodeExampleInfo")}
+                                </p>
+                                <Input
+                                    placeholder={t("copyCodeExamplePlaceholder")}
+                                    value={btn.example}
+                                    onChange={(e) => handleUpdate(btn.id, { example: e.target.value })}
+                                    maxLength={20}
+                                    className={cn(
+                                        "h-10 text-sm border-red-200 focus:border-red-400",
+                                        fe.example && "border-red-500 focus-visible:ring-red-500"
+                                    )}
+                                />
+                                {fe.example ? (
+                                    <p className="text-[11px] text-red-500 font-medium">{fe.example}</p>
+                                ) : !btn.example ? (
+                                    <p className="text-[10px] text-red-500 font-medium">{t("copyCodeExampleRequired")}</p>
+                                ) : null}
+                            </div>
                         </div>
                     </>
                 )}

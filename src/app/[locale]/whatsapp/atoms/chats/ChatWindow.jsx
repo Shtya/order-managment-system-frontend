@@ -116,7 +116,9 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         scrollRef,
         scrollToBottom,
         isNearBottom,
-        currentUnreadCount
+        currentUnreadCount,
+        checkIsNearBottom,
+        bottomSentinelRef
     } = useConversation();
 
     const [showInteractiveModal, setShowInteractiveModal] = useState(false);
@@ -149,11 +151,13 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
     const prevMessagesCount = useRef(0);
     const lastConversationId = useRef(null);
-    const lastMessage = useMemo(() => messages[messages.length - 1], [messages.length]);
+    const lastMessage = messages[messages.length - 1];
 
-    useEffect(() => {
-        if (!lastMessage?.id || lastMessage.direction === "inbound") return;
-        scrollToBottom("smooth");
+    useLayoutEffect(() => {
+        if (!lastMessage?.id) return;
+        if ((lastMessage.direction === "inbound" && checkIsNearBottom()) || lastMessage.direction === "outbound") {
+            scrollToBottom("instant");
+        }
     }, [lastMessage?.id]);
 
 
@@ -213,10 +217,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     useLayoutEffect(() => {
 
         if (prevScrollHeight.current > 0 && scrollRef.current) {
-
-
             const heightDifference = scrollRef.current.scrollHeight - prevScrollHeight.current;
-
 
             const targetScrollTop = scrollRef.current.scrollTop + heightDifference;
 
@@ -562,7 +563,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                     </div>
                 )}
 
-                <div id="messages-end"></div>
+                <div id="messages-end" ref={bottomSentinelRef}></div>
 
                 {/* Floating scroll to bottom button */}
             </div>

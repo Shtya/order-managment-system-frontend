@@ -65,38 +65,37 @@ export const ConversationProvider = ({ children }) => {
         }
     }, []);
 
-
-    // Scroll handler to check if we enter near bottom area
-    const handleScroll = useCallback(() => {
-        if (!!isAutoScrolling.current) return;
-        const nearBottom = checkIsNearBottom();
-
-        setIsNearBottom(nearBottom);
-        if (!scrollRef.current || !selectedConversation) return;
-
-        const currentConversation = conversations.find(c => c.id === selectedConversation.id);
-
-        if (nearBottom && currentConversation && (currentConversation.unreadCount || 0) > 0) {
-            markAsRead(selectedConversation.id);
-        }
-    }, [selectedConversation, conversations, markAsRead, checkIsNearBottom]);
-
-
-    // Attach scroll listener
+    const bottomSentinelRef = useRef(null);
     useEffect(() => {
-        if (!scrollRef.current) return;
+        // Make sure both the container and the sentinel exist
+        if (!scrollRef.current || !bottomSentinelRef.current) return;
 
-        const currentRef = scrollRef.current;
-        currentRef.addEventListener("scroll", handleScroll);
-        // Check initial state
-        setIsNearBottom(checkIsNearBottom());
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                const nearBottom = entry.isIntersecting;
+                // entry.isIntersecting is true when within 200px of the bottom
+                setIsNearBottom(nearBottom);
+
+                const currentConversation = conversations.find(c => c.id === selectedConversation.id);
+
+                if (nearBottom && currentConversation && (currentConversation.unreadCount || 0) > 0) {
+                    markAsRead(selectedConversation.id);
+                }
+            },
+            {
+                root: scrollRef.current, // The scrollable container
+                rootMargin: "0px 0px 200px 0px", // Expands the detection zone 200px downwards
+                threshold: 0, // Trigger as soon as 1px of that expanded margin hits
+            }
+        );
+
+        observer.observe(bottomSentinelRef.current);
 
         return () => {
-            currentRef.removeEventListener("scroll", handleScroll);
+            observer.disconnect();
         };
-    }, [handleScroll, checkIsNearBottom]);
+    }, [conversations,selectedConversation]); // Empty dependency array, sets up once on mount
 
-    // Keep currentUnreadCount in sync with selectedConversation
     useEffect(() => {
         if (!selectedConversation) {
             setCurrentUnreadCount(0);
@@ -366,12 +365,11 @@ export const ConversationProvider = ({ children }) => {
 
                         if (shouldScrollToBottom && scrollRef.current) {
                             // Use setTimeout to allow DOM to update
-                            isAutoScrolling.current = { id: msg.id };
+                            // isAutoScrolling.current = true;
                             setTimeout(() => {
                                 scrollToBottom("instant")
                                 setTimeout(() => {
-                                    if (isAutoScrolling.current?.id === msg.id)
-                                        isAutoScrolling.current = null;
+                                    isAutoScrolling.current = false;
                                 }, 50);
                             }, 0);
                         }
@@ -816,7 +814,9 @@ export const ConversationProvider = ({ children }) => {
             scrollToBottom,
             isNearBottom,
             currentUnreadCount,
-            isAutoScrolling
+            isAutoScrolling,
+            checkIsNearBottom,
+            bottomSentinelRef
         }}>
             {children}
         </ConversationContext.Provider>

@@ -201,8 +201,8 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
         //audio message
         //Call-to-Action URL Button Messages
         //Sticker Messages
-        { icon: MapPin, label: t("messageTypes.sendLocation"), color: "text-green-500", type: "location" },
-        { icon: MapIcon, label: t("messageTypes.requestLocation"), color: "text-green-500", type: "location_request" },
+        { icon: MapPin, label: t("messageTypes.location"), color: "text-green-500", type: "location" },
+        { icon: MapIcon, label: t("messageTypes.location_request"), color: "text-green-500", type: "location_request" },
         { icon: UserCircle, label: t("messageTypes.contact"), color: "text-teal-500", type: "contact" },
         { icon: List, label: t("messageTypes.list"), color: "text-blue-600", type: "list" },
         { icon: LayoutGrid, label: t("messageTypes.interactive"), color: "text-green-600", type: "interactive" },

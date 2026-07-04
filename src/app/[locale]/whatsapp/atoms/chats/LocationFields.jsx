@@ -5,34 +5,43 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/utils/cn";
 import { useTranslations } from "next-intl";
+import { VariableInput } from "@/components/ui/VariableInput";
 
-export default function LocationFields({ values, onChange, reverse = false, errors = {} }) {
+export default function LocationFields({
+    values,
+    onChange,
+    reverse = false,
+    errors = {},
+    variableProps = {}
+}) {
     const t = useTranslations("chats");
 
     return (
         <div className="space-y-4">
             <div className="space-y-2">
                 <Label className="text-xs font-bold">{t("locationName")} <span className="text-red-500">*</span></Label>
-                <Input 
-                    value={values.name || ""} 
-                    onChange={(e) => onChange({ name: e.target.value })}
-                    placeholder={t("locationName")} 
-                    className={errors.name ? "border-red-500" : ""} 
+                <VariableInput
+                    name="locationName"
+                    value={values.name || ""}
+                    onChange={(val) => onChange({ name: val })}
+                    placeholder={t("locationName")}
+                    error={!!errors.name}
+                    {...variableProps}
                 />
                 {errors.name && <p className="text-[10px] text-red-500">{errors.name}</p>}
             </div>
 
             <div className="space-y-2">
                 <Label className="text-xs font-bold">{t("locationAddress")} <span className="text-red-500">*</span></Label>
-                <textarea
-                    value={values.address || ""}
-                    onChange={(e) => onChange({ address: e.target.value })}
+                <VariableInput
+                    name="locationAddress"
+                    multiline
                     rows={3}
+                    value={values.address || ""}
+                    onChange={(val) => onChange({ address: val })}
                     placeholder={t("locationAddress")}
-                    className={cn(
-                        "w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                        errors.address ? "border-red-500" : ""
-                    )}
+                    error={!!errors.address}
+                    {...variableProps}
                 />
                 {errors.address && <p className="text-[10px] text-red-500">{errors.address}</p>}
             </div>

@@ -34,6 +34,7 @@ import { randomUUID } from 'crypto';
 import { useAuth } from '@/context/AuthContext';
 import RunDetailsPanel from './RunDetailsPanel';
 import StepExecutionDialog from './StepExecutionDialog';
+import { processNodesBeforeSave } from './nodeProcessors';
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
     const t = useTranslations("whatsApp.automations.builder");
@@ -55,7 +56,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
     const isEditMode = mode === 'edit';
     const isViewMode = mode === 'view';
 
-    
+
     const { subscribe } = useSocket();
     const adminId = user?.id;
     const [previewRun, setPreviewRun] = useState(null);
@@ -261,13 +262,31 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
         if (!validateFlow()) return;
 
         setSaving(true);
+        
+        // Toast IDs for reusing the same toast
+        const processingToastId = 'processing-steps';
+        const savingToastId = 'saving-automation';
+        
         try {
-            const triggerNode = nodes.find(n => n.type === 'trigger');
-
+            // Show processing steps toast
+            toast.loading(t('toolbar.processingSteps'), { id: processingToastId });
+            console.log("nodes", nodes);
+            // 1. Run all async node setups concurrently
+            const processedNodes = await processNodesBeforeSave(nodes);
+            console.log("processedNodes", processedNodes);
+            
+            // Show processing success
+            toast.success(t('toolbar.processingStepsSuccess'), { id: processingToastId });
+            
+            const triggerNode = processedNodes.find(n => n.type === 'trigger');
+            if (!triggerNode) {
+                toast.error(t('toolbar.missingTrigger'));
+                return;
+            }
+            
             const payload = {
-
                 flow: {
-                    nodes: nodes.map(n => ({
+                    nodes: processedNodes.map(n => ({
                         id: n.id,
                         type: n.type,
                         position: n.position,
@@ -290,18 +309,29 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                     version
                 }),
             };
-
+            
+            // Show saving automation toast
+            toast.loading(t('toolbar.saving'), { id: savingToastId });
+                
             if (isEditMode && automationId) {
                 await api.put(`/automation/${automationId}`, payload);
             } else {
                 await api.post('/automation', payload);
             }
+            
             resetFlow();
-            toast.success(publish ? t('toolbar.publishedSuccess') : t('toolbar.savedSuccess'));
+            // Show save/publish success
+            toast.success(publish ? t('toolbar.publishedSuccess') : t('toolbar.savedSuccess'), { id: savingToastId });
             router.push(isSuperAdmin ? '/dashboard/automations' : '/automations');
         } catch (error) {
-            const message = error.response?.data?.message;
-            toast.error(Array.isArray(message) ? message[0] : (message || t('toolbar.saveFailed')));
+            const prefix = error.nodeType ? `[${error.nodeType}]: ` : '';
+            const message = error.response?.data?.message || error.message;
+            // Check if we were processing steps or saving
+            if (toast.getState().toasts.find(t => t.id === processingToastId && t.visible)) {
+                toast.error(`${prefix}${Array.isArray(message) ? message[0] : (message || t('toolbar.processingStepsFailed'))}`, { id: processingToastId });
+            } else {
+                toast.error(`${prefix}${Array.isArray(message) ? message[0] : (message || t('toolbar.saveFailed'))}`, { id: savingToastId });
+            }
         } finally {
             setSaving(false);
         }
@@ -336,7 +366,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
         return () => window.removeEventListener('show-step-info', handleShowStepInfo);
     }, []);
 
-    
+
 
     return (
         <>

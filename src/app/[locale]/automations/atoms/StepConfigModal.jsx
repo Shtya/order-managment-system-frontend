@@ -9,12 +9,13 @@ import * as Configs from "./step-configs";
 import { useFlowStore } from "@/hook/useFlowStore";
 
 export function StepConfigModal({ isOpen, onClose, step, mode = "create", initialData = null }) {
+    
     const tCommon = useTranslations("common");
     const t = useTranslations("whatsApp.automations.builder");
     const [config, setConfig] = useState(initialData || {});
     const [errors, setErrors] = useState({});
     const { nodes, edges } = useFlowStore();
-
+    
     const [disabled, setDisabled] = useState(true);
     useEffect(() => {
         if (isOpen) {
@@ -28,6 +29,7 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
     const ConfigComponent = Configs[step.configComponent];
 
     if (step.hasCustom && ConfigComponent) {
+            
         return (
             <ConfigComponent
                 isOpen={isOpen}

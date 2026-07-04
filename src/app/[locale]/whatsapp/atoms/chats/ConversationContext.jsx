@@ -6,7 +6,7 @@ import { useSocket } from "@/context/SocketContext";
 import toast from "react-hot-toast";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useTranslations } from "next-intl";
-import { cacheMediaUrl } from "@/utils/whatsapp-healper";
+import { cacheMediaUrl, checkIfMediaUploadNeeded, handleMediaUpload } from "@/utils/whatsapp-healper";
 
 const ConversationContext = createContext();
 
@@ -94,7 +94,7 @@ export const ConversationProvider = ({ children }) => {
         return () => {
             observer.disconnect();
         };
-    }, [conversations,selectedConversation]); // Empty dependency array, sets up once on mount
+    }, [conversations, selectedConversation]); // Empty dependency array, sets up once on mount
 
     useEffect(() => {
         if (!selectedConversation) {
@@ -409,121 +409,7 @@ export const ConversationProvider = ({ children }) => {
         }
     }, [isMessagesLoading, hasMoreMessages, selectedConversation?.id, fetchMessages, messagesCursor]);
 
-    // Private function to check if media upload is needed for template or interactive messages
-    const checkIfMediaUploadNeeded = useCallback((msg) => {
-        let mediaInfo = null;
 
-        if (msg.type === "template" && msg.template?.components) {
-            const headerComponent = msg.template.components.find(c => c.type === "header");
-            const param = headerComponent?.parameters?.[0];
-            const mediaType = param?.type;
-            if (headerComponent && ["image", "video", "document"].includes(mediaType) && param) {
-                const mediaObj = param[mediaType];
-                if (mediaObj?.id) {
-                    delete mediaObj.link;
-                    delete mediaObj.file;
-                }
-                if (mediaObj && mediaObj.link && !mediaObj.id) {
-                    mediaInfo = { mediaType, mediaObj, headerComponent: "template" };
-                }
-            }
-        } else if (msg.type === "interactive" && msg.interactive?.header) {
-            const header = msg.interactive.header;
-            const mediaType = header.type;
-            if (["image", "video", "document"].includes(mediaType)) {
-                const mediaObj = header[mediaType];
-                if (mediaObj?.id) {
-                    delete mediaObj.link;
-                    delete mediaObj.file;
-                }
-                if (mediaObj && mediaObj.link && !mediaObj.id) {
-                    mediaInfo = { mediaType, mediaObj, headerComponent: "interactive" };
-                }
-            }
-        }
-
-        return mediaInfo;
-    }, []);
-
-    // Private function to handle media upload
-    const handleMediaUpload = useCallback(async (mediaInfo, currentAccountId, localId, msg) => {
-        try {
-            const file = mediaInfo.mediaObj?.file;
-            const link = mediaInfo.mediaObj?.link;
-
-            let body;
-            let headers = {};
-
-            if (file) {
-                const formData = new FormData();
-                formData.append("file", file);
-
-                body = formData;
-                headers["Content-Type"] = "multipart/form-data";
-            } else {
-                body = {
-                    url: link,
-                };
-            }
-
-            const uploadRes = await api.post(
-                "/whatsapp/messages/upload-media",
-                body,
-                {
-                    params: { accountId: currentAccountId },
-                    headers,
-                }
-            );
-
-            if (uploadRes.data?.id) {
-                const newId = uploadRes.data.id;
-                const mediaType = mediaInfo.mediaType;
-                const mediaObj = mediaInfo.mediaObj;
-
-                // Cache the local URL with the new media ID
-                if (mediaObj?.localUrl) {
-                    cacheMediaUrl(newId, mediaObj.localUrl);
-                } else if (mediaObj?.link) {
-                    cacheMediaUrl(newId, mediaObj.link);
-                } else if (mediaObj?.url) {
-                    cacheMediaUrl(newId, mediaObj.url);
-                }
-
-                // Update the local message content
-                setMessages(prev => prev.map(m => {
-                    if (m.id === localId) {
-                        const newContent = JSON.parse(JSON.stringify(m.content));
-
-                        if (mediaInfo.headerComponent === "template") {
-                            const h = newContent.template?.components?.find(c => c.type === "header");
-                            const p = h?.parameters?.[0];
-                            p[mediaType].id = newId;
-                            delete p[mediaType].link;
-                        } else if (mediaInfo.headerComponent === "interactive") {
-                            newContent.interactive.header[mediaType].id = newId;
-                            delete newContent.interactive.header[mediaType].link;
-                        }
-
-                        return { ...m, content: newContent, status: "pending" };
-                    }
-                    return m;
-                }));
-
-                // Update our local payload object
-                mediaObj.id = newId;
-                if (mediaType?.toLowerCase() === 'document') {
-                    mediaObj.filename = uploadRes.data?.filename;
-                }
-                delete mediaObj.link;
-                delete mediaObj.file;
-            }
-        } catch (err) {
-            console.error("Failed to auto-upload media:", err);
-            setMessages(prev => prev.map(m =>
-                m.id === localId ? { ...m, status: "pending" } : m
-            ));
-        }
-    }, []);
 
     const handleSendMessage = useCallback(async (msg, metadata) => {
         if (!selectedConversation) return;
@@ -583,7 +469,7 @@ export const ConversationProvider = ({ children }) => {
             messageType: msg.type,
             content,
             createdAt: new Date().toISOString(),
-            status: (isMedia && msg.file) || needsMediaUpload ? "uploading" : "pending", // Initial status for optimistic UI
+            status: needsMediaUpload ? "uploading" : "pending", // Initial status for optimistic UI
             conversationId: selectedConversation.id,
             accountId: msg.accountId || selectedAccount?.id,
             metadata: { localId, ...metadata },
@@ -612,40 +498,44 @@ export const ConversationProvider = ({ children }) => {
             let mediaId = null;
             const currentAccountId = msg.accountId || selectedAccount?.id;
 
-            // Handle Media Auto-Upload (from URL)
+            // Handle Media Auto-Upload (from URL or file)
             if (needsMediaUpload) {
-                await handleMediaUpload(mediaInfo, currentAccountId, localId, msg);
-            }
+                try {
+                    const newId = await handleMediaUpload(mediaInfo, currentAccountId, msg);
+                    const mediaType = mediaInfo.mediaType;
+                    mediaId = newId;
+                    // Update the local message content
+                    setMessages(prev => prev.map(m => {
+                        if (m.id === localId) {
+                            const newContent = JSON.parse(JSON.stringify(m.content));
 
-            // Handle Direct Media Upload if file is provided
-            if (isMedia && msg.file) {
-                const formData = new FormData();
-                formData.append("file", msg.file);
+                            if (mediaInfo.headerComponent === "template") {
+                                const h = newContent.template?.components?.find(c => c.type === "header");
+                                const p = h?.parameters?.[0];
+                                p[mediaType].id = newId;
+                                delete p[mediaType].link;
+                                delete p[mediaType].file;
+                            } else if (mediaInfo.headerComponent === "interactive") {
+                                newContent.interactive.header[mediaType].id = newId;
+                                delete newContent.interactive.header[mediaType].link;
+                                delete newContent.interactive.header[mediaType].file;
+                            } else if (mediaInfo.headerComponent === "direct") {
+                                newContent[mediaType].id = newId;
+                                delete newContent[mediaType].localUrl;
+                                delete newContent[mediaType].link;
+                                delete newContent[mediaType].file;
+                            }
 
-                const uploadRes = await api.post("/whatsapp/messages/upload-media", formData, {
-                    params: { accountId: currentAccountId },
-                    headers: { "Content-Type": "multipart/form-data" }
-                });
-
-                mediaId = uploadRes.data?.id;
-
-                if (!mediaId) throw new Error("Failed to get media ID from upload");
-
-                // Cache the local URL with the new media ID
-                if (content[msg.type]?.localUrl) {
-                    cacheMediaUrl(mediaId, content[msg.type].localUrl);
-                } else if (content[msg.type]?.url) {
-                    cacheMediaUrl(mediaId, content[msg.type].url);
+                            return { ...m, content: newContent, status: "pending" };
+                        }
+                        return m;
+                    }));
+                } catch (error) {
+                    console.error("Failed to auto-upload media:", error);
+                    setMessages(prev => prev.map(m =>
+                        m.id === localId ? { ...m, status: "pending" } : m
+                    ));
                 }
-
-                // Update content with real media ID and clear localUrl for sending
-                content[msg.type].id = mediaId;
-                delete content[msg.type].localUrl;
-
-                // Update status to pending after upload
-                setMessages(prev => prev.map(m =>
-                    m.id === localId ? { ...m, status: "pending" } : m
-                ));
             }
 
             const payload = {
@@ -676,7 +566,7 @@ export const ConversationProvider = ({ children }) => {
                 m.id === localId ? { ...m, status: "failed", error: error?.response?.data?.message || error?.message } : m
             ));
         }
-    }, [selectedConversation, replyTo, messages, checkIfMediaUploadNeeded, handleMediaUpload, selectedAccount]);
+    }, [selectedConversation, replyTo, messages, selectedAccount]);
 
     const handleRetryMessage = useCallback(async (failedMessage) => {
         // 1. Remove the failed message from UI

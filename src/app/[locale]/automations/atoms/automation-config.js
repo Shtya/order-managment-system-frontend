@@ -1,4 +1,4 @@
-import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users } from 'lucide-react';
+import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -47,6 +47,14 @@ export const BASE_CONFIG = {
                         icon: MessageSquare,
                         type: 'action',
                         configComponent: 'SendWhatsappTemplateConfig',
+                        className: 'max-w-4xl!',
+                        hasCustom: true
+                    },
+                    {
+                        id: 'send_whatsapp_message',
+                        icon: MessageCircle,
+                        type: 'action',
+                        configComponent: 'SendWhatsappMessageConfig',
                         className: 'max-w-4xl!',
                         hasCustom: true
                     },

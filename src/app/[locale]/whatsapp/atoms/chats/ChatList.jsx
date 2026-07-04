@@ -125,6 +125,7 @@ export default function ChatList() {
 
     const activeId = selectedConversation?.id;
     const onSelect = (conv) => {
+        if(conv.id === activeId) return;
         setSelectedConversation(conv);
         setMobileView("chat");
     };

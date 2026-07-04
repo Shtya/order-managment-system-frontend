@@ -77,6 +77,7 @@ function BuilderCanvas() {
   // Listen for edit events from nodes
   useEffect(() => {
     const handleEdit = (e) => {
+      
       const { id, data } = e.detail;
       // Find the step config in AUTOMATION_CONFIG
       let foundStep = null;
@@ -86,7 +87,7 @@ function BuilderCanvas() {
           if (item) foundStep = item;
         });
       });
-
+      
       if (foundStep) {
         setConfigModal({ open: true, step: foundStep, mode: 'edit', initialData: data.config, nodeId: id });
       }
@@ -193,6 +194,7 @@ function BuilderCanvas() {
       </ReactFlow>
 
       <StepConfigModal
+        key={`${configModal.nodeId || 'new'}-${configModal.open}`}
         isOpen={configModal.open}
         onClose={handleConfigSave}
         step={configModal.step}

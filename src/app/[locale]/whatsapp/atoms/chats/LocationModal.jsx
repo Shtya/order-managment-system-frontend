@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import {
     Dialog,
     DialogContent,
@@ -27,11 +27,10 @@ const createSchema = (t) =>
         longitude: yup.number().required(t("validation.required") || "Required"),
     });
 
-export default function LocationModal({ open, onOpenChange }) {
+export const LocationForm = forwardRef(({
+    variableProps = {},
+}, ref) => {
     const t = useTranslations("chats");
-    const {
-        handleSendMessage
-    } = useConversation();
 
     const schema = useMemo(() => createSchema(t), [t]);
 
@@ -41,6 +40,8 @@ export default function LocationModal({ open, onOpenChange }) {
         reset,
         setValue,
         watch,
+        getValues,
+        trigger,
         formState: { errors, isValid, isSubmitting },
     } = useForm({
         resolver: yupResolver(schema),
@@ -58,19 +59,39 @@ export default function LocationModal({ open, onOpenChange }) {
     const latitude = watch("latitude");
     const longitude = watch("longitude");
 
-    const onSubmit = (data) => {
-        handleSendMessage({
-            type: "location",
-            location: {
-                latitude: data.latitude,
-                longitude: data.longitude,
-                name: data.name,
-                address: data.address
-            }
-        });
-        onOpenChange(false);
-        reset();
+    const preparePayload = (data) => ({
+        type: "location",
+        location: {
+            latitude: data.latitude,
+            longitude: data.longitude,
+            name: data.name,
+            address: data.address
+        }
+    });
+
+    const restore = (payload) => {
+        if (payload?.location) {
+            if (payload.location.name) setValue("name", payload.location.name);
+            if (payload.location.address) setValue("address", payload.location.address);
+            if (payload.location.latitude) setValue("latitude", payload.location.latitude);
+            if (payload.location.longitude) setValue("longitude", payload.location.longitude);
+        }
     };
+
+    useImperativeHandle(ref, () => ({
+        reset,
+        getValues,
+        setValue,
+        trigger,
+        watch,
+        form: { control, handleSubmit, reset, formState: { errors, isValid, isSubmitting } },
+        submit: async () => {
+            const valid = await trigger();
+            if (!valid) return null;
+            return preparePayload(getValues());
+        },
+        restore,
+    }));
 
     const handleLocationSelect = async (newLat, newLng) => {
         setValue("latitude", newLat);
@@ -80,17 +101,94 @@ export default function LocationModal({ open, onOpenChange }) {
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${newLat}&lon=${newLng}&accept-language=ar`);
             const data = await res.json();
-            // if (data.display_name) {
             setValue("address", data.display_name);
             setValue("name", data.name || data.display_name.split(',')[0]);
-            // }
         } catch (error) {
             console.error("Geocoding error:", error);
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+            {/* Form Section */}
+            <div className="w-full md:w-1/3 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card border-b md:border-b-0 md:border-e border-border order-2 md:order-1">
+                <form id="location-form" className="space-y-4">
+                    <LocationFields 
+                        values={{ name, address, latitude, longitude }}
+                        onChange={(updates) => {
+                            Object.entries(updates).forEach(([key, val]) => setValue(key, val));
+                        }}
+                        errors={{
+                            name: errors.name?.message,
+                            address: errors.address?.message
+                        }}
+                        variableProps={variableProps}
+                    />
+                </form>
+            </div>
+
+            {/* Map Section */}
+            <div className="flex-1 relative bg-muted min-h-[300px] md:min-h-[600px] order-1 md:order-2">
+                <MapLocationPicker
+                    initialLocation={{ lat: latitude, lng: longitude }}
+                    onLocationSelect={handleLocationSelect}
+                    height="100%"
+                    width="100%"
+                />
+            </div>
+        </div>
+    );
+});
+LocationForm.displayName = "LocationForm";
+
+export default function LocationModal({
+    open,
+    onOpenChange,
+    variableProps = {},
+}) {
+    const t = useTranslations("chats");
+    const {
+        handleSendMessage
+    } = useConversation();
+    const formRef = React.useRef(null);
+
+    const handleSubmitClick = async () => {
+        const payload = await formRef.current?.submit();
+        
+        if (payload) {
+            handleSendMessage(payload);
+             formRef.current?.reset?.();
+            onOpenChange(false);
+        }
+    };
+
+    const handleCancel = () => {
+        formRef.current?.reset?.();
+        onOpenChange(false);
+    };
+
+    const footerButtons = (
+        <>
+            <Button_
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                label={t("cancel")}
+                className="w-full sm:w-auto"
+            />
+            <Button_
+                type="button"
+                onClick={handleSubmitClick}
+                disabled={formRef.current?.form?.formState?.isSubmitting}
+                loading={formRef.current?.form?.formState?.isSubmitting}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground  w-full sm:w-auto"
+                label={t("sendMessage")}
+            />
+        </>
+    );
+
+    return (
+        <Dialog open={open} onOpenChange={handleCancel}>
             <DialogContent className="sm:max-w-4xl w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
@@ -101,53 +199,13 @@ export default function LocationModal({ open, onOpenChange }) {
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                    {/* Form Section */}
-                    <div className="w-full md:w-1/3 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card border-b md:border-b-0 md:border-e border-border order-2 md:order-1">
-                        <form id="location-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                            <LocationFields 
-                                values={{ name, address, latitude, longitude }}
-                                onChange={(updates) => {
-                                    Object.entries(updates).forEach(([key, val]) => setValue(key, val));
-                                }}
-                                errors={{
-                                    name: errors.name?.message,
-                                    address: errors.address?.message
-                                }}
-                            />
-                        </form>
-                    </div>
-
-                    {/* Map Section */}
-                    <div className="flex-1 relative bg-muted min-h-[300px] md:min-h-[600px] order-1 md:order-2">
-                        <MapLocationPicker
-                            initialLocation={{ lat: latitude, lng: longitude }}
-                            onLocationSelect={handleLocationSelect}
-                            height="100%"
-                            width="100%"
-                        />
-                    </div>
-                </div>
+                <LocationForm
+                    ref={formRef}
+                    variableProps={variableProps}
+                />
 
                 <DialogFooter className="px-4 md:px-6 py-4 border-t border-border bg-card shrink-0 gap-2 flex flex-col-reverse sm:flex-row">
-                    <Button_
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                            onOpenChange(false);
-                            reset();
-                        }}
-                        label={t("cancel")}
-                        className="w-full sm:w-auto"
-                    />
-                    <Button_
-                        type="submit"
-                        form="location-form"
-                        disabled={isSubmitting}
-                        loading={isSubmitting}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground  w-full sm:w-auto"
-                        label={t("sendMessage")}
-                    />
+                    {footerButtons}
                 </DialogFooter>
             </DialogContent>
         </Dialog>

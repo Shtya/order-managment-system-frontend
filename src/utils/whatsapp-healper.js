@@ -1,5 +1,5 @@
 import React from 'react';
-import { BASE_URL } from './api';
+import api, { BASE_URL } from './api';
 import {
     Image as ImageIcon,
     Video as VideoIcon,
@@ -34,8 +34,8 @@ export const VAR_REGEX = {
  */
 // type =  'number' | 'named' | 'any'
 export const getVariableMatches = (text = "", type = "positional") => {
-  const regex = new RegExp(VAR_REGEX[type].source, "g");
-  return text.match(regex) || [];
+    const regex = new RegExp(VAR_REGEX[type].source, "g");
+    return text.match(regex) || [];
 };
 
 /**
@@ -49,7 +49,7 @@ export const extractVariableNames = (text = "", type = 'positional') => {
     while ((match = searchRegex.exec(text)) !== null) {
         matches.push(match[1]);
     }
-    
+
     return matches;
 };
 
@@ -167,26 +167,53 @@ export const MESSAGE_STATUS_LIST = [
     { value: MESSAGE_STATUS.FAILED, label: "Failed", color: "text-red-500" },
 ];
 
+export const getMediaUrlById = (mediaId, accountId) => {
+    if (!mediaId) return null;
 
-export const getMediaUrl = (content, type,message) => {
-    const media = content[type];
-    if (media?.localUrl) {
-        return media.localUrl;
-    }
-
-    const token = localStorage.getItem('accessToken');
-    const accountId = message?.accountId;
-    const mediaId = media?.id || content.id;
+    const token = localStorage.getItem("accessToken");
 
     const params = new URLSearchParams();
-    if (token) params.append('token', token);
-    if (accountId) params.append('accountId', accountId);
-    if (mediaId) params.append('mediaId', mediaId);
+    if (token) params.append("token", token);
+    if (accountId) params.append("accountId", accountId);
+    params.append("mediaId", mediaId);
 
     return `${BASE_URL}/whatsapp/media?${params.toString()}`;
 };
 
-export  const handleMediaClick = (type, content) => {
+export const getMediaUrl = (content, type, message) => {
+    const media = content[type];
+
+    if (media?.localUrl) {
+        return media.localUrl;
+    }
+
+    return getMediaUrlById(
+        media?.id || content?.id,
+        message?.accountId
+    );
+};
+
+
+export const getMediaUrlOrOriginal = (url, accountId) => {
+    if (!url) return url;
+
+    if (!isMediaId(url)) {
+        return url;
+    }
+
+    // Try cache first.
+    const cachedUrl = getCachedMediaUrl(url);
+    if (cachedUrl) {
+        return cachedUrl;
+    }
+
+    // Fall back to API endpoint.
+    return getMediaUrlById(url, accountId);
+};
+
+
+
+export const handleMediaClick = (type, content) => {
     const url = getMediaUrl(content, type);
     console.log(url);
     if (url) {
@@ -196,7 +223,7 @@ export  const handleMediaClick = (type, content) => {
 
 // Media URL Cache
 const mediaUrlCache = new Map();
-
+export const isMediaId = (value) => /^\d+$/.test(value ?? "");
 export const cacheMediaUrl = (mediaId, url) => {
     if (mediaId && url) {
         mediaUrlCache.set(mediaId, url);
@@ -209,12 +236,12 @@ export const getCachedMediaUrl = (mediaId) => {
 
 export const getMediaUrlWithCache = (content, type, message) => {
     const media = content[type];
-    
+
     // Check if we have a local URL (optimistic UI)
     if (media?.localUrl) {
         return media.localUrl;
     }
-    
+
     // Check cache first
     const mediaId = media?.id || content?.id;
     if (mediaId) {
@@ -223,21 +250,21 @@ export const getMediaUrlWithCache = (content, type, message) => {
             return cachedUrl;
         }
     }
-    
+
     // Fall back to original getMediaUrl
     return getMediaUrl(content, type, message);
 };
 
 export const formatMessagePreview = (message, t = (key) => key) => {
     if (!message) return "";
-    
+
     const { messageType, content } = message;
     const { bodyContent } = content || {};
     const interactiveType = content?.interactive?.type || "";
     const type = messageType === "interactive" ? interactiveType : messageType;
     const body = bodyContent || content?.[messageType]?.body || "";
     const bodyText = formatText(typeof body === "string" ? body : body?.text);
-    
+
     switch (type) {
         case "image":
             return (
@@ -282,7 +309,7 @@ export const formatMessagePreview = (message, t = (key) => key) => {
             return (
                 <div className="flex items-center gap-1.5">
                     <MapIcon size={14} className="text-muted-foreground" />
-                    <span>{bodyText || t("messageTypes.locationRequest") || "Location request"}</span>
+                    <span>{bodyText || t("messageTypes.location_request") || "Location request"}</span>
                 </div>
             );
         case "template":
@@ -292,7 +319,7 @@ export const formatMessagePreview = (message, t = (key) => key) => {
                     <span>{content?.template?.name || t("messageTypes.template") || "Template"}</span>
                 </div>
             );
-            
+
         case "text":
             return <span>{formatText(bodyText || "")}</span>;
         case "contacts":
@@ -330,12 +357,122 @@ export const formatMessagePreview = (message, t = (key) => key) => {
             );
         case "unsupported":
             return (
-            <div className='flex items-center gap-1.5 text-yellow-600 dark:text-yellow-400'>
-                <AlertCircle size={14} className="text-yellow-600 dark:text-yellow-400" />
-                <span>{t("unsupportedMessage") || "Unsupported message"}</span>
-            </div>
+                <div className='flex items-center gap-1.5 text-yellow-600 dark:text-yellow-400'>
+                    <AlertCircle size={14} className="text-yellow-600 dark:text-yellow-400" />
+                    <span>{t("unsupportedMessage") || "Unsupported message"}</span>
+                </div>
             )
         default:
             return <span>{formatText(bodyText || "")}</span>;
     }
 };
+
+
+// Private function to check if media upload is needed for template or interactive messages
+export  const checkIfMediaUploadNeeded = (msg) => {
+    let mediaInfo = null;
+    
+    if (msg.type === "template" && msg.template?.components) {
+        const headerComponent = msg.template.components.find(c => c.type === "header");
+        const param = headerComponent?.parameters?.[0];
+        const mediaType = param?.type;
+        if (headerComponent && ["image", "video", "document"].includes(mediaType) && param) {
+            const mediaObj = param[mediaType];
+            if (mediaObj?.id) {
+                delete mediaObj.link;
+                delete mediaObj.file;
+            }
+            if (mediaObj && (mediaObj.link || mediaObj.file) && !mediaObj.id) {
+                mediaInfo = { mediaType, mediaObj, headerComponent: "template" };
+            }
+        }
+    } else if (msg.type === "interactive" && msg.interactive?.header) {
+        const header = msg.interactive.header;
+        const mediaType = header.type;
+        if (["image", "video", "document"].includes(mediaType)) {
+            const mediaObj = header[mediaType];
+            if (mediaObj?.id) {
+                delete mediaObj.link;
+                delete mediaObj.file;
+            }
+            if (mediaObj && (mediaObj.link || mediaObj.file) && !mediaObj.id) {
+                mediaInfo = { mediaType, mediaObj, headerComponent: "interactive" };
+            }
+        }
+    } else if (["image", "video", "document"].includes(msg.type)) {
+        const mediaType = msg.type;
+        const mediaObj = msg[mediaType];
+        const file = mediaObj?.file || msg?.file;
+        
+        if (mediaObj && (mediaObj.link || file) && !mediaObj.id) {
+            mediaInfo = { mediaType, mediaObj, file, headerComponent: "direct" };
+        }
+    }
+
+    return mediaInfo;
+};
+
+// Private function to handle media upload
+export const handleMediaUpload = async (mediaInfo, currentAccountId) => {
+    try {
+        const file = mediaInfo.mediaObj?.file || mediaInfo.file;
+        const link = mediaInfo.mediaObj?.link;
+
+        let body;
+        let headers = {};
+
+        if (file) {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            body = formData;
+            headers["Content-Type"] = "multipart/form-data";
+        } else {
+            body = {
+                url: link,
+            };
+        }
+
+        const uploadRes = await api.post(
+            "/whatsapp/messages/upload-media",
+            body,
+            {
+                params: { accountId: currentAccountId },
+                headers,
+            }
+        );
+
+        if (uploadRes.data?.id) {
+            const newId = uploadRes.data.id;
+            const mediaType = mediaInfo.mediaType;
+            const mediaObj = mediaInfo.mediaObj;
+
+            // Cache the local URL with the new media ID
+            if (mediaObj?.localUrl) {
+                cacheMediaUrl(newId, mediaObj.localUrl);
+            } else if (mediaObj?.link) {
+                cacheMediaUrl(newId, mediaObj.link);
+            } else if (mediaObj?.url) {
+                cacheMediaUrl(newId, mediaObj.url);
+            }
+
+            // Update our local payload object
+            mediaObj.id = newId;
+            if (mediaType?.toLowerCase() === 'document') {
+                mediaObj.filename = uploadRes.data?.filename;
+                delete mediaObj.name;
+            }
+            delete mediaObj.link;
+            delete mediaObj.file;
+
+            if(mediaObj.url && mediaObj.url.startsWith("data:")) {
+                delete mediaObj.url;
+            }
+
+            return newId;
+        }
+    } catch (err) {
+        throw err;
+    }
+};
+

@@ -156,7 +156,7 @@ function BuilderCanvas({ version }) {
         </Panel>
       </ReactFlow>
 
-      <StepConfigModal isOpen={configModal.open} onClose={handleConfigSave} step={configModal.step} mode={configModal.mode} initialData={configModal.initialData} />
+      <StepConfigModal key={`${configModal.nodeId || 'new'}-${configModal.open}`} isOpen={configModal.open} onClose={handleConfigSave} step={configModal.step} mode={configModal.mode} initialData={configModal.initialData} />
       <ConfirmDeleteDialog />
       <SidebarBridge onSelect={handleSelectStepFromSidebar} />
     </div>

@@ -911,7 +911,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[11px] font-bold uppercase tracking-wider mb-0.5">{t("messageFailedToSend")}</p>
-                                    <p className="text-xs opacity-90 line-clamp-2">{message.error || "Unknown error occurred"}</p>
+                                    <p className="text-xs opacity-90 ">{message.error || "Unknown error occurred"}</p>
                                 </div>
                             </div>
                             {onRetry && (

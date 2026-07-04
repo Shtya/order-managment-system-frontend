@@ -207,7 +207,7 @@ export function BaseNode({
                                     onEdit?.();
                                 }}
                                 className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                                title={t('toolbar.reorder')}
+                                title={t('toolbar.edit')}
                             >
                                 <Edit3 className="h-4 w-4" />
                             </button>}

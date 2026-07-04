@@ -128,6 +128,8 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const [showLocationModal, setShowLocationModal] = useState(false);
     const [showListModal, setShowListModal] = useState(false);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
+    const [showMediaPreview, setShowMediaPreview] = useState(false);
+    const [mediaFileType, setMediaFileType] = useState(null);
 
     const locale = useLocale();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -324,7 +326,11 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     console.log(isNearBottom)
     return (
         <div className="flex-1 flex flex-col h-full whatsapp-wallpaper overflow-hidden relative">
-            <MediaPreviewOverlay />
+            <MediaPreviewOverlay
+                open={showMediaPreview}
+                onOpenChange={setShowMediaPreview}
+                fileType={mediaFileType}
+            />
             <InteractiveMessageModal
                 open={showInteractiveModal}
                 onOpenChange={setShowInteractiveModal}
@@ -585,6 +591,8 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                 setShowLocationModal={setShowLocationModal}
                 setShowListModal={setShowListModal}
                 setShowTemplateModal={setShowTemplateModal}
+                setShowMediaPreview={setShowMediaPreview}
+                setMediaFileType={setMediaFileType}
             />
 
             <CustomerModal

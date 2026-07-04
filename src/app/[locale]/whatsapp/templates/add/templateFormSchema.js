@@ -93,28 +93,29 @@ function buttonSchema(t) {
         .required(),
       text: yup
         .string()
+        .trim()
         .required(t("validation.buttonTextRequired"))
         .max(25, t("validation.buttonTextMax")),
       // if type is VISIT_WEBSITE, url is required
-      url: yup.string().when("type", {
+      url: yup.string().trim().when("type", {
         is: "VISIT_WEBSITE",
         then: (s) => s.required(t("validation.visitWebsiteUrlRequired")),
         otherwise: (s) => s.optional().nullable(),
       }).optional().nullable(),
       // if type is PHONE_NUMBER, countryCode and phoneNumber are required
-      countryCode: yup.string().when("type", {
+      countryCode: yup.string().trim().when("type", {
         is: "PHONE_NUMBER",
         then: (s) => s.required(t("validation.phoneNumberCountryCodeRequired")).max(10, t("validation.countryCodeMax")),
         otherwise: (s) => s.optional().nullable(),
       }).optional().nullable(),
-      phoneNumber: yup.string().when("type", {
+      phoneNumber: yup.string().trim().when("type", {
         is: "PHONE_NUMBER",
         then: (s) => s.required(t("validation.phoneNumberRequired")).max(20, t("validation.phoneNumberMax")),
         otherwise: (s) => s.optional().nullable(),
       }).optional().nullable(),
       urlType: yup.mixed().oneOf(["Static", "Dynamic", "STATIC", "DYNAMIC", undefined, null]).optional().nullable(),
       // if type is VISIT_WEBSITE and urlType is Dynamic, urlExample is required
-      urlExample: yup.string()
+      urlExample: yup.string().trim()
         .when(["type", "urlType"], {
           is: (type, urlType) =>
             type === "VISIT_WEBSITE" && String(urlType || "").toLowerCase() === "dynamic",
@@ -128,7 +129,7 @@ function buttonSchema(t) {
         .optional()
         .nullable(),
       // if type is COPY_CODE, example is required
-      example: yup.string()
+      example: yup.string().trim()
         .when("type", {
           is: "COPY_CODE",
           then: (s) => s.required(t("validation.copyCodeExampleRequired")).max(20, t("validation.copyCodeExampleMax")),
@@ -156,10 +157,12 @@ function buttonSchema(t) {
 }
 
 function sharedTemplateFields(t) {
+  
   return {
     headerType: yup.string().optional().nullable(),
     headerText: yup
       .string()
+      .trim()
       .max(MAX_HEADER_TEXT, t("validation.headerTextMax"))
       .test("header-var-count", t("validation.headerVarMax"), (val,testContext) => {
         const { parameterFormat } = testContext.parent;
@@ -170,13 +173,15 @@ function sharedTemplateFields(t) {
       })
       .optional()
       .nullable(),
-    headerUrl: yup.string().optional().nullable(),
+    headerUrl: yup.string().trim().optional().nullable(),
     parameterFormat: yup.string().optional().nullable(),
-    bodyText: yup.string().when("subcategory", {
+    bodyText: yup.string().trim().when("subcategory", {
       is: "AUTHENTICATION_OTP",
-      then: (s) => s.optional().nullable(),
-      otherwise: (s) =>
-        s
+      then: (s) => {
+        return s.optional().nullable()
+      },
+      otherwise: (s) => {
+        return s
           .required(t("validation.bodyRequired"))
           .max(MAX_BODY_LENGTH, t("validation.bodyMax", { max: MAX_BODY_LENGTH }))
           .test(
@@ -196,9 +201,9 @@ function sharedTemplateFields(t) {
 
               return !hasTooManyVariablesForText(value, parameterFormat);
             }
-          )
+          ) }
     }),
-    footerText: yup.string().max(MAX_FOOTER, t("validation.footerMax")).optional().nullable(),
+    footerText: yup.string().trim().max(MAX_FOOTER, t("validation.footerMax")).optional().nullable(),
     buttons: yup.array().of(buttonSchema(t)).max(10, t("validation.buttonsMax")).optional().default([]),
     subcategory: yup.string().optional(),
     authMethod: yup.string().optional(),
@@ -215,6 +220,7 @@ function sharedTemplateFields(t) {
       .optional(),
     otpCopyButtonText: yup
       .string()
+      .trim()
       .max(25, t("validation.buttonTextMax"))
       .when("subcategory", {
         is: "AUTHENTICATION_OTP",
@@ -230,7 +236,7 @@ function sharedTemplateFields(t) {
  */
 export function createTemplateFormSchema(t, mode = "create", superAdmin) {
   const shared = sharedTemplateFields(t);
-
+  
   if (mode === "edit") {
     return yup.object({
       ...shared,

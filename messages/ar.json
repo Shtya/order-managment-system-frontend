@@ -10466,7 +10466,7 @@
         "language": "اللغة"
       },
       "form": {
-        "selectLanguage" :"اختر اللغة",
+        "selectLanguage": "اختر اللغة",
         "addExpirationTime": "إضافة وقت انتهاء صلاحية",
         "title": "إنشاء قالب واتساب",
         "editTitle": "تعديل قالب واتساب",
@@ -10725,6 +10725,7 @@
         },
         "actionTypes": {
           "send_whatsapp_template": "إرسال قالب واتساب",
+          "send_whatsapp_message": "إرسال رسالة واتساب",
           "update_order_status": "تحديث حالة الطلب",
           "send_upsell": "إرسال عرض",
           "assign_order_to_employee": "تعيين الطلب لموظف"
@@ -10774,7 +10775,9 @@
           "yes": "نعم",
           "no": "لا",
           "noConditions": "لا توجد شروط",
-          "otherConditions": "+ {count} شروط أخرى"
+          "otherConditions": "+ {count} شروط أخرى",
+          "messageType": "نوع الرسالة",
+          "account": "الحساب"
         },
         "sidebar": {
           "title": "بناء المسارات",
@@ -10829,7 +10832,12 @@
           "loadingFlowData": "جاري تحميل بيانات المسار...",
           "failedToLoadData": "فشل في تحميل بيانات الأتمتة.",
           "errorOccurred": "عذراً، حدث خطأ ما",
-          "retry": "إعادة المحاولة"
+          "retry": "إعادة المحاولة",
+          "edit": "تعديل",
+          "missingTrigger": "يجب إضافة عنصر تفعيل (Trigger) لحفظ الأتمتة.",
+          "processingSteps": "جاري معالجة الخطوات...",
+          "processingStepsFailed": "فشل في معالجة الخطوات.",
+          "processingStepsSuccess": "تم معالجة الخطوات بنجاح!"
         },
         "indicators": {
           "updated_automatically": "تم تحديث البيانات تلقائياً"
@@ -10883,6 +10891,10 @@
           "selectNewStatus": "اختر الحالة الجديدة...",
           "whatsappTemplateTitle": "إرسال قالب واتساب",
           "whatsappTemplateDesc": "اختر القالب وقم بتعبئة المتغيرات المطلوبة",
+          "saveStep": "حفظ الخطوة",
+          "orderProperties": "بيانات الطلب",
+          "whatsappMessageTitle": "إرسال رسالة واتساب",
+          "whatsappMessageDesc": "اختر نوع الرسالة وقم بتكوينها",
           "recipientNumberDesc2": "الرقم الذي سيتم إرسال الرسالة إليه",
           "recipientNumberPlaceholder": "أدخل الرقم أو اترك فارغاً لاستخدام رقم العميل من الطلب",
           "whatsappTemplate": "قالب الواتساب",
@@ -10955,6 +10967,8 @@
             "shippingCompanyNotFound": "شركة الشحن  ({company}) لم تعد موجودة أو غير مفعلة حالياً.",
             "orderStatusCheckUpdated": "تم تحديث {fieldName} من \"{oldName}\" إلى \"{newName}\"",
             "orderStatusCheckNotFound": "حالة الطلب  ({status}) لم تعد موجودة.",
+            "whatsappAccountUpdated": "تم تحديث حساب واتساب من \"{oldName}\" إلى \"{newName}\"",
+            "whatsappAccountNotFound": "حساب واتساب المحدد ({account}) لم يعد موجوداً أو غير مفعل حالياً.",
             "generalError": "فشل التحقق من صحة شروط الطلب. يرجى المحاولة مرة أخرى.",
             "fieldNames": {
               "shippingCompany": "شركة الشحن",
@@ -11504,11 +11518,21 @@
       "list": "قائمة",
       "interactive": "أزرار تفاعلية",
       "template": "رسالة قالب",
-      "requestLocation": "طلب الموقع",
+      "location_request": "طلب الموقع",
       "sendLocation": "الموقع",
-      "locationRequest": "طلب الموقع",
       "button": "زر",
-      "sticker": "ملصق"
+      "sticker": "ملصق",
+      "descriptions": {
+        "text": "إرسال نص عادي",
+        "image": "إرسال صورة مع وصف نصي (اختياري)",
+        "document": "إرسال ملف مستند (DOC, PDF, وغيرها)",
+        "video": "إرسال فيديو مع وصف نصي (اختياري)",
+        "location": "إرسال الموقع الجغرافي",
+        "contact": "إرسال بطاقة جهة اتصال",
+        "list": "إرسال قائمة خيارات (List Message)",
+        "interactive": "إرسال أزرار تفاعلية (Buttons)",
+        "location_request": "طلب الموقع الجغرافي من العميل"
+      }
     },
     "address": "العنوان",
     "viewOptions": "عرض الخيارات",
@@ -11558,7 +11582,9 @@
     "to": "إلي",
     "messageNotFoundError": "لم يتم العثور على الرسالة",
     "today": "اليوم",
-    "yesterday": "أمس"
+    "yesterday": "أمس",
+    "captionPlaceholder": "اكتب تعليقًا...",
+    "pleaseUploadMedia": "يرجى رفع ملف وسائط."
   },
   "failedToLoadImage": "فشل تحميل الصورة",
   "failedToLoadVideo": " فشل تحميل الفيديو",

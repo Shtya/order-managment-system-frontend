@@ -4,10 +4,10 @@ import React from "react";
 import { PlusCircle, Trash2, Smile, List, Info, GripVertical, Plus } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import WhatsAppMessageBodyBuilder from "./WhatsAppMessageBodyBuilder";
 import MediaUpload from "@/app/[locale]/whatsapp/atoms/MediaUpload";
+import { VariableInput } from "@/components/ui/VariableInput";
 import {
   DndContext,
   closestCenter,
@@ -33,7 +33,8 @@ function SortableRow({
   tc,
   handleRowChange,
   handleRemoveRow,
-  errors
+  errors,
+  variableProps
 }) {
   const {
     attributes,
@@ -78,23 +79,28 @@ function SortableRow({
       </div>
       <div className="flex-1 space-y-3">
         <div className="space-y-1">
-          <Input
+          <VariableInput
+            name={`row-${sIdx}-${rIdx}-title`}
             placeholder={tc("rowTitle")}
             maxLength={24}
             value={row.title}
-            onChange={(e) => handleRowChange(sIdx, rIdx, "title", e.target.value)}
-            className={cn("h-9 border-none shadow-none focus-visible:ring-0 px-0 font-bold")}
+            onChange={(val) => handleRowChange(sIdx, rIdx, "title", val)}
+           {...variableProps}
+            error={rowError}
+            className="h-9"
           />
           {rowError && <p className="text-[11px] text-red-500">{rowError}</p>}
           <div className="h-px bg-slate-50 dark:bg-slate-800" />
         </div>
-        <textarea
+        <VariableInput
+          name={`row-${sIdx}-${rIdx}-description`}
           placeholder={tc("rowDescription")}
           maxLength={72}
-          rows={1}
+          multiline={true}
           value={row.description}
-          onChange={(e) => handleRowChange(sIdx, rIdx, "description", e.target.value)}
-          className="w-full bg-transparent focus:ring-0 resize-none text-[13px] text-slate-600 dark:text-slate-400 p-0 outline-none leading-relaxed border border-slate-100 dark:border-slate-800 focus-visible:outline-none! rounded-md p-2"
+          onChange={(val) => handleRowChange(sIdx, rIdx, "description", val)}
+         {...variableProps}
+          className="text-[13px] min-h-[40px]"
         />
       </div>
       <button
@@ -118,7 +124,9 @@ export default function ListMessageBuilder({
     maxSections: 10,
     headerTypes: ["NONE", "TEXT"],
     allowVariables: false
-  }
+  },
+  accountId,
+  variableProps
 }) {
   const tc = useTranslations("chats");
   const t = useTranslations("upsells.builder");
@@ -240,11 +248,14 @@ export default function ListMessageBuilder({
 
         {headerType === "TEXT" && (
           <div className="pt-2 space-y-2">
-            <Input
+            <VariableInput
+              name="headerText"
               placeholder={t("headerPlaceholder")}
               maxLength={60}
               value={headerText}
-              onChange={(e) => handleUpdate({ headerText: e.target.value })}
+              onChange={(val) => handleUpdate({ headerText: val })}
+              {...variableProps}
+              
             />
           </div>
         )}
@@ -254,6 +265,7 @@ export default function ListMessageBuilder({
             <MediaUpload
               type={headerType}
               url={headerUrl}
+              accountId={accountId}
               onUrlChange={(url) => handleUpdate({ headerUrl: url })}
               onFileChange={(file) => handleFileChange(file)}
             />
@@ -269,17 +281,20 @@ export default function ListMessageBuilder({
         placeholder={t("bodyPlaceholder")}
         allowVariables={config.allowVariables}
         error={bodyError}
+        variableProps={variableProps}
       />
       {/* {bodyError && <p className="text-[11px] text-red-500">{bodyError}</p>} */}
 
       {/* Footer Settings */}
       <div className="space-y-3">
         <Label className="text-base font-bold">{t("footer")} <span className="text-slate-400 text-sm font-normal">({t("optional")})</span></Label>
-        <Input
+        <VariableInput
+          name="footerText"
           placeholder={t("footerPlaceholder")}
           maxLength={60}
           value={footerText}
-          onChange={(e) => handleUpdate({ footerText: e.target.value })}
+          onChange={(val) => handleUpdate({ footerText: val })}
+          {...variableProps}
         />
       </div>
 
@@ -289,12 +304,14 @@ export default function ListMessageBuilder({
       <div className="space-y-6">
         <div className="space-y-3">
           <Label className="text-base font-bold">{tc("menuLabel")}</Label>
-          <Input
+          <VariableInput
+            name="menuLabel"
             placeholder={t("menuLabelPlaceholder")}
             maxLength={200}
             value={menuLabel}
-            onChange={(e) => handleUpdate({ menuLabel: e.target.value })}
-            className={cn(menuLabelError && "border-red-500 focus-visible:ring-red-500")}
+            onChange={(val) => handleUpdate({ menuLabel: val })}
+            {...variableProps}
+            error={menuLabelError}
           />
           {menuLabelError && <p className="text-[11px] text-red-500">{menuLabelError}</p>}
         </div>
@@ -342,12 +359,15 @@ export default function ListMessageBuilder({
                 <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   {tc("sectionTitle")} <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <VariableInput
+                  name={`section-${sIdx}-title`}
                   placeholder={t("sectionTitlePlaceholder")}
                   maxLength={24}
                   value={section.title}
-                  onChange={(e) => handleSectionTitleChange(sIdx, e.target.value)}
-                  className={cn("h-9 bg-white dark:bg-slate-950", sectionError && "border-red-500 focus-visible:ring-red-500")}
+                  onChange={(val) => handleSectionTitleChange(sIdx, val)}
+                  {...variableProps}
+                  error={sectionError}
+                  className="h-9 bg-white dark:bg-slate-950"
                   required
                 />
                 {sectionError && <p className="text-[11px] text-red-500">{sectionError}</p>}
@@ -376,6 +396,7 @@ export default function ListMessageBuilder({
                           tc={tc}
                           handleRowChange={handleRowChange}
                           handleRemoveRow={handleRemoveRow}
+                          variableProps={variableProps}
                           errors={errors?.sections}
                         />
                       ))}

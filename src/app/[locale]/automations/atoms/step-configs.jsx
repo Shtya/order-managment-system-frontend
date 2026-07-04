@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
-import { OrderPropertySelector } from "./OrderPropertySelector";
+import { OrderPropertySelector, useOrderProperties } from "./OrderPropertySelector";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
@@ -20,6 +20,18 @@ import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import UserSelect from "@/components/atoms/UserSelect";
+import { MediaForm, MediaPreviewForm } from "../../whatsapp/atoms/chats/MediaPreviewOverlay";
+import { LocationForm } from "../../whatsapp/atoms/chats/LocationModal";
+import { LocationRequestForm } from "../../whatsapp/atoms/chats/LocationRequestModal";
+import { ContactForm } from "../../whatsapp/atoms/chats/ContactModal";
+import { ListMessageForm } from "../../whatsapp/atoms/chats/ListMessageModal";
+import { InteractiveMessageForm } from "../../whatsapp/atoms/chats/InteractiveMessageModal";
+import { TextMessageForm } from "../../whatsapp/atoms/chats/TextMessageForm";
+import WhatsAppAccountSelect from "../../whatsapp/atoms/WhatsAppAccountSelect";
+import Button_ from "@/components/atoms/Button";
+import { useForm } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 
 function normalizeAxiosError(err) {
@@ -32,7 +44,7 @@ function normalizeAxiosError(err) {
  */
 function FormGroup({ label, description, children, error }) {
     return (
-        <div className="space-y-2 mb-6">
+        <div className="space-y-2">
             <Label className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">{label}</Label>
             {description && <p className="text-[11px] text-slate-400 mb-2">{description}</p>}
             {children}
@@ -266,104 +278,104 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
  * Action: Assign Order to Employee
  */
 export function AssignOrderToEmployeeConfig({ value, onChange, errors, setDisabled, onClose, mode }) {
-  const tConfig = useTranslations("whatsApp.automations.builder.config");
-  const tNodes = useTranslations("whatsApp.automations.builder.nodes");
-  const tCommon = useTranslations("common");
-  const [tempValue, setTempValue] = useState({
-    employeeId: value?.employeeId || null,
-    employeeName: value?.employeeName || null,
-    employeeEmail: value?.employeeEmail || null,
-    employeeAvatarUrl: value?.employeeAvatarUrl || null,
-    branches: value?.branches || [
-      { id: 'assigned', label: tNodes('branches.assigned'), condition: 'assigned' },
-      { id: 'not_eligable', label: tNodes('branches.notEligible'), condition: 'not_eligable' }
-    ]
-  });
-
-  useEffect(() => {
-    setDisabled(false);
-  }, [setDisabled]);
-
-  const handleEmployeeChange = (user) => {
-    const newBranches = [
-      { id: 'assigned', label: tNodes('branches.assigned'), condition: 'assigned' },
-      { id: 'not_eligable', label: tNodes('branches.notEligible'), condition: 'not_eligable' }
-    ];
-    
-    if (!user?.id) {
-      // Auto assign mode: add "no roles match" branch
-      newBranches.splice(1, 0, { id: 'no_roles_match', label: tNodes('branches.noRolesMatch'), condition: 'no_roles_match' });
-    }
-
-    setTempValue({
-      ...tempValue,
-      employeeId: user?.id || null,
-      employeeName: user?.name || null,
-      employeeEmail: user?.email || null,
-      employeeAvatarUrl: user?.avatarUrl || null,
-      branches: newBranches
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tNodes = useTranslations("whatsApp.automations.builder.nodes");
+    const tCommon = useTranslations("common");
+    const [tempValue, setTempValue] = useState({
+        employeeId: value?.employeeId || null,
+        employeeName: value?.employeeName || null,
+        employeeEmail: value?.employeeEmail || null,
+        employeeAvatarUrl: value?.employeeAvatarUrl || null,
+        branches: value?.branches || [
+            { id: 'assigned', label: tNodes('branches.assigned'), condition: 'assigned' },
+            { id: 'not_eligable', label: tNodes('branches.notEligible'), condition: 'not_eligable' }
+        ]
     });
-  };
 
-  const handleSave = () => {
-    onChange(tempValue);
-    onClose(tempValue);
-  };
+    useEffect(() => {
+        setDisabled(false);
+    }, [setDisabled]);
 
-  return (
-    <Dialog open={true} onOpenChange={() => onClose(null)}>
-      <DialogContent className="sm:max-w-[550px] w-full flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
-        <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
-                <Users size={20} className="md:size-6" />
-              </div>
-              <div className="">
-                <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('assignOrderToEmployee')}</h3>
-                <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('assignOrderToEmployeeDesc')}</p>
-              </div>
-            </DialogTitle>
-          </div>
-        </DialogHeader>
-        
-        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
-          <div className="space-y-4">
-            <FormGroup label={tConfig('selectEmployee')} description={tConfig('selectEmployeeDesc')} error={errors.employee}>
-              <UserSelect
-                value={tempValue.employeeId || "none"}
-                onSelect={handleEmployeeChange}
-                placeholder={tConfig('selectEmployeePlaceholder')}
-                allowNone={true}
-                noneLabel={tConfig('autoAssign')}
-                className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none"
-                contentClassName="bg-card-select"
-              />
-            </FormGroup>
-          </div>
-        </div>
+    const handleEmployeeChange = (user) => {
+        const newBranches = [
+            { id: 'assigned', label: tNodes('branches.assigned'), condition: 'assigned' },
+            { id: 'not_eligable', label: tNodes('branches.notEligible'), condition: 'not_eligable' }
+        ];
 
-        {/* Footer */}
-        <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
-          <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
-            <Button
-              variant="ghost"
-              onClick={() => onClose(null)}
-              className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button
-              onClick={handleSave}
-              className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
-            >
-              {mode === "create" ? tConfig('addStep') : tConfig('saveChanges')}
-            </Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+        if (!user?.id) {
+            // Auto assign mode: add "no roles match" branch
+            newBranches.splice(1, 0, { id: 'no_roles_match', label: tNodes('branches.noRolesMatch'), condition: 'no_roles_match' });
+        }
+
+        setTempValue({
+            ...tempValue,
+            employeeId: user?.id || null,
+            employeeName: user?.name || null,
+            employeeEmail: user?.email || null,
+            employeeAvatarUrl: user?.avatarUrl || null,
+            branches: newBranches
+        });
+    };
+
+    const handleSave = () => {
+        onChange(tempValue);
+        onClose(tempValue);
+    };
+
+    return (
+        <Dialog open={true} onOpenChange={() => onClose(null)}>
+            <DialogContent className="sm:max-w-[550px] w-full flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
+                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
+                    <div className="flex items-center justify-between">
+                        <DialogTitle className="flex items-center gap-3">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+                                <Users size={20} className="md:size-6" />
+                            </div>
+                            <div className="">
+                                <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('assignOrderToEmployee')}</h3>
+                                <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('assignOrderToEmployeeDesc')}</p>
+                            </div>
+                        </DialogTitle>
+                    </div>
+                </DialogHeader>
+
+                <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
+                    <div className="space-y-4">
+                        <FormGroup label={tConfig('selectEmployee')} description={tConfig('selectEmployeeDesc')} error={errors.employee}>
+                            <UserSelect
+                                value={tempValue.employeeId || "none"}
+                                onSelect={handleEmployeeChange}
+                                placeholder={tConfig('selectEmployeePlaceholder')}
+                                allowNone={true}
+                                noneLabel={tConfig('autoAssign')}
+                                className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none"
+                                contentClassName="bg-card-select"
+                            />
+                        </FormGroup>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
+                    <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            onClick={() => onClose(null)}
+                            className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                        >
+                            {tCommon('cancel')}
+                        </Button>
+                        <Button
+                            onClick={handleSave}
+                            className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                        >
+                            {mode === "create" ? tConfig('addStep') : tConfig('saveChanges')}
+                        </Button>
+                    </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
 }
 
 /**
@@ -385,7 +397,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
     const isOrderTrigger = triggerNode?.data?.type?.startsWith('order_');
 
     const [tempValue, setTempValue] = useState(value || {});
-    
+
     useEffect(() => {
         setTempValue(value || {});
     }, [value, isOpen]);
@@ -393,7 +405,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
     // Check if all variables are filled to enable save
     const isAllFilled = useMemo(() => {
         if (!tempValue.templateId) return false;
-        
+
         const config = tempValue.templateData || {};
         const parameterFormat = config.parameterFormat || 'positional';
         const headerVars = extractVariableNames(config.headerText || '', parameterFormat);
@@ -446,7 +458,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                 };
             }
         });
-        
+
         const locationData = config.headerType === 'LOCATION' ? {
             name: { type: 'direct', value: '', label: '', example: tConfig('locationName') },
             address: { type: 'direct', value: '', label: '', example: tConfig('locationAddress') },
@@ -540,10 +552,10 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         const isDynamic = varData.type === 'variable';
         const isButtonType = type === 'button';
         const isCopyCode = varData.buttonType === 'copy_code';
-        
+
         const badgeLabel = type === 'header' ? tConfig('messageHeader') : type === 'body' ? tConfig('messageBody') : buttonLabel || `${isCopyCode ? tConfig('copyCodeButton') : tConfig('linkButtons')} ${num}`;
-        const placeholder = isButtonType 
-            ? (isCopyCode ? varData.example : tChats("enterValueFor", { example: varData.url })) 
+        const placeholder = isButtonType
+            ? (isCopyCode ? varData.example : tChats("enterValueFor", { example: varData.url }))
             : tConfig("enterValue");
 
         return (
@@ -552,20 +564,20 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                     {isButtonType ? (isCopyCode ? <Copy size={12} className="md:size-[14px]" /> : <LinkIcon size={12} className="md:size-[14px]" />) : `{{${num}}}`}
                 </div>
                 <div className="flex-1 min-w-0">
-                     {isDynamic ? (
-                            <div className="h-9 md:h-12 rounded-lg md:rounded-2xl bg-primary/5 border border-primary/20 px-3 md:px-4 flex items-center justify-between group/var">
-                                <div className="flex flex-col min-w-0">
-                                    <span className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-widest">{tConfig('dynamicVariable', { type: badgeLabel })}</span>
-                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{varData.label}</span>
-                                </div>
-                                <button
-                                    onClick={() => handleVariableChange(type, num, { type: 'direct', value: '', label: '', variablePath: '' })}
-                                    className="p-1 md:p-1.5 rounded-lg hover:bg-rose-50 text-rose-500 opacity-0 group-hover/var:opacity-100 transition-all"
-                                >
-                                    <Trash2 size={12} className="md:size-[14px]" />
-                                </button>
+                    {isDynamic ? (
+                        <div className="h-9 md:h-12 rounded-lg md:rounded-2xl bg-primary/5 border border-primary/20 px-3 md:px-4 flex items-center justify-between group/var">
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-widest">{tConfig('dynamicVariable', { type: badgeLabel })}</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{varData.label}</span>
                             </div>
-                        ) : (<Input
+                            <button
+                                onClick={() => handleVariableChange(type, num, { type: 'direct', value: '', label: '', variablePath: '' })}
+                                className="p-1 md:p-1.5 rounded-lg hover:bg-rose-50 text-rose-500 opacity-0 group-hover/var:opacity-100 transition-all"
+                            >
+                                <Trash2 size={12} className="md:size-[14px]" />
+                            </button>
+                        </div>
+                    ) : (<Input
                         placeholder={placeholder}
                         value={varData.value || ""}
                         onChange={(e) => {
@@ -582,22 +594,22 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                             <p className="text-[9px] md:text-[10px] text-slate-400 font-medium truncate">{`${badgeLabel} - ${isCopyCode ? varData.example : varData.url}`}</p>
                         </div>
                     )}
-                    
+
                 </div>
-                   {isOrderTrigger && (
-                        <Button
-                            variant="outline"
-                            onClick={() => openOrderSelector(type, num)}
-                            className={cn(
-                                "h-9 md:h-12 w-9 md:w-12 rounded-lg md:rounded-2xl p-0 shrink-0 transition-all",
-                                isDynamic ? "border-primary text-primary bg-primary/5" : "border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50"
-                            )}
-                            title={tConfig('selectFromOrderData')}
-                        >
-                            <Database size={16} className="md:size-[18px]" />
-                        </Button>
-                    )}
-                
+                {isOrderTrigger && (
+                    <Button
+                        variant="outline"
+                        onClick={() => openOrderSelector(type, num)}
+                        className={cn(
+                            "h-9 md:h-12 w-9 md:w-12 rounded-lg md:rounded-2xl p-0 shrink-0 transition-all",
+                            isDynamic ? "border-primary text-primary bg-primary/5" : "border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50"
+                        )}
+                        title={tConfig('selectFromOrderData')}
+                    >
+                        <Database size={16} className="md:size-[18px]" />
+                    </Button>
+                )}
+
             </div>
         );
     };
@@ -606,11 +618,11 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
     const bodyVars = useMemo(() => extractVariableNames(tempValue.templateData?.bodyText || '', tempValue.templateData?.parameterFormat), [tempValue.templateData?.bodyText, tempValue.templateData?.parameterFormat]);
     const buttonVarsIndices = useMemo(() => {
         return tempValue.templateData?.buttons
-        ?.map((btn, idx) => ((btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') || btn.type === 'COPY_CODE') ? String(idx) : null)
-        .filter(Boolean) || [];
+            ?.map((btn, idx) => ((btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') || btn.type === 'COPY_CODE') ? String(idx) : null)
+            .filter(Boolean) || [];
     }, [tempValue.templateData?.buttons]);
-    
-    
+
+
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
             <DialogContent className="sm:max-w-[950px] w-full h-[95vh] md:h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
@@ -639,7 +651,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                         placeholder={tConfig('recipientNumberPlaceholder')}
                                         value={tempValue.recipientNumber || ""}
                                         onChange={(e) => setTempValue({ ...tempValue, recipientNumber: e.target.value })}
-                                        className="h-12 md:h-14 rounded-xl md:rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-4 md:px-6 text-xs md:text-sm"
+                                        className="h-12 md:h-14 rounded-xl md:rounded-2xl px-4 md:px-6 text-xs md:text-sm"
                                     />
                                 </FormGroup>
 
@@ -690,31 +702,31 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                     </div>
 
                                                     {tempValue.templateData?.headerType === 'LOCATION' && (
-                                                <div className="space-y-4">
-                                                    <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                        <MapPin size={12} /> {tConfig('locationHeader')}
-                                                    </p>
-                                                    <div className="flex flex-col gap-4 md:gap-6">
-                                                        <div className="w-full aspect-video rounded-xl md:rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-100 dark:bg-slate-900">
-                                                            <MapLocationPicker
-                                                                initialLocation={{
-                                                                    lat: tempValue.locationData?.latitude || 30.0444,
-                                                                    lng: tempValue.locationData?.longitude || 31.2357
-                                                                }}
-                                                                onLocationSelect={handleLocationCoordChange}
-                                                                height="100%"
-                                                                width="100%"
-                                                            />
-                                                        </div>
                                                         <div className="space-y-4">
-                                                            {renderVariableInput('location', 'name', tConfig('locationName'))}
-                                                            {renderVariableInput('location', 'address', tConfig('locationAddress'))}
+                                                            <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                                <MapPin size={12} /> {tConfig('locationHeader')}
+                                                            </p>
+                                                            <div className="flex flex-col gap-4 md:gap-6">
+                                                                <div className="w-full aspect-video rounded-xl md:rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-100 dark:bg-slate-900">
+                                                                    <MapLocationPicker
+                                                                        initialLocation={{
+                                                                            lat: tempValue.locationData?.latitude || 30.0444,
+                                                                            lng: tempValue.locationData?.longitude || 31.2357
+                                                                        }}
+                                                                        onLocationSelect={handleLocationCoordChange}
+                                                                        height="100%"
+                                                                        width="100%"
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-4">
+                                                                    {renderVariableInput('location', 'name', tConfig('locationName'))}
+                                                                    {renderVariableInput('location', 'address', tConfig('locationAddress'))}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            )}
+                                                    )}
 
-                                            {headerVars.length > 0 && (
+                                                    {headerVars.length > 0 && (
                                                         <div className="space-y-4">
                                                             <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                                                 <Layout size={12} /> {tConfig('messageHeader')}
@@ -755,7 +767,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                     <ExternalLink size={12} />
                                     {tConfig('livePreview')}
                                 </h4>
-                                
+
                                 {tempValue.templateData ? (
                                     <div className="scale-90 md:scale-95 lg:scale-100 origin-top transform-gpu w-full max-w-[350px] lg:max-w-none">
                                         <TemplatePreview
@@ -824,6 +836,335 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
     );
 }
 
+export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
+    const tChats = useTranslations("chats");
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tCommon = useTranslations("common");
+    const orderProperties = useOrderProperties();
+    const [step, setStep] = useState('select'); // 'select' | 'form'
+    const [selectedType, setSelectedType] = useState(null);
+    const [tempValue, setTempValue] = useState(value || {});
+    const [accounts, setAccounts] = useState([]);
+    const configuredType = tempValue.messageType;
+    const [localHeaderMediaFile, setLocalHeaderMediaFile] = useState(null);
+    const [headerMediaFile, setHeaderMediaFile] = useState(null);
+    const fileInputRef = useRef(null);
+    const formRef = useRef(null);
+
+    const handleAccountChange = useCallback((accountId, account) => {
+
+        setTempValue((prev) => ({
+            ...prev,
+            accountId,
+            accountName: account?.name || null,
+        }));
+    }, [accounts]);
+
+    const handleAccountsLoaded = useCallback((loadedAccounts) => {
+        setAccounts(loadedAccounts);
+    }, []);
+
+    const variableProps = useMemo(() => ({
+        disableHydrate: false,
+        variables: orderProperties,
+        popupTitle: tConfig('orderProperties'),
+    }), []);
+
+    useEffect(() => {
+        if (isOpen) {
+            const initialValue = value || {};
+            setTempValue(initialValue);
+            setSelectedType(initialValue.messageType || null);
+
+            if (initialValue.messageType) {
+
+                if (initialValue.messageData) {
+                    restoreFormData(initialValue.messageData);
+                }
+            }
+            setStep('select');
+        }
+    }, [value, isOpen]);
+
+    const messageTypes = [
+        { icon: MessageSquare, label: tChats("messageTypes.text"), description: tChats("messageTypes.descriptions.text"), color: "text-emerald-500", type: "text" },
+        { icon: ImageIcon, label: tChats("messageTypes.image"), description: tChats("messageTypes.descriptions.image"), color: "text-purple-500", type: "image" },
+        { icon: FileText, label: tChats("messageTypes.document"), description: tChats("messageTypes.descriptions.document"), color: "text-orange-500", type: "document" },
+        { icon: Video, label: tChats("messageTypes.video"), description: tChats("messageTypes.descriptions.video"), color: "text-red-500", type: "video" },
+        { icon: MapPin, label: tChats("messageTypes.location"), description: tChats("messageTypes.descriptions.location"), color: "text-green-500", type: "location" },
+        { icon: UserCircle, label: tChats("messageTypes.contact"), description: tChats("messageTypes.descriptions.contact"), color: "text-amber-500", type: "contact" },
+        { icon: List, label: tChats("messageTypes.list"), description: tChats("messageTypes.descriptions.list"), color: "text-teal-500", type: "list" },
+        { icon: LayoutGrid, label: tChats("messageTypes.interactive"), description: tChats("messageTypes.descriptions.interactive"), color: "text-blue-600", type: "interactive" },
+        { icon: MapIcon, label: tChats("messageTypes.location_request"), description: tChats("messageTypes.descriptions.location_request"), color: "text-emerald-600", type: "location_request" },
+    ];
+
+    const restoreFormData = (dataToRestore, restoreType) => {
+        if (!dataToRestore) return;
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts++;
+            if (formRef.current?.restore) {
+                formRef.current.restore(dataToRestore);
+                clearInterval(interval);
+            } else if (attempts > 15) {
+                clearInterval(interval); // Give up after ~300ms if not mounted
+            }
+        }, 20);
+    };
+    const handleTypeSelect = (type) => {
+        setSelectedType(type);
+        setStep('form');
+        // Restore immediately if clicking into an already configured type
+        if (type === tempValue.messageType && tempValue.messageData) {
+            restoreFormData(tempValue.messageData, tempValue.messageType);
+        }
+
+    };
+
+    const handleSubmitClick = async () => {
+        const payload = await formRef.current?.submit?.();
+        if (payload) {
+            setTempValue({
+                ...tempValue,
+                messageType: selectedType,
+                messageData: payload,
+                recipientNumber: tempValue.recipientNumber || "",
+                accountId: tempValue.accountId,
+                accountName: tempValue.accountName,
+            });
+            setStep('select');
+        }
+    };
+
+    const handleSave = useCallback(() => {
+
+        onClose({
+            ...tempValue,
+            messageType: tempValue.messageType,
+            messageData: tempValue.messageData,
+            recipientNumber: tempValue.recipientNumber || "",
+            accountId: tempValue.accountId,
+            accountName: tempValue.accountName,
+        });
+    }, [tempValue]);
+
+    const handleBack = () => {
+        setStep('select');
+        setSelectedType(null);
+    };
+
+    const renderMessageForm = () => {
+        switch (selectedType) {
+            case 'image':
+            case 'video':
+            case 'document':
+                return (
+                    <MediaForm
+                        ref={formRef}
+                        variableProps={variableProps}
+                        type={selectedType}
+                        accountId={tempValue?.accountId}
+                    />
+                );
+            case 'location':
+                return (
+                    <LocationForm
+                        ref={formRef}
+                        variableProps={variableProps}
+                    />
+                );
+            case 'location_request':
+                return (
+                    <LocationRequestForm
+                        ref={formRef}
+                        variableProps={variableProps}
+                    />
+                );
+            case 'contact':
+                return (
+                    <ContactForm
+                        ref={formRef}
+                        variableProps={variableProps}
+                    />
+                );
+            case 'list':
+                return (
+                    <ListMessageForm
+                        ref={formRef}
+                        setLocalHeaderMediaFile={setLocalHeaderMediaFile}
+                        localHeaderMediaFile={localHeaderMediaFile}
+                        variableProps={variableProps}
+                        accountId={tempValue?.accountId}
+                    />
+                );
+            case 'interactive':
+                return (
+                    <InteractiveMessageForm
+                        ref={formRef}
+                        setHeaderMediaFile={setHeaderMediaFile}
+                        headerMediaFile={headerMediaFile}
+                        variableProps={variableProps}
+                        accountId={tempValue?.accountId}
+                    />
+                );
+            case 'text':
+                return (
+                    <TextMessageForm
+                        ref={formRef}
+                        variableProps={variableProps}
+                    />
+                );
+            default:
+                return null;
+        }
+    };
+
+    useEffect(() => {
+        if (step === 'form' && selectedType && selectedType === tempValue.messageType && tempValue.messageData) {
+            restoreFormData(tempValue.messageData, tempValue.messageType);
+        }
+    }, [step, selectedType]);
+
+    return (
+        <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
+            <DialogContent className="sm:max-w-[950px] w-full h-[95vh] md:h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
+                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
+                    <div className="flex items-center justify-between">
+                        <DialogTitle className="flex items-center gap-3">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+                                <MessageSquare size={20} className="md:size-6" />
+                            </div>
+                            <div className="">
+                                <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('whatsappMessageTitle')}</h3>
+                                <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('whatsappMessageDesc')}</p>
+                            </div>
+                        </DialogTitle>
+                    </div>
+                </DialogHeader>
+
+                {step === 'select' && (
+                    <div className="flex-1 overflow-y-auto p-4 md:p-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                            <FormGroup label={tConfig('recipientNumber')}>
+                                <Input
+                                    placeholder={tConfig('recipientNumberPlaceholder')}
+                                    value={tempValue.recipientNumber || ""}
+                                    onChange={(e) => setTempValue({ ...tempValue, recipientNumber: e.target.value })}
+                                    className="h-12 md:h-14 rounded-xl md:rounded-2xl px-4 md:px-6 text-xs md:text-sm"
+                                />
+                            </FormGroup>
+                            <WhatsAppAccountSelect
+                                label={tConfig('whatsappAccount')}
+                                value={tempValue.accountId}
+                                onChange={handleAccountChange}
+                                onLoaded={handleAccountsLoaded}
+                            />
+                        </div>
+
+                        {/* Changed grid layout to 2 columns to fit horizontal card content */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            {messageTypes.map((msgType) => {
+                                const isConfigured = configuredType === msgType.type;
+                                const isSelected = tempValue.type === msgType.type;
+
+                                return (
+                                    <button
+                                        key={msgType.type}
+                                        type="button"
+                                        onClick={() => handleTypeSelect(msgType.type)}
+                                        className={`flex flex-col p-4 md:p-5 rounded-2xl border transition-all duration-200 text-start group w-full relative overflow-hidden ${isConfigured
+                                            ? "border-2 border-emerald-400 bg-emerald-50/10 dark:bg-emerald-950/10 shadow-sm"
+                                            : isSelected
+                                                ? "border-2 border-primary bg-primary/5 dark:bg-primary/10 shadow-sm"
+                                                : "border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm"
+                                            }`}
+                                    >
+                                        {/* Top Row: Title & Icon */}
+                                        <div className="flex items-center justify-between w-full gap-3 mb-2">
+                                            <h4
+                                                className={`text-xs md:text-sm font-bold truncate ${isConfigured
+                                                    ? "text-slate-800 dark:text-slate-100"
+                                                    : "text-slate-700 dark:text-slate-200"
+                                                    }`}
+                                            >
+                                                {msgType.label}
+                                            </h4>
+
+                                            {/* Icon Box */}
+                                            <div
+                                                className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${isConfigured
+                                                    ? "bg-transparent text-emerald-600 dark:text-emerald-400"
+                                                    : "bg-slate-50 dark:bg-slate-800/60 text-slate-500"
+                                                    }`}
+                                            >
+                                                <msgType.icon
+                                                    size={isConfigured ? 24 : 18}
+                                                    className={isConfigured ? "text-emerald-500" : msgType.color}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Bottom Row: Description */}
+                                        {msgType.description && (
+                                            <p
+                                                className={`text-[11px] md:text-xs leading-relaxed line-clamp-2 w-full ${isConfigured
+                                                    ? "text-slate-500 dark:text-slate-400 font-medium"
+                                                    : "text-slate-400 dark:text-slate-500"
+                                                    }`}
+                                            >
+                                                {msgType.description}
+                                            </p>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+                {step === 'form' && <div className="flex-1  flex flex-col overflow-hidden">
+                    <div className="flex-1 overflow-y-auto">
+                        {renderMessageForm()}
+                    </div>
+                </div>}
+                <DialogFooter className="px-4 md:px-8 py-4 border-t bg-white dark:bg-slate-900 shrink-0 gap-2 flex flex-col-reverse sm:flex-row">
+                    {step === 'select' ?
+                        <>
+                            <Button_
+                                type="button"
+                                variant="outline"
+                                onClick={() => onClose(null)}
+                                label={tCommon('cancel')}
+                                className="w-full sm:w-auto"
+                            />
+                            <Button_
+                                type="button"
+                                onClick={handleSave}
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+                                label={tConfig('saveStep')}
+                                disabled={!configuredType}
+                            />
+                        </>
+                        :
+                        <>
+                            <Button_
+                                type="button"
+                                variant="outline"
+                                onClick={() => handleBack()}
+                                label={tCommon('back')}
+                                className="w-full sm:w-auto"
+                            />
+                            <Button_
+                                type="button"
+                                onClick={handleSubmitClick}
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+                                label={tChats('save')}
+                            /> </>}
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 /**
  * Action: Send Upsell
  */
@@ -874,7 +1215,7 @@ export function SendUpsellConfig({ value, onChange, onClose }) {
  */
 export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled, onClose, context }) {
     const { shippingCompanies } = usePlatformSettings();
-     const tCommon = useTranslations("common");
+    const tCommon = useTranslations("common");
     const [stores, setStores] = useState([]);
     const [statuses, setStatuses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -1009,7 +1350,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     const handleUpdateCheck = (index, updates) => {
         const newChecks = [...checks];
         const currentCheck = { ...newChecks[index], ...updates };
-        
+
         if (updates.field) {
             const fieldDef = fields.find(f => f.id === updates.field);
             currentCheck.fieldLabel = fieldDef?.label;

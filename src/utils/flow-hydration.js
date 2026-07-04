@@ -247,6 +247,27 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                 break;
             }
 
+            case 'send_whatsapp_message': {
+                if (!config.accountId) break;
+
+                try {
+                    const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1, isActive: "true" } });
+                    const accounts = Array.isArray(res.data?.records) ? res.data.records : [];
+                    const freshAccount = accounts.find(acc => String(acc.id) === String(config.accountId));
+
+                    if (!freshAccount || !freshAccount?.isActive) throw new Error("WhatsApp account not found");
+
+                    if (config.accountName && config.accountName !== freshAccount.name) {
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.whatsappAccountUpdated", { oldName: config.accountName, newName: freshAccount.name }));
+                        result.newConfig.accountName = freshAccount.name;
+                    }
+                } catch (e) {
+                    result.isValid = false;
+                    result.error = t("whatsApp.automations.builder.config.hydration.whatsappAccountNotFound", { account: config.accountName || config.accountId });
+                }
+                break;
+            }
+
             default:
                 break;
         }

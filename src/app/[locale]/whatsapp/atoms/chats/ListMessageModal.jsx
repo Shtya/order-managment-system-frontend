@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import {
     Dialog,
     DialogContent,
@@ -19,53 +19,45 @@ import Button_ from "@/components/atoms/Button";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { isMediaId } from "@/utils/whatsapp-healper";
 
 const createSchema = (t) =>
     yup.object({
         headerType: yup.string().oneOf(["NONE", "TEXT", "IMAGE", "VIDEO", "DOCUMENT"]).default("NONE"),
-        headerText: yup.string().default(""),
-        headerUrl: yup.string().default(""),
-        bodyText: yup.string().required(t("validation.bodyTextRequired")),
-        footerText: yup.string().default(""),
+        headerText: yup.string().trim().default(""),
+        headerUrl: yup.string().trim().default(""),
+        bodyText: yup.string().trim().required(t("validation.bodyTextRequired")),
+        footerText: yup.string().trim().default(""),
         menuLabel: yup.string().required(t("validation.menuLabelRequired")),
         sections: yup.array()
             .of(
                 yup.object({
-                    title: yup.string().required(t("validation.sectionTitleRequired")),
+                    title: yup.string().trim().required(t("validation.sectionTitleRequired")),
                     rows: yup.array()
                         .of(
                             yup.object({
-                                // Fixed the missing closing quote after the template literal
-                                id: yup.string().default(() => `row_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
-                                title: yup.string().required(t("validation.rowTitleRequired")),
-                                description: yup.string().nullable().default("")
+                                id: yup.string().trim().default(() => `row_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
+                                title: yup.string().trim().required(t("validation.rowTitleRequired")),
+                                description: yup.string().trim().nullable().default("")
                             })
                         )
                         .min(1, t("validation.minOneRowRequired"))
                 })
             )
             .min(1, t("validation.sectionsRequired"))
-    });             
+    });
 
-export default function ListMessageModal({ open, onOpenChange }) {
+export const ListMessageForm = forwardRef(({
+    variableProps,
+    setLocalHeaderMediaFile,
+    localHeaderMediaFile,
+    accountId = null,
+}, ref) => {
     const t = useTranslations("chats");
     const locale = useLocale();
-    const {
-        handleSendMessage
-    } = useConversation();
-    
-    const [localHeaderMediaFile, setLocalHeaderMediaFile] = useState(null);
-    
     const schema = useMemo(() => createSchema(t), [t]);
 
-    const {
-        control,
-        handleSubmit,
-        watch,
-        setValue,
-        reset,
-        formState: { errors }
-    } = useForm({
+    const form = useForm({
         resolver: yupResolver(schema),
         defaultValues: {
             headerType: "NONE",
@@ -77,54 +69,161 @@ export default function ListMessageModal({ open, onOpenChange }) {
             sections: [{ title: "", rows: [] }]
         }
     });
-    
-    const watchAllFields = watch();
-    
-    useEffect(() => {
-        if (open) {
-            reset({
-                headerType: "NONE",
-                headerText: "",
-                headerUrl: "",
-                bodyText: "",
-                footerText: "",
-                menuLabel: t("viewOptions"),
-                sections: [{ title: "", rows: [] }]
-            });
-            setLocalHeaderMediaFile(null);
-        }
-    }, [open, reset, t]);
 
-    const onSubmit = (data) => {
-        handleSendMessage({
-            type: "interactive",
-            interactive: {
-                type: "list",
-                header: data.headerType !== "NONE" ? {
-                    type: data.headerType.toLowerCase(),
-                    [data.headerType.toLowerCase()]: data.headerType === "TEXT"
-                        ? data.headerText
-                        : { 
+    const {
+        watch,
+        setValue,
+        reset,
+        getValues,
+        trigger,
+        formState: { errors }
+    } = form;
+
+    const watchAllFields = watch();
+
+    const preparePayload = (data) => {
+        const mediaId = data?.id ? data?.id : isMediaId(data.headerUrl) ? data.headerUrl : undefined;
+        return {
+        type: "interactive",
+        interactive: {
+            type: "list",
+            header: data.headerType !== "NONE" ? {
+                type: data.headerType.toLowerCase(),
+                [data.headerType.toLowerCase()]: data.headerType === "TEXT"
+                    ? data.headerText
+                    : mediaId
+                        ? {
+                            id: mediaId,
+                        }
+                        : {
                             link: data.headerUrl,
-                            file: localHeaderMediaFile || undefined
-                         }
-                } : undefined,
-                body: { text: data.bodyText },
-                footer: data.footerText ? { text: data.footerText } : undefined,
-                action: {
-                    button: data.menuLabel,
-                    sections: data.sections.map((s) => ({
-                        title: s.title,
-                        rows: s.rows.map((r) => ({
-                            id: r.id,
-                            title: r.title,
-                            description: r.description || undefined
-                        }))
+                            file: localHeaderMediaFile || undefined,
+                        },
+            } : undefined,
+            body: { text: data.bodyText },
+            footer: data.footerText ? { text: data.footerText } : undefined,
+            action: {
+                button: data.menuLabel,
+                sections: data.sections.map((s) => ({
+                    title: s.title,
+                    rows: s.rows.map((r) => ({
+                        id: r.id,
+                        title: r.title,
+                        description: r.description || undefined
                     }))
+                }))
+            }
+        }
+    }};
+
+    const restore = (payload) => {
+        if (payload?.interactive) {
+            const interactive = payload.interactive;
+            const header = interactive.header[interactive.header.type];
+            const mediaLink = header?.id ?? header?.link;
+            if (interactive.header) {
+                setValue("headerType", interactive.header.type.toUpperCase());
+                if (interactive.header.type === "text") {
+                    setValue("headerText", interactive.header.text);
+                } else {
+                    setValue("headerUrl", mediaLink);
+                    // Note: Can't restore file automatically without user re-selecting
                 }
             }
-        });
-        onOpenChange(false);
+            if (interactive.body?.text) setValue("bodyText", interactive.body.text);
+            if (interactive.footer?.text) setValue("footerText", interactive.footer.text);
+            if (interactive.action?.button) setValue("menuLabel", interactive.action.button);
+            if (interactive.action?.sections) setValue("sections", interactive.action.sections);
+        }
+    };
+
+    useImperativeHandle(ref, () => ({
+        setValue,
+        getValues,
+        reset: (values) => {
+            if (!values && setLocalHeaderMediaFile)
+                setLocalHeaderMediaFile(null);
+            reset(values);
+        },
+        trigger,
+        watch,
+        form,
+        submit: async () => {
+            const valid = await trigger();
+            if (!valid) return null;
+            return preparePayload(getValues());
+        },
+        restore,
+    }));
+
+    return (
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+            {/* Builder Section */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar border-b md:border-b-0 md:border-e border-border bg-card">
+                <ListMessageBuilder
+                    value={watchAllFields}
+                    onChange={(newValue) => {
+                        Object.entries(newValue).forEach(([key, value]) => {
+                            setValue(key, value);
+                        });
+                    }}
+                    setHeaderMediaFile={setLocalHeaderMediaFile}
+                    errors={errors}
+                    accountId={accountId}
+                    variableProps={variableProps}
+                />
+            </div>
+
+            {/* Preview Section */}
+            <div className="w-full md:w-[300px] flex flex-col items-center justify-center p-4 md:p-6 shrink-0 overflow-y-auto md:border-s border-border">
+                <div className="sticky top-0 w-full flex flex-col items-center">
+                    <p className="text-[10px] md:text-xs font-bold text-muted-foreground/40 uppercase tracking-widest mb-4 md:mb-6">
+                        {t("preview")}
+                    </p>
+                    <div className="scale-75 md:scale-90 origin-top transform-gpu">
+                        <TemplatePreview
+                            isInteractive={true}
+                            isList={true}
+                            seeAllOptionsLabel={watchAllFields.menuLabel}
+                            template={{
+                                headerType: watchAllFields.headerType,
+                                headerText: watchAllFields.headerText,
+                                headerUrl: watchAllFields.headerUrl,
+                                bodyText: watchAllFields.bodyText,
+                                footerText: watchAllFields.footerText,
+                                sections: watchAllFields.sections,
+                                language: locale === "ar" ? "ar" : "en"
+                            }}
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+});
+ListMessageForm.displayName = "ListMessageForm";
+
+export default function ListMessageModal({
+    open,
+    onOpenChange,
+    variableProps = {}
+}) {
+    const t = useTranslations("chats");
+    const {
+        handleSendMessage
+    } = useConversation();
+    const [localHeaderMediaFile, setLocalHeaderMediaFile] = useState(null);
+
+    const formRef = React.useRef(null);
+
+    const handleSubmitClick = async () => {
+        const payload = await formRef.current?.submit();
+
+        if (payload) {
+            handleSendMessage(payload);
+            formRef.current?.reset?.();
+            onOpenChange(false);
+        }
     };
 
     return (
@@ -142,58 +241,27 @@ export default function ListMessageModal({ open, onOpenChange }) {
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                    {/* Builder Section */}
-                    <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar border-b md:border-b-0 md:border-e border-border bg-card">
-                        <ListMessageBuilder
-                            value={watchAllFields}
-                            onChange={(newValue) => {
-                                Object.entries(newValue).forEach(([key, value]) => {
-                                    setValue(key, value);
-                                });
-                            }}
-                            setHeaderMediaFile={setLocalHeaderMediaFile}
-                            errors={errors}
-                        />
-                    </div>
-
-                    {/* Preview Section */}
-                    <div className="w-full md:w-[300px] b flex flex-col items-center justify-center p-4 md:p-6 shrink-0 overflow-y-auto md:border-s border-border">
-                        <div className="sticky top-0 w-full flex flex-col items-center">
-                            <p className="text-[10px] md:text-xs font-bold text-muted-foreground/40 uppercase tracking-widest mb-4 md:mb-6">
-                                {t("preview")}
-                            </p>
-                            <div className="scale-75 md:scale-90 origin-top transform-gpu">
-                                <TemplatePreview
-                                    isInteractive={true}
-                                    isList={true}
-                                    seeAllOptionsLabel={watchAllFields.menuLabel}
-                                    template={{
-                                        headerType: watchAllFields.headerType,
-                                        headerText: watchAllFields.headerText,
-                                        headerUrl: watchAllFields.headerUrl,
-                                        bodyText: watchAllFields.bodyText,
-                                        footerText: watchAllFields.footerText,
-                                        sections: watchAllFields.sections,
-                                        language: locale === "ar" ? "ar" : "en"
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <ListMessageForm
+                    ref={formRef}
+                    variableProps={variableProps}
+                    localHeaderMediaFile={localHeaderMediaFile}
+                    setLocalHeaderMediaFile={setLocalHeaderMediaFile}
+                />
 
                 <DialogFooter className="px-4 md:px-6 py-4 border-t border-border bg-card shrink-0 gap-2 flex flex-col-reverse sm:flex-row">
                     <Button_
                         type="button"
                         variant="outline"
-                        onClick={() => onOpenChange(false)}
+                        onClick={() => {
+                            formRef.current?.reset?.();
+                            onOpenChange(false)
+                        }}
                         label={t("cancel")}
                         className="w-full sm:w-auto"
                     />
                     <Button_
                         type="button"
-                        onClick={handleSubmit(onSubmit)}
+                        onClick={handleSubmitClick}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                         label={t("sendMessage")}
                     />

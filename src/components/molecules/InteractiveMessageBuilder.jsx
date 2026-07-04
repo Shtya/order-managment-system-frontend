@@ -4,10 +4,10 @@ import React from "react";
 import { PlusCircle, Trash2, Smile, Bold, Italic, Strikethrough, Code, Info } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import WhatsAppMessageBodyBuilder from "./WhatsAppMessageBodyBuilder";
 import MediaUpload from "@/app/[locale]/whatsapp/atoms/MediaUpload";
+import { VariableInput } from "@/components/ui/VariableInput";
 
 export default function InteractiveMessageBuilder({
   value,
@@ -20,7 +20,9 @@ export default function InteractiveMessageBuilder({
     headerTypes: ["NONE", "TEXT", "IMAGE", "VIDEO", "DOCUMENT"],
     allowVariables: false,
     buttonStyles: [] // e.g. ["emerald", "red"]
-  }
+  },
+  accountId,
+  variableProps = {}
 }) {
   const t = useTranslations("upsells.builder");
   const {
@@ -102,12 +104,14 @@ export default function InteractiveMessageBuilder({
 
           {headerType === "TEXT" && (
             <div className="pt-2 space-y-2">
-              <Input
+              <VariableInput
+                name="headerText"
                 placeholder={t("headerPlaceholder")}
                 maxLength={60}
                 value={headerText}
-                onChange={(e) => handleUpdate({ headerText: e.target.value })}
-                className={cn(errors.headerText && "border-red-500")}
+                onChange={(val) => handleUpdate({ headerText: val })}
+                error={errors.headerText}
+                {...variableProps}
               />
               {errors.headerText && <p className="text-[11px] text-red-500">{errors.headerText.message || errors.headerText}</p>}
             </div>
@@ -118,6 +122,7 @@ export default function InteractiveMessageBuilder({
               <MediaUpload
                 type={headerType}
                 url={headerUrl}
+                accountId={accountId}
                 onUrlChange={(url) => handleUpdate({ headerUrl: url })}
                 onFileChange={(file) => handleFileChange(file)}
               />
@@ -135,18 +140,21 @@ export default function InteractiveMessageBuilder({
         placeholder={t("bodyPlaceholder")}
         allowVariables={config.allowVariables}
         error={errors.bodyText?.message || errors.bodyText}
+        variableProps={variableProps}
       />
 
       {/* Footer Settings */}
       <div className="space-y-3">
         <Label className="text-base font-bold">{t("footer")} <span className="text-slate-400 text-sm font-normal">({t("optional")})</span></Label>
         <div className="space-y-2">
-          <Input
+          <VariableInput
+            name="footerText"
             placeholder={t("footerPlaceholder")}
             maxLength={60}
             value={footerText}
-            onChange={(e) => handleUpdate({ footerText: e.target.value })}
-            className={cn(errors.footerText && "border-red-500")}
+            onChange={(val) => handleUpdate({ footerText: val })}
+            {...variableProps}
+            error={errors.footerText}
           />
           {errors.footerText && <p className="text-[11px] text-red-500">{errors.footerText.message || errors.footerText}</p>}
         </div>
@@ -171,12 +179,15 @@ export default function InteractiveMessageBuilder({
               <div key={idx} className="flex items-center gap-2 group">
                 <div className="flex-1 space-y-2">
                   <div className={cn("relative border-s-4 rounded-md", borderClass)}>
-                    <Input
+                    <VariableInput
+                      name={`button-${idx}`}
                       placeholder={t("buttonPlaceholder")}
                       maxLength={20}
                       value={btn.text}
-                      onChange={(e) => handleButtonChange(idx, e.target.value)}
-                      className={cn("h-11 ps-4 pe-14", btnError && "border-red-500")}
+                      onChange={(val) => handleButtonChange(idx, val)}
+                      // {...variableProps}
+                      error={btnError}
+                      className="h-11"
                     />
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
                       {btn.text?.length || 0}/20

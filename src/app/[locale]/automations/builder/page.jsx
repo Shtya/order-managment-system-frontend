@@ -87,7 +87,7 @@ function BuilderCanvas() {
           if (item) foundStep = item;
         });
       });
-
+      
       if (foundStep) {
         setConfigModal({ open: true, step: foundStep, mode: 'edit', initialData: data.config, nodeId: id });
       }
@@ -194,6 +194,7 @@ function BuilderCanvas() {
       </ReactFlow>
 
       <StepConfigModal
+        key={`${configModal.nodeId || 'new'}-${configModal.open}`}
         isOpen={configModal.open}
         onClose={handleConfigSave}
         step={configModal.step}

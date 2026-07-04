@@ -51,22 +51,23 @@ export default function WhatsAppAccountSelect({
             setAccountsLoading(false);
             onLoadChange?.(false);
         }
-    }, [value, allowAll, onChange, onLoaded]);
+    }, [value, allowAll]);
 
     // Set default value if it's not already set
     useEffect(() => {
         
-        if (!value && defaultWhatsAppAccountId) {
-            onChange?.(defaultWhatsAppAccountId);
+        if (!value && defaultWhatsAppAccountId && accounts.length > 0) {
+            const defaultAccount = accounts.find((acc) => acc.id === defaultWhatsAppAccountId);
+            onChange?.(defaultWhatsAppAccountId, defaultAccount);
         }
-    }, [value, defaultWhatsAppAccountId]);
+    }, [value, defaultWhatsAppAccountId,accounts]);
 
     useEffect(() => {
         fetchAccounts();
     }, [fetchAccounts]);
 
 
-
+    
     return (
         <div className="space-y-2 w-full ">
             {displayLabel && !noLabel && (
@@ -74,7 +75,10 @@ export default function WhatsAppAccountSelect({
                     {displayLabel}
                 </Label>
             )}
-            <Select value={value} onValueChange={onChange}>
+            <Select value={value} onValueChange={(accountId) => {
+                const selectedAccount = accounts.find((acc) => acc.id === accountId);
+                onChange?.(accountId, selectedAccount);
+            }}>
                 <SelectTrigger disabled={accountsLoading} className="h-[52px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl">
                     <SelectValue placeholder={t("selectPlaceholder")} />
                 </SelectTrigger>

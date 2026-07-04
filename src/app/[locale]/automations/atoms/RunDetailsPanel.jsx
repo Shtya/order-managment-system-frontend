@@ -21,7 +21,7 @@ import { cn } from '@/utils/cn';
 
 const formatDuration = (start, end, t) => {
   if (!end) return "-";
-
+  
   const diffMs = new Date(end).getTime() - new Date(start).getTime();
 
   const totalSeconds = Math.floor(diffMs / 1000);

@@ -73,7 +73,7 @@ export function WhatsAppButtonMenu({
                     // 1. Made the background a motion.div for a rapid fade out
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0, transition: { duration: 0.1 } }} 
+                    exit={{ opacity: 0, transition: { duration: 0.1 } }}
                     className={cn(
                         isPortal ? "fixed inset-0 z-[100]" : "absolute inset-0 z-[100]",
                         "flex items-center justify-center bg-black/40 overflow-hidden"
@@ -84,10 +84,10 @@ export function WhatsAppButtonMenu({
                         initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
                         // 2. Overriding the exit animation to be very fast (100ms)
-                        exit={{ 
-                            opacity: 0, 
-                            scale: 0.97, 
-                            transition: { duration: 0.1, ease: "easeOut" } 
+                        exit={{
+                            opacity: 0,
+                            scale: 0.97,
+                            transition: { duration: 0.1, ease: "easeOut" }
                         }}
                         transition={{
                             type: "spring",
@@ -263,9 +263,9 @@ export default function TemplatePreview({
     bgTransparent = false,
     isChatBubble = false,
     isUploading = false,
-    onMediaLoad = () => {},
+    onMediaLoad = () => { },
 }) {
-
+    const showToggleAction = (!isInteractive && !hideToggleAction);
     const t = useTranslations("whatsApp.templates");
     const [showExamples, setShowExamples] = useState(forceShowExamples || isChatBubble);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -279,7 +279,7 @@ export default function TemplatePreview({
         if (forceShowExamples) setShowExamples(true);
     }, [forceShowExamples]);
 
- 
+
 
     const raw = template || {};
     const cfgSource =
@@ -318,19 +318,26 @@ export default function TemplatePreview({
     } = cfgSource != null
             ? { bodyText: "", buttons: [], examples: {}, ...cfgSource }
             : { bodyText: "", buttons: [], examples: {} };
-    
+
     const isPositional = parameterFormat === "positional";
     const isArabic = /[\u0600-\u06FF]/.test(bodyText || "");
     const language = !!raw.language ? raw.language : isArabic ? "ar" : "en";
-    
+
     const parsedBodyParts = useMemo(() => {
         const text =
             bodyText && String(bodyText).trim()
                 ? bodyText
                 : t("preview.bodyPlaceholder");
 
+      
         const parts = text.split(/(\{[^{}]*\}|\{\{[^{}]*\}\})/g).map((part) => {
-            
+            if(!showToggleAction && isPotentialVariable(part)) {
+                return {
+                    type: "variable",
+                    raw: part,
+                    isValid: true,
+                };
+            }
             if (isPositional && isCorrectVariableFormat(part, "positional")) {
                 const m = part.match(VAR_REGEX.positional);
                 const variableName = m?.[1];
@@ -369,15 +376,21 @@ export default function TemplatePreview({
             }
             return part;
         });
-    }, [bodyText, examples, t]);
+    }, [bodyText, examples, t, showToggleAction]);
 
     const parsedHeaderParts = useMemo(() => {
         if (!headerText) return [];
 
         const text = headerText;
-
+        
         const parts = text.split(/(\{[^{}]*\}|\{\{[^{}]*\}\})/g).map((part) => {
-            
+           if(!showToggleAction && isPotentialVariable(part)) {
+                return {
+                    type: "variable",
+                    raw: part,
+                    isValid: true,
+                };
+            }
             if (isPositional && isCorrectVariableFormat(part, "positional")) {
                 const m = part.match(VAR_REGEX.positional);
                 const variableName = m?.[1];
@@ -416,8 +429,8 @@ export default function TemplatePreview({
             }
             return part;
         });
-    }, [headerText, headerExample, examples, isPositional, t]);
-   useEffect(() => {
+    }, [headerText, headerExample, examples, isPositional, t, showToggleAction]);
+    useEffect(() => {
         setMediaLoading(true);
         setMediaError(false);
     }, [headerUrl, headerType]);
@@ -479,12 +492,12 @@ export default function TemplatePreview({
                                             setMediaLoading(false)
                                             if (onMediaLoad) {
                                                 onMediaLoad();
-                                            }   
+                                            }
                                         }}
                                         onError={() => {
                                             setMediaLoading(false);
                                             setMediaError(true);
-                                             if (onMediaLoad) {
+                                            if (onMediaLoad) {
                                                 onMediaLoad();
                                             }
                                         }}
@@ -530,12 +543,12 @@ export default function TemplatePreview({
                                             setMediaLoading(false)
                                             if (onMediaLoad) {
                                                 onMediaLoad();
-                                            }   
+                                            }
                                         }}
                                         onError={() => {
                                             setMediaLoading(false);
                                             setMediaError(true);
-                                             if (onMediaLoad) {
+                                            if (onMediaLoad) {
                                                 onMediaLoad();
                                             }
                                         }}
@@ -894,7 +907,7 @@ export default function TemplatePreview({
             </div>
 
             {/* Toggle Action Button - Segmented Control Style */}
-            {(!isInteractive && !hideToggleAction) && <div className="p-4 bg-white dark:bg-[#0b141a] flex justify-center border-t border-slate-100 dark:border-slate-800">
+            {showToggleAction && <div className="p-4 bg-white dark:bg-[#0b141a] flex justify-center border-t border-slate-100 dark:border-slate-800">
                 <div className="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 w-full max-w-[240px]">
                     <button
                         type="button"

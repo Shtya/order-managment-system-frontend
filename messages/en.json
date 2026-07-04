@@ -10695,6 +10695,7 @@
         },
         "actionTypes": {
           "send_whatsapp_template": "Send WhatsApp Template",
+          "send_whatsapp_message": "Send WhatsApp Message",
           "update_order_status": "Update Order Status",
           "send_upsell": "Send Upsell",
           "assign_order_to_employee": "Assign Order to Employee"
@@ -10744,7 +10745,9 @@
           "yes": "Yes",
           "no": "No",
           "noConditions": "No conditions",
-          "otherConditions": "+ {count} other conditions"
+          "otherConditions": "+ {count} other conditions",
+          "messageType": "Message type",
+          "account": "Account"
         },
         "sidebar": {
           "title": "Build Workflows",
@@ -10799,7 +10802,12 @@
           "loadingFlowData": "Loading flow data...",
           "failedToLoadData": "Failed to load automation data.",
           "errorOccurred": "Sorry, an error occurred",
-          "retry": "Retry"
+          "retry": "Retry",
+          "edit": "ُيهف",
+          "missingTrigger": "An automation requires a trigger node to be saved.",
+          "processingSteps": "Processing steps...",
+          "processingStepsFailed": "Failed to process steps.",
+          "processingStepsSuccess": "Steps processed successfully!"
         },
         "indicators": {
           "updated_automatically": "Data updated automatically"
@@ -10853,6 +10861,10 @@
           "selectNewStatus": "Select new status...",
           "whatsappTemplateTitle": "Send WhatsApp Template",
           "whatsappTemplateDesc": "Choose the template and fill in the required variables",
+          "saveStep": "Save Step",
+          "orderProperties": "Order Properties",
+          "whatsappMessageTitle": "Send WhatsApp Message",
+          "whatsappMessageDesc": "Choose the message type and configure it",
           "recipientNumberDesc2": "The number to which the message will be sent",
           "recipientNumberPlaceholder": "Enter the number or leave empty to use the customer's number from the order",
           "whatsappTemplate": "WhatsApp Template",
@@ -10925,6 +10937,8 @@
             "shippingCompanyNotFound": "The selected shipping company ({company}) no longer exists or is currently inactive.",
             "orderStatusCheckUpdated": "Order status updated from \"{oldName}\" to \"{newName}\"",
             "orderStatusCheckNotFound": "The selected order status ({status}) no longer exists.",
+            "whatsappAccountUpdated": "WhatsApp account updated from \"{oldName}\" to \"{newName}\"",
+            "whatsappAccountNotFound": "The selected WhatsApp account ({account}) no longer exists or is currently inactive.",
             "generalError": "Failed to validate order conditions. Please try again.",
             "fieldNames": {
               "shippingCompany": "Shipping Company",
@@ -11469,16 +11483,25 @@
       "video": "Video",
       "document": "Document",
       "audio": "Audio",
-      "location": "Location",
       "contact": "Contact",
       "list": "List",
       "interactive": "Interactive Buttons",
       "template": "Template Message",
-      "requestLocation": "Location Request",
-      "sendLocation": "location",
-      "locationRequest": "Location request",
+      "location_request": "Location Request",
+      "location": "location",
       "button": "Button",
-      "sticker": "Sticker"
+      "sticker": "Sticker",
+      "descriptions": {
+        "text": "Send plain text with optional dynamic variables",
+        "image": "Send an image with an optional caption",
+        "document": "Send a document file (DOC, PDF, etc.)",
+        "video": "Send a video clip with an optional caption",
+        "location": "Send geographical coordinates/location",
+        "contact": "Send a vCard contact card",
+        "list": "Send an interactive menu with selectable items",
+        "interactive": "Send interactive call-to-action buttons",
+        "location_request": "Request the customer's current location"
+      }
     },
     "address": "Address",
     "viewOptions": "View Options",
@@ -11528,7 +11551,9 @@
     "to": "To",
     "messageNotFoundError": "Couldn't find message",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "captionPlaceholder": "Type a caption...",
+    "pleaseUploadMedia": "Please upload a media file."
   },
   "failedToLoadImage": "Failed to load image",
   "failedToLoadVideo": "Failed to load video",

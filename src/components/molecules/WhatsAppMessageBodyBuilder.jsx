@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useRef } from "react";
-import { Smile, Bold, Italic, Strikethrough, Code, PlusCircle, Info } from "lucide-react";
+import { Smile, Bold, Italic, Strikethrough, Code, PlusCircle, Info, Phone, User, Mail, Hash, PackageSearch, Truck, BadgeDollarSign, DollarSign, Package, CalendarDays, Building2, MapPin, MapPinned, Store, Clock3 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import { useTranslations } from "next-intl";
+import { VariableInput } from "../ui/VariableInput";
 
 export default function WhatsAppMessageBodyBuilder({
   ref,
@@ -22,6 +22,7 @@ export default function WhatsAppMessageBodyBuilder({
   onInsertVariable,
   error,
   className,
+  variableProps = {}
 }) {
   const t = useTranslations("whatsApp.templates.form");
   const textareaRef = useRef(null);
@@ -32,48 +33,32 @@ export default function WhatsAppMessageBodyBuilder({
   const insertText = (type) => {
 
     if (!textareaRef.current) return;
-    const start = textareaRef.current.selectionStart;
-    const end = textareaRef.current.selectionEnd;
-    const text = textareaRef.current.value;
-    const before = text.substring(0, start);
-    const after = text.substring(end);
-    const selection = text.substring(start, end);
 
     let wrapped = "";
     switch (type) {
-      case "bold": wrapped = `*${selection}*`; break;
-      case "italic": wrapped = `_${selection}_`; break;
-      case "strike": wrapped = `~${selection}~`; break;
-      case "mono": wrapped = `\`\`\`${selection}\`\`\``; break;
+      case "bold": textareaRef.current.wrapSelection("*"); break;
+      case "italic": textareaRef.current.wrapSelection("_"); break;
+      case "strike": textareaRef.current.wrapSelection("~"); break;
+      case "mono": textareaRef.current.wrapSelection("```"); break;
       case "variable":
-
         if (onInsertVariable) {
-          onInsertVariable();
+          const variable = onInsertVariable(value);
+          textareaRef.current?.insertRaw(variable);
           return;
         }
         wrapped = "{{1}}";
+        textareaRef.current?.insertRaw(wrapped);
         break;
-      default: return;
+      default:
     }
 
-    const nextValue = before + wrapped + after;
-
-    onChange(nextValue);
-
-    // Reset focus and selection
-    setTimeout(() => {
-      textareaRef.current.focus();
-      const newPos = start + wrapped.length;
-      textareaRef.current.setSelectionRange(newPos, newPos);
-    }, 0);
+    textareaRef.current.focus();
   };
 
   const addEmoji = (emoji) => {
-    const start = textareaRef.current?.selectionStart || value.length;
-    const nextValue = value.slice(0, start) + emoji.native + value.slice(start);
-    onChange(nextValue);
+    textareaRef.current?.insertRaw(emoji.native);
   };
-
+  
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex justify-between items-center">
@@ -88,21 +73,20 @@ export default function WhatsAppMessageBodyBuilder({
           </span>
         </div>
       </div>
-
-      <Textarea
+      <VariableInput
+        value={value}
+        multiline={true}
+        dir={dir}
+        rows={6}
+        maxLength={maxLength}
+        placeholder={displayPlaceholder}
+        onChange={(value) => onChange(value)}
         ref={(el) => {
           if (textareaRef) textareaRef.current = el;
           if (ref) ref.current = el;
         }}
-        dir={dir}
-        placeholder={displayPlaceholder}
-        className={cn(
-          "min-h-[140px] resize-y bg-white dark:bg-slate-950 border-slate-200 focus:ring-primary/20",
-          error && "border-red-500 focus:ring-red-500"
-        )}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        maxLength={maxLength}
+        disableHydrate={true}
+        {...variableProps}
       />
 
       <div className="flex items-center justify-between px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm">

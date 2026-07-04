@@ -125,7 +125,7 @@ export function LeftSidebar({ onSelectStep }) {
                             maxLength={300}
                             placeholder={t('sidebar.namePlaceholder')}
                             className={cn(
-                                "text-xs min-h-[30px] bg-transparent border-none outline-none font-bold px-1.5 min-w-[200px] focus:outline-none focus:ring-0 focus-visible:outline-none! focus-visible:ring-0",
+                                "text-xs min-h-[30px] flex-1 bg-transparent border-none outline-none font-bold px-1.5 min-w-[200px] focus:outline-none focus:ring-0 focus-visible:outline-none! focus-visible:ring-0",
                                 isEditMode ? "text-slate-400 cursor-not-allowed" : "text-slate-700 dark:text-slate-200"
                             )}
                         />

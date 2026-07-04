@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { UploadCloud, Trash2, FileText, Info } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { useTranslations } from "next-intl";
+import { getMediaUrlOrOriginal } from "@/utils/whatsapp-healper";
 
 /**
  * Reusable Media Upload component for WhatsApp Template creation
@@ -12,6 +13,7 @@ import { useTranslations } from "next-intl";
 export default function MediaUpload({
     type = "IMAGE",
     url = "",
+    accountId,
     onUrlChange,
     onFileChange
 }) {
@@ -46,27 +48,29 @@ export default function MediaUpload({
         }
     };
 
+    const finalUrl = useMemo(() => getMediaUrlOrOriginal(url, accountId), [url, accountId]);
+
     return (
         <div className="space-y-4">
             <div
                 className={cn(
                     "relative border-2 border-dashed rounded-2xl transition-all duration-200 overflow-hidden",
-                    url
+                    finalUrl
                         ? "border-primary/50 bg-primary/5"
                         : "border-slate-200 dark:border-slate-800 hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-slate-900/50"
                 )}
             >
-                {url ? (
+                {finalUrl ? (
                     <div className="relative aspect-video w-full flex items-center justify-center bg-slate-950/5">
                         {type === "IMAGE" ? (
-                            <img src={avatarSrc(url)} alt="Preview" className="w-full h-full object-contain" />
+                            <img src={avatarSrc(finalUrl)} alt="Preview" className="w-full h-full object-contain" />
                         ) : type === "VIDEO" ? (
-                            <video src={avatarSrc(url)} controls className="w-full h-full object-contain" />
+                            <video src={avatarSrc(finalUrl)} controls className="w-full h-full object-contain" />
                         ) : (
                             <div className="flex flex-col items-center gap-3">
                                 <FileText size={48} className="text-primary" />
                                 <span className="text-sm font-medium text-slate-600 dark:text-slate-300 px-4 text-center truncate max-w-xs">
-                                    {url.split('/').pop()}
+                                    {finalUrl.split('/').pop()}
                                 </span>
                             </div>
                         )}

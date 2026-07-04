@@ -481,7 +481,6 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     const handleBodyChange = (value) => {
         const val = value;
         const currentParameterFormat = templateData?.parameterFormat;
-
         if (val.length <= MAX_BODY_LENGTH) {
             const normalized = normalizeVariables(val);
             setValue("bodyText", normalized);
@@ -536,14 +535,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                     startTag = currentParameterFormat === "positional" ? `{{1}}` : `{{}}`;
                 } else {
                     // Find the highest variable number in the body
-                    if (currentParameterFormat === "named")
-                        startTag = `{{}}`;
-                    else {
-                        const matches = getVariableMatches(text, currentParameterFormat);
-                        const nums = matches.map(m => parseInt(extractVariableNames(m, currentParameterFormat)?.[0]));
-                        const nextNum = nums.length > 0 ? Math.max(...nums) + 1 : 1;
-                        startTag = `{{${nextNum}}}`;
-                    }
+                    startTag = getNextVariableTag(text);
                 }
                 isVariable = true;
                 break;
@@ -597,6 +589,17 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         templateData.bodyText,
         tForm,
     ]);
+
+    const getNextVariableTag = useCallback((text) => {
+        const currentParameterFormat = templateData?.parameterFormat;
+        if (currentParameterFormat === "named") {
+            return `{{}}`;
+        }
+        const matches = getVariableMatches(text, currentParameterFormat);
+        const nums = matches.map(m => parseInt(extractVariableNames(m, currentParameterFormat)?.[0])).filter(n => !isNaN(n));
+        const nextNum = nums.length > 0 ? Math.max(...nums) + 1 : 1;
+        return `{{${nextNum}}}`;
+    }, [templateData?.parameterFormat]);
     const getPreviewFooter = () => {
         if (templateData.subcategory === "AUTHENTICATION_OTP" && templateData.addExpirationTime) {
             return tForm("authOtpFooter", { minutes: templateData.expirationMinutes });
@@ -1164,7 +1167,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                             label={tForm("body")}
                                             placeholder={tForm("bodyPlaceholder")}
                                             allowVariables={true}
-                                            onInsertVariable={() => insertText("variable")}
+                                            onInsertVariable={getNextVariableTag}
                                             error={errors.bodyText?.message}
                                             className="mb-8"
                                         />

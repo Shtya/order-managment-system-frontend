@@ -32,6 +32,7 @@ import Button_ from "@/components/atoms/Button";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 function normalizeAxiosError(err) {
@@ -850,7 +851,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     const [headerMediaFile, setHeaderMediaFile] = useState(null);
     const formRef = useRef(null);
     const initialValueRef = useRef(null);
-
+    const [addClientResponseToOrder, setAddClientResponseToOrder] = useState(false);
     const handleAccountChange = useCallback((accountId, account) => {
 
         setTempValue((prev) => ({
@@ -876,6 +877,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             initialValueRef.current = initialValue;
             setTempValue(initialValue);
             setSelectedType(initialValue.messageType || null);
+            setAddClientResponseToOrder(!!initialValue.actionIntent);
 
             if (initialValue.messageType) {
 
@@ -912,7 +914,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
         { icon: UserCircle, label: tChats("messageTypes.contact"), description: tChats("messageTypes.descriptions.contact"), color: "text-amber-500", type: "contact" },
         { icon: List, label: tChats("messageTypes.list"), description: tChats("messageTypes.descriptions.list"), color: "text-teal-500", type: "list" },
         { icon: LayoutGrid, label: tChats("messageTypes.interactive"), description: tChats("messageTypes.descriptions.interactive"), color: "text-blue-600", type: "interactive" },
-        { icon: MapIcon, label: tChats("messageTypes.location_request"), description: tChats("messageTypes.descriptions.location_request"), color: "text-emerald-600", type: "location_request" },
+        { icon: MapIcon, label: tChats("messageTypes.location_request"), description: tChats("messageTypes.descriptions.location_request"), color: "text-emerald-600", type: "location_request", actionIntent: "location_request" },
     ];
 
     const restoreFormData = (dataToRestore, restoreType) => {
@@ -962,9 +964,12 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                 deletedOldUrls.push(oldLink);
             }
         }
-
+        const typeDate = messageTypes.find(t => t.type === tempValue.messageType);
+        const hasActionIntent = typeDate && !!typeDate.actionIntent && addClientResponseToOrder;
+       
         onClose({
             ...tempValue,
+            actionIntent: hasActionIntent ? typeDate.actionIntent : null,
             messageType: tempValue.messageType,
             messageData: tempValue.messageData,
             recipientNumber: tempValue.recipientNumber || "",
@@ -972,7 +977,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             accountName: tempValue.accountName,
             deletedOldUrls,
         });
-    }, [tempValue]);
+    }, [tempValue,addClientResponseToOrder]);
 
     const handleBack = () => {
         setStep('select');
@@ -1004,7 +1009,21 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                     <LocationRequestForm
                         ref={formRef}
                         variableProps={variableProps}
-                    />
+                    >
+                        <div className="mt-4 flex items-center gap-2">
+                            <Checkbox
+                                id="addClientResponseToOrder"
+                                checked={addClientResponseToOrder}
+                                onCheckedChange={(checked) => setAddClientResponseToOrder(checked)}
+                            />
+                            <label
+                                htmlFor="addClientResponseToOrder"
+                                className="text-sm font-medium text-foreground cursor-pointer"
+                            >
+                                {tChats("addClientResponseToOrder")}
+                            </label>
+                        </div>
+                    </LocationRequestForm>
                 );
             case 'contact':
                 return (

@@ -29,7 +29,8 @@ const createSchema = (t) =>
     });
 
 export const LocationRequestForm = forwardRef(({
-    variableProps = {}
+    variableProps = {},
+    children
 }, ref) => {
     const t = useTranslations("chats");
     const locale = useLocale();
@@ -106,8 +107,8 @@ export const LocationRequestForm = forwardRef(({
                         {errors.locationRequestBody.message}
                     </p>
                 )}
+                {children}
             </div>
-
             {/* Preview Section */}
             <div className="w-full md:w-[300px] flex flex-col items-center justify-center p-4 md:p-6 shrink-0 overflow-y-auto md:border-s border-border">
                 <div className="sticky top-0 w-full flex flex-col items-center">

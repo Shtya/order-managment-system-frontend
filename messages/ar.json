@@ -5337,7 +5337,8 @@
       "variant": "المتغير",
       "quantity": "الكمية",
       "unitPrice": "سعر الوحدة",
-      "lineTotal": "الإجمالي"
+      "lineTotal": "الإجمالي", 
+      "whatsappResponseLocation": "موقع استجابة الواتساب"
     },
     "workPage": {
       "changeStatus": "تغيير حالة الطلب",
@@ -5761,6 +5762,10 @@
       }
     },
     "fields": {
+        "locationName": "اسم الموقع",
+        "locationAddress": "عنوان الموقع",
+        "latitude": "خط العرض",
+        "longitude": "خط الطول",
       "status": "الحالة",
       "customerName": "اسم العميل",
       "phoneNumber": "رقم الهاتف",
@@ -11467,6 +11472,7 @@
     "locationRequestDescription": "اطلب من العميل مشاركة موقعه المباشر الحالي.",
     "locationRequestBodyPlaceholder": "مثلاً: يرجى مشاركة موقع التسليم الخاص بك لنتمكن من الوصول إليك بشكل أسرع.",
     "sendLocation": "إرسال الموقع",
+    "addClientResponseToOrder": "إضافة استجابة العميل إلى الطلب",
     "addContact": "إضافة جهة اتصال",
     "contactInfo": "بيانات الاتصال",
     "contactDescription": "شارك بطاقة جهة اتصال مع العميل.",

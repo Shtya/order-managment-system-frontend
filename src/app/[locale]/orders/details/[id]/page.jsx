@@ -33,7 +33,9 @@ import {
   Info,
   ArrowRight,
   Fingerprint,
+  MapPin as MapPinIcon,
 } from "lucide-react";
+import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import {
   Home,
   Tag,
@@ -678,6 +680,80 @@ export function OrderDetailsPage({ order, loading }) {
               router={router}
             />
           )} */}
+
+          {/* WhatsApp Response Location */}
+          {order.latitude && order.longitude && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
+              className="relative main-card !p-0 rounded-2xl border border-border/40 overflow-hidden"
+              style={{
+                boxShadow:
+                  "0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.06)",
+              }}
+            >
+              <div className="px-6 pt-5 pb-5 flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80">
+                    {t("details.whatsappResponseLocation")}
+                  </p>
+                </div>
+              </div>
+              <div className="border-t border-border/25 p-5 space-y-5">
+                <div className="w-full aspect-video rounded-2xl border border-border/35 overflow-hidden">
+                  <MapLocationPicker
+                    initialLocation={{
+                      lat: order.latitude,
+                      lng: order.longitude,
+                    }}
+                    height="100%"
+                    width="100%"
+                    readOnly={true}
+                    enableSearch={false}
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {order.locationName && (
+                    <div className="rounded-xl border border-border/35 bg-muted/30 p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                        {t("fields.locationName")}
+                      </p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {order.locationName}
+                      </p>
+                    </div>
+                  )}
+                  {order.locationAddress && (
+                    <div className="rounded-xl border border-border/35 bg-muted/30 p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                        {t("fields.locationAddress")}
+                      </p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {order.locationAddress}
+                      </p>
+                    </div>
+                  )}
+                  <div className="rounded-xl border border-border/35 bg-muted/30 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                      {t("fields.latitude")}
+                    </p>
+                    <p className="text-sm font-semibold text-foreground font-mono">
+                      {order.latitude}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/35 bg-muted/30 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                      {t("fields.longitude")}
+                    </p>
+                    <p className="text-sm font-semibold text-foreground font-mono">
+                      {order.longitude}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
 
         {/* ═══════════════════ SIDEBAR — 3 cols ════════════════════════ */}

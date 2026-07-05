@@ -1729,8 +1729,7 @@
         "productName": "Product Name",
         "date": "Date",
         "distributedAt": "Distribution Date",
-        "status": "Status",
-        "email": "Email"
+        "status": "Status"
       },
       "orderSizes": {
         "SMALL": "SMALL",
@@ -5310,6 +5309,7 @@
       "errorFetchingHistory": "Error fetching history"
     },
     "details": {
+      "whatsappResponseLocation": "WhatsApp Response Location",
       "statusUpdated": "Status updated successfully",
       "customerInfo": "Customer Information",
       "orderItems": "Order Products",
@@ -5767,6 +5767,10 @@
       }
     },
     "fields": {
+      "locationName": "Location Name",
+      "locationAddress": "Location Address",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
       "status": "Status",
       "customerName": "Customer Name",
       "phoneNumber": "Phone Number",
@@ -11437,6 +11441,7 @@
     "locationRequestDescription": "Ask the customer to share their current live location.",
     "locationRequestBodyPlaceholder": "E.g. Please share your delivery location so we can reach you faster.",
     "sendLocation": "Send Location",
+    "addClientResponseToOrder": "Add client response to order",
     "addContact": "Add Contact",
     "contactInfo": "Contact Information",
     "contactDescription": "Share a contact card with the customer.",

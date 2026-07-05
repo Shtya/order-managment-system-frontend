@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useConversation } from "./ConversationContext";
 import { useAuth } from "@/context/AuthContext";
+import { WHATSAPP_DOCUMENT_ACCEPT, WHATSAPP_IMAGE_ACCEPT, WHATSAPP_SUPPORTED_ACCEPT, WHATSAPP_VIDEO_ACCEPT } from "@/utils/whatsapp-healper";
 
 export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollToMessage, setShowInteractiveModal, setShowLocationRequestModal, setShowContactModal, setShowLocationModal, setShowListModal, setShowTemplateModal }) {
     const t = useTranslations("chats");
@@ -51,7 +52,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
         if (["image", "video", "document"].includes(type)) {
             setFileType(type);
             if (fileInputRef.current) {
-                fileInputRef.current.accept = type === "image" ? "image/*" : type === "video" ? "video/*" : "*/*";
+                fileInputRef.current.accept = type === "image" ? WHATSAPP_IMAGE_ACCEPT : type === "video" ? WHATSAPP_VIDEO_ACCEPT : WHATSAPP_DOCUMENT_ACCEPT;
                 fileInputRef.current.click();
             }
         } else if (type === "interactive") {

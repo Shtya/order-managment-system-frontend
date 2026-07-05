@@ -535,6 +535,7 @@ export const ConversationProvider = ({ children }) => {
                     setMessages(prev => prev.map(m =>
                         m.id === localId ? { ...m, status: "pending" } : m
                     ));
+                    throw error;
                 }
             }
 

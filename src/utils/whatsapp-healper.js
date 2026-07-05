@@ -249,7 +249,7 @@ export const getMediaUrlWithCache = (content, type, message) => {
         return media.localUrl;
     }
 
-    if(media?.link) {
+    if (media?.link) {
         return media.link;
     }
 
@@ -268,7 +268,7 @@ export const getMediaUrlWithCache = (content, type, message) => {
 
 // Helper to remove newlines from text
 const removeNewlines = (text) => {
-    
+
     if (typeof text !== 'string') return text;
 
     return text.replace(/\r?\n|\r/g, ' ').trim();
@@ -600,3 +600,52 @@ export const handleAssetUpload = async (mediaInfo) => {
 
     return { id: data.id, url: data.url };
 };
+
+export const WHATSAPP_SUPPORTED_MIME_TYPES = {
+    IMAGE: [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    ],
+
+    VIDEO: [
+        "video/mp4",
+        "video/3gpp",
+    ],
+
+    AUDIO: [
+        "audio/aac",
+        "audio/mp4",
+        "audio/mpeg",
+        "audio/amr",
+        "audio/ogg",
+        "audio/opus",
+    ],
+
+    DOCUMENT: [
+        "audio/aac",
+        "audio/mp4",
+        "audio/mpeg",
+        "audio/amr",
+        "audio/ogg",
+        "audio/opus",
+        "application/vnd.ms-powerpoint",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/pdf",
+        "text/plain",
+        "application/vnd.ms-excel",
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "video/mp4",
+        "video/3gpp"
+    ],
+};
+
+export const WHATSAPP_IMAGE_ACCEPT = WHATSAPP_SUPPORTED_MIME_TYPES.IMAGE.join(",");
+export const WHATSAPP_VIDEO_ACCEPT = WHATSAPP_SUPPORTED_MIME_TYPES.VIDEO.join(",");
+export const WHATSAPP_AUDIO_ACCEPT = WHATSAPP_SUPPORTED_MIME_TYPES.AUDIO.join(",");
+export const WHATSAPP_DOCUMENT_ACCEPT = WHATSAPP_SUPPORTED_MIME_TYPES.DOCUMENT.join(",");

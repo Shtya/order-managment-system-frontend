@@ -5,7 +5,7 @@ import { UploadCloud, Trash2, FileText, Info } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { useTranslations } from "next-intl";
-import { getMediaUrlOrOriginal } from "@/utils/whatsapp-healper";
+import { getMediaUrlOrOriginal, WHATSAPP_DOCUMENT_ACCEPT, WHATSAPP_IMAGE_ACCEPT, WHATSAPP_VIDEO_ACCEPT } from "@/utils/whatsapp-healper";
 
 /**
  * Reusable Media Upload component for WhatsApp Template creation
@@ -27,13 +27,13 @@ export default function MediaUpload({
     const getAcceptType = () => {
         switch (type) {
             case "IMAGE":
-                return "image/jpeg,image/jpg,image/png";
+                return WHATSAPP_IMAGE_ACCEPT;
 
             case "VIDEO":
-                return "video/mp4";
+                return WHATSAPP_VIDEO_ACCEPT;
 
             case "DOCUMENT":
-                return "application/pdf";
+                return WHATSAPP_DOCUMENT_ACCEPT;
 
             default:
                 return "*/*";

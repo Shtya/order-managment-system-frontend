@@ -243,7 +243,7 @@ export const getCachedMediaUrl = (mediaId) => {
 
 export const getMediaUrlWithCache = (content, type, message) => {
     const media = content[type];
-
+    if (!media) return null;
     // Check if we have a local URL (optimistic UI)
     if (media?.localUrl) {
         return media.localUrl;
@@ -262,6 +262,14 @@ export const getMediaUrlWithCache = (content, type, message) => {
     return getMediaUrl(content, type, message);
 };
 
+// Helper to remove newlines from text
+const removeNewlines = (text) => {
+    console.log(text);
+    if (typeof text !== 'string') return text;
+
+    return text.replace(/\r?\n|\r/g, ' ').trim();
+};
+
 export const formatMessagePreview = (message, t = (key) => key) => {
     if (!message) return "";
 
@@ -270,7 +278,8 @@ export const formatMessagePreview = (message, t = (key) => key) => {
     const interactiveType = content?.interactive?.type || "";
     const type = messageType === "interactive" ? interactiveType : messageType;
     const body = bodyContent || content?.[messageType]?.body || "";
-    const bodyText = formatText(typeof body === "string" ? body : body?.text);
+    const rawBodyText = typeof body === "string" ? body : body?.text;
+    const bodyText = formatText(removeNewlines(rawBodyText));
 
     switch (type) {
         case "image":
@@ -299,13 +308,13 @@ export const formatMessagePreview = (message, t = (key) => key) => {
             return (
                 <div className="flex items-center gap-1.5">
                     <FileText size={14} className="text-muted-foreground" />
-                    <span>{docName}</span>
+                    <span>{removeNewlines(docName)}</span>
                 </div>
             );
         case "location":
             const locName = content?.location?.name;
             const locAddress = content?.location?.address;
-            const locationText = locName || locAddress || t("messageTypes.location") || "Location";
+            const locationText = removeNewlines(locName || locAddress || t("messageTypes.location") || "Location");
             return (
                 <div className="flex items-center gap-1.5">
                     <MapPin size={14} className="text-muted-foreground" />
@@ -323,31 +332,31 @@ export const formatMessagePreview = (message, t = (key) => key) => {
             return (
                 <div className="flex items-center gap-1.5">
                     <LayoutTemplate size={14} className="text-muted-foreground" />
-                    <span>{content?.template?.name || t("messageTypes.template") || "Template"}</span>
+                    <span>{removeNewlines(content?.template?.name || t("messageTypes.template") || "Template")}</span>
                 </div>
             );
 
         case "text":
-            return <span>{formatText(bodyText || "")}</span>;
+            return <span>{formatText(removeNewlines(rawBodyText || ""))}</span>;
         case "contacts":
             const contactName = content?.contacts?.[0]?.name?.formatted_name || t("messageTypes.contact") || "Contact";
             return (
                 <div className="flex items-center gap-1.5">
                     <User size={14} className="text-muted-foreground" />
-                    <span>{contactName}</span>
+                    <span>{removeNewlines(contactName)}</span>
                 </div>
             );
         case "list":
-            const interactiveBody = content?.interactive?.body?.text || bodyText || t("messageTypes.interactive") || "Interactive";
+            const interactiveBody = removeNewlines(content?.interactive?.body?.text || rawBodyText || t("messageTypes.interactive") || "Interactive");
             return (
                 <div className="flex items-center gap-1.5">
                     <ListIcon size={14} className="text-muted-foreground" />
-                    <span>{interactiveBody}</span>
+                    <span>{formatText(interactiveBody)}</span>
                 </div>
             );
         case "list_reply":
         case "button_reply":
-            const listReplyBody = content?.interactive?.list_reply?.title || content?.interactive?.button_reply?.title || bodyText || t("messageTypes.interactive") || "Interactive";
+            const listReplyBody = removeNewlines(content?.interactive?.list_reply?.title || content?.interactive?.button_reply?.title || rawBodyText || t("messageTypes.interactive") || "Interactive");
             return (
                 <div className="flex items-center gap-1.5">
                     <Reply size={14} className="text-muted-foreground" />
@@ -355,7 +364,7 @@ export const formatMessagePreview = (message, t = (key) => key) => {
                 </div>
             );
         case "button":
-            const buttonText = content?.button?.text || bodyText || t("messageTypes.button") || "Button";
+            const buttonText = removeNewlines(content?.button?.text || rawBodyText || t("messageTypes.button") || "Button");
             return (
                 <div className="flex items-center gap-1.5">
                     <MessageSquare size={14} className="text-muted-foreground" />
@@ -370,7 +379,7 @@ export const formatMessagePreview = (message, t = (key) => key) => {
                 </div>
             )
         default:
-            return <span>{formatText(bodyText || "")}</span>;
+            return <span>{formatText(removeNewlines(rawBodyText || ""))}</span>;
     }
 };
 

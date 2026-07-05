@@ -848,8 +848,8 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     const configuredType = tempValue.messageType;
     const [localHeaderMediaFile, setLocalHeaderMediaFile] = useState(null);
     const [headerMediaFile, setHeaderMediaFile] = useState(null);
-    const fileInputRef = useRef(null);
     const formRef = useRef(null);
+    const initialValueRef = useRef(null);
 
     const handleAccountChange = useCallback((accountId, account) => {
 
@@ -873,6 +873,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     useEffect(() => {
         if (isOpen) {
             const initialValue = value || {};
+            initialValueRef.current = initialValue;
             setTempValue(initialValue);
             setSelectedType(initialValue.messageType || null);
 
@@ -885,6 +886,22 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             setStep('select');
         }
     }, [value, isOpen]);
+
+    const getMediaLink = (messageData, messageType) => {
+        if (messageType === 'template' && messageData?.template?.components) {
+            const headerComponent = messageData.template.components.find(c => c.type === 'header');
+            const param = headerComponent?.parameters?.[0];
+            if (param) {
+                return param[param.type]?.link;
+            }
+        } else if (messageType === 'interactive' && messageData?.interactive?.header) {
+            const header = messageData.interactive.header;
+            return header[header.type]?.link;
+        } else if (['image', 'video', 'document'].includes(messageType)) {
+            return messageData[messageType]?.link;
+        }
+        return null;
+    };
 
     const messageTypes = [
         { icon: MessageSquare, label: tChats("messageTypes.text"), description: tChats("messageTypes.descriptions.text"), color: "text-emerald-500", type: "text" },
@@ -937,6 +954,14 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     };
 
     const handleSave = useCallback(() => {
+        let deletedOldUrls = [];
+        if (initialValueRef.current) {
+            const oldLink = getMediaLink(initialValueRef.current.messageData, initialValueRef.current.messageType);
+            const newLink = getMediaLink(tempValue.messageData, tempValue.messageType);
+            if (oldLink && oldLink !== newLink) {
+                deletedOldUrls.push(oldLink);
+            }
+        }
 
         onClose({
             ...tempValue,
@@ -945,6 +970,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             recipientNumber: tempValue.recipientNumber || "",
             accountId: tempValue.accountId,
             accountName: tempValue.accountName,
+            deletedOldUrls,
         });
     }, [tempValue]);
 

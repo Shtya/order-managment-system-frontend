@@ -1,5 +1,6 @@
 import React from 'react';
 import api, { BASE_URL } from './api';
+import { avatarSrc } from '@/components/atoms/UserSelect';
 import {
     Image as ImageIcon,
     Video as VideoIcon,
@@ -94,30 +95,36 @@ export const formatText = (content) => {
     // Bold
     formatted = formatted.flatMap(p => {
         if (typeof p !== 'string') return p;
-        const subParts = p.split(/(\*[\s\S]*?\*)/g);
+        const subParts = p.split(/(\*[^\s][\s\S]*?[^\s]\*)/g);
         return subParts.map((sp, idx) => {
-            const m = sp.match(/\*([\s\S]*?)\*/);
-            return m ? <strong key={`bold-${idx}`} className="font-bold text-[#111b21] dark:text-white">{m[1]}</strong> : sp;
+            const m = sp.match(/^\*([^\s][\s\S]*?[^\s])\*$/);
+            return m
+                ? <strong key={`bold-${idx}`} className="font-bold text-[#111b21] dark:text-white">{m[1]}</strong>
+                : sp;
         });
     });
 
     // Italic
     formatted = formatted.flatMap(p => {
         if (typeof p !== 'string') return p;
-        const subParts = p.split(/(_[\s\S]*?_)/g);
+        const subParts = p.split(/(_[^\s][\s\S]*?[^\s]_)/g);
         return subParts.map((sp, idx) => {
-            const m = sp.match(/_([\s\S]*?)_/);
-            return m ? <em key={`italic-${idx}`} className="italic">{m[1]}</em> : sp;
+            const m = sp.match(/^_([^\s][\s\S]*?[^\s])_$/);
+            return m
+                ? <em key={`italic-${idx}`} className="italic">{m[1]}</em>
+                : sp;
         });
     });
 
     // Strike
     formatted = formatted.flatMap(p => {
         if (typeof p !== 'string') return p;
-        const subParts = p.split(/(~[\s\S]*?~)/g);
+        const subParts = p.split(/(~[^\s][\s\S]*?[^\s]~)/g);
         return subParts.map((sp, idx) => {
-            const m = sp.match(/~([\s\S]*?)~/);
-            return m ? <span key={`strike-${idx}`} className="line-through opacity-70">{m[1]}</span> : sp;
+            const m = sp.match(/^~([^\s][\s\S]*?[^\s])~$/);
+            return m
+                ? <span key={`strike-${idx}`} className="line-through opacity-70">{m[1]}</span>
+                : sp;
         });
     });
 
@@ -369,9 +376,9 @@ export const formatMessagePreview = (message, t = (key) => key) => {
 
 
 // Private function to check if media upload is needed for template or interactive messages
-export  const checkIfMediaUploadNeeded = (msg) => {
+export const checkIfMediaUploadNeeded = (msg) => {
     let mediaInfo = null;
-    
+
     if (msg.type === "template" && msg.template?.components) {
         const headerComponent = msg.template.components.find(c => c.type === "header");
         const param = headerComponent?.parameters?.[0];
@@ -403,7 +410,7 @@ export  const checkIfMediaUploadNeeded = (msg) => {
         const mediaType = msg.type;
         const mediaObj = msg[mediaType];
         const file = mediaObj?.file || msg?.file;
-        
+
         if (mediaObj && (mediaObj.link || file) && !mediaObj.id) {
             mediaInfo = { mediaType, mediaObj, file, headerComponent: "direct" };
         }
@@ -465,7 +472,7 @@ export const handleMediaUpload = async (mediaInfo, currentAccountId) => {
             delete mediaObj.link;
             delete mediaObj.file;
 
-            if(mediaObj.url && mediaObj.url.startsWith("data:")) {
+            if (mediaObj.url && mediaObj.url.startsWith("data:")) {
                 delete mediaObj.url;
             }
 
@@ -476,3 +483,107 @@ export const handleMediaUpload = async (mediaInfo, currentAccountId) => {
     }
 };
 
+// Check if upload to our asset system is needed
+export const checkIfAssetUploadNeeded = (msg) => {
+    let mediaInfo = null;
+
+    if (msg.type === "template" && msg.template?.components) {
+        const headerComponent = msg.template.components.find(
+            c => c.type === "header"
+        );
+
+        const param = headerComponent?.parameters?.[0];
+        const mediaType = param?.type;
+
+        if (
+            headerComponent &&
+            ["image", "video", "document"].includes(mediaType)
+        ) {
+            const mediaObj = param[mediaType];
+
+            const needsUpload =
+                mediaObj?.file ||
+                !mediaObj?.link ||
+                mediaObj.link.startsWith("data:");
+
+            if (needsUpload) {
+                mediaInfo = { mediaType, mediaObj };
+            }
+        }
+    } else if (msg.type === "interactive" && msg.interactive?.header) {
+        const header = msg.interactive.header;
+        const mediaType = header.type;
+
+        if (["image", "video", "document"].includes(mediaType)) {
+            const mediaObj = header[mediaType];
+
+            const needsUpload =
+                mediaObj?.file ||
+                !mediaObj?.link ||
+                mediaObj.link.startsWith("data:");
+
+            if (needsUpload) {
+                mediaInfo = { mediaType, mediaObj };
+            }
+        }
+    } else if (["image", "video", "document"].includes(msg.type)) {
+        const mediaObj = msg[msg.type];
+
+        const needsUpload =
+            mediaObj?.file ||
+            !mediaObj?.link ||
+            mediaObj.link.startsWith("data:");
+
+        if (needsUpload) {
+            mediaInfo = {
+                mediaType: msg.type,
+                mediaObj,
+            };
+        }
+    }
+
+    return mediaInfo;
+};
+
+export const handleAssetUpload = async (mediaInfo) => {
+    const { mediaObj } = mediaInfo;
+
+    // Already uploaded
+    if (
+        mediaObj?.link &&
+        !mediaObj.link.startsWith("data:") &&
+        !mediaObj.file
+    ) {
+        return { url: mediaObj.link };
+    }
+
+    if (!mediaObj.file) {
+
+        throw new Error("Media file is required.");
+    }
+
+    const formData = new FormData();
+
+    formData.append("file", mediaObj.file);
+
+    if (mediaObj.name) {
+        formData.append("filename", mediaObj.name);
+    }
+
+    const { data } = await api.post("/orphan-files/any", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
+
+    mediaObj.link = avatarSrc(data.url);
+
+    delete mediaObj.file;
+
+    if (mediaObj.link.startsWith("data:")) {
+        delete mediaObj.link;
+        mediaObj.link = data.url;
+    }
+
+    return { id: data.id, url: data.url };
+};

@@ -262,36 +262,49 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
         if (!validateFlow()) return;
 
         setSaving(true);
-        
+
         // Toast IDs for reusing the same toast
         const processingToastId = 'processing-steps';
         const savingToastId = 'saving-automation';
-        
+        let stage = "processing";
         try {
             // Show processing steps toast
             toast.loading(t('toolbar.processingSteps'), { id: processingToastId });
             console.log("nodes", nodes);
             // 1. Run all async node setups concurrently
-            const processedNodes = await processNodesBeforeSave(nodes);
+            const { processedNodes, allNewLinksIds } = await processNodesBeforeSave(nodes);
             console.log("processedNodes", processedNodes);
-            
+
+            // Collect deletedOldUrls from all nodes
+            const nodeDeletedOldUrls = processedNodes.flatMap(n => n.data?.config?.deletedOldUrls || []);
+            const allDeleted = [...new Set([...nodeDeletedOldUrls].filter(url => url))];
+
+            // Update flow store with processed nodes
+            useFlowStore.setState({ nodes: processedNodes });
+
             // Show processing success
             toast.success(t('toolbar.processingStepsSuccess'), { id: processingToastId });
-            
+
             const triggerNode = processedNodes.find(n => n.type === 'trigger');
             if (!triggerNode) {
                 toast.error(t('toolbar.missingTrigger'));
                 return;
             }
-            
+
+            // Clean up deletedOldUrls and any extra fields from node data
+            const cleanedNodes = processedNodes.map(n => {
+                const { deletedOldUrls, ...restData } = n.data;
+                return {
+                    id: n.id,
+                    type: n.type,
+                    position: n.position,
+                    data: restData
+                };
+            });
+
             const payload = {
                 flow: {
-                    nodes: processedNodes.map(n => ({
-                        id: n.id,
-                        type: n.type,
-                        position: n.position,
-                        data: n.data
-                    })),
+                    nodes: cleanedNodes,
                     edges: edges.map(e => ({
                         id: e.id,
                         source: e.source,
@@ -299,6 +312,10 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                         sourceHandle: e.sourceHandle,
                         targetHandle: e.targetHandle
                     }))
+                },
+                orphanFiles: {
+                    deletedOldUrls: allDeleted,
+                    newIds: allNewLinksIds.filter(id => id)
                 },
                 ...(!isEditMode && {
                     publish,
@@ -309,29 +326,39 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                     version
                 }),
             };
-            
+            stage = "saving";
             // Show saving automation toast
             toast.loading(t('toolbar.saving'), { id: savingToastId });
-                
+
             if (isEditMode && automationId) {
                 await api.put(`/automation/${automationId}`, payload);
             } else {
                 await api.post('/automation', payload);
             }
-            
+
             resetFlow();
             // Show save/publish success
             toast.success(publish ? t('toolbar.publishedSuccess') : t('toolbar.savedSuccess'), { id: savingToastId });
             router.push(isSuperAdmin ? '/dashboard/automations' : '/automations');
         } catch (error) {
-            const prefix = error.nodeType ? `[${error.nodeType}]: ` : '';
+            const prefix = error.nodeType ? `[${error.nodeType}]: ` : "";
             const message = error.response?.data?.message || error.message;
-            // Check if we were processing steps or saving
-            if (toast.getState().toasts.find(t => t.id === processingToastId && t.visible)) {
-                toast.error(`${prefix}${Array.isArray(message) ? message[0] : (message || t('toolbar.processingStepsFailed'))}`, { id: processingToastId });
-            } else {
-                toast.error(`${prefix}${Array.isArray(message) ? message[0] : (message || t('toolbar.saveFailed'))}`, { id: savingToastId });
-            }
+
+            toast.error(
+                `${prefix}${Array.isArray(message)
+                    ? message[0]
+                    : message ||
+                    (stage === "processing"
+                        ? t("toolbar.processingStepsFailed")
+                        : t("toolbar.saveFailed"))
+                }`,
+                {
+                    id:
+                        stage === "processing"
+                            ? processingToastId
+                            : savingToastId,
+                }
+            );
         } finally {
             setSaving(false);
         }

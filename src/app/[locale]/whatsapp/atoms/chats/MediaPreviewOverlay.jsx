@@ -43,13 +43,12 @@ export const MediaForm = forwardRef(({
         const currentType = type || pendingMedia?.type;
         const mediaObj = isMediaId(mediaUrl) 
             ? { id: mediaUrl, name: mediaFile?.name || "" } 
-            : { url: mediaUrl, name: mediaFile?.name || "" };
+            : { url: mediaUrl, name: mediaFile?.name || "", file: mediaFile };
         
         return {
             type: currentType,
             [currentType]: mediaObj,
             caption: data.caption.trim() || "",
-            file: mediaFile
         };
     };
 
@@ -60,14 +59,19 @@ export const MediaForm = forwardRef(({
             
             if (mediaData) {
                 let previewUrl = "";
-                let fileToSet = payload.file || null;
+                let fileToSet = mediaData.file || null;
                 
                 if (mediaData.id) {
                     previewUrl = mediaData.id;
                     fileToSet = null;
-                } else if (mediaData.url) {
-                    previewUrl = mediaData.url;
+                } 
+                else if (mediaData.link) {
+                    previewUrl = mediaData.link;
                 }
+                else if (mediaData.url) {
+                    previewUrl = mediaData.url;
+                    fileToSet = null;
+                } 
                 
                 if (setLocalPendingMedia) {
                     setLocalPendingMedia({

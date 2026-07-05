@@ -235,6 +235,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                         }
                                     }}
                                     onError={() => {
+                                        console.error("Image load failed:", mediaContent);
                                         setMediaLoading(false);
                                         setMediaError(true);
                                         if (onMediaLoad) {

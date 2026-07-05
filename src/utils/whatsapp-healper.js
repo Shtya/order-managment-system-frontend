@@ -249,6 +249,10 @@ export const getMediaUrlWithCache = (content, type, message) => {
         return media.localUrl;
     }
 
+    if(media?.link) {
+        return media.link;
+    }
+
     // Check cache first
     const mediaId = media?.id || content?.id;
     if (mediaId) {
@@ -264,7 +268,7 @@ export const getMediaUrlWithCache = (content, type, message) => {
 
 // Helper to remove newlines from text
 const removeNewlines = (text) => {
-    console.log(text);
+    
     if (typeof text !== 'string') return text;
 
     return text.replace(/\r?\n|\r/g, ' ').trim();

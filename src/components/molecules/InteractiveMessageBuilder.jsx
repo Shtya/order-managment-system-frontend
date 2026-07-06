@@ -25,6 +25,7 @@ export default function InteractiveMessageBuilder({
   variableProps = {}
 }) {
   const t = useTranslations("upsells.builder");
+  
   const {
     headerType = "NONE",
     headerText = "",
@@ -33,7 +34,7 @@ export default function InteractiveMessageBuilder({
     footerText = "",
     buttons = []
   } = value || {};
-
+  
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {

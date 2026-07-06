@@ -246,12 +246,13 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
       api.get(`/products/${upsellProductId}`).then(res => {
         setUpsellProduct(res.data);
         if (!initialUpsell || upsellProductId !== initialUpsell.upsellProductId) {
-          setValue("messageConfig.headerUrl", res.data.mainImage || "");
-          setValue("messageConfig.bodyText", `لأنك إشتريت من عندنا ليك العرض ده\n\n${res.data.name}\n\nالسعر: ${price || res.data.skus?.[0]?.price || 0} ${currency}`);
+          setValue("messageConfig.bodyText", `لأنك إشتريت من عندنا ليك العرض ده\n\n🎁${res.data.name}\n\n⚡ السعر: ${price || res.data.skus?.[0]?.price || 0} ${currency}`);
         }
       });
     }
-  }, [upsellProductId, setValue, currency, initialUpsell]);
+  }, [upsellProductId, currency, initialUpsell, price]);
+
+  // Set headerUrl when headerType changes or upsellProduct changes
 
   // Sync price to message body
   useEffect(() => {
@@ -322,7 +323,9 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
       setSubmitting(false);
     }
   };
-
+  
+  
+  
   return (
     <div className="min-h-screen p-5 space-y-6">
       <PageHeader
@@ -493,21 +496,23 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
               <Controller
                 name="messageConfig"
                 control={control}
-                render={({ field }) => (
-                  <InteractiveMessageBuilder
-                    value={field.value}
-                    onChange={field.onChange}
-                    setHeaderMediaFile={setHeaderMediaFile}
-                    errors={errors.messageConfig}
-                    config={{
-                      minButtons: 2,
-                      maxButtons: 2,
-                      headerTypes: ["NONE", "TEXT", "IMAGE", "VIDEO", "DOCUMENT"],
-                      allowVariables: false,
-                      buttonStyles: ["emerald", "red"]
-                    }}
-                  />
-                )}
+                render={({ field }) => {
+                  return (
+                    <InteractiveMessageBuilder
+                      value={field.value}
+                      onChange={field.onChange}
+                      setHeaderMediaFile={setHeaderMediaFile}
+                      errors={errors.messageConfig}
+                      config={{
+                        minButtons: 2,
+                        maxButtons: 2,
+                        headerTypes: ["NONE", "TEXT", "IMAGE", "VIDEO", "DOCUMENT"],
+                        allowVariables: false,
+                        buttonStyles: ["emerald", "red"]
+                      }}
+                    />
+                  )
+                }}
               />
             </div>
           </div>
@@ -527,7 +532,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
                 template={{
                   headerType: messageConfig.headerType,
                   headerText: messageConfig.headerText,
-                  headerUrl: messageConfig.headerUrl,
+                  headerUrl: messageConfig.headerUrl ? messageConfig.headerUrl : messageConfig.headerType?.toUpperCase() === "IMAGE" ? upsellProduct.mainImage || "" : "",
                   bodyText: messageConfig.bodyText,
                   footerText: messageConfig.footerText,
                   buttons: messageConfig.buttons,

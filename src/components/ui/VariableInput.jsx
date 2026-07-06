@@ -586,7 +586,7 @@ const VariableInput = React.forwardRef(function VariableInput(
             </div>
         )
     }, [expanded, toggleExpand, insertVariable])
-    console.log(hasVariables , disableHydrate)
+    
     return (
         <div ref={wrapRef} className="group relative w-full">
             <Popover open={open} onOpenChange={setOpen}>

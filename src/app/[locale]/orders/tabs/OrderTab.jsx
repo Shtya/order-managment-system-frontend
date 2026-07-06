@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-
   Download,
   Eye,
 
@@ -28,6 +27,7 @@ import {
   Save,
   Edit2,
   Loader2,
+  X,
 
   AlertTriangle,
   Truck,
@@ -95,6 +95,7 @@ import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useClipboard } from "@/hook/useClipboard";
 import { useAuth } from "@/context/AuthContext";
+import { useExport } from "@/hook/useExport";
 
 import AdminFilter from "@/components/atoms/AdminFilter";
 import { Switch } from "@/components/ui/switch";
@@ -776,6 +777,12 @@ export default function OrdersTab({
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [historyOrder, setHistoryOrder] = useState(null);
 
+  const [shipmentLogsModalOpen, setShipmentLogsModalOpen] = useState(false);
+  const [shipmentLogsOrder, setShipmentLogsOrder] = useState(null);
+  const [shipmentLogsShipment, setShipmentLogsShipment] = useState(null);
+  const [shipmentLogs, setShipmentLogs] = useState([]);
+  const [shipmentLogsLoading, setShipmentLogsLoading] = useState(false);
+
   const [postponedOrder, setPostponedOrder] = useState(null); // { id, statusId }
   const [postponedDate, setPostponedDate] = useState(null);
   const [reminderDaysBefore, setReminderDaysBefore] = useState("");
@@ -1138,7 +1145,7 @@ export default function OrdersTab({
 
   const columns = useMemo(() => {
     return [
-       {
+      {
         key: "created_at",
         header: t("table.createdat"),
         cell: (row) => (
@@ -1147,7 +1154,7 @@ export default function OrdersTab({
           </span>
         ),
       },
-        {
+      {
         key: "orderNumber",
         header: t("table.orderNumber"),
         cell: (row) => (
@@ -1199,7 +1206,7 @@ export default function OrdersTab({
           </div>
         ),
       },
-         
+
       {
         key: "address",
         header: t("table.address"),
@@ -1209,8 +1216,8 @@ export default function OrdersTab({
           </span>
         ),
       },
-     
-    {
+
+      {
         key: "phoneNumber",
         header: t("table.phoneNumber"),
         cell: (row) => {
@@ -1248,7 +1255,7 @@ export default function OrdersTab({
           );
         },
       },
-        // Admin details (for super admin)
+      // Admin details (for super admin)
       ...(isSuperAdmin ? [{
         key: "admin",
         header: t("common.admin") || "Admin",
@@ -1263,7 +1270,7 @@ export default function OrdersTab({
           </div>
         ),
       }] : []),
-    
+
       {
         key: "duplicate",
         header: t("table.duplicate") || "Duplicate",
@@ -1303,7 +1310,7 @@ export default function OrdersTab({
           </span>
         ),
       },
-      
+
 
       readOnlyStatus ? {
         key: "status",
@@ -1401,6 +1408,40 @@ export default function OrdersTab({
             {row.postponedDate ? new Date(row.postponedDate).toLocaleDateString("en-US") : "-"}
           </span>
         ),
+      },
+      {
+        key: "shippingCompanyStatus",
+        header: t("table.shippingCompanyStatus"),
+        cell: (row) => {
+          const ship = row.shipments?.[0];
+          if (!ship?.id) return "—"
+          return (
+            <div className="flex items-center gap-2">
+              {ship?.rawStatus ? (
+                <Badge className={cn("rounded-xl")}>
+                  {ship?.rawStatus}
+                </Badge>
+              ) : (
+                "—"
+              )}
+              <ActionButtons
+                row={row}
+                actions={[
+                  {
+                    icon: <History size={16} />,
+                    tooltip: t("actions.viewShipmentLogs"),
+                    onClick: (r) => {
+                      setShipmentLogsOrder(r);
+                      setShipmentLogsShipment(ship);
+                      setShipmentLogsModalOpen(true);
+                    },
+                    variant: "secondary",
+                  }
+                ]}
+              />
+            </div>
+          )
+        }
       },
       {
         key: "shipment",
@@ -1520,7 +1561,7 @@ export default function OrdersTab({
         },
       },
 
-      
+
       {
         key: "paymentMethod",
         header: t("table.paymentMethod"),
@@ -1558,7 +1599,7 @@ export default function OrdersTab({
       {
         key: "store",
         header: t("table.store"),
-         cell: (row) => {
+        cell: (row) => {
           if (!row.store)
             return <span className="text-muted-foreground text-sm">—</span>;
 
@@ -1767,7 +1808,7 @@ export default function OrdersTab({
     pager.records,
     fetchStats,
   ]);
-
+  const { handleExport: handleExportLogs, exportLoading: exportLogsLoading } = useExport(); 
   return (
     <div className=" ">
       <PageHeader
@@ -2216,7 +2257,169 @@ export default function OrdersTab({
         }}
         order={historyOrder}
       />
+
+      <ShipmentLogsModal
+        isOpen={shipmentLogsModalOpen}
+        onClose={() => {
+          setShipmentLogsModalOpen(false);
+          setShipmentLogsOrder(null);
+          setShipmentLogsShipment(null);
+          setShipmentLogs([]);
+        }}
+        order={shipmentLogsOrder}
+        shipment={shipmentLogsShipment}
+        logs={shipmentLogs}
+        loading={shipmentLogsLoading}
+        onExport={async () => {
+          console.log("called");
+          await handleExportLogs({
+            endpoint: "/shipping/external-logs/export",
+            params: {
+              shipmentId: shipmentLogsShipment?.id,
+              orderId: shipmentLogsOrder?.id,
+            },
+            filename: `shipment-logs-${Date.now()}.xlsx`,
+          });
+        }}
+        exportLoading={exportLogsLoading}
+      />
     </div>
+  );
+}
+
+function ShipmentLogsModal({ isOpen, onClose, order, shipment, logs, loading, onExport, exportLoading }) {
+  const t = useTranslations("orders");
+  const [pager, setPager] = useState({ total_records: 0, current_page: 1, per_page: 10, records: [] });
+  const [logsLoading, setLogsLoading] = useState(false);
+
+  const fetchLogs = async (page = 1, perPage = 10) => {
+    if (!shipment?.id) return;
+    setLogsLoading(true);
+    try {
+      const res = await api.get("/shipping/external-logs", {
+        params: {
+        shipmentId: shipment.id,
+        orderId: order.id,
+        page,
+        limit: perPage,
+        },
+      });
+      setPager(res.data);
+    } catch (error) {
+      console.error(error);
+      toast.error(t("messages.errorFetchingShipmentLogs"));
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchLogs(1, 10);
+    }
+  }, [isOpen, shipment?.id, order?.id]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="!max-w-4xl rounded-xl max-h-[90vh] flex flex-col p-0 shadow-2xl border-0 overflow-hidden">
+        <div className="relative px-6 pt-6 pb-5 shrink-0 bg-gradient-to-br from-primary to-secondary">
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <History size={22} className="text-white" />
+              </div>
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-0.5">{order?.orderNumber}</p>
+                <h2 className="text-white text-xl font-bold">{t("shipmentLogs.title")}</h2>
+              </div>
+            </div>
+            <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+              <X size={16} className="text-white" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950/50">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("shipmentLogs.date")}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("shipmentLogs.status")}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("shipmentLogs.notes")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {logsLoading ? (
+                    <tr>
+                      <td colSpan="3" className="px-4 py-8 text-center text-slate-500">
+                        <Loader2 size={24} className="animate-spin mx-auto mb-2" />
+                        {t("common.loading")}
+                      </td>
+                    </tr>
+                  ) : pager.records.length === 0 ? (
+                    <tr>
+                      <td colSpan="3" className="px-4 py-8 text-center text-slate-500">
+                        {t("shipmentLogs.noLogs")}
+                      </td>
+                    </tr>
+                  ) : (
+                    pager.records.map((log, index) => (
+                      <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td className="px-4 py-3 text-center">
+                          <span className="text-xs text-gray-500">
+                            {new Date(log.created_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {log.rawStatus ? (
+                            log.rawStatus
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="text-gray-700 dark:text-slate-300">{log.notes || "—"}</span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            {/* {!logsLoading && <Loader2 size={16} className="animate-spin" />} */}
+            {!logsLoading && pager.total_records > 0 && (
+              <span className="text-sm text-slate-500">
+                {t("shipmentLogs.totalRecords", { count: pager.total_records })}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={onClose} className="rounded-xl">
+              {t("common.cancel")}
+            </Button>
+            <Button
+              disabled={exportLoading || pager.records.length === 0}
+              onClick={onExport}
+              className="rounded-xl px-8 bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95"
+            >
+              {exportLoading ? (
+                <Loader2 size={18} className="mr-2 animate-spin" />
+              ) : (
+                <Download size={18} className="mr-2" />
+              )}
+              {t("common.export")}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

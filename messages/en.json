@@ -7589,39 +7589,39 @@
     "cards": [
       {
         "tag": "Order Management",
-        "title": "Orders Scattered Across Multiple Channels",
-        "pain": "Managing orders from your website, social media, and marketplaces separately leads to missed orders, duplicates, and wasted hours every day.",
-        "solution": "One unified dashboard syncs all your orders in real time — no more switching between tabs or missing a sale."
+        "title": "Stop managing orders across multiple systems",
+        "pain": "Switching between different platforms to track orders wastes your team's time and makes daily operations harder to manage.",
+        "solution": "With Madar, all your orders appear in one place in real time, so you can manage them easily, fulfill them faster, and always stay on top of your business."
       },
       {
         "tag": "Shipping & Delivery",
-        "title": "No Visibility on Your Shipments After Dispatch",
-        "pain": "Once a package leaves your hands, you're in the dark. Customers flood your inbox asking \"Where is my order?\" and you have no real answer.",
-        "solution": "Live tracking for every shipment, plus automated customer notifications so you get fewer support requests."
+        "title": "Track every shipment from one place",
+        "pain": "Monitoring shipments across multiple carriers and answering customers' delivery status questions takes up a significant amount of your team's time every day.",
+        "solution": "With Madar, you can track every shipment in real time from a single dashboard, while customers receive automatic order updates, reducing support inquiries and giving you full visibility into every delivery."
       },
       {
         "tag": "Cash on Delivery",
-        "title": "COD Returns Eating Into Your Profits",
-        "pain": "High return rates on cash-on-delivery orders mean you pay for shipping twice and lose inventory to damaged or rejected packages.",
-        "solution": "Smart COD management with upfront verification and return tracking reduces your loss per rejected order."
+        "title": "Cash-on-delivery returns cost more than you think",
+          "pain": "Every returned order means extra shipping costs, more operational work, and less profit, especially as your order volume grows.",
+        "solution": "With Madar, you can manage cash-on-delivery orders more effectively through pre-verification and order tracking, helping reduce return rates and protect your profits."
       },
       {
         "tag": "Analytics",
-        "title": "Guessing Instead of Knowing Your Numbers",
-        "pain": "Without clear reports, you don't know which products are profitable, which courier is failing you, or where your money actually goes.",
-        "solution": "Real-time analytics on revenue, courier performance, and top-selling SKUs — all in one clean report."
+        "title": "High sales don't always mean high profits",
+        "pain": "A product may sell well, but returns or shipping costs can eat into its margins. Likewise, a shipping carrier could be costing you customers without you realizing it.",
+        "solution": "With Madar, all your business metrics and reports are in one place, so you can clearly see what's driving growth and what needs your attention."
       },
       {
         "tag": "Inventory",
-        "title": "Selling Items You No Longer Have in Stock",
-        "pain": "Overselling because your inventory is updated manually leads to cancelled orders, angry customers, and negative reviews.",
-        "solution": "Automatic stock sync across all channels the moment a sale is made — zero overselling."
+        "title": "Is your inventory always out of sync with your sales?",
+        "pain": "Delayed inventory updates lead to incorrect orders, cancellations, and unhappy customers.",
+        "solution": "With Madar, inventory is automatically synchronized across all your sales channels in real time."
       },
       {
-        "tag": "Team & Scale",
-        "title": "Doing Everything Manually as You Grow",
-        "pain": "What worked for 20 orders a day breaks at 200. Manually printing labels, copying tracking numbers, and updating spreadsheets doesn't scale.",
-        "solution": "Automate label printing, status updates, and courier assignments — scale without adding headcount."
+        "tag": "Team & Growth",
+        "title": "Growth shouldn't require more manual work",
+        "pain": "Every new order adds more manual steps, more follow-up, and more opportunities for mistakes.",
+        "solution": "With Madar, your daily operations are automated, allowing you to grow your sales without growing your operational complexity."
       }
     ],
     "cta": {

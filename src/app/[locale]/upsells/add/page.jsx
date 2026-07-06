@@ -532,7 +532,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
                 template={{
                   headerType: messageConfig.headerType,
                   headerText: messageConfig.headerText,
-                  headerUrl: messageConfig.headerUrl ? messageConfig.headerUrl : messageConfig.headerType?.toUpperCase() === "IMAGE" ? upsellProduct.mainImage || "" : "",
+                  headerUrl: messageConfig.headerUrl ? messageConfig.headerUrl : messageConfig.headerType?.toUpperCase() === "IMAGE" ? upsellProduct?.mainImage || "" : "",
                   bodyText: messageConfig.bodyText,
                   footerText: messageConfig.footerText,
                   buttons: messageConfig.buttons,

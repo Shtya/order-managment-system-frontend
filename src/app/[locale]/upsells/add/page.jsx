@@ -275,17 +275,13 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
 
       // Allow URL or relative path without requiring file upload
       // Also allow image header without file when we're setting headerUrl to null
-      const isImageAndSettingNull = isImage && !isEdit && !headerMediaFile;
-      if (!isEdit && isMedia && !headerMediaFile && !isUrl && !isRelativePath && !isImageAndSettingNull) {
+      const isImageAndSettingNull = isImage && !headerMediaFile;
+      if (isMedia && !headerMediaFile && !isUrl && !isRelativePath && !isImageAndSettingNull) {
         toast.error(t("validation.mediaHeaderFileRequired"), { id: toastId });
         setSubmitting(false);
         return;
       }
-      if (isEdit && blob && isMedia && !headerMediaFile && !isUrl && !isRelativePath) {
-        toast.error(t("validation.mediaHeaderMustReupload"), { id: toastId });
-        setSubmitting(false);
-        return;
-      }
+      
 
       let forcedUrl = data.messageConfig.headerUrl;
       // 2. معالجة رفع الملفات إن وجدت قبل تحديث القالب

@@ -124,7 +124,12 @@ export default function InteractiveMessageBuilder({
                 type={headerType}
                 url={headerUrl}
                 accountId={accountId}
-                onUrlChange={(url) => handleUpdate({ headerUrl: url })}
+                onUrlChange={(url) => {
+                  if(!url) {
+                    setHeaderMediaFile?.(null);
+                  }
+                  handleUpdate({ headerUrl: url })
+                }}
                 onFileChange={(file) => handleFileChange(file)}
               />
               {errors.headerUrl && <p className="text-[11px] text-red-500">{errors.headerUrl.message || errors.headerUrl}</p>}

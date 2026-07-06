@@ -49,6 +49,9 @@ import {
   CheckCircle2,
   History,
   ArrowRight,
+  GitBranch,
+  TrendingUp,
+  Tag,
 } from "lucide-react";
 
 import { useLocale, useTranslations } from "next-intl";
@@ -104,6 +107,8 @@ import {
   getShippingDaysBadgeStyles,
   getShippingDaysRangeStatus,
 } from "@/utils/order-utils";
+import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
+import { FaChartPie, FaListAlt } from "react-icons/fa";
 
 //order status flow
 // New => Confirmed => Distrebuted (Assed to shipment company) =>  Printed (Waybills printed) =>  preparing (scanign its items for preparation)
@@ -782,6 +787,12 @@ export default function OrdersTab({
   const [shipmentLogsShipment, setShipmentLogsShipment] = useState(null);
   const [shipmentLogs, setShipmentLogs] = useState([]);
   const [shipmentLogsLoading, setShipmentLogsLoading] = useState(false);
+
+  const [automationRunsModalOpen, setAutomationRunsModalOpen] = useState(false);
+  const [automationRunsOrder, setAutomationRunsOrder] = useState(null);
+
+  const [upsellHistoryModalOpen, setUpsellHistoryModalOpen] = useState(false);
+  const [upsellHistoryOrder, setUpsellHistoryOrder] = useState(null);
 
   const [postponedOrder, setPostponedOrder] = useState(null); // { id, statusId }
   const [postponedDate, setPostponedDate] = useState(null);
@@ -1561,7 +1572,70 @@ export default function OrdersTab({
         },
       },
 
+ {
+        key: "automationRuns",
+        header: t("table.automationRuns"),
+        cell: (row) => {
+          const count = row.automationRunCount || 0;
+          if (count === 0)
+            return <span className="text-muted-foreground text-sm">—</span>;
 
+          return (
+            <ActionButtons
+              row={row}
+              actions={[
+                {
+                  icon: (
+                    <div className="flex items-center gap-1.5">
+                      <FaListAlt className="h-4 w-4 text-blue-600" />
+                      <span className="text-xs font-semibold tabular-nums text-blue-600">{count}</span>
+                    </div>
+                  ),
+                  size: "xl",
+                  tooltip: t("actions.viewAutomationRuns"),
+                  onClick: (r) => {
+                    setAutomationRunsOrder(r);
+                    setAutomationRunsModalOpen(true);
+                  },
+                  variant: "outline",
+                },
+              ]}
+            />
+          );
+        },
+      },
+      {
+        key: "upsellHistory",
+        header: t("table.upsellHistory"),
+        cell: (row) => {
+          const count = row.upsellHistoryCount || 0;
+          if (count === 0)
+            return <span className="text-muted-foreground text-sm">—</span>;
+
+          return (
+            <ActionButtons
+              row={row}
+              actions={[
+                {
+                  icon: (
+                    <div className="flex items-center gap-1.5">
+                      <FaChartPie className="h-4 w-4 text-emerald-600" />
+                      <span className="text-xs font-semibold tabular-nums text-emerald-600">{count}</span>
+                    </div>
+                  ),
+                  size: "xl",
+                  tooltip: t("actions.viewUpsellHistory"),
+                  onClick: (r) => {
+                    setUpsellHistoryOrder(r);
+                    setUpsellHistoryModalOpen(true);
+                  },
+                  variant: "outline",
+                },
+              ]}
+            />
+          );
+        },
+      },
       {
         key: "paymentMethod",
         header: t("table.paymentMethod"),
@@ -1583,6 +1657,7 @@ export default function OrdersTab({
           </Badge>
         },
       },
+     
 
       {
         key: "shippingCompany",
@@ -2283,16 +2358,34 @@ export default function OrdersTab({
         }}
         exportLoading={exportLogsLoading}
       />
+
+      <OrderAutomationRunsModal
+        isOpen={automationRunsModalOpen}
+        onClose={() => {
+          setAutomationRunsModalOpen(false);
+          setAutomationRunsOrder(null);
+        }}
+        order={automationRunsOrder}
+      />
+
+      <OrderUpsellHistoryModal
+        isOpen={upsellHistoryModalOpen}
+        onClose={() => {
+          setUpsellHistoryModalOpen(false);
+          setUpsellHistoryOrder(null);
+        }}
+        order={upsellHistoryOrder}
+      />
     </div>
   );
 }
 
 function ShipmentLogsModal({ isOpen, onClose, order, shipment, logs, loading, onExport, exportLoading }) {
   const t = useTranslations("orders");
-  const [pager, setPager] = useState({ total_records: 0, current_page: 1, per_page: 10, records: [] });
+  const [pager, setPager] = useState({ total_records: 0, current_page: 1, per_page: 50, records: [] });
   const [logsLoading, setLogsLoading] = useState(false);
 
-  const fetchLogs = async (page = 1, perPage = 10) => {
+  const fetchLogs = async (page = 1, perPage = 50) => {
     if (!shipment?.id) return;
     setLogsLoading(true);
     try {
@@ -2315,7 +2408,7 @@ function ShipmentLogsModal({ isOpen, onClose, order, shipment, logs, loading, on
 
   useEffect(() => {
     if (isOpen) {
-      fetchLogs(1, 10);
+      fetchLogs(1, 50);
     }
   }, [isOpen, shipment?.id, order?.id]);
 
@@ -2392,14 +2485,15 @@ function ShipmentLogsModal({ isOpen, onClose, order, shipment, logs, loading, on
         </div>
 
         <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
             {/* {!logsLoading && <Loader2 size={16} className="animate-spin" />} */}
+          {/* <div className="flex items-center gap-3">
             {!logsLoading && pager.total_records > 0 && (
               <span className="text-sm text-slate-500">
                 {t("shipmentLogs.totalRecords", { count: pager.total_records })}
               </span>
             )}
-          </div>
+          </div> */}
+          <div></div>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={onClose} className="rounded-xl">
               {t("common.cancel")}
@@ -2422,6 +2516,583 @@ function ShipmentLogsModal({ isOpen, onClose, order, shipment, logs, loading, on
     </Dialog>
   );
 }
+
+export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
+  const router = useRouter();
+  const tCommon = useTranslations("common");
+  const tAutomations = useTranslations("whatsApp.automations");
+  const tLogs = useTranslations("whatsApp.automationLogs");
+  const t = useTranslations("orders");
+
+  const [pager, setPager] = useState({ 
+    total_records: 0, 
+    current_page: 1, 
+    per_page: 50, 
+    records: [] 
+  });
+  const [loading, setLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  const fetchRuns = async (page = 1, perPage = 50) => {
+    if (!order?.id) return;
+    setLoading(true);
+    try {
+      const res = await api.get("/automation/runs", {
+        params: {
+          triggerEntityType: "order",
+          entityId: order.id,
+          page,
+          limit: perPage,
+        },
+      });
+      setPager(res.data);
+    } catch (error) {
+      console.error(error);
+      toast.error(t("messages.errorFetchingLogs") || "Failed to fetch automation runs.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && order?.id) {
+      fetchRuns(1, 50);
+    }
+  }, [isOpen, order?.id]);
+
+  const handleInternalExport = async () => {
+    if (!order?.id) return;
+    setExportLoading(true);
+    try {
+      const response = await api.get("/automation/runs/export", {
+        params: {
+          triggerEntityType: "order",
+          entityId: order.id,
+        },
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `automation-runs-order-${order.id}-${Date.now()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export Error:", error);
+      toast.error(tCommon("errorExporting") || "Export failed.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="!max-w-5xl rounded-xl max-h-[90vh] flex flex-col p-0 shadow-2xl border-0 overflow-hidden">
+        
+        {/* Header */}
+        <div className="relative px-6 pt-6 pb-5 shrink-0 bg-gradient-to-br from-primary to-secondary">
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <FaListAlt size={22} className="text-white" />
+              </div>
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-0.5">
+                  {order?.orderNumber || order?.id}
+                </p>
+                <h2 className="text-white text-xl font-bold">{t("automationTitle") || "Automation Runs"}</h2>
+              </div>
+            </div>
+            <button 
+              onClick={onClose} 
+              className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+            >
+              <X size={16} className="text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* Body / Table */}
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950/50">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[750px]">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-left">
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("table.automation")}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("table.trigger")}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("table.status")}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("table.progress")}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("table.startedAt")}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tCommon("actions")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {loading ? (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-8 text-center text-slate-500">
+                        <Loader2 size={24} className="animate-spin mx-auto mb-2" />
+                        {tCommon("loading")}
+                      </td>
+                    </tr>
+                  ) : pager.records.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-8 text-center text-slate-500">
+                        {t("noRecords") || "No automation runs found for this order."}
+                      </td>
+                    </tr>
+                  ) : (
+                    pager.records.map((row) => {
+                      const nodes = row.version?.flow?.nodes || [];
+                      const currentNode = nodes.find((n) => n.id === row.currentNodeId);
+                      const nodeTitle = currentNode?.data?.label || row.currentNodeId;
+
+                      return (
+                        <tr key={row.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                          
+                          {/* Automation Flow */}
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex flex-col items-center">
+                              <span className="font-bold text-gray-700 dark:text-slate-200 text-center">
+                                {row.automationFlow?.name || "—"}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <GitBranch size={10} />
+                                v{row.version?.versionString || "1.0"}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Trigger */}
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-xs">
+                                {row.automationFlow?.triggerType 
+                                  ? tAutomations(`triggers.${row.automationFlow.triggerType}`) 
+                                  : row.triggerEntityType}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Status */}
+                          <td className="px-4 py-3 text-center">
+                            <div
+                              className={cn(
+                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase",
+                                row.status === "completed"
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                                  : row.status === "running"
+                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400"
+                                  : row.status === "failed"
+                                  ? "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400"
+                                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                              )}
+                            >
+                              {tLogs(`statuses.${row.status}`)}
+                            </div>
+                          </td>
+
+                          {/* Progress */}
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs font-medium">
+                                {row.completedNodeIds?.length || 0} {t("table.steps")}
+                              </span>
+                              {row.status === "failed" && row.errorMessage && (
+                                <span 
+                                  className="text-[10px] text-rose-500 max-w-[150px] truncate block" 
+                                  title={row.errorMessage}
+                                >
+                                  {row.errorMessage}
+                                </span>
+                              )}
+                              {row.status !== "completed" && row.currentNodeId && (
+                                <span className="text-[10px] text-muted-foreground italic">
+                                  {t("table.atNode")}: {nodeTitle}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Started At */}
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Clock size={14} />
+                              {row.startedAt ? new Date(row.startedAt).toLocaleString() : "—"}
+                            </div>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex justify-center">
+                              <ActionButtons
+                                row={row}
+                                actions={[
+                                  {
+                                    icon: <Eye size={16} />,
+                                    tooltip: t("actions.view") || "View Run",
+                                    onClick: (r) => router.push(`/automations/running?id=${r.id}`),
+                                    variant: "primary",
+                                    permission: "automation.read",
+                                  },
+                                ]}
+                              />
+                            </div>
+                          </td>
+
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+          {/* <div className="flex items-center gap-3">
+            {!loading && pager.total_records > 0 && (
+              <span className="text-sm text-slate-500">
+                {t("totalRecords", { count: pager.total_records }) || `Total: ${pager.total_records}`}
+              </span>
+            )}
+          </div> */}
+          <div></div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={onClose} className="rounded-xl">
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              disabled={exportLoading || pager.records.length === 0}
+              onClick={handleInternalExport}
+              className="rounded-xl px-8 bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95"
+            >
+              {exportLoading ? (
+                <Loader2 size={18} className="mr-2 animate-spin" />
+              ) : (
+                <Download size={18} className="mr-2" />
+              )}
+              {tCommon("export")}
+            </Button>
+          </div>
+        </div>
+
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
+  const tCommon = useTranslations("common");
+  const tUpsell = useTranslations("upsells"); // Adjust i18n namespace if needed
+  const t = useTranslations("orders"); // Adjust i18n namespace if needed
+
+  const [pager, setPager] = useState({ 
+    total_records: 0, 
+    current_page: 1, 
+    per_page: 50, 
+    records: [] 
+  });
+  const [loading, setLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [previewState, setPreviewState] = useState({ open: false, upsell: null });
+
+  const fetchUpsellHistory = async (page = 1, perPage = 50) => {
+    if (!order?.id) return;
+    setLoading(true);
+    try {
+      const res = await api.get("/upsells/history", {
+        params: {
+          orderId: order.id,
+          page,
+          limit: perPage,
+        },
+      });
+      setPager(res.data);
+    } catch (error) {
+      console.error("Error fetching upsell history:", error);
+      toast.error(t("messages.errorFetching") || "Failed to fetch upsell history.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && order?.id) {
+      fetchUpsellHistory(1, 50);
+    }
+  }, [isOpen, order?.id]);
+
+  const handleExport = async () => {
+    if (!order?.id) return;
+    setExportLoading(true);
+    try {
+      const response = await api.get("/upsells/export-history", {
+        params: {
+          orderId: order.id,
+        },
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `upsell-history-order-${order.id}-${Date.now()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export Error:", error);
+      toast.error(tCommon("errorExporting") || "Export failed.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="!max-w-5xl rounded-xl max-h-[90vh] flex flex-col p-0 shadow-2xl border-0 overflow-hidden">
+        
+        {/* Header */}
+        <div className="relative px-6 pt-6 pb-5 shrink-0 bg-gradient-to-br from-primary to-secondary">
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <TrendingUp size={22} className="text-white" />
+              </div>
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-0.5">
+                  {order?.orderNumber || order?.id}
+                </p>
+                <h2 className="text-white text-xl font-bold">{("title") || "Upsell History"}</h2>
+              </div>
+            </div>
+            <button 
+              onClick={onClose} 
+              className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+            >
+              <X size={16} className="text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* Body / Table */}
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950/50">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[750px]">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-left">
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.triggerProduct") || "Trigger Product"}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.upsellProduct") || "Upsell Product"}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.price") || "Sent Price"}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.status") || "Status"}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.sentAt") || "Sent At"}</th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tCommon("actions")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {loading ? (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-8 text-center text-slate-500">
+                        <Loader2 size={24} className="animate-spin mx-auto mb-2" />
+                        {tCommon("loading")}
+                      </td>
+                    </tr>
+                  ) : pager.records.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-8 text-center text-slate-500">
+                        {t("noRecords") || "No upsell history found for this order."}
+                      </td>
+                    </tr>
+                  ) : (
+                    pager.records.map((row) => (
+                      <tr key={row.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        
+                        {/* Trigger Product Cell */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
+                              {row.triggerProduct?.mainImage ? (
+                                <img 
+                                  src={typeof avatarSrc === 'function' ? avatarSrc(row.triggerProduct.mainImage) : row.triggerProduct.mainImage} 
+                                  alt="" 
+                                  className="w-full h-full object-cover" 
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                  <Tag size={16} />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-bold text-xs text-gray-800 dark:text-slate-200 truncate">
+                                {row.triggerProduct?.name || "—"}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Upsell Product Cell */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
+                              {row.upsellProduct?.mainImage ? (
+                                <img 
+                                  src={typeof avatarSrc === 'function' ? avatarSrc(row.upsellProduct.mainImage) : row.upsellProduct.mainImage} 
+                                  alt="" 
+                                  className="w-full h-full object-cover" 
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                  <Tag size={16} />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-bold text-xs text-gray-800 dark:text-slate-200 truncate">
+                                {row.upsellProduct?.name || "—"}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground font-mono">
+                                SKU: {row.upsellSku?.sku || "—"}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Price Cell */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="font-bold text-xs text-primary">
+                            {typeof formatCurrency === 'function' 
+                              ? formatCurrency(row.sentPrice) 
+                              : `$${Number(row.sentPrice || 0).toFixed(2)}`}
+                          </div>
+                        </td>
+
+                        {/* Status Cell */}
+                        <td className="px-4 py-3 text-center">
+                          <div
+                            className={cn(
+                              "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase",
+                              row.status === "ACCEPTED" || row.status === "SUCCESS"
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                                : row.status === "REJECTED" || row.status === "FAILED"
+                                ? "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400"
+                                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                            )}
+                          >
+                            {row.status || "PENDING"}
+                          </div>
+                        </td>
+
+                        {/* Sent At Cell */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Clock size={14} />
+                            {row.createdAt ? new Date(row.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "—"}
+                          </div>
+                        </td>
+
+                        {/* Actions Cell */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
+                            <ActionButtons
+                              row={row}
+                              actions={[
+                                {
+                                  icon: <Eye size={16} />,
+                                  tooltip: t("actions.preview"),
+                                  onClick: () => setPreviewState({ open: true, upsell: row }),
+                                  variant: "primary",
+                                },
+                              ]}
+                            />
+                          </div>
+                        </td>
+
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+          {/* <div className="flex items-center gap-3">
+            {!loading && pager.total_records > 0 && (
+              <span className="text-sm text-slate-500">
+                {t("totalRecords", { count: pager.total_records }) || `Total: ${pager.total_records}`}
+              </span>
+            )}
+          </div> */}
+          <div></div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={onClose} className="rounded-xl">
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              disabled={exportLoading || pager.records.length === 0}
+              onClick={handleExport}
+              className="rounded-xl px-8 bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95"
+            >
+              {exportLoading ? (
+                <Loader2 size={18} className="mr-2 animate-spin" />
+              ) : (
+                <Download size={18} className="mr-2" />
+              )}
+              {tCommon("export")}
+            </Button>
+          </div>
+        </div>
+
+        <Dialog
+          open={previewState.open}
+          onOpenChange={(open) => setPreviewState((prev) => ({ ...prev, open }))}
+        >
+          <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
+            <DialogHeader className="p-6 border-b dark:border-slate-800">
+              <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                <Eye className="text-primary" />
+                {t("actions.preview")}
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="p-8 max-w-[400px] mx-auto">
+              {previewState?.upsell?.sentConfig ? (<TemplatePreview
+                isInteractive={true}
+                template={{
+                  headerType: previewState?.upsell?.sentConfig.headerType,
+                  headerText: previewState?.upsell?.sentConfig.headerText,
+                  headerUrl: previewState?.upsell?.sentConfig.headerUrl,
+                  bodyText: previewState?.upsell?.sentConfig.bodyText,
+                  footerText: previewState?.upsell?.sentConfig.footerText,
+                  buttons: previewState?.upsell?.sentConfig.buttons,
+                  language: useLocale() === "ar" ? "ar" : "en"
+                }}
+              />) : null}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function isValidHex(color) {
   return /^#([0-9A-F]{6})$/i.test(color);

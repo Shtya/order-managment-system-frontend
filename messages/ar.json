@@ -4800,7 +4800,9 @@
       "createManifest": "إنشاء ملف حمولة (مانيفست)",
       "createReturnManifest": "إنشاء ملف مرتجعات",
       "loading": "جاري التحميل...",
-      "viewShipmentLogs": "سجل حالات شركات الشحن"
+      "viewShipmentLogs": "سجل حالات شركات الشحن",
+      "viewAutomationRuns": "سجل التشغيل التلقائي",
+      "viewUpsellHistory": "العروض المرسلة"
     },
     "shipmentLogs": {
       "title": "سجلات الشحنة",
@@ -4837,7 +4839,9 @@
       "errorFetchingTracking": "فشل في جلب تفاصيل التتبع. يرجى المحاولة مرة أخرى لاحقاً.",
       "copied": "تم النسخ",
       "errorFetchingHistory": "فضل تحميل تاريخ الطلب",
-      "errorFetchingShipmentLogs": "فشل تحميل سجلات حالات الشحن"
+      "errorFetchingShipmentLogs": "فشل تحميل سجلات حالات الشحن",
+      "errorFetchingLogs": "فشل تحميل سجل التشغيل",
+      "errorFetching": "فشل تحميل سجلات العروض"
     },
     "shippingDays": {
       "day": "{count} يوم",
@@ -5504,7 +5508,15 @@
         "branch": "الفرع"
       }
     },
+    "automationTitle": "سجلات تشغيل الأتمتة",
+    "noRecords": "لم يتم العثور على بيانات لهذا الطلب.",
     "table": {
+      "automation": "الأتمتة",
+      "trigger": "المحفز",
+      "progress": "التقدم",
+      "startedAt": "تاريخ البدء",
+      "steps": "خطوات",
+      "atNode": "عند العقدة",
       "barcode": "باركود",
       "orderNumber": "كود الطلب",
       "duplicate": "مكرر",
@@ -5533,7 +5545,9 @@
       "shippingDays": "أيام الشحن",
       "postponedDate": "تاريخ التأجيل",
       "store": "المتجر",
-      "shippingCompanyStatus": "حالة طلب شركة الشحن"
+      "shippingCompanyStatus": "حالة طلب شركة الشحن",
+      "automationRuns": "سجل التشغيل التلقائي",
+      "upsellHistory": "العروض المرسلة"
     },
     "bulkUpload": {
       "clickToChangeFile": "اضغط لتغيير الملف",
@@ -5810,7 +5824,8 @@
     },
     "other": "اخري",
     "unknown": "غير معروف",
-    "from": "من"
+    "from": "من",
+    "title": "سجل التشغيل"
   },
   "callCenter": {
     "breadcrumb": {
@@ -11373,7 +11388,8 @@
       "price": "سعر العرض",
       "empty": "لم يتم العثور على عروض",
       "active": "نشط",
-      "inactive": "غير نشط"
+      "inactive": "غير نشط",
+      "sentAt": "تاريخ الارسال"
     },
     "filters": {
       "status": "الحالة",

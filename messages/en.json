@@ -4805,7 +4805,9 @@
       "createManifest": "Create Manifest File",
       "createReturnManifest": "Create Return Manifest File",
       "loading": "Loading...",
-      "viewShipmentLogs": "Shipping Companies Status Log"
+      "viewShipmentLogs": "Shipping Companies Status Log",
+      "viewAutomationRuns": "Automation Runs Logs",
+      "viewUpsellHistory": "Upsells Sent"
     },
     "shipmentLogs": {
       "title": "Shipment Logs",
@@ -4842,7 +4844,9 @@
       "errorFetchingTracking": "Failed to fetch tracking details. Please try again later.",
       "copied": "Copied",
       "errorFetchingHistory": "Error fetching history",
-      "errorFetchingShipmentLogs": "Failed to load shipment status logs"
+      "errorFetchingShipmentLogs": "Failed to load shipment status logs",
+      "errorFetchingLogs": "Failed to fetch automation runs.",
+      "errorFetching": "Failed to fetch upsell history."
     },
     "shipmentStatuses": {
       "created": "Dispatched",
@@ -5519,7 +5523,17 @@
         "branch": "Branch"
       }
     },
+    "automationTitle": "Automation Runs",
+    "noRecords": "No data found for this order.",
     "table": {
+      "automation": "Automation",
+      "trigger": "Trigger",
+      "progress": "Progress",
+      "startedAt": "Started At",
+      "steps": "Steps",
+      "atNode": "At Node",
+      "automationRuns": "ِAutomation Runs Logs",
+      "upsellHistory": "Upsells Sent",
       "barcode": "Barcode",
       "orderNumber": "Order Number",
       "duplicate": "Duplicate",
@@ -5825,7 +5839,8 @@
     },
     "other": "Other",
     "unknown": "unknown",
-    "from": "from"
+    "from": "from",
+    "title": "Automation Runs"
   },
   "callCenter": {
     "breadcrumb": {
@@ -11352,7 +11367,8 @@
       "price": "Upsell Price",
       "empty": "No upsells found",
       "active": "Active",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "sentAt": "Send date"
     },
     "filters": {
       "status": "Status",

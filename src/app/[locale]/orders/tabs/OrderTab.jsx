@@ -80,7 +80,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import api, { BASE_URL } from "@/utils/api";
-import UserSelect from "@/components/atoms/UserSelect";
+import UserSelect,{ avatarSrc } from "@/components/atoms/UserSelect";
 import Flatpickr from "react-flatpickr";
 
 import { Textarea } from "@/components/ui/textarea";
@@ -2876,7 +2876,7 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                 <p className="text-white/70 text-xs font-medium mb-0.5">
                   {order?.orderNumber || order?.id}
                 </p>
-                <h2 className="text-white text-xl font-bold">{("title") || "Upsell History"}</h2>
+                <h2 className="text-white text-xl font-bold">{t("actions.viewUpsellHistory") || "Upsell History"}</h2>
               </div>
             </div>
             <button 
@@ -2896,11 +2896,12 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-left">
                     <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.triggerProduct") || "Trigger Product"}</th>
-                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.upsellProduct") || "Upsell Product"}</th>
-                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.price") || "Sent Price"}</th>
-                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.status") || "Status"}</th>
-                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.sentAt") || "Sent At"}</th>
-                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{tCommon("actions")}</th>
+                    <th className="px-4 py-3 text-center text-nowrap font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.upsellProduct") || "Upsell Product"}</th>
+                    <th className="px-4 py-3 text-center text-nowrap font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.price") || "Sent Price"}</th>
+                    <th className="px-4 py-3 text-center text-nowrap font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.status") || "Status"}</th>
+                    <th className="px-4 py-3 text-center text-nowrap  font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.sentAt") || "Sent At"}</th>
+                    <th className="px-4 py-3 text-center text-nowrap font-semibold text-slate-600 dark:text-slate-400">{tUpsell("table.respondedAt") || "Sent At"}</th>
+                    <th className="px-4 py-3 text-center text-nowrap font-semibold text-slate-600 dark:text-slate-400">{tCommon("actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -2927,7 +2928,7 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                             <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
                               {row.triggerProduct?.mainImage ? (
                                 <img 
-                                  src={typeof avatarSrc === 'function' ? avatarSrc(row.triggerProduct.mainImage) : row.triggerProduct.mainImage} 
+                                  src={avatarSrc(row.triggerProduct.mainImage)} 
                                   alt="" 
                                   className="w-full h-full object-cover" 
                                 />
@@ -2951,7 +2952,7 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                             <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
                               {row.upsellProduct?.mainImage ? (
                                 <img 
-                                  src={typeof avatarSrc === 'function' ? avatarSrc(row.upsellProduct.mainImage) : row.upsellProduct.mainImage} 
+                                  src={avatarSrc(row.upsellProduct.mainImage)} 
                                   alt="" 
                                   className="w-full h-full object-cover" 
                                 />
@@ -2998,10 +2999,16 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                         </td>
 
                         {/* Sent At Cell */}
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-4 py-3 text-nowrap text-center">
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <Clock size={14} />
                             {row.createdAt ? new Date(row.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "—"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-nowrap text-center">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Clock size={14} />
+                            {row.respondedAt ? new Date(row.respondedAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "—"}
                           </div>
                         </td>
 

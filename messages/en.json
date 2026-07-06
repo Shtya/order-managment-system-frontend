@@ -11368,7 +11368,8 @@
       "empty": "No upsells found",
       "active": "Active",
       "inactive": "Inactive",
-      "sentAt": "Send date"
+      "sentAt": "Send date",
+      "respondedAt": "Respond date"
     },
     "filters": {
       "status": "Status",

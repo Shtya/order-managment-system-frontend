@@ -3021,7 +3021,10 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                                 {
                                   icon: <Eye size={16} />,
                                   tooltip: t("actions.preview"),
-                                  onClick: () => setPreviewState({ open: true, upsell: row }),
+                                  onClick: () => {
+                                    console.log(row?.sentConfig)
+                                    setPreviewState({ open: true, upsell: row })
+                                  },
                                   variant: "primary",
                                 },
                               ]}

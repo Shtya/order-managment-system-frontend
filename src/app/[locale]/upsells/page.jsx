@@ -226,6 +226,15 @@ export default function UpsellsPage() {
   const columns = useMemo(
     () => [
       {
+        key: "createdAt",
+        header: t("table.createdat"),
+        cell: (row) => (
+          <span className="text-xs text-gray-500">
+            {new Date(row.createdAt).toLocaleDateString("en-US")}
+          </span>
+        ),
+      },
+      {
         header: t("table.triggerProduct"),
         key: "triggerProduct",
         cell: (row) => (

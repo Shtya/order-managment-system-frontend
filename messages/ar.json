@@ -11390,7 +11390,8 @@
       "active": "نشط",
       "inactive": "غير نشط",
       "sentAt": "تاريخ الارسال",
-      "respondedAt": "تاريخ الرد"
+      "respondedAt": "تاريخ الرد",
+      "createdat": "تاريخ الانشاء"
     },
     "filters": {
       "status": "الحالة",
@@ -11446,7 +11447,8 @@
       "menuLabelPlaceholder": "مثال: عرض الخيارات",
       "sectionTitlePlaceholder": "مثال: اختر فئة",
       "menuLabel": "عرض الخيارات"
-    }
+    },
+    "failedSave": "فشل حفظ العرض"
   },
   "chats": {
     "title": "المحادثات",

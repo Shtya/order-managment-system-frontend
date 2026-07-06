@@ -222,9 +222,9 @@ export const getMediaUrlOrOriginal = (url, accountId) => {
 
 export const handleMediaClick = (type, content) => {
     const url = getMediaUrl(content, type);
-    console.log(url);
+    
     if (url) {
-        window.open(url, "_blank");
+        window.open(avatarSrc(url), "_blank");
     }
 };
 
@@ -243,6 +243,7 @@ export const getCachedMediaUrl = (mediaId) => {
 
 export const getMediaUrlWithCache = (content, type, message) => {
     const media = content[type];
+    
     if (!media) return null;
     // Check if we have a local URL (optimistic UI)
     if (media?.localUrl) {

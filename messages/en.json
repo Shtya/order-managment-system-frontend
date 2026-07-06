@@ -11369,7 +11369,8 @@
       "active": "Active",
       "inactive": "Inactive",
       "sentAt": "Send date",
-      "respondedAt": "Respond date"
+      "respondedAt": "Respond date",
+      "createdat": "Creation date"
     },
     "filters": {
       "status": "Status",
@@ -11425,7 +11426,8 @@
       "menuLabelPlaceholder": "e.g. View Options",
       "sectionTitlePlaceholder": "e.g. Select a category",
       "menuLabel": "View Options"
-    }
+    },
+    "failedSave": "Failed to save upsell"
   },
   "chats": {
     "title": "Conversations",

@@ -312,7 +312,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
       router.push("/upsells");
     } catch (err) {
       console.log(err);
-      toast.error(err?.response?.data?.message || tCommon("error"), { id: toastId });
+      toast.error(err?.response?.data?.message || t("failedSave"), { id: toastId });
     } finally {
       setSubmitting(false);
     }

@@ -29,6 +29,7 @@ import {
     getMediaUrlWithCache,
     handleMediaClick,
     VAR_REGEX,
+    isMediaId,
 } from "@/utils/whatsapp-healper";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { FaLocationDot } from "react-icons/fa6";
@@ -251,6 +252,7 @@ export function WhatsAppCallPermissionsBubble({ locale = "en", onOpenMenu }) {
  * @param {boolean} [flat]
  * @param {boolean} [hasHeader]
  */
+
 export default function TemplatePreview({
     template,
     flat = false,
@@ -449,8 +451,9 @@ export default function TemplatePreview({
         // Create content object based on headerType and headerUrl
         const createMediaContent = (type, urlOrId) => {
             if (urlOrId) {
+                const isId = isMediaId(urlOrId);
                 // Check if it's a URL or ID
-                if (urlOrId.startsWith('http://') || urlOrId.startsWith('https://') || urlOrId.startsWith('blob:')) {
+                if (!isId) {
                     return { [type]: { localUrl: urlOrId } };
                 } else {
                     return { [type]: { id: urlOrId } };
@@ -481,7 +484,7 @@ export default function TemplatePreview({
                                     </div>
                                 ) : (
                                     <img
-                                        src={imageUrl}
+                                        src={avatarSrc(imageUrl)}
                                         alt="Header"
                                         className={cn(
                                             "w-full h-full object-cover cursor-pointer transition-opacity duration-300",
@@ -531,7 +534,7 @@ export default function TemplatePreview({
                                     </div>
                                 ) : (
                                     <video
-                                        src={videoUrl}
+                                        src={avatarSrc(videoUrl)}
                                         className={cn(
                                             "w-full h-full object-cover transition-opacity duration-300",
                                             (mediaLoading && !isUploading) ? "opacity-0" : "opacity-100"

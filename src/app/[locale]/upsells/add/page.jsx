@@ -265,17 +265,22 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
     const toastId = toast.loading(tCommon("loading"));
     try {
       const headerUrl = data.messageConfig.headerUrl;
+      const headerType = data.messageConfig.headerType;
+      const isMedia = ["IMAGE", "VIDEO", "DOCUMENT"].includes(headerType?.toUpperCase());
+      const isImage = headerType === "IMAGE";
       const blob = headerUrl && String(headerUrl).startsWith("blob:");
       const isUrl = headerUrl && (String(headerUrl).startsWith("http://") || String(headerUrl).startsWith("https://"));
       const isRelativePath = headerUrl && (String(headerUrl).startsWith("uploads/") || String(headerUrl).startsWith("/uploads/"));
 
       // Allow URL or relative path without requiring file upload
-      if (!isEdit && !headerMediaFile && !isUrl && !isRelativePath) {
+      // Also allow image header without file when we're setting headerUrl to null
+      const isImageAndSettingNull = isImage && !isEdit && !headerMediaFile;
+      if (!isEdit && isMedia && !headerMediaFile && !isUrl && !isRelativePath && !isImageAndSettingNull) {
         toast.error(t("validation.mediaHeaderFileRequired"), { id: toastId });
         setSubmitting(false);
         return;
       }
-      if (isEdit && blob && !headerMediaFile && !isUrl && !isRelativePath) {
+      if (isEdit && blob && isMedia && !headerMediaFile && !isUrl && !isRelativePath) {
         toast.error(t("validation.mediaHeaderMustReupload"), { id: toastId });
         setSubmitting(false);
         return;
@@ -289,7 +294,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
         const up = await api.post("/upsells/upload-header-media", fdMedia);
         forcedUrl = up.data?.headerUrl;
       }
-
+      console.log(isImageAndSettingNull, isImage , !isEdit , !headerMediaFile)
       const payload = {
         triggerProductId: data.triggerProductId,
         upsellProductId: data.upsellProductId,
@@ -298,7 +303,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
         expireTimeM: data.expireTimeEnabled ? Number(data.expireTime) : null,
         messageConfig: {
           ...data.messageConfig,
-          headerUrl: forcedUrl
+          headerUrl: isImageAndSettingNull ? null : forcedUrl
         }
       };
 

@@ -469,7 +469,7 @@ export default function UpsellsPage() {
               template={{
                 headerType: previewState.upsell?.messageConfig.headerType,
                 headerText: previewState.upsell?.messageConfig.headerText,
-                headerUrl: previewState.upsell?.messageConfig.headerUrl,
+                headerUrl: previewState.upsell?.messageConfig.headerUrl ? previewState.upsell?.messageConfig.headerUrl : previewState.upsell?.messageConfig.headerType?.toUpperCase() === "IMAGE" ? previewState.upsell?.upsellProduct?.mainImage : null,
                 bodyText: previewState.upsell?.messageConfig.bodyText,
                 footerText: previewState.upsell?.messageConfig.footerText,
                 buttons: previewState.upsell?.messageConfig.buttons,

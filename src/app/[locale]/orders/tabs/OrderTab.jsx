@@ -744,26 +744,30 @@ export default function OrdersTab({
   const filteredStats = useMemo(() => {
     if (!stats) return [];
 
-    return stats.filter((s) => {
-      // If no restrictions are passed, consider it restricted-pass (show all)
-      const isRestricted = restrictedStatuses.length === 0 || restrictedSet.has(s.code);
-      const isCustom = s.system === false;
+    return stats
+      .filter((s) => {
+        // If no restrictions are passed, consider it restricted-pass (show all)
+        const isRestricted = restrictedStatuses.length === 0 || restrictedSet.has(s.code);
+        const isCustom = s.system === false;
 
-      return isRestricted || (showCustom && isCustom);
-    });
+        return isRestricted || (showCustom && isCustom);
+      })
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }, [stats, restrictedSet, showCustom, restrictedStatuses]);
 
   const filteredSelectStats = useMemo(() => {
     if (!stats) return [];
 
-    return stats.filter((s) => {
-      // Use the same logic for select statuses, considering both potential restriction sources
-      const hasAnyRestriction = restrictedSelectStatuses?.length > 0 || restrictedStatuses?.length > 0;
-      const isRestricted = !hasAnyRestriction || restrictedSelectSet.has(s.code);
-      const isCustom = s.system === false;
+    return stats
+      .filter((s) => {
+        // Use the same logic for select statuses, considering both potential restriction sources
+        const hasAnyRestriction = restrictedSelectStatuses?.length > 0 || restrictedStatuses?.length > 0;
+        const isRestricted = !hasAnyRestriction || restrictedSelectSet.has(s.code);
+        const isCustom = s.system === false;
 
-      return isRestricted || (showCustom && isCustom);
-    });
+        return isRestricted || (showCustom && isCustom);
+      })
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }, [stats, restrictedSelectSet, showCustom, restrictedSelectStatuses, restrictedStatuses]);
 
   const router = useRouter();
@@ -1883,6 +1887,7 @@ export default function OrdersTab({
     pager.records,
     fetchStats,
   ]);
+  
   const { handleExport: handleExportLogs, exportLoading: exportLogsLoading } = useExport(); 
   return (
     <div className=" ">

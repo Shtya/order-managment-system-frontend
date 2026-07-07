@@ -113,10 +113,11 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 		<div className="space-y-2">
 			<div className="flex items-center gap-2">
 				<Label className="text-sm text-gray-600 dark:text-slate-300">
-					{label}{required && <span className="text-red-500 ml-0.5">*</span>}
+					{label}{required && "*"}
 				</Label>
 			</div>
 			<Select
+				key={`${items.length}-${value}`}
 				value={value || ""}
 				onValueChange={onValueChange}
 				disabled={disabled || isLoading}
@@ -132,7 +133,7 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 					)}
 				</SelectTrigger>
 				<SelectContent>
-					{items.map((item) => (
+					{items.map((item) =>  (
 						<SelectItem key={item.id} value={String(item.id)}>
 							{item[nameKey] || item.nameEn || item.id}
 						</SelectItem>
@@ -148,36 +149,215 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 // Address section — Bosta mode (selects) vs Normal mode (text inputs)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function AddressSection({
 
-	locale,
-	provider,
+export function AddressSection({
+	shippingProvider,
 	// react-hook-form
 	control,
 	errors,
 	setValue,
-	// Bosta geo
 	providerMeta,
-	onMetaChange,
-	cities,
-	providerZones,
-	providerDistricts,
-	providerLoading,
-	isLoading,
-	// Bosta validation errors
+	setProviderMeta,
 	providerErrors,
 }) {
-	const currentConfig = GEO_CONFIG[provider] || GEO_CONFIG.default;
+	const locale = useLocale();
 	const t = useTranslations("createOrder");
 	const nameKey = locale === "ar" ? "nameAr" : "nameEn";
+	const [providerLoading, setproviderLoading] = useState({
+		cities: false,
+		zones: false,
+		districts: false,
+		locations: false,
+	});
+
+	const [cities, setCities] = useState([]);
+	const [citiesLoading, setCitiesLoading] = useState(false);
+	const [providerCities, setProviderCities] = useState([]);
+	const [providerZones, setproviderZones] = useState([]);
+	const [providerDistricts, setproviderDistricts] = useState([]);
+
+	const currentConfig = GEO_CONFIG[shippingProvider] || GEO_CONFIG.default;
+	
 	// Derived: districts filtered by selected zone (parentId === zoneId)
 	const filteredDistricts = useMemo(() => {
 		if (!currentConfig.showDistrict) return [];
 		return providerDistricts.filter((d) => d.parentId === providerMeta.zoneId);
 	}, [currentConfig.showDistrict, providerDistricts, providerMeta.zoneId]);
 
-	// Watch cityId from RHF for the Select value
+	// Watch cityId, city, and area from RHF for the Select values
 	const cityIdValue = useWatch({ control, name: "cityId" });
+	const cityValue = useWatch({ control, name: "city" });
+	const areaValue = useWatch({ control, name: "area" });
+
+
+	const [areas, setAreas] = useState([]);
+	const [areasCache, setAreasCache] = useState({});
+	const [areasLoading, setAreasLoading] = useState(false);
+
+
+	// Find current city ID: first use cityIdValue, then match by name
+	const currentCityId = useMemo(() => {
+
+		if (cityIdValue) return cityIdValue;
+		if (!cityValue || !providerCities.length) return "";
+
+		const normalized = cityValue.trim().toLowerCase();
+
+		const found = providerCities.find((c) => {
+			// Match the main city names
+			if (
+				c.nameAr?.trim().toLowerCase() === normalized ||
+				c.nameEn?.trim().toLowerCase() === normalized
+			) {
+				return true;
+			}
+
+			// Match any provider city names
+			return c.providerLocations?.some((p) =>
+				p.providerCityNameAr?.trim().toLowerCase() === normalized ||
+				p.providerCityNameEn?.trim().toLowerCase() === normalized
+			);
+		});
+
+		return found?.id ?? "";
+	}, [cityIdValue, cityValue, providerCities, nameKey]);
+
+
+	// Map unified cities to provider-specific data
+	useEffect(() => {
+		// Map unified cities to include provider-specific IDs and availability
+
+		const filteredCities = shippingProvider ? cities.filter(city => city.providerLocations?.length > 0 && city.providerLocations?.some(pl => pl.provider === shippingProvider)) : cities;
+		const mappedCities = filteredCities.map(city => {
+			const matched = shippingProvider ? city.providerLocations?.find(pl => pl.provider === shippingProvider) : null;
+
+			return {
+				id: city.id,
+				// Use providerCityId as the selector key so zones/districts fetch works
+				providerCityId: matched?.providerCityId,
+				nameEn: city.nameEn,
+				nameAr: city.nameAr,
+				dropOff: shippingProvider ? (matched?.dropOff ?? false) : true,
+				pickup: shippingProvider ? (matched?.pickup ?? false) : true,
+				providerLocations: city.providerLocations,
+			};
+		});
+
+		setProviderCities(mappedCities);
+		if (!currentConfig.needsGeo) {
+			setproviderZones([]);
+			setproviderDistricts([]);
+		}
+	}, [currentConfig.needsGeo, shippingProvider, cities, currentCityId]);
+
+	useEffect(() => {
+		if (!providerCities || !providerCities?.length) return;
+
+		const newProviderId = providerCities.find(city => city.id === currentCityId)?.providerCityId || "";
+		if(!newProviderId) return;
+		setProviderMeta((prev) => {
+			if (newProviderId === prev.cityId) return prev;
+			return {
+				...prev,
+				cityId: newProviderId,
+				zoneId: "",
+				districtId: "",
+			}
+		});
+
+	}, [providerCities]);
+
+	useEffect(() => {
+		const fetchGeography = async () => {
+
+			if (!currentConfig.needsGeo || !providerMeta.cityId) {
+				setproviderZones([]);
+				setproviderDistricts([]);
+				return;
+			}
+
+			setproviderLoading((p) => ({ ...p, zones: true, districts: true }));
+
+			try {
+				const requests = [
+					api.get(`/shipping/zones/${shippingProvider}/${providerMeta.cityId}`)
+				];
+
+				// Only fetch districts if the config says so (e.g., true for Bosta, false for Turbo)
+				if (currentConfig.showDistrict) {
+					requests.push(api.get(`/shipping/districts/${shippingProvider}/${providerMeta.cityId}`));
+				}
+				const [zonesRes, districtsRes] = await Promise.all(requests);
+
+				setproviderZones(zonesRes.data?.records ?? []);
+				setproviderDistricts(districtsRes.data?.records ?? []);
+			} catch (e) {
+				console.error(`Bosta Geo Error: ${normalizeAxiosError(e)}`);
+			} finally {
+				setproviderLoading((p) => ({ ...p, zones: false, districts: false }));
+			}
+		};
+
+		fetchGeography();
+	}, [currentConfig.needsGeo, currentConfig.showDistrict, providerMeta.cityId, shippingProvider]);
+
+
+
+	useEffect(() => {
+		const getcities = async () => {
+			setCitiesLoading(true);
+			try {
+				const res = await api.get("/cities", { params: { limit: 500 } });
+				const list = Array.isArray(res.data) ? res.data : Array.isArray(res.data?.records) ? res.data.records : [];
+				setCities(list);
+			} catch (e) {
+				console.error(`Cities lookup: ${normalizeAxiosError(e)}`);
+			} finally {
+				setCitiesLoading(false);
+			}
+		};
+		getcities();
+	}, []);
+
+
+	useEffect(() => {
+		const fetchAreas = async () => {
+			if (!currentCityId || currentConfig.needsGeo) {
+				setAreas([]);
+				return;
+			}
+
+			if (areasCache[currentCityId]) {
+				setAreas(areasCache[currentCityId]);
+				return;
+			}
+
+			setAreasLoading(true);
+			try {
+				const res = await api.get(`/cities/${currentCityId}/areas`);
+				const areas = Array.isArray(res.data) ? res.data : [];
+				setAreasCache(prev => ({ ...prev, [currentCityId]: areas }));
+				setAreas(areas);
+			} catch (e) {
+				console.error(`Areas lookup: ${normalizeAxiosError(e)}`);
+				setAreas([]);
+			} finally {
+				setAreasLoading(false);
+			}
+		};
+
+		fetchAreas();
+	}, [currentCityId, currentConfig.needsGeo]);
+
+	// Find current area ID based on the area name
+	const currentAreaId = useMemo(() => {
+		
+		if (!areaValue || !areas.length) return "";
+		const found = areas.find((a) => a.nameAr === areaValue || a.nameEn === areaValue);
+		
+		
+		return found ? found.id : "";
+	}, [areaValue, areas]);
 
 	// When user picks a city/zone/district — auto-fill the hidden RHF fields
 	const handleCityChange = useCallback(
@@ -185,13 +365,11 @@ export function AddressSection({
 			if (!selectedId) return;
 
 			// Find city by its unified UUID
-			const city = cities.find((c) => String(c.id) === String(selectedId));
+			const city = providerCities.find((c) => String(c.id) === String(selectedId));
 
-			if (!city && (providerLoading.cities || isLoading)) return;
+			if (!city && (providerLoading.cities || citiesLoading)) return;
 
-			onMetaChange("cityId", city?.providerCityId || "");
-			onMetaChange("zoneId", "");
-			onMetaChange("districtId", "");
+			setProviderMeta((prev) => ({ ...prev, cityId: city?.providerCityId || "", zoneId: "", districtId: "" }));
 
 			if (city) {
 				setValue("city", city[nameKey] || city.nameEn, { shouldValidate: true });
@@ -199,7 +377,7 @@ export function AddressSection({
 			}
 			if (resetArea) setValue("area", "", { shouldValidate: false });
 		},
-		[cities, nameKey, onMetaChange, setValue, providerLoading.cities, isLoading]
+		[providerCities, nameKey, setValue, providerLoading.cities, citiesLoading]
 	);
 
 	const handleZoneChange = useCallback(
@@ -212,12 +390,12 @@ export function AddressSection({
 			// If zones list is not yet loaded, don't trigger resets
 			if (!zone && providerLoading.zones) return;
 
-			onMetaChange("zoneId", zoneId);
-			onMetaChange("districtId", "");
+			setProviderMeta((prev) => ({ ...prev, zoneId: zoneId, districtId: "" }));
+			
 			// rebuild area: zone name (district will be appended later)
 			if (zone) setValue("area", zone[nameKey] || zone.nameEn, { shouldValidate: false });
 		},
-		[providerZones, nameKey, onMetaChange, setValue, providerMeta.zoneId, providerLoading.zones]
+		[providerZones, nameKey,  setValue, providerMeta.zoneId, providerLoading.zones]
 	);
 
 	const handleDistrictChange = useCallback(
@@ -232,7 +410,8 @@ export function AddressSection({
 			// If districts list is not yet loaded, don't trigger resets
 			if (!district && providerLoading.districts) return;
 
-			onMetaChange("districtId", districtId);
+			setProviderMeta((prev) => ({ ...prev, districtId: districtId }));
+			
 
 			const zonePart = zone?.[nameKey] || zone?.nameEn;
 			const distinctPart = district?.[nameKey] || district?.nameEn;
@@ -243,12 +422,26 @@ export function AddressSection({
 				setValue("area", zonePart, { shouldValidate: false });
 			}
 		},
-		[providerZones, filteredDistricts, providerMeta.zoneId, providerMeta.districtId, nameKey, onMetaChange, setValue, providerLoading.districts]
+		[providerZones, filteredDistricts, providerMeta.zoneId, providerMeta.districtId, nameKey,  setValue, providerLoading.districts]
+	);
+
+	const handleAreaChange = useCallback(
+		(areaId) => {
+			if (!areaId) {
+				setValue("area", "", { shouldValidate: false });
+				return;
+			}
+			const area = areas.find((a) => String(a.id) === areaId);
+			if (area) {
+				setValue("area", area[nameKey] || area.nameEn, { shouldValidate: false });
+			}
+		},
+		[areas, nameKey, setValue]
 	);
 
 	// ── Bosta mode ──────────────────────────────────────────────────────────
 	if (currentConfig.needsGeo) {
-		const config = GEO_CONFIG[provider];
+		const config = GEO_CONFIG[shippingProvider];
 
 		return (
 			<AnimatePresence mode="wait">
@@ -266,9 +459,9 @@ export function AddressSection({
 							label={t("bosta.city")}
 							required={config.fields.includes("cityId")}
 							nameKey={nameKey}
-							value={cityIdValue}
+							value={currentCityId}
 							onValueChange={handleCityChange}
-							items={cities.filter((c) => c.dropOff)}
+							items={providerCities.filter((c) => c.dropOff)}
 							isLoading={providerLoading.cities}
 							placeholder={t("bosta.selectCity")}
 						/>
@@ -378,10 +571,10 @@ export function AddressSection({
 						label={t("fields.city")}
 						required
 						nameKey={nameKey}
-						value={cityIdValue}
+						value={currentCityId}
 						onValueChange={(cityId) => handleCityChange(cityId, false)}
-						items={cities ?? []}
-						isLoading={isLoading}
+						items={providerCities ?? []}
+						isLoading={citiesLoading}
 						placeholder={t("placeholders.city")}
 					/>
 					{errors.city && <p className="text-xs text-red-500">{errors.city.message}</p>}
@@ -389,15 +582,15 @@ export function AddressSection({
 
 				{/* Area */}
 				<div className="space-y-2">
-					<Label className="text-sm text-gray-600 dark:text-slate-300">
-						{t("fields.area")}
-					</Label>
-					<Controller
-						name="area"
-						control={control}
-						render={({ field }) => (
-							<Input {...field} placeholder={t("placeholders.area")} />
-						)}
+					<GeoSelect
+						label={t("fields.area")}
+						nameKey={nameKey}
+						value={currentAreaId}
+						onValueChange={handleAreaChange}
+						items={areas}
+						isLoading={areasLoading}
+						placeholder={t("placeholders.area")}
+						disabled={!currentCityId}
 					/>
 				</div>
 
@@ -451,12 +644,7 @@ export default function CreateOrderPageComplete({
 	orderId = null,
 }) {
 	const searchParams = useSearchParams();
-	const [providerLoading, setproviderLoading] = useState({
-		cities: false,
-		zones: false,
-		districts: false,
-		locations: false,
-	});
+
 	const [providerMeta, setProviderMeta] = useState({
 		cityId: "",
 		zoneId: "",
@@ -502,17 +690,12 @@ export default function CreateOrderPageComplete({
 	// ── Shipping companies & stores ─────────────────────────────────────────
 
 	const [stores, setStores] = useState([]);
-	const [normalCities, setNormalCities] = useState([]);
-	const [normalCitiesLoading, setNormalCitiesLoading] = useState(false);
+
 
 	// ── geo state ─────────────────────────────────────────────────────
 
 	const [providerErrors, setProviderErrors] = useState({});
 
-	const [providerCities, setProviderCities] = useState([]);
-	const [providerZones, setproviderZones] = useState([]);
-	const [providerDistricts, setproviderDistricts] = useState([]);
-	const [providerLocations, setproviderLocations] = useState([]);
 
 	// ── Schema ──────────────────────────────────────────────────────────────
 	const schema = useMemo(() => createSchema(t), [t]);
@@ -592,6 +775,7 @@ export default function CreateOrderPageComplete({
 		resolver: yupResolver(schema),
 		defaultValues: getDefaultValues(),
 	});
+	const cityIdValue = useWatch({ control, name: "cityId" });
 
 	const watchedItems = watch("items");
 	const watchedShippingCost = watch("shippingCost");
@@ -685,121 +869,8 @@ export default function CreateOrderPageComplete({
 		getStores();
 	}, [isEditMode, setValue]);
 
-	useEffect(() => {
-		const getNormalCities = async () => {
-			setNormalCitiesLoading(true);
-			try {
-				const res = await api.get("/cities", { params: { limit: 500 } });
-				const list = Array.isArray(res.data) ? res.data : Array.isArray(res.data?.records) ? res.data.records : [];
-				setNormalCities(list);
-			} catch (e) {
-				console.error(`Cities lookup: ${normalizeAxiosError(e)}`);
-			} finally {
-				setNormalCitiesLoading(false);
-			}
-		};
-		getNormalCities();
-	}, []);
 
-	// Fetch provider-specific pickup locations
-	useEffect(() => {
-		const fetchPickupLocations = async () => {
-			if (!config.needsGeo || !config.showLocation) {
-				setproviderLocations([]);
-				return;
-			}
 
-			setproviderLoading((p) => ({ ...p, locations: true }));
-			try {
-				const res = await api.get(`/shipping/pickup-locations/${shippingProvider}`);
-				setproviderLocations(res.data?.records ?? []);
-			} catch (e) {
-				console.error(`Pickup locations error: ${normalizeAxiosError(e)}`);
-			} finally {
-				setproviderLoading((p) => ({ ...p, locations: false }));
-			}
-		};
-
-		fetchPickupLocations();
-	}, [config.needsGeo, config.showLocation, shippingProvider]);
-	const cityIdValue = useWatch({ control, name: "cityId" });
-	// Map unified cities to provider-specific data
-	useEffect(() => {
-		// Map unified cities to include provider-specific IDs and availability
-
-		const unifiedCities = normalCities ?? [];
-		const filteredCities = shippingProvider ? unifiedCities.filter(city => city.providerLocations?.length > 0 && city.providerLocations?.some(pl => pl.provider === shippingProvider)) : unifiedCities;
-		const mappedCities = filteredCities.map(city => {
-			const matched = shippingProvider ? city.providerLocations?.find(pl => pl.provider === shippingProvider) : null;
-
-			return {
-				id: city.id,
-				// Use providerCityId as the selector key so zones/districts fetch works
-				providerCityId: matched?.providerCityId,
-				nameEn: city.nameEn,
-				nameAr: city.nameAr,
-				dropOff: shippingProvider ? (matched?.dropOff ?? false) : true,
-				pickup: shippingProvider ? (matched?.pickup ?? false) : true,
-			};
-		});
-
-		setProviderCities(mappedCities);
-		if (!config.needsGeo) {
-			setproviderZones([]);
-			setproviderDistricts([]);
-		}
-	}, [config.needsGeo, shippingProvider, normalCities, cityIdValue]);
-
-	useEffect(() => {
-		if (!providerCities || !providerCities?.length || initialLoading) return;
-		
-		const newProviderId = providerCities.find(city => city.id === cityIdValue)?.providerCityId || "";
-
-		setProviderMeta((prev) => {
-			if (newProviderId === prev.cityId) return prev;
-			return {
-				...prev,
-				cityId: newProviderId,
-				zoneId: "",
-				districtId: "",
-			}
-		});
-		setProviderCities(providerCities);
-	}, [providerCities, initialLoading]);
-
-	useEffect(() => {
-		const fetchGeography = async () => {
-
-			if (!config.needsGeo || !providerMeta.cityId) {
-				setproviderZones([]);
-				setproviderDistricts([]);
-				return;
-			}
-
-			setproviderLoading((p) => ({ ...p, zones: true, districts: true }));
-
-			try {
-				const requests = [
-					api.get(`/shipping/zones/${shippingProvider}/${providerMeta.cityId}`)
-				];
-
-				// Only fetch districts if the config says so (e.g., true for Bosta, false for Turbo)
-				if (config.showDistrict) {
-					requests.push(api.get(`/shipping/districts/${shippingProvider}/${providerMeta.cityId}`));
-				}
-				const [zonesRes, districtsRes] = await Promise.all(requests);
-
-				setproviderZones(zonesRes.data?.records ?? []);
-				setproviderDistricts(districtsRes.data?.records ?? []);
-			} catch (e) {
-				console.error(`Bosta Geo Error: ${normalizeAxiosError(e)}`);
-			} finally {
-				setproviderLoading((p) => ({ ...p, zones: false, districts: false }));
-			}
-		};
-
-		fetchGeography();
-	}, [config.needsGeo, config.showDistrict, providerMeta.cityId, shippingProvider]);
 
 	// ── Bosta meta setter ────────────────────────────────────────────────────
 	const handleMetaChange = useCallback((field, value) => {
@@ -1384,50 +1455,6 @@ export default function CreateOrderPageComplete({
 									/>
 								</div>
 
-								{/* Pickup Location — only for Bosta, optional */}
-								{config.showLocation && providerLocations?.length > 0 && (
-									<div className="md:col-span-2 space-y-2">
-										<div className="flex items-center gap-2">
-											<Label className="text-sm text-gray-600 dark:text-slate-300">
-												{t("bosta.pickupLocation")}
-											</Label>
-											<span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400">
-												{t("bosta.optional")}
-											</span>
-										</div>
-
-										<><Select
-											value={providerMeta.locationId || ""}
-											onValueChange={(v) =>
-												handleMetaChange("locationId", v === "none" ? "" : v)
-											}
-											disabled={providerLoading.locations}
-										>
-											<SelectTrigger >
-												{providerLoading.locations ? (
-													<span className="flex items-center gap-2 text-muted-foreground text-sm">
-														<Loader2 size={14} className="animate-spin" />
-														{t("bosta.loading")}
-													</span>
-												) : (
-													<SelectValue placeholder={t("bosta.selectPickupLocation")} />
-												)}
-											</SelectTrigger>
-											<SelectContent>
-												{/* <SelectItem value="none">{t("bosta.defaultLocation")}</SelectItem> */}
-												{providerLocations.map((l) => (
-													<SelectItem key={l.id} value={String(l.id)}>
-														{locale === "ar" ? l.nameAr : l.nameEn}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-											<p className="text-[11px] text-muted-foreground leading-snug">
-												{t("bosta.pickupLocationNote")}
-											</p>
-										</>
-									</div>
-								)}
 							</div>
 						</SectionCard>
 
@@ -1436,18 +1463,13 @@ export default function CreateOrderPageComplete({
 							delay={0.3}
 						>
 							<AddressSection
-								locale={locale}
-								provider={shippingProvider}
+								shippingProvider={shippingProvider}
 								control={control}
 								errors={errors}
 								setValue={setValue}
 								providerMeta={providerMeta}
 								onMetaChange={handleMetaChange}
-								cities={providerCities}
-								providerZones={providerZones}
-								providerDistricts={providerDistricts}
-								providerLoading={providerLoading}
-								isLoading={normalCitiesLoading}
+								setProviderMeta={setProviderMeta}
 								providerErrors={providerErrors}
 							/>
 						</SectionCard>

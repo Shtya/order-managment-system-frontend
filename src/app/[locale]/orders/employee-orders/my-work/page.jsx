@@ -31,6 +31,7 @@ import { AddressSection } from "../../new/page";
 import { GEO_CONFIG } from "@/utils/order-utils";
 import { Input } from "@/components/ui/input";
 import { alarmToast } from "@/utils/healpers";
+import { Label } from "@/components/ui/label";
 
 
 
@@ -311,15 +312,17 @@ function MetTile({ icon: Icon, label, value, color, delay = 0, plain = false }) 
 function Fld({ label, name, control, error, disabled = false, type = "text", style: st = {} }) {
   const [foc, setFoc] = useState(false);
   return (
-    <div className="">
-      <label className={foc ? "on" : ""}>{label}</label>
+    <div className="space-y-2">
+      <Label className="text-sm text-gray-600 dark:text-slate-300">
+          {label}
+      </Label>
       <Controller name={name} control={control} render={({ field }) => (
         <Input {...field} value={field.value ?? ""} type={type} disabled={disabled}
           onFocus={() => setFoc(true)} onBlur={() => setFoc(false)}
           className={error ? "err" : ""} style={{ opacity: disabled ? .6 : 1 }}
         />
       )} />
-      {error && <p className="emsg">{error.message}</p>}
+      {error && <p className="text-xs text-red-500">{error.message}</p>}
     </div>
   );
 }
@@ -427,9 +430,9 @@ function logOrderChanges(originalOrder, editedOrder) {
     normalize(getEditablePart(editedOrder))
   );
 
-  console.group("Order change diff");
+  
   if (diffs.length === 0) {
-    console.log("No differences found.");
+    
   } else {
     diffs.forEach((item) => {
       console.log(`${item.path}:`, {
@@ -470,12 +473,6 @@ export default function OrderConfirmationWorkPage() {
   const [removedIds, setRemovedIds] = useState([]);
 
   // ── Geo States ───────────────────────────────────────────────────────────
-  const [normalCities, setNormalCities] = useState([]);
-  const [normalCitiesLoading, setNormalCitiesLoading] = useState(false);
-  const [providerCities, setProviderCities] = useState([]);
-  const [providerZones, setproviderZones] = useState([]);
-  const [providerDistricts, setproviderDistricts] = useState([]);
-  const [providerLoading, setproviderLoading] = useState({ cities: false, zones: false, districts: false, locations: false });
   const [providerErrors, setProviderErrors] = useState({});
   const [providerMeta, setProviderMeta] = useState({ cityId: "", zoneId: "", districtId: "", locationId: "" });
 
@@ -483,75 +480,6 @@ export default function OrderConfirmationWorkPage() {
     () => editedOrder?.shippingCompany?.provider?.toLowerCase() || null,
     [editedOrder?.shippingCompany]
   );
-
-  const config = useMemo(
-    () => GEO_CONFIG[shippingProvider] || GEO_CONFIG.default,
-    [shippingProvider]
-  );
-
-  const handleMetaChange = (key, val) => setProviderMeta(prev => ({ ...prev, [key]: val }));
-
-  useEffect(() => {
-    const getNormalCities = async () => {
-      setNormalCitiesLoading(true);
-      try {
-        const res = await api.get("/cities", { params: { limit: 500 } });
-        setNormalCities(Array.isArray(res.data) ? res.data : (res.data?.records || []));
-      } catch (e) { console.error(e); }
-      finally { setNormalCitiesLoading(false); }
-    };
-    getNormalCities();
-  }, []);
-
-  // Map unified cities to provider-specific data
-  useEffect(() => {
-    const unifiedCities = normalCities ?? [];
-    const mappedCities = unifiedCities.map(city => {
-      const matched = shippingProvider ? city.providerLocations?.find(pl => pl.provider === shippingProvider) : null;
-      return {
-        uuid: city.id,
-        id: matched?.providerCityId || city.id,
-        nameEn: city.nameEn,
-        nameAr: city.nameAr,
-        dropOff: shippingProvider ? (matched?.dropOff ?? false) : true,
-        pickup: shippingProvider ? (matched?.pickup ?? false) : true,
-      };
-    });
-    setProviderCities(mappedCities);
-
-    if (!config.needsGeo) {
-      setproviderZones([]);
-      setproviderDistricts([]);
-    }
-  }, [config.needsGeo, shippingProvider, normalCities]);
-
-  // Fetch zones
-  useEffect(() => {
-    if (!config.needsGeo || !providerMeta.cityId) { setproviderZones([]); return; }
-    const fetchZones = async () => {
-      setproviderLoading(p => ({ ...p, zones: true }));
-      try {
-        const res = await api.get(`/shipping/zones/${shippingProvider}/${providerMeta.cityId}`);
-        setproviderZones(res.data?.records || []);
-      } catch (e) { console.error(e); }
-      finally { setproviderLoading(p => ({ ...p, zones: false })); }
-    };
-    fetchZones();
-  }, [config.needsGeo, shippingProvider, providerMeta.cityId]);
-
-  // Fetch districts
-  useEffect(() => {
-    if (!config.needsGeo || !config.showDistrict || !providerMeta.cityId) { setproviderDistricts([]); return; }
-    const fetchDistricts = async () => {
-      setproviderLoading(p => ({ ...p, districts: true }));
-      try {
-        const res = await api.get(`/shipping/districts/${shippingProvider}/${providerMeta.cityId}`);
-        setproviderDistricts(res.data?.records || []);
-      } catch (e) { console.error(e); }
-      finally { setproviderLoading(p => ({ ...p, districts: false })); }
-    };
-    fetchDistricts();
-  }, [config.needsGeo, config.showDistrict, shippingProvider, providerMeta.cityId]);
 
   useEffect(() => { fetchNext(); fetchStatuses(); }, []);
 
@@ -584,15 +512,15 @@ export default function OrderConfirmationWorkPage() {
 
   useEffect(() => {
     if (!originalOrder || !editedOrder) return;
-
-    const diffs = logOrderChanges(originalOrder, editedOrder);
-
-    console.log("has diff:", diffs.length > 0);
+    logOrderChanges(originalOrder, editedOrder);
+    
+    
   }, [originalOrder, editedOrder]);
-  console.log("hasChanges", hasChanges)
 
   const wItems = watch("items"), wShip = watch("shippingCost"), wDisc = watch("discount");
   useEffect(() => {
+    console.log("wShip", wShip);
+    
     if (wItems) { const pt = wItems.reduce((s, i) => s + (i.unitPrice * i.quantity), 0); setValue("productsTotal", pt); setValue("finalTotal", pt + Number(wShip || 0) - Number(wDisc || 0)); }
   }, [wItems, wShip, wDisc, setValue]);
 
@@ -603,7 +531,7 @@ export default function OrderConfirmationWorkPage() {
       landmark: data.landmark || "",
       customerName: data.customerName || "", email: data.email || "", phoneNumber: data.phoneNumber || "",
       secondPhoneNumber: data.secondPhoneNumber || "", city: data.city || "", cityId: data.cityId || "", area: data.area || "",
-      address: data.address || "", deposit: data.deposit || 0, shippingCost: data.shippingCost || 0,
+      address: data.address || "", deposit: data.deposit || 0, shippingCost: data.shippingCost || 0,finalTotal: data.finalTotal,
       paymentMethod: data.paymentMethod || "cod", allowOpenPackage: data.allowOpenPackage ?? false, items: data.items || []
     });
     if (data.items?.length) setSelectedSkus(data.items.map(i => ({ id: i.variant?.id || i.variantId, label: i.variant?.product?.name || i.productName, productName: i.variant?.product?.name || i.productName, sku: i.variant?.sku || i.sku, attributes: i.variant?.attributes || i.attributes || {}, price: i.unitPrice || 0, cost: i.unitCost || i.unitPrice || 0 })));
@@ -613,6 +541,7 @@ export default function OrderConfirmationWorkPage() {
     else { setIsLocked(false); setLockedUntil(null); }
 
     if (data.shippingMetadata) {
+      
       setProviderMeta({
         cityId: data.shippingMetadata.cityId ?? "",
         zoneId: data.shippingMetadata.zoneId ?? "",
@@ -621,6 +550,7 @@ export default function OrderConfirmationWorkPage() {
         // orderSize: data.shippingMetadata.orderSize ?? "MEDIUM",
       });
     } else {
+      
       setProviderMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
     }
   };
@@ -697,11 +627,14 @@ export default function OrderConfirmationWorkPage() {
       area: originalOrder.area || "",
       address: originalOrder.address || "", paymentMethod: originalOrder.paymentMethod || "cod",
       shippingCost: originalOrder.shippingCost ?? 0,
+      finalTotal: originalOrder.finalTotal ?? 0,
+      items: originalOrder.items || [],
       deposit: originalOrder.deposit ?? 0, allowOpenPackage:
         originalOrder.allowOpenPackage ?? false
     });
 
     if (originalOrder.shippingMetadata) {
+      
       setProviderMeta({
         cityId: originalOrder.shippingMetadata.cityId ?? "",
         zoneId: originalOrder.shippingMetadata.zoneId ?? "",
@@ -710,6 +643,7 @@ export default function OrderConfirmationWorkPage() {
         // orderSize: originalOrder.shippingMetadata.orderSize ?? "MEDIUM",
       });
     } else {
+      
       setProviderMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
     }
   };
@@ -780,15 +714,9 @@ export default function OrderConfirmationWorkPage() {
             control={control}
             errors={errors}
             {...sh}
-            locale={locale}
             shippingProvider={shippingProvider}
             providerMeta={providerMeta}
-            handleMetaChange={handleMetaChange}
-            providerCities={providerCities}
-            providerZones={providerZones}
-            providerDistricts={providerDistricts}
-            providerLoading={providerLoading}
-            normalCitiesLoading={normalCitiesLoading}
+            setProviderMeta={setProviderMeta}
             providerErrors={providerErrors}
             setValue={setValue}
           />
@@ -1432,18 +1360,11 @@ function CustomerSection({
   control,
   errors,
   t,
-  isRtl,
-  locale,
   shippingProvider,
   providerMeta,
-  handleMetaChange,
-  providerCities,
-  providerZones,
-  providerDistricts,
-  providerLoading,
-  normalCitiesLoading,
   providerErrors,
-  setValue
+  setValue,
+  setProviderMeta
 }) {
 
 
@@ -1452,25 +1373,19 @@ function CustomerSection({
       <div className="main-card !p-0 overflow-hidden">
         <CardHead icon={User} color={HEX.violet} eyebrow={t("customer")} title={t("editCustomerInfo")} />
         <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 13 }}>
-          <Fld name="customerName" label={t("customerName")} control={control} error={errors.customerName} />
+          <Fld name="customerName" label={t("customerName") + "*"} control={control} error={errors.customerName} />
           <Fld name="email" label={t("email")} control={control} error={errors.email} type="email" />
-          <Fld name="phoneNumber" label={t("phone")} control={control} error={errors.phoneNumber} />
+          <Fld name="phoneNumber" label={t("phone") + "*"} control={control} error={errors.phoneNumber} />
           <Fld name="secondPhoneNumber" label={t("secondPhone")} control={control} />
 
           <div style={{ gridColumn: "1/-1" }}>
             <AddressSection
-              locale={locale}
-              provider={shippingProvider}
+              shippingProvider={shippingProvider}
               control={control}
               errors={errors}
               setValue={setValue}
               providerMeta={providerMeta}
-              onMetaChange={handleMetaChange}
-              cities={providerCities}
-              providerZones={providerZones}
-              providerDistricts={providerDistricts}
-              providerLoading={providerLoading}
-              isLoading={normalCitiesLoading}
+              setProviderMeta={setProviderMeta}
               providerErrors={providerErrors}
             />
           </div>
@@ -1490,7 +1405,7 @@ function FinancialSection({ control, order, errors, t, isRtl }) {
       <div className="main-card !p-0 overflow-hidden">
         <CardHead icon={Banknote} color={HEX.orange} eyebrow={t("financials") || "Financials"} title={t("editFinancials")} />
         <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 13 }}>
-          <Fld name="productsTotal" label={t("finalTotal")} control={control} disabled />
+          <Fld name="finalTotal" label={t("finalTotal")} control={control} disabled />
           <Fld name="deposit" label={t("deposit")} control={control} error={errors.deposit} type="number" />
 
           {/* Remaining */}

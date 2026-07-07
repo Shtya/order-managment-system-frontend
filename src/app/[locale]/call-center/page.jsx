@@ -140,6 +140,7 @@ import DateRangePicker from "@/components/atoms/DateRangePicker";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import Button_ from "@/components/atoms/Button";
 import MultiSelect from "@/components/atoms/MultiSelect";
+import OrdersTab from "../orders/tabs/OrderTab";
 
 // ── Form Schema ──────────────────────────────────────────────────────────────
 const ruleSchema = (t) => yup.lazy((value) => {
@@ -459,7 +460,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
-               
+
                     <DialogTitle className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                             {rule ? <Edit2 size={20} /> : <UserPlus size={20} />}
@@ -1077,7 +1078,7 @@ export default function CallCenterPage() {
     const t = useTranslations();
     const { tempSettings, patch, saving, handleSave } = useOrdersSettings();
 
-    const [viewMode, setViewMode] = useState("manual"); // "manual" | "automatic"
+    const [viewMode, setViewMode] = useState("manual"); // "manual" | "automatic" | "assignments"
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
@@ -1107,6 +1108,12 @@ export default function CallCenterPage() {
         active: 0,
         byType: {},
     });
+    const [assignmentStatsData, setAssignmentStatsData] = useState({
+        activeAssignmentsCount: 0,
+        assignedEmployeesCount: 0,
+        // activeAssignedTodayCount: 0,
+        lockedAssignmentsCount: 0,
+    });
 
     const [pager, setPager] = useState({
         total_records: 0,
@@ -1120,6 +1127,7 @@ export default function CallCenterPage() {
     const viewModes = useMemo(() => [
         { id: "manual", label: t("callCenter.tabs.manual"), icon: Users },
         { id: "automatic", label: t("callCenter.tabs.automatic"), icon: Activity },
+        { id: "assignments", label: t("callCenter.tabs.assignments"), icon: Activity },
     ], [t]);
 
     const handleViewModeChange = (mode) => {
@@ -1172,8 +1180,10 @@ export default function CallCenterPage() {
     useEffect(() => {
         if (viewMode === "manual") {
             fetchStatsSummary();
-        } else {
+        } else if (viewMode === "automatic") {
             fetchAutoRulesStats();
+        } else if (viewMode === "assignments") {
+            fetchAssignmentStats();
         }
     }, [viewMode]);
 
@@ -1249,6 +1259,16 @@ export default function CallCenterPage() {
         }
     }, []);
 
+    /* fetch assignment stats */
+    const fetchAssignmentStats = useCallback(async () => {
+        try {
+            const res = await api.get("/order-assignment/active-stats");
+            setAssignmentStatsData(res.data);
+        } catch (e) {
+            console.error("Error fetching assignment stats:", e);
+        }
+    }, []);
+
     /* fetch employee statistics */
     const fetchEmployeeStats = useCallback(
         async (page = pager.current_page, per_page = pager.per_page) => {
@@ -1304,6 +1324,7 @@ export default function CallCenterPage() {
         } finally {
         }
     };
+
     useEffect(() => {
         fetchStats();
     }, []);
@@ -1576,7 +1597,7 @@ export default function CallCenterPage() {
                 color: s.color,
                 sortOrder: s.sortOrder,
             }));
-        } else {
+        } else if (viewMode === "automatic") {
             const typeStats = [
                 { id: "manual", icon: Users, color: "#6366f1" },
                 { id: "product", icon: ShoppingBag, color: "#f59e0b" },
@@ -1615,8 +1636,44 @@ export default function CallCenterPage() {
             }));
 
             return [...baseStats, ...extraStats];
+        } else if (viewMode === "assignments") {
+            const assignmentStats = [
+                {
+                    id: "activeAssignments",
+                    name: t("callCenter.stats.activeAssignments"),
+                    value: assignmentStatsData.activeAssignmentsCount || 0,
+                    icon: Activity,
+                    color: "var(--primary)",
+                    sortOrder: 1,
+                },
+                {
+                    id: "assignedEmployees",
+                    name: t("callCenter.stats.assignedEmployees"),
+                    value: assignmentStatsData.assignedEmployeesCount || 0,
+                    icon: Users,
+                    color: "#6366f1",
+                    sortOrder: 2,
+                },
+                // {
+                //     id: "activeAssignedToday",
+                //     name: t("callCenter.stats.activeAssignedToday"),
+                //     value: assignmentStatsData.activeAssignedTodayCount || 0,
+                //     icon: CheckCircle,
+                //     color: "#10b981",
+                //     sortOrder: 3,
+                // },
+                {
+                    id: "lockedAssignments",
+                    name: t("callCenter.stats.lockedAssignments"),
+                    value: assignmentStatsData.lockedAssignmentsCount || 0,
+                    icon: Lock,
+                    color: "#f59e0b",
+                    sortOrder: 4,
+                },
+            ];
+            return assignmentStats;
         }
-    }, [viewMode, manualStatsData, autoStatsData, t]);
+    }, [viewMode, manualStatsData, autoStatsData, assignmentStatsData, t]);
 
     return (
         <div className="min-h-screen p-5">
@@ -1626,7 +1683,7 @@ export default function CallCenterPage() {
                     { name: t("callCenter.breadcrumb.orders"), href: "/orders" },
                     { name: t("callCenter.title") },
                 ]}
-                statsCount={viewMode === "manual" ? 3 : 8}
+                statsCount={viewMode === "manual" ? 3 : viewMode === "automatic" ? 8 : 4}
                 stats={headerStats}
                 items={viewModes}
                 active={viewMode}
@@ -1655,123 +1712,132 @@ export default function CallCenterPage() {
                 )}
             />
 
-            <Table
-                searchValue={search}
-                onSearchChange={setSearch}
-                onSearch={() => (viewMode === "manual" ? fetchEmployeeStats(1, pager.per_page) : fetchAutoAssignRules(1, pager.per_page))}
-                labels={{
-                    searchPlaceholder: t(viewMode === "manual" ? "callCenter.searchPlaceholder" : "callCenter.labels.searchPlaceholder"),
-                    filter: t("callCenter.labels.filter"),
-                    apply: t("callCenter.labels.apply"),
-                    total: t("callCenter.labels.total"),
-                    limit: t("callCenter.labels.limit"),
-                    emptyTitle: t(viewMode === "manual" ? "callCenter.emptyTitle" : "callCenter.labels.emptyTitle"),
-                    emptySubtitle: t(viewMode === "manual" ? "callCenter.emptySubtitle" : "callCenter.labels.emptySubtitle"),
-                }}
-                filters={viewMode === "automatic" && (
-                    <>
-                        <FilterField label={t("callCenter.labels.ruleType")}>
-                            <Select
-                                value={filters.ruleType}
-                                onValueChange={(v) => setFilters((f) => ({ ...f, ruleType: v }))}
-                            >
-                                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
-                                    <SelectValue placeholder={t("callCenter.labels.ruleType")} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                                    {RULE_TYPES.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                            {t(`callCenter.autoAssign.stats.${type}`)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </FilterField>
+            {viewMode === "assignments" ? (
+                <OrdersTab
+                    stats={stats}
+                    isAssign
+                    hideHeader={true}
+                    readOnlyStatus={true}
+                    showBulkUpload={false}
+                />
+            ) : (
+                <Table
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    onSearch={() => (viewMode === "manual" ? fetchEmployeeStats(1, pager.per_page) : fetchAutoAssignRules(1, pager.per_page))}
+                    labels={{
+                        searchPlaceholder: t(viewMode === "manual" ? "callCenter.searchPlaceholder" : "callCenter.labels.searchPlaceholder"),
+                        filter: t("callCenter.labels.filter"),
+                        apply: t("callCenter.labels.apply"),
+                        total: t("callCenter.labels.total"),
+                        limit: t("callCenter.labels.limit"),
+                        emptyTitle: t(viewMode === "manual" ? "callCenter.emptyTitle" : "callCenter.labels.emptyTitle"),
+                        emptySubtitle: t(viewMode === "manual" ? "callCenter.emptySubtitle" : "callCenter.labels.emptySubtitle"),
+                    }}
+                    filters={viewMode === "automatic" && (
+                        <>
+                            <FilterField label={t("callCenter.labels.ruleType")}>
+                                <Select
+                                    value={filters.ruleType}
+                                    onValueChange={(v) => setFilters((f) => ({ ...f, ruleType: v }))}
+                                >
+                                    <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                        <SelectValue placeholder={t("callCenter.labels.ruleType")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{t("common.all")}</SelectItem>
+                                        {RULE_TYPES.map((type) => (
+                                            <SelectItem key={type} value={type}>
+                                                {t(`callCenter.autoAssign.stats.${type}`)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FilterField>
 
-                        <FilterField label={t("callCenter.labels.strategy")}>
-                            <Select
-                                value={filters.strategy}
-                                onValueChange={(v) => setFilters((f) => ({ ...f, strategy: v }))}
-                            >
-                                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
-                                    <SelectValue placeholder={t("callCenter.labels.strategy")} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                                    <SelectItem value="roundRobin">{t("callCenter.autoAssign.strategy.roundRobin")}</SelectItem>
-                                    <SelectItem value="leastActiveOrders">{t("callCenter.autoAssign.strategy.leastActiveOrders")}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </FilterField>
+                            <FilterField label={t("callCenter.labels.strategy")}>
+                                <Select
+                                    value={filters.strategy}
+                                    onValueChange={(v) => setFilters((f) => ({ ...f, strategy: v }))}
+                                >
+                                    <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                        <SelectValue placeholder={t("callCenter.labels.strategy")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{t("common.all")}</SelectItem>
+                                        <SelectItem value="roundRobin">{t("callCenter.autoAssign.strategy.roundRobin")}</SelectItem>
+                                        <SelectItem value="leastActiveOrders">{t("callCenter.autoAssign.strategy.leastActiveOrders")}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FilterField>
 
-                        <FilterField label={t("callCenter.labels.status")}>
-                            <Select
-                                value={filters.isActive}
-                                onValueChange={(v) => setFilters((f) => ({ ...f, isActive: v }))}
-                            >
-                                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
-                                    <SelectValue placeholder={t("callCenter.labels.status")} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                                    <SelectItem value="true">{t("common.statusCodes.active")}</SelectItem>
-                                    <SelectItem value="false">{t("common.statusCodes.inactive")}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </FilterField>
+                            <FilterField label={t("callCenter.labels.status")}>
+                                <Select
+                                    value={filters.isActive}
+                                    onValueChange={(v) => setFilters((f) => ({ ...f, isActive: v }))}
+                                >
+                                    <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                        <SelectValue placeholder={t("callCenter.labels.status")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{t("common.all")}</SelectItem>
+                                        <SelectItem value="true">{t("common.statusCodes.active")}</SelectItem>
+                                        <SelectItem value="false">{t("common.statusCodes.inactive")}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FilterField>
 
-                        <FilterField label={t("callCenter.labels.date")}>
-                            <DateRangePicker
-                                value={{
-                                    startDate: filters.startDate,
-                                    endDate: filters.endDate,
-                                }}
-                                onChange={(newDates) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        ...newDates,
-                                    }))
-                                }
-                                placeholder={t("callCenter.labels.date")}
-                                dataSize="default"
-                                maxDate="today"
-                            />
-                        </FilterField>
-                    </>
-                )}
-                actions={viewMode === "manual" ? [
-                    {
-                        key: "distribute",
-                        label: t("orders.toolbar.distribute"),
-                        icon: <Users size={15} />,
-                        color: "primary",
-                        onClick: () => setDistributionOpen(true),
-                        permission: "order.assign",
-                    },
-                ] : [
-                    {
-                        key: "export",
-                        label: t("callCenter.autoAssign.toolbar.export"),
-                        icon: exportLoading ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />,
-                        color: "primary",
-                        onClick: handleExport,
-                        disabled: exportLoading,
-                        permission: "order.assign",
-                    },
-                ]}
-                columns={viewMode === "manual" ? employeeColumns : ruleColumns}
-                data={pager.records}
-                isLoading={loading}
-                hasActiveFilters={hasActiveFilters}
-                onApplyFilters={applyFilters}
-                pagination={{
-                    total_records: pager.total_records,
-                    current_page: pager.current_page,
-                    per_page: pager.per_page,
-                }}
-                onPageChange={({ page, per_page }) => (viewMode === "manual" ? fetchEmployeeStats(page, per_page) : fetchAutoAssignRules(page, per_page))}
-            />
+                            <FilterField label={t("callCenter.labels.date")}>
+                                <DateRangePicker
+                                    value={{
+                                        startDate: filters.startDate,
+                                        endDate: filters.endDate,
+                                    }}
+                                    onChange={(newDates) =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            ...newDates,
+                                        }))
+                                    }
+                                    placeholder={t("callCenter.labels.date")}
+                                    dataSize="default"
+                                    maxDate="today"
+                                />
+                            </FilterField>
+                        </>
+                    )}
+                    actions={viewMode === "manual" ? [
+                        {
+                            key: "distribute",
+                            label: t("orders.toolbar.distribute"),
+                            icon: <Users size={15} />,
+                            color: "primary",
+                            onClick: () => setDistributionOpen(true),
+                            permission: "order.assign",
+                        },
+                    ] : [
+                        {
+                            key: "export",
+                            label: t("callCenter.autoAssign.toolbar.export"),
+                            icon: exportLoading ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />,
+                            color: "primary",
+                            onClick: handleExport,
+                            disabled: exportLoading,
+                            permission: "order.assign",
+                        },
+                    ]}
+                    columns={viewMode === "manual" ? employeeColumns : ruleColumns}
+                    data={pager.records}
+                    isLoading={loading}
+                    hasActiveFilters={hasActiveFilters}
+                    onApplyFilters={applyFilters}
+                    pagination={{
+                        total_records: pager.total_records,
+                        current_page: pager.current_page,
+                        per_page: pager.per_page,
+                    }}
+                    onPageChange={({ page, per_page }) => (viewMode === "manual" ? fetchEmployeeStats(page, per_page) : fetchAutoAssignRules(page, per_page))}
+                />)}
 
             <DistributionModal
                 isOpen={distributionOpen}

@@ -10,8 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Download,
   Eye,
-
   Trash2,
+  X,
 
   MapPin,
   Phone,
@@ -27,7 +27,6 @@ import {
   Save,
   Edit2,
   Loader2,
-  X,
 
   AlertTriangle,
   Truck,
@@ -52,6 +51,7 @@ import {
   GitBranch,
   TrendingUp,
   Tag,
+  UserMinus,
 } from "lucide-react";
 
 import { useLocale, useTranslations } from "next-intl";
@@ -65,6 +65,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -80,7 +81,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import api, { BASE_URL } from "@/utils/api";
-import UserSelect,{ avatarSrc } from "@/components/atoms/UserSelect";
+import UserSelect, { avatarSrc } from "@/components/atoms/UserSelect";
 import Flatpickr from "react-flatpickr";
 
 import { Textarea } from "@/components/ui/textarea";
@@ -89,6 +90,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { generateBgColors, getIconForStatus } from "../page";
 import DistributionModal from "../atoms/DistrubtionModal";
 import BulkUploadModal from "../atoms/BulkUploadModal";
+import CancelAssignmentsModal from "../atoms/CancelAssignmentsModal";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import SettingsModal from "../atoms/SettingsModal";
@@ -727,7 +729,10 @@ export default function OrdersTab({
   showTopActions = true, showBulkUpload = true, showCustom = true,
   label = "",
   adminId,
-  setAdminId
+  setAdminId,
+  isAssign = false,
+  hideHeader = false,
+  onOrdersFetched
 }) {
 
   const t = useTranslations("orders");
@@ -798,9 +803,47 @@ export default function OrdersTab({
   const [upsellHistoryModalOpen, setUpsellHistoryModalOpen] = useState(false);
   const [upsellHistoryOrder, setUpsellHistoryOrder] = useState(null);
 
+  // State for assignments tab
+  const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+  const [cancelModalOpen, setCancelModalOpen] = useState({ open: false, ids: [] });
+
   const [postponedOrder, setPostponedOrder] = useState(null); // { id, statusId }
   const [postponedDate, setPostponedDate] = useState(null);
   const [reminderDaysBefore, setReminderDaysBefore] = useState("");
+  const toggleOrderSelection = (orderId) => {
+    setSelectedOrderIds(prev =>
+      prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId]
+    );
+  };
+
+
+
+  const selectAllOrders = () => {
+    const allIds = pager.records.map(r => r.id);
+    const areAllSelected = allIds.length > 0 && allIds.every(id => selectedOrderIds.includes(id));
+    if (areAllSelected) {
+      setSelectedOrderIds(prev => prev.filter(id => !allIds.includes(id)));
+    } else {
+      setSelectedOrderIds(prev => [...new Set([...prev, ...allIds])]);
+    }
+  };
+
+  const cancelSingleAssignment = async (orderId) => {
+    setCancelLoading(true);
+    try {
+      await api.delete("/order-assignment/assignments", {
+        data: { orderIds: [orderId] }
+      });
+      toast.success("Assignment cancelled successfully");
+      fetchOrders(pager.current_page, pager.per_page);
+      if (fetchStats) fetchStats();
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to cancel assignment");
+    } finally {
+      setCancelLoading(false);
+    }
+  };
 
   const tomorrow = useMemo(() => {
     const d = new Date();
@@ -928,6 +971,10 @@ export default function OrdersTab({
       params.adminId = adminId;
     }
 
+    if (isAssign) {
+      params.hasActiveAssignment = "true";
+    }
+
     return params;
   };
 
@@ -940,12 +987,16 @@ export default function OrdersTab({
       const params = buildParams(page, per_page);
       const res = await api.get("/orders", { params });
       const data = res.data || {};
+      const records = Array.isArray(data.records) ? data.records : [];
       setPager({
         total_records: data.total_records || 0,
         current_page: data.current_page || page,
         per_page: data.per_page || per_page,
-        records: Array.isArray(data.records) ? data.records : [],
+        records,
       });
+      if (onOrdersFetched) {
+        onOrdersFetched(records);
+      }
     } catch (e) {
       console.error("Error fetching orders", e);
       toast.error(t("messages.errorFetchingOrders"));
@@ -1159,7 +1210,29 @@ export default function OrdersTab({
   };
 
   const columns = useMemo(() => {
+    const allIds = pager.records.map(r => r.id);
+    const areAllSelected = allIds.length > 0 && allIds.every(id => selectedOrderIds.includes(id));
     return [
+      ...(isAssign ? [{
+        key: "select",
+        header: (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={areAllSelected}
+              onCheckedChange={selectAllOrders}
+            />
+          </div>
+        ),
+        className: "w-[48px]",
+        cell: (row) => (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={selectedOrderIds.includes(row.id)}
+              onCheckedChange={() => toggleOrderSelection(row.id)}
+            />
+          </div>
+        ),
+      }] : []),
       {
         key: "created_at",
         header: t("table.createdat"),
@@ -1576,7 +1649,7 @@ export default function OrdersTab({
         },
       },
 
- {
+      {
         key: "automationRuns",
         header: t("table.automationRuns"),
         cell: (row) => {
@@ -1661,7 +1734,7 @@ export default function OrdersTab({
           </Badge>
         },
       },
-     
+
 
       {
         key: "shippingCompany",
@@ -1744,7 +1817,28 @@ export default function OrdersTab({
         cell: (row) => (
           <ActionButtons
             row={row}
-            actions={[
+            actions={isAssign ? [
+              {
+                icon: <Eye />,
+                tooltip: t("actions.view"),
+                onClick: (r) => {
+                  if (isSuperAdmin) {
+                    router.push(`/dashboard/orders/details/${r.id}`);
+                  } else {
+                    router.push(`/orders/details/${r.id}`);
+                  }
+                },
+                variant: "primary",
+                permission: "orders.read",
+              },
+              {
+                icon: <UserMinus />,
+                tooltip: t("actions.cancelAssignment"),
+                onClick: (r) => setCancelModalOpen({ open: true, ids: [r.id] }),
+                variant: "red",
+                permission: "orders.assign",
+              },
+            ] : [
               // --- WAREHOUSE ACTIONS ---
               {
                 icon: <GitMerge size={18} />,
@@ -1867,8 +1961,7 @@ export default function OrdersTab({
                 permission: "orders.delete",
                 hidden: isSuperAdmin || readOnlyStatus
               },
-            ]
-            }
+            ]}
           />
         ),
       },
@@ -1886,12 +1979,22 @@ export default function OrdersTab({
     pager.per_page,
     pager.records,
     fetchStats,
+    isAssign,
+    selectedOrderIds,
+    toggleOrderSelection,
+    selectAllOrders,
+    cancelSingleAssignment,
   ]);
-  
-  const { handleExport: handleExportLogs, exportLoading: exportLogsLoading } = useExport(); 
+
+  const { handleExport: handleExportLogs, exportLoading: exportLogsLoading } = useExport();
+  // Handlers for assignment tab
+
+
+  console.log(cancelModalOpen.ids)
+
   return (
     <div className=" ">
-      <PageHeader
+      {!hideHeader && (<PageHeader
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: label ? label : t("tabs.orders") },
@@ -1953,7 +2056,7 @@ export default function OrdersTab({
             sortOrder: 9999,
           }] : []),
         ]}
-      />
+      />)}
 
       <Table
         // ── Row Styling ───────────────────────────────────────────────────────
@@ -1978,6 +2081,16 @@ export default function OrdersTab({
           preview: t("image.preview"),
         }}
         actions={[
+          ...(isAssign ? [
+            {
+              key: "cancelAssignments",
+              label: selectedOrderIds.length > 0 ? t("actions.bulkCancelAssignmentsCount", { count: selectedOrderIds.length ?? 0 }) : t("actions.bulkCancelAssignments"),
+              icon: <UserMinus size={14} />,
+              color: "primary",
+              onClick: () => setCancelModalOpen({ open: true, ids: selectedOrderIds }),
+              disabled: selectedOrderIds.length === 0,
+              permission: "orders.assign",
+            }] : []),
           {
             key: "export",
             label: t("toolbar.export"),
@@ -2364,6 +2477,18 @@ export default function OrdersTab({
         exportLoading={exportLogsLoading}
       />
 
+      <CancelAssignmentsModal
+        isOpen={cancelModalOpen.open}
+        onClose={() => setCancelModalOpen({ open: false, ids: [] })}
+        orderIds={cancelModalOpen.ids}
+        orders={pager.records}
+        onSuccess={() => {
+          setSelectedOrderIds([]);
+          fetchOrders(pager.current_page, pager.per_page);
+          if (fetchStats) fetchStats();
+        }}
+      />
+
       <OrderAutomationRunsModal
         isOpen={automationRunsModalOpen}
         onClose={() => {
@@ -2396,10 +2521,10 @@ function ShipmentLogsModal({ isOpen, onClose, order, shipment, logs, loading, on
     try {
       const res = await api.get("/shipping/external-logs", {
         params: {
-        shipmentId: shipment.id,
-        orderId: order.id,
-        page,
-        limit: perPage,
+          shipmentId: shipment.id,
+          orderId: order.id,
+          page,
+          limit: perPage,
         },
       });
       setPager(res.data);
@@ -2490,7 +2615,7 @@ function ShipmentLogsModal({ isOpen, onClose, order, shipment, logs, loading, on
         </div>
 
         <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
-            {/* {!logsLoading && <Loader2 size={16} className="animate-spin" />} */}
+          {/* {!logsLoading && <Loader2 size={16} className="animate-spin" />} */}
           {/* <div className="flex items-center gap-3">
             {!logsLoading && pager.total_records > 0 && (
               <span className="text-sm text-slate-500">
@@ -2529,11 +2654,11 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
   const tLogs = useTranslations("whatsApp.automationLogs");
   const t = useTranslations("orders");
 
-  const [pager, setPager] = useState({ 
-    total_records: 0, 
-    current_page: 1, 
-    per_page: 50, 
-    records: [] 
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 50,
+    records: []
   });
   const [loading, setLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
@@ -2599,7 +2724,7 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="!max-w-5xl rounded-xl max-h-[90vh] flex flex-col p-0 shadow-2xl border-0 overflow-hidden">
-        
+
         {/* Header */}
         <div className="relative px-6 pt-6 pb-5 shrink-0 bg-gradient-to-br from-primary to-secondary">
           <div className="relative flex items-center justify-between">
@@ -2614,8 +2739,8 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
                 <h2 className="text-white text-xl font-bold">{t("automationTitle") || "Automation Runs"}</h2>
               </div>
             </div>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
             >
               <X size={16} className="text-white" />
@@ -2660,7 +2785,7 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
 
                       return (
                         <tr key={row.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                          
+
                           {/* Automation Flow */}
                           <td className="px-4 py-3 text-center">
                             <div className="flex flex-col items-center">
@@ -2678,8 +2803,8 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
                           <td className="px-4 py-3 text-center">
                             <div className="flex flex-col gap-0.5">
                               <span className="text-xs">
-                                {row.automationFlow?.triggerType 
-                                  ? tAutomations(`triggers.${row.automationFlow.triggerType}`) 
+                                {row.automationFlow?.triggerType
+                                  ? tAutomations(`triggers.${row.automationFlow.triggerType}`)
                                   : row.triggerEntityType}
                               </span>
                             </div>
@@ -2693,10 +2818,10 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
                                 row.status === "completed"
                                   ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
                                   : row.status === "running"
-                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400"
-                                  : row.status === "failed"
-                                  ? "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400"
-                                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                    ? "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400"
+                                    : row.status === "failed"
+                                      ? "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400"
+                                      : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                               )}
                             >
                               {tLogs(`statuses.${row.status}`)}
@@ -2710,8 +2835,8 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
                                 {row.completedNodeIds?.length || 0} {t("table.steps")}
                               </span>
                               {row.status === "failed" && row.errorMessage && (
-                                <span 
-                                  className="text-[10px] text-rose-500 max-w-[150px] truncate block" 
+                                <span
+                                  className="text-[10px] text-rose-500 max-w-[150px] truncate block"
                                   title={row.errorMessage}
                                 >
                                   {row.errorMessage}
@@ -2800,11 +2925,11 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
   const tUpsell = useTranslations("upsells"); // Adjust i18n namespace if needed
   const t = useTranslations("orders"); // Adjust i18n namespace if needed
 
-  const [pager, setPager] = useState({ 
-    total_records: 0, 
-    current_page: 1, 
-    per_page: 50, 
-    records: [] 
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 50,
+    records: []
   });
   const [loading, setLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
@@ -2869,7 +2994,7 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="!max-w-5xl rounded-xl max-h-[90vh] flex flex-col p-0 shadow-2xl border-0 overflow-hidden">
-        
+
         {/* Header */}
         <div className="relative px-6 pt-6 pb-5 shrink-0 bg-gradient-to-br from-primary to-secondary">
           <div className="relative flex items-center justify-between">
@@ -2884,8 +3009,8 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                 <h2 className="text-white text-xl font-bold">{t("actions.viewUpsellHistory") || "Upsell History"}</h2>
               </div>
             </div>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
             >
               <X size={16} className="text-white" />
@@ -2926,16 +3051,16 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                   ) : (
                     pager.records.map((row) => (
                       <tr key={row.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                        
+
                         {/* Trigger Product Cell */}
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
                               {row.triggerProduct?.mainImage ? (
-                                <img 
-                                  src={avatarSrc(row.triggerProduct.mainImage)} 
-                                  alt="" 
-                                  className="w-full h-full object-cover" 
+                                <img
+                                  src={avatarSrc(row.triggerProduct.mainImage)}
+                                  alt=""
+                                  className="w-full h-full object-cover"
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-slate-400">
@@ -2956,10 +3081,10 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
                               {row.upsellProduct?.mainImage ? (
-                                <img 
-                                  src={avatarSrc(row.upsellProduct.mainImage)} 
-                                  alt="" 
-                                  className="w-full h-full object-cover" 
+                                <img
+                                  src={avatarSrc(row.upsellProduct.mainImage)}
+                                  alt=""
+                                  className="w-full h-full object-cover"
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-slate-400">
@@ -2981,8 +3106,8 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                         {/* Price Cell */}
                         <td className="px-4 py-3 text-center">
                           <div className="font-bold text-xs text-primary">
-                            {typeof formatCurrency === 'function' 
-                              ? formatCurrency(row.sentPrice) 
+                            {typeof formatCurrency === 'function'
+                              ? formatCurrency(row.sentPrice)
                               : `$${Number(row.sentPrice || 0).toFixed(2)}`}
                           </div>
                         </td>
@@ -2995,8 +3120,8 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                               row.status === "ACCEPTED" || row.status === "SUCCESS"
                                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
                                 : row.status === "REJECTED" || row.status === "FAILED"
-                                ? "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400"
-                                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                  ? "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400"
+                                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                             )}
                           >
                             {row.status || "PENDING"}

@@ -1532,8 +1532,8 @@ function FilterField({ label, icon: FieldIcon, children }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function OrdersStatisticsPage() {
-  const tDash = useTranslations("dashboard");
   const tOrders = useTranslations("orders");
+  const tDash = useTranslations("dashboard");
   const t = useTranslations("orderAnalysis");
   const locale = useLocale();
   const { formatCurrency } = usePlatformSettings();
@@ -1664,13 +1664,6 @@ export default function OrdersStatisticsPage() {
       totalLabel: t("kpi.totalOrders"),
       color: "#10b981"
     },
-    {
-      key: "canceledAndUnderReview",
-      totalKey: "totalOrders",
-      title: t("kpi.canceledAndUnderReview"),
-      totalLabel: t("kpi.totalOrders"),
-      color: "#ef4444"
-    },
     // Statuses (relative to totalOrders)
     {
       key: "new",
@@ -1719,6 +1712,20 @@ export default function OrdersStatisticsPage() {
       totalLabel: t("kpi.totalOrders"),
       color: "#dc2626",
       nested: "statuses"
+    },
+    {
+      key: "canceledAndUnderReview",
+      totalKey: "totalOrders",
+      title: t("kpi.canceledAndUnderReview"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#ef4444"
+    },
+    {
+      key: "noAnswerFollowUp",
+      totalKey: "totalOrders",
+      title: t("kpi.noAnswerFollowUp"),
+      totalLabel: t("kpi.totalOrders"),
+      color: "#ef4444"
     },
     {
       key: "confirmed",
@@ -1814,13 +1821,6 @@ export default function OrdersStatisticsPage() {
       color: "#f59e0b",
     },
     {
-      key: "canceledAndUnderReview",
-      title: t("kpi.canceledAndUnderReview") || "Canceled & Under Review",
-      description: tDash("kpiDescription.canceledAndUnderReview"),
-      icon: XCircle,
-      color: "#ef4444",
-    },
-    {
       key: "pendingOrders",
       title: t("kpi.pendingOrders") || "Pending",
       description: tDash("kpiDescription.pendingOrders"),
@@ -1875,6 +1875,20 @@ export default function OrdersStatisticsPage() {
       description: tDash("kpiDescription.canceled"),
       icon: XCircle,
       color: "#dc2626",
+    },
+    {
+      key: "canceledAndUnderReview",
+      title: t("kpi.canceledAndUnderReview") || "Canceled & Under Review",
+      description: tDash("kpiDescription.canceledAndUnderReview"),
+      icon: XCircle,
+      color: "#ef4444",
+    },
+    {
+      key: "noAnswerFollowUp",
+      title: t("kpi.noAnswerFollowUp") || "Canceled & Under Review",
+      description: tDash("kpiDescription.noAnswerFollowUp"),
+      icon: XCircle,
+      color: "#ef4444",
     },
     {
       key: "confirmed",

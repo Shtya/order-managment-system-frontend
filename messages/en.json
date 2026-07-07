@@ -4807,7 +4807,10 @@
       "loading": "Loading...",
       "viewShipmentLogs": "Shipping Companies Status Log",
       "viewAutomationRuns": "Automation Runs Logs",
-      "viewUpsellHistory": "Upsells Sent"
+      "viewUpsellHistory": "Upsells Sent",
+      "cancelAssignment": "Cancel Assignment",
+      "bulkCancelAssignments": "Cancel Selected Assignments",
+      "bulkCancelAssignmentsCount": "Cancel Selected Assignments({count})"
     },
     "shipmentLogs": {
       "title": "Shipment Logs",
@@ -5415,6 +5418,8 @@
       "pendingConfirmation": "Pending Confirmation",
       "pending_confirmation": "Pending Confirmation",
       "wrong_number": "Wrong Number",
+      "cancelled_follow_up": "Cancelled - Follow-up",
+      "no_answer_follow_up": "No Answer - Follow-up",
       "duplicate": "Duplicate",
       "postponed": "Postponed",
       "delivered": "Delivered",
@@ -5840,7 +5845,9 @@
     "other": "Other",
     "unknown": "unknown",
     "from": "from",
-    "title": "Automation Runs"
+    "title": "Automation Runs",
+    "assignmentsCancelledSuccessfully": "Assignments cancelled successfully",
+    "failedToCancelAssignments": "Failed to cancel assignments"
   },
   "callCenter": {
     "breadcrumb": {
@@ -5852,7 +5859,11 @@
     "stats": {
       "new": "New Orders",
       "confirmed": "Confirmed Today",
-      "cancelled": "Cancelled Today"
+      "cancelled": "Cancelled Today",
+      "activeAssignments": "Active Assignments",
+      "assignedEmployees": "Assigned Employees",
+      "activeAssignedToday": "Active Today",
+      "lockedAssignments": "Locked"
     },
     "columns": {
       "employeeName": "Employee Name",
@@ -5866,7 +5877,8 @@
     "emptySubtitle": "No records match your search criteria",
     "tabs": {
       "manual": "Manual Assignment",
-      "automatic": "Automated Routing Rules"
+      "automatic": "Automated Routing Rules",
+      "assignments": "Assigned orders"
     },
     "labels": {
       "searchPlaceholder": "Search by rule name or description...",
@@ -6467,7 +6479,8 @@
       "percentageStats": "Percentage Statistics",
       "salesOverview": "Sales Overview",
       "statistics": "General statistics",
-      "percentageStatistics": "Percentage Statistics"
+      "percentageStatistics": "Percentage Statistics",
+      "noAnswerFollowUp": "No Answer - Follow Up"
     },
     "charts": {
       "generalReports": "General Reports",
@@ -6543,7 +6556,7 @@
       "deliveredFromTotal": "Total number of delivered orders out of all orders. Calculated as ((delivered / total orders) * 100)",
       "deliveredSales": "Total revenue from delivered orders only",
       "collectedAmount": "Total amount collected from customers",
-      "canceledAndUnderReview": "Total number of canceled orders with active assignment plus orders under review after being canceled",
+      "canceledAndUnderReview": "Total number of cancelled orders under follow-up. Orders are moved to this status automatically when an employee is assigned to a cancelled order.",
       "pendingOrders": "The number of orders received from connected stores that could not be imported into the system. Common reasons include missing products, missing product variants (SKU), insufficient stock, invalid order data, or other import errors.",
       "inWarehouseOrders": "Total number of orders in warehouse statuses (Distributed, Printed, Preparing, Ready, Packed, Shipped)",
       "postponed": "Total number of postponed orders",
@@ -6554,7 +6567,8 @@
       "canceled": "Percentage of orders that were cancelled ((cancelled orders / total orders) * 100)",
       "confirmed": "Total number of orders in confirmed status",
       "shipped": "Number of orders currently in the shipping/delivery process",
-      "delivered": "Total number of delivered orders"
+      "delivered": "Total number of delivered orders",
+      "noAnswerFollowUp": "Total number of no-answer orders under follow-up. Orders are moved to this status automatically when an employee is assigned to a no-answer order."
     },
     "common": {
       "noData": "No data available",
@@ -7602,7 +7616,7 @@
       {
         "tag": "Cash on Delivery",
         "title": "Cash-on-delivery returns cost more than you think",
-          "pain": "Every returned order means extra shipping costs, more operational work, and less profit, especially as your order volume grows.",
+        "pain": "Every returned order means extra shipping costs, more operational work, and less profit, especially as your order volume grows.",
         "solution": "With Madar, you can manage cash-on-delivery orders more effectively through pre-verification and order tracking, helping reduce return rates and protect your profits."
       },
       {

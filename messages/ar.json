@@ -4802,7 +4802,10 @@
       "loading": "جاري التحميل...",
       "viewShipmentLogs": "سجل حالات شركات الشحن",
       "viewAutomationRuns": "سجل التشغيل التلقائي",
-      "viewUpsellHistory": "العروض المرسلة"
+      "viewUpsellHistory": "العروض المرسلة",
+      "cancelAssignment": "إلغاء الإسناد",
+      "bulkCancelAssignments": "إلغاء الإسنادات",
+      "bulkCancelAssignmentsCount": "إلغاء الإسنادات ({count})"
     },
     "shipmentLogs": {
       "title": "سجلات الشحنة",
@@ -5400,6 +5403,8 @@
       "pendingConfirmation": "بانتظار التأكيد",
       "pending_confirmation": "بانتظار التأكيد",
       "wrong_number": "رقم خاطئ",
+      "cancelled_follow_up": "ملغي و جاري متابعته",
+      "no_answer_follow_up": "لا يوجد رد و جاري متابعته",
       "duplicate": "مكرر",
       "postponed": "مؤجل",
       "delivered": "تم التسليم",
@@ -5825,7 +5830,9 @@
     "other": "اخري",
     "unknown": "غير معروف",
     "from": "من",
-    "title": "سجل التشغيل"
+    "title": "سجل التشغيل",
+    "assignmentsCancelledSuccessfully": "تم إلغاء الإسنادات بنجاح",
+    "failedToCancelAssignments": "فشل في إلغاء الإسنادات\t"
   },
   "callCenter": {
     "breadcrumb": {
@@ -5837,7 +5844,11 @@
     "stats": {
       "new": "الطلبات الجديدة",
       "confirmed": "المؤكدة اليوم",
-      "cancelled": "الملغية اليوم"
+      "cancelled": "الملغية اليوم",
+      "activeAssignments": "الإسنادات النشطة",
+      "assignedEmployees": "الموظفين المسند لهم",
+      "activeAssignedToday": "نشط اليوم",
+      "lockedAssignments": "الإسنادات المغلقة"
     },
     "columns": {
       "employeeName": "اسم الموظف",
@@ -5851,7 +5862,8 @@
     "emptySubtitle": "لا توجد سجلات تطابق بحثك",
     "tabs": {
       "manual": "الإسناد اليدوي",
-      "automatic": "قواعد الإسناد الآلي"
+      "automatic": "قواعد الإسناد الآلي",
+      "assignments": "الطلبات المسندة"
     },
     "labels": {
       "searchPlaceholder": "البحث عن طريق اسم القاعدة أو الوصف...",
@@ -6439,7 +6451,7 @@
       "deliveredFromTotal": "التوصيل من الإجمالي",
       "deliveredSales": "مبيعات تم توصيلها",
       "collectedAmount": "المبلغ المحصل",
-      "canceledAndUnderReview": "ملغاة وتحت المراجعة",
+      "canceledAndUnderReview": "ملغاة وجاري متابعتة",
       "pendingOrders": "المعلقة",
       "inWarehouseOrders": "في المستودع",
       "newOrders": "الجديدة",
@@ -6452,7 +6464,8 @@
       "percentageStats": "إحصائيات النسب المئوية",
       "salesOverview": "نظرة عامة على المبيعات",
       "statistics": "الاحصائيات العامة",
-      "percentageStatistics": "إحصائيات النسبة المئوية"
+      "percentageStatistics": "إحصائيات النسبة المئوية",
+      "noAnswerFollowUp": "لا يوجد رد و جاري متابعته"
     },
     "charts": {
       "generalReports": "تقارير عامة",
@@ -6528,7 +6541,7 @@
       "deliveredFromTotal": "إجمالي عدد الطلبات المُوصلة من بين جميع الطلبات. محسوبة كـ ((الموصلة / إجمالي الطلبات) × 100)",
       "deliveredSales": "إجمالي الإيرادات من الطلبات المُوصلة فقط",
       "collectedAmount": "إجمالي المبلغ الذي تم تحصيله من العملاء",
-      "canceledAndUnderReview": "إجمالي عدد الطلبات الملغاة مع تعيين نشط بالإضافة إلى الطلبات قيد المراجعة بعد إلغاءها",
+      "canceledAndUnderReview": "إجمالي عدد الطلبات الملغاة وجاري متابعتها. تنتقل الطلبات إلى هذه الحالة تلقائيًا عند تعيين موظف لها و كانت حالتها الحالية ملغي",
       "pendingOrders": "عدد الطلبات الواردة من المتاجر المرتبطة التي تعذر استيرادها إلى النظام بسبب مشكلات مثل عدم وجود المنتج، أو عدم وجود متغير المنتج (SKU)، أو عدم كفاية المخزون، أو أخطاء أخرى أثناء عملية الاستيراد.",
       "inWarehouseOrders": "إجمالي عدد الطلبات في حالات المستودع (موزعة، مطبوعة، جاري التحضير، جاهزة، مغلفة، تم الشحن)",
       "postponed": "إجمالي عدد الطلبات المؤجلة",
@@ -6539,7 +6552,8 @@
       "canceled": "نسبة الطلبات التي تم إلغاؤها ((الطلبات الملغاة / إجمالي الطلبات) × 100)",
       "confirmed": "إجمالي عدد الطلبات في الحالة المؤكدة",
       "shipped": "عدد الطلبات التي توجد حاليًا في عملية الشحن/التوصيل",
-      "delivered": "إجمالي عدد الطلبات المُوصلة"
+      "delivered": "إجمالي عدد الطلبات المُوصلة",
+      "noAnswerFollowUp": "إجمالي عدد الطلبات التي لا يوجد رد عليها وجاري متابعتها. تنتقل الطلبات إلى هذه الحالة تلقائيًا عند تعيين موظف لها , كانت حالتها الحالية لا يوجد رد."
     },
     "common": {
       "noData": "لا توجد بيانات متاحة",

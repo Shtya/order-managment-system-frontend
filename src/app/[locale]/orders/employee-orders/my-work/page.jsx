@@ -1381,7 +1381,7 @@ function HistSection({ order, t, isRtl }) {
               {latest?.toStatus && (
                 <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: "var(--radius-sm)", background: rgba(latest.toStatus.color, .08), border: `1px solid ${rgba(latest.toStatus.color, .25)}` }}>
                   <Ping color={latest.toStatus.color} size={7} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: latest.toStatus.color }}>{latest.toStatus.system ? t(`statuses.${latest.toStatus.code}`) : latest.toStatus.name}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: latest.toStatus.color }}>{latest.toStatus.system ? tOrders(`statuses.${latest.toStatus.code}`) : latest.toStatus.name}</span>
                 </div>
               )}
               <Tag color={HEX.orange} sm>{hist.length}</Tag>
@@ -1648,7 +1648,8 @@ function SaveBar({ onSave, onCancel, loading, t }) {
 // ─── ACTION BAR ────────────────────────────────────────────────────────────
 function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLocked, decided, refetching, changeStatus, nextOrder, loading, t, isRtl }) {
   const canNext = decided && !loading && !changingStatus && !refetching;
-
+  const tOrders = useTranslations("orders");
+  
   return (
     <motion.div initial={{ y: 90, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: .25, duration: .42 }}
       style={{ position: "fixed", zIndex: 50, pointerEvents: "none" }} className=" max-w-[1000px] w-full left-1/2 -translate-x-1/2 bottom-[10px] " >
@@ -1667,7 +1668,7 @@ function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLock
                   const busy = changingStatus && selStatusId === status.id;
                   const off = isLocked || changingStatus || curr || decided;
                   const c = status.color;
-                  const lbl = status.system ? t(`statuses.${status.code}`) : status.name;
+                  const lbl = status.system ? tOrders(`statuses.${status.code}`) : status.name;
 
                   return (
                     <motion.button key={status.id} type="button" onClick={() => !off && changeStatus(status.id)} disabled={off}

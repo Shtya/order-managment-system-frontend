@@ -880,26 +880,26 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           roles: ["SUPER_ADMIN"],
         }]
     },
-    {
-      icon: FaBolt,
-      labelKey: "automations",
-      href: "/dashboard/automations",
-      roles: ["SUPER_ADMIN"],
-      children: [
-        {
-          labelKey: "automations",
-          href: "/dashboard/automations",
-          icon: FaBolt,
-          roles: ["SUPER_ADMIN"],
-        },
-        {
-          labelKey: "addAutomation",
-          href: "/dashboard/automations/builder",
-          icon: FaPlus,
-          roles: ["SUPER_ADMIN"],
-        }
-      ]
-    },
+    // {
+    //   icon: FaBolt,
+    //   labelKey: "automations",
+    //   href: "/dashboard/automations",
+    //   roles: ["SUPER_ADMIN"],
+    //   children: [
+    //     {
+    //       labelKey: "automations",
+    //       href: "/dashboard/automations",
+    //       icon: FaBolt,
+    //       roles: ["SUPER_ADMIN"],
+    //     },
+    //     {
+    //       labelKey: "addAutomation",
+    //       href: "/dashboard/automations/builder",
+    //       icon: FaPlus,
+    //       roles: ["SUPER_ADMIN"],
+    //     }
+    //   ]
+    // },
     {
       icon: FaBugs,
       labelKey: "systemErrors",

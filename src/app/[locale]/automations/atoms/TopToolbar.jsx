@@ -35,6 +35,7 @@ import { useAuth } from '@/context/AuthContext';
 import RunDetailsPanel from './RunDetailsPanel';
 import StepExecutionDialog from './StepExecutionDialog';
 import { processNodesBeforeSave } from './nodeProcessors';
+import { BASE_CONFIG } from './automation-config';
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
     const t = useTranslations("whatsApp.automations.builder");
@@ -91,8 +92,6 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
         [nodes],
     );
     const triggerType = triggerNode?.data?.type;
-    const triggerStoreId = triggerNode?.data?.config?.storeId || '';
-    const triggerStatusId = triggerNode?.data?.config?.statusId || '';
 
     const handleSelectOrder = async (order) => {
         const snapshot = useFlowStore.getState();
@@ -144,7 +143,16 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                 },
                 initialPayload: {}
             }
-
+             // Find the trigger item in any category
+             let trigger = null;
+             for (const category of BASE_CONFIG.TRIGGERS.categories) {
+                 const found = category.items.find(item => item.id === payload.trigger.type);
+                 if (found) {
+                     trigger = found;
+                     break;
+                 }
+             }
+             console.log(trigger, payload.trigger, payload);
             const prev = {
                 ...payload,
                 previewId,
@@ -165,8 +173,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                     trigger: payload.trigger,
                     steps: {},
                 },
-                triggerEntityType: payload.trigger.type === 'order_created' || payload.trigger.type === 'order_updated' ? 'order'
-                    : 'order',
+                triggerEntityType: trigger.entity,
                 triggerEntityId: payload.trigger.output?.__mock ? null : payload.trigger.output?.id,
                 waitingForInteraction: null,
                 startedAt: now,

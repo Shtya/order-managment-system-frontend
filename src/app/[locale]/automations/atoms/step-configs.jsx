@@ -187,6 +187,127 @@ export function OrderStatusUpdatedConfig({ value, onChange, errors, setDisabled 
 }
 
 /**
+ * Trigger: Shipment Created
+ */
+export function ShipmentCreatedConfig({ value, onChange, errors, setDisabled, onClose }) {
+    const tShipping = useTranslations("shipping");
+    const t = useTranslations("whatsApp.automations.builder.config");
+    const { shippingCompanies } = usePlatformSettings();
+    const { isSuperAdmin } = useAuth();
+
+    useEffect(() => {
+        if (isSuperAdmin) {
+            onClose({ ...value, shippingCompany: "all", shippingCompanyId: undefined });
+        }
+    }, [isSuperAdmin]);
+
+    useEffect(() => {
+        // Prevent save until a shipping company is selected
+        const isValid = !!value.shippingCompany;
+        setDisabled(!isValid);
+    }, [value.shippingCompany, setDisabled]);
+
+    const handleShippingCompanyChange = (v) => {
+        if (v === "all") {
+            onChange({ ...value, shippingCompany: "all", shippingCompanyId: undefined });
+        } else {
+            const selectedCompany = shippingCompanies.find(c => String(c.providerId) === v);
+            onChange({ 
+                ...value, 
+                shippingCompany: selectedCompany?.name, 
+                shippingCompanyId: v 
+            });
+        }
+    };
+
+    return (
+        <div className="space-y-4">
+            <FormGroup label={t('shippingCompany')} description={t('shippingCompanyDesc')} error={errors.shippingCompany}>
+                <Select value={value.shippingCompanyId || (value.shippingCompany === "all" ? "all" : "")} onValueChange={handleShippingCompanyChange}>
+                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                        <SelectValue placeholder={t('selectShippingCompany')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">{t('allShippingCompanies')}</SelectItem>
+                        {shippingCompanies.map(company => (
+                            <SelectItem key={company.providerId} value={String(company.providerId)}>
+                                {tShipping
+                                    ? tShipping(`providers.${company.provider.toLowerCase()}`, {
+                                        defaultValue: company.name,
+                                    })
+                                    : company.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </FormGroup>
+        </div>
+    );
+}
+
+/**
+ * Trigger: Shipment Status Updated
+ */
+export function ShipmentStatusUpdatedConfig({ value, onChange, errors, setDisabled }) {
+    const [shipmentStatuses, setShipmentStatuses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const tShipping = useTranslations("orders");
+    const t = useTranslations("whatsApp.automations.builder.config");
+
+    useEffect(() => {
+        const fetchShipmentStatuses = async () => {
+            try {
+                setLoading(true);
+                const { data } = await api.get("/shipping/statuses");
+                setShipmentStatuses(data.statuses || []);
+            } catch (error) {
+                console.error("Failed to fetch shipment statuses:", error);
+                toast.error(normalizeAxiosError(error));
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchShipmentStatuses();
+    }, []);
+
+    useEffect(() => {
+        // Prevent save until a shipment status is selected
+        const isValid = !!value.shipmentStatus;
+        setDisabled(!isValid);
+    }, [value.shipmentStatus, setDisabled]);
+
+    const handleShipmentStatusChange = (v) => {
+        onChange({ ...value, shipmentStatus: v });
+    };
+
+    return (
+        <div className="space-y-4">
+            <FormGroup label={t('targetShipmentStatus')} description={t('targetShipmentStatusDesc')} error={errors.shipmentStatus}>
+                <Select value={value.shipmentStatus || ""} onValueChange={handleShipmentStatusChange}>
+                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                        {loading ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>{t('loading')}</span>
+                            </div>
+                        ) : (
+                            <SelectValue placeholder={t('selectShipmentStatus')} />
+                        )}
+                    </SelectTrigger>
+                    <SelectContent>
+                        {shipmentStatuses.map((status, index) => (
+                            <SelectItem key={`${status}-${index}`} value={status}>
+                                {tShipping(`trackingStatus.${status}`, { defaultValue: status })}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </FormGroup>
+        </div>
+    );
+}
+
+/**
  * Trigger: Whatsapp Incoming Message
  */
 export function WhatsappIncomingConfig({ value, onChange, errors, setDisabled }) {

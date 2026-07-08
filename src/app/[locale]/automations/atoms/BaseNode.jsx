@@ -9,6 +9,7 @@ import { useFlowStore } from '@/hook/useFlowStore';
 import { CustomHandle } from './CustomHandle';
 import { useFlowHydration } from '@/hook/useFlowHydration';
 import { useAuth } from '@/context/AuthContext';
+import { BASE_CONFIG } from './automation-config';
 
 export function BaseNode({
     id,
@@ -49,7 +50,7 @@ export function BaseNode({
     const isRunMode = mode === 'run';
     const node = useFlowStore((s) => s.nodes.find(n => n.id === id));
     const nodeType = node?.type;
-    
+
     // Execution status for run mode
     const executionState = useMemo(() => {
         if (nodeType === 'trigger') {
@@ -70,7 +71,7 @@ export function BaseNode({
         return executionState?.success ? 'success' : 'failed';
     }, [isRunMode, executionState, nodeType, currentNodeId, runStatus]);
 
-    
+
     const { isSuperAdmin } = useAuth();
     const t = useTranslations("whatsApp.automations.builder");
     const locale = useLocale();
@@ -148,7 +149,17 @@ export function BaseNode({
         };
     }, [selected, id, deleteNode]);
 
-    const preventEdit = noEdit || (isSuperAdmin && nodeType === 'trigger' && data.type === 'order_created');
+    const preventEdit = useMemo(() => {
+        if (noEdit) return true;
+
+        if (isSuperAdmin && nodeType === 'trigger') {
+            return !!BASE_CONFIG.TRIGGERS.categories.find(
+                category => category.id === data.type
+            )?.superAdminNoEdit;
+        }
+
+        return false;
+    }, [noEdit, isSuperAdmin, nodeType, data.type]);
 
     return (
         <motion.div
@@ -230,7 +241,7 @@ export function BaseNode({
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                window.dispatchEvent(new CustomEvent('show-step-info', { detail: { id, executionState,nodeType  } }));
+                                window.dispatchEvent(new CustomEvent('show-step-info', { detail: { id, executionState, nodeType } }));
                             }}
                             className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                             title={t('toolbar.stepInfo')}

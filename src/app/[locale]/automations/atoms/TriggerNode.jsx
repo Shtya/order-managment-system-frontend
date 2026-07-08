@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Position } from '@xyflow/react';
-import { Play, ShoppingCart, RefreshCw, Loader2 } from 'lucide-react';
+import { Play, ShoppingCart, RefreshCw, Loader2, Truck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { BaseNode } from './BaseNode';
 import { useFlowStore } from '@/hook/useFlowStore';
@@ -11,6 +11,8 @@ export function TriggerNode({ id, data, selected }) {
     const TRIGGER_TYPES = useMemo(() => ({
         'order_created': { label: t('triggerTypes.order_created'), icon: ShoppingCart, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
         'order_updated': { label: t('triggerTypes.order_updated'), icon: RefreshCw, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+        'shipment_created': { label: t('triggerTypes.shipment_created'), icon: Truck, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+        'shipment_updated': { label: t('triggerTypes.shipment_updated'), icon: RefreshCw, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
     }), [t]);
 
     const trigger = TRIGGER_TYPES[data.type] || { label: t('nodes.trigger.unknown'), icon: Play, color: 'text-emerald-600', bg: 'bg-emerald-50' };
@@ -50,6 +52,18 @@ export function TriggerNode({ id, data, selected }) {
                             <div className="flex items-center justify-between">
                                 <span className="opacity-50 font-bold">{t('nodes.trigger.onStatusChange')}</span>
                                 <span className="font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tight">{data.config?.status || '—'}</span>
+                            </div>
+                        )}
+                        {data.type === 'shipment_created' && (
+                            <div className="flex items-center justify-between">
+                                <span className="opacity-50 font-bold">{t('config.shippingCompany')}</span>
+                                <span className="font-black text-emerald-700 dark:text-emerald-400">{data.config?.shippingCompany === 'all' ? t('config.allShippingCompanies') : data.config?.shippingCompany || '—'}</span>
+                            </div>
+                        )}
+                        {data.type === 'shipment_updated' && (
+                            <div className="flex items-center justify-between">
+                                <span className="opacity-50 font-bold">{t('nodes.trigger.onStatusChange')}</span>
+                                <span className="font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tight">{data.config?.shipmentStatus || '—'}</span>
                             </div>
                         )}
                     </>

@@ -10751,7 +10751,9 @@
       },
       "triggers": {
         "order_created": "إنشاء طلب جديد",
-        "order_updated": "تحديث حالة الطلب"
+        "order_updated": "تحديث حالة الطلب",
+        "shipment_created": "إنشاء شحنة جديدة",
+        "shipment_updated": "تحديث حالة الشحنة"
       },
       "statuses": {
         "published": "نشط",
@@ -10762,7 +10764,9 @@
       "builder": {
         "triggerTypes": {
           "order_created": "إنشاء طلب جديد",
-          "order_updated": "تحديث حالة الطلب"
+          "order_updated": "تحديث حالة الطلب",
+           "shipment_created": "إنشاء شحنة جديدة",
+          "shipment_updated": "تحديث حالة الشحنة"
         },
         "actionTypes": {
           "send_whatsapp_template": "إرسال قالب واتساب",
@@ -10925,6 +10929,13 @@
           "value": "القيمة",
           "targetStatus": "الحالة المستهدفة",
           "targetStatusDesc": "تفعيل الأتمتة عند تغيير الطلب إلى هذه الحالة",
+          "targetShipmentStatus": "حالة الشحنة المستهدفة",
+          "targetShipmentStatusDesc": "تفعيل الأتمتة عند تغيير الشحنة إلى هذه الحالة",
+          "selectShipmentStatus": "اختر حالة الشحنة...",
+          "shippingCompany": "شركة الشحن",
+          "shippingCompanyDesc": "اختر شركة الشحن التي سيتم مراقبة الشحنات فيها",
+          "selectShippingCompany": "اختر شركة الشحن...",
+          "allShippingCompanies": "جميع شركات الشحن",
           "whatsappAccount": "حساب الواتساب",
           "whatsappAccountDesc": "اختر الحساب الذي سيستقبل الرسائل",
           "selectAccount": "اختر الحساب...",
@@ -11063,7 +11074,17 @@
           "lineTotalLast": "الإجمالي (الأخير)",
           "searchPlaceholder": "بحث في الحقول...",
           "noResults": "لم يتم العثور على نتائج",
+          "rejectReason": "سبب الرفض",
+          "rejectedAt": "تاريخ الرفض",
+          "postponedDate": "تاريخ التأجيل",
+          "returnedAt": "تاريخ الإرجاع",
+          "customerNotes": "ملاحظات العميل",
           "examples": {
+            "rejectReason": "العميل طلب إلغاء الطلب",
+            "rejectedAt": "2026-07-08 14:30",
+            "postponedDate": "2026-07-12",
+            "returnedAt": "2026-07-10 11:15",
+            "customerNotes": "يرجى الاتصال قبل التوصيل بنصف ساعة",
             "orderNumber": "ORD-123",
             "customerName": "أحمد محمد",
             "phoneNumber": "01023459658",

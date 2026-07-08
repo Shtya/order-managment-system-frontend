@@ -67,6 +67,32 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                 break;
             }
 
+            case 'shipment_created':
+                const shippingCompanyId = config.shippingCompanyId;
+                if (!shippingCompanyId) break;
+
+                try {
+                    const res = await api.get("/shipping/integrations/active");
+                    const integrations = Array.isArray(res.data?.integrations) ? res.data.integrations : Array.isArray(res.data) ? res.data : [];
+                    const freshCompany = integrations.find(c => String(c.providerId) === String(shippingCompanyId));
+
+                    if (!freshCompany) throw new Error("Shipping company not found");
+
+                    if (config.shippingCompany === freshCompany.name) break;
+
+                    result.changes.push(t("whatsApp.automations.builder.config.hydration.shippingCompanyUpdated", { fieldName: t("whatsApp.automations.builder.config.hydration.fieldNames.shippingCompany"), oldName: config.shippingCompany, newName: freshCompany.name }));
+                    result.newConfig.shippingCompanyId = freshCompany.providerId;
+                    result.newConfig.shippingCompany = freshCompany.name;
+                } catch (e) {
+                    result.isValid = false;
+                    result.error = t("whatsApp.automations.builder.config.hydration.shippingCompanyNotFound", { company: config.shippingCompany || shippingCompanyId });
+                }
+                break;
+
+            case 'shipment_updated':
+                // Shipment updated just uses a status enum string, no need to fetch anything
+                break;
+
             case 'assign_order_to_employee': {
                 if (!config.employeeId) break;
 

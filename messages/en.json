@@ -10730,7 +10730,9 @@
       },
       "triggers": {
         "order_created": "New Order Created",
-        "order_updated": "Order Status Updated"
+        "order_updated": "Order Status Updated",
+         "shipment_created": "New Shipment Created",
+        "shipment_updated": "Shipment Status Updated"
       },
       "statuses": {
         "published": "Published",
@@ -10741,7 +10743,9 @@
       "builder": {
         "triggerTypes": {
           "order_created": "New Order Created",
-          "order_updated": "Order Status Updated"
+          "order_updated": "Order Status Updated",
+          "shipment_created": "New Shipment Created",
+          "shipment_updated": "Shipment Status Updated"
         },
         "actionTypes": {
           "send_whatsapp_template": "Send WhatsApp Template",
@@ -10904,6 +10908,13 @@
           "value": "Value",
           "targetStatus": "Target Status",
           "targetStatusDesc": "Trigger automation when order changes to this status",
+          "targetShipmentStatus": "Target Shipment Status",
+          "targetShipmentStatusDesc": "Trigger automation when shipment changes to this status",
+          "selectShipmentStatus": "Select shipment status...",
+          "shippingCompany": "Shipping Company",
+          "shippingCompanyDesc": "Choose the shipping company to monitor shipments in",
+          "selectShippingCompany": "Select shipping company...",
+          "allShippingCompanies": "All Shipping Companies",
           "whatsappAccount": "WhatsApp Account",
           "whatsappAccountDesc": "Choose the account that will receive messages",
           "selectAccount": "Select account...",
@@ -11042,7 +11053,17 @@
           "lineTotalLast": "Line Total (Last)",
           "searchPlaceholder": "Search fields...",
           "noResults": "No results found",
+          "rejectReason": "Reject Reason",
+          "rejectedAt": "Rejected At",
+          "postponedDate": "Postponed Date",
+          "returnedAt": "Returned At",
+          "customerNotes": "Customer Notes",
           "examples": {
+            "rejectReason": "Customer requested cancellation",
+            "rejectedAt": "2026-07-08 14:30",
+            "postponedDate": "2026-07-12",
+            "returnedAt": "2026-07-10 11:15",
+            "customerNotes": "Please call 30 minutes before delivery",
             "orderNumber": "ORD-123",
             "customerName": "John Doe",
             "phoneNumber": "+123456789",

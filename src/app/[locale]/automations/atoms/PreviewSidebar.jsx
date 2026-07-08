@@ -26,6 +26,7 @@ import api from '@/utils/api';
 import { cn } from '@/utils/cn';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/context/AuthContext';
+import { BASE_CONFIG } from './automation-config';
 
 
 const CREATE_STORE_OPTION = '__create_preview_store__';
@@ -242,8 +243,7 @@ function resolveStoreFromId({ selectedId, stores, triggerStoreId }) {
 
 function resolveStatusFromId({ selectedId, statuses, triggerType, triggerStatusId }) {
     const preferredId =
-        selectedId ||
-        (triggerType === 'order_updated' ? triggerStatusId : null) ||
+        selectedId || (triggerType === 'order_updated' ? triggerStatusId : null) ||
         statuses.find((s) => s.code === 'new')?.id ||
         statuses[0]?.id;
 
@@ -492,19 +492,22 @@ function buildPresetMockOrders({
     triggerType,
     stores,
     statuses,
-    triggerStoreId,
-    triggerStatusId,
+    triggerConfig,
+    triggerConfigItem,
     adminId
 }) {
-    if (triggerType !== 'order_created' && triggerType !== 'order_updated') {
+    if (!triggerConfigItem?.preview?.requiresOrder) {
         return [];
     }
 
+    // Get the parameters from the trigger config using the preview metadata
+    const mockParams = triggerConfigItem.preview.getMockParamsFromConfig(triggerConfig);
+
     const primaryStore =
         resolveStoreFromId({
-            selectedId: triggerStoreId,
+            selectedId: mockParams.storeId || mockParams.shippingCompanyId,
             stores,
-            triggerStoreId,
+            triggerStoreId: mockParams.storeId,
         });
     // || getFallbackStores()[0];
 
@@ -515,16 +518,19 @@ function buildPresetMockOrders({
             statuses.find((s) => s.code === 'new') ||
             statuses[0];
         //   || getFallbackStatuses().find((s) => s.code === 'new');
-    } else {
+    } else if (triggerType === 'order_updated') {
         triggerAlignedStatus =
             resolveStatusFromId({
-                selectedId: triggerStatusId,
+                selectedId: mockParams.statusId,
                 statuses,
                 triggerType,
-                triggerStatusId,
+                triggerStatusId: mockParams.statusId,
             }) ||
             statuses[0]
         //    || getFallbackStatuses()[0];
+    } else {
+        // For shipment triggers, just pick any status for the mock order
+        triggerAlignedStatus =  statuses?.find((s) => s.code === 'distributed') || statuses[0];
     }
 
     return [
@@ -678,11 +684,22 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
         [nodes],
     );
     const triggerType = triggerNode?.data?.type;
-    const triggerStoreId = triggerNode?.data?.config?.storeId || '';
-    const triggerStatusId = triggerNode?.data?.config?.statusId || '';
+    const triggerConfig = triggerNode?.data?.config || {};
+    
+    const triggerStoreId = triggerConfig?.storeId || '';
+    const triggerStatusId = triggerConfig?.statusId || '';
+    
+    // Find the trigger configuration from BASE_CONFIG
+    const triggerConfigItem = useMemo(() => {
+        for (const category of BASE_CONFIG.TRIGGERS.categories) {
+            const found = category.items.find(item => item.id === triggerType);
+            if (found) return found;
+        }
+        return null;
+    }, [triggerType]);
 
     const relevantTrigger =
-        triggerType === 'order_created' || triggerType === 'order_updated';
+        triggerConfigItem?.preview?.requiresOrder;
 
     const loading = ordersLoading || metaLoading;
 
@@ -717,19 +734,16 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
         try {
             setOrdersLoading(true);
 
-            const params = {
+            let params = {
                 page: 1,
                 per_page: 100,
             };
 
-            if (triggerStoreId) {
-                params.storeId = triggerStoreId;
-            }
-
-            if (triggerType === 'order_created') {
-                params.status = 'new';
-            } else if (triggerType === 'order_updated' && triggerStatusId) {
-                params.statusId = triggerStatusId;
+            if (triggerConfigItem?.preview?.getFiltersFromConfig) {
+                params = {
+                    ...params,
+                    ...triggerConfigItem.preview.getFiltersFromConfig(triggerConfig)
+                };
             }
 
             const res = await api.get('/orders', { params });
@@ -741,7 +755,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
         } finally {
             setOrdersLoading(false);
         }
-    }, [triggerStoreId, triggerStatusId, triggerType]);
+    }, [triggerConfig, triggerConfigItem]);
 
     useEffect(() => {
         if (relevantTrigger) {
@@ -799,8 +813,8 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
             triggerType,
             stores: availableStores,
             statuses: availableStatuses,
-            triggerStoreId,
-            triggerStatusId,
+            triggerConfig,
+            triggerConfigItem,
             adminId
         });
     }, [
@@ -808,8 +822,8 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
         triggerType,
         availableStores,
         availableStatuses,
-        triggerStoreId,
-        triggerStatusId,
+        triggerConfig,
+        triggerConfigItem,
         adminId
     ]);
 

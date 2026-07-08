@@ -1,4 +1,4 @@
-import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle } from 'lucide-react';
+import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -16,15 +16,74 @@ export const BASE_CONFIG = {
                         id: 'order_created',
                         icon: ShoppingCart,
                         type: 'trigger',
+                        entity: 'order',
+                        superAdminNoEdit: true,
                         configComponent: 'OrderCreatedConfig',
-                        className: 'max-w-xl!'
+                        className: 'max-w-xl!',
+                        preview: {
+                            requiresOrder: true,
+                            getFiltersFromConfig: (config) => ({
+                                storeId: config.storeId,
+                                status: 'new'
+                            }),
+                            getMockParamsFromConfig: (config) => ({
+                                storeId: config.storeId
+                            })
+                        }
                     },
                     {
                         id: 'order_updated',
                         icon: RefreshCw,
                         type: 'trigger',
+                        entity: 'order',
                         configComponent: 'OrderStatusUpdatedConfig',
-                        className: 'max-w-xl!'
+                        className: 'max-w-xl!',
+                        preview: {
+                            requiresOrder: true,
+                            getFiltersFromConfig: (config) => ({
+                                storeId: config.storeId,
+                                statusId: config.statusId
+                            }),
+                            getMockParamsFromConfig: (config) => ({
+                                storeId: config.storeId,
+                                statusId: config.statusId
+                            })
+                        }
+                    },
+                    {
+                        id: 'shipment_created',
+                        icon: PackagePlus, // or Package
+                        type: 'trigger',
+                        entity: 'order',
+                        superAdminNoEdit: true,
+                        configComponent: 'ShipmentCreatedConfig',
+                        className: 'max-w-xl!',
+                        preview: {
+                            requiresOrder: true,
+                            getFiltersFromConfig: (config) => ({
+                                shippingCompanyId: config.shippingCompanyId
+                            }),
+                            getMockParamsFromConfig: (config) => ({
+                                shippingCompanyId: config.shippingCompanyId
+                            })
+                        }
+                    },
+                    {
+                        id: 'shipment_updated',
+                        icon: Truck, // or RefreshCw
+                        type: 'trigger',
+                        entity: 'order',
+                        configComponent: 'ShipmentStatusUpdatedConfig',
+                        className: 'max-w-xl!',
+                        preview: {
+                            requiresOrder: true,
+                            getFiltersFromConfig: (config) => ({
+                                // For shipment_updated, we can filter by shipment status, but since we're showing orders, we can just get any orders with shipments
+                            }),
+                            getMockParamsFromConfig: (config) => ({
+                                shipmentStatus: config.shipmentStatus
+                            })
+                        }
                     }
                 ]
             }

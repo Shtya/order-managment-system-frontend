@@ -473,12 +473,12 @@ export default function SyncFailuresPage() {
       icon: FileDown,
       tone: "success"
     },
-    {
-      name: t("stats.bundle_sync"),
-      value: stats.bundle_sync,
-      icon: Package,
-      tone: "info"
-    }
+    // {
+    //   name: t("stats.bundle_sync"),
+    //   value: stats.bundle_sync,
+    //   icon: Package,
+    //   tone: "info"
+    // }
   ], [t, stats]);
 
   return (
@@ -537,7 +537,7 @@ export default function SyncFailuresPage() {
                   <SelectItem value="create">{t("filters.create")}</SelectItem>
                   <SelectItem value="update">{t("filters.update")}</SelectItem>
                   <SelectItem value="pull">{t("filters.pull")}</SelectItem>
-                  <SelectItem value="bundle_sync">{t("filters.bundle_sync")}</SelectItem>
+                  {/* <SelectItem value="bundle_sync">{t("filters.bundle_sync")}</SelectItem> */}
                 </SelectContent>
               </Select>
             </FilterField>

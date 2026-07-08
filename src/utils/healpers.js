@@ -31,3 +31,5 @@ export const dollorSign = "$"
 };
 
 export const DEFAULT_FONT_FAMILY = "Cairo";
+
+export const PLATFORM_CURRENCY = "EGP"

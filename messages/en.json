@@ -567,8 +567,16 @@
       "isActive": "Active?",
       "purchaseDate": "Purchase date",
       "actions": "Actions",
-      "status": "Status"
+      "status": "Status",
+      "availability": "Availability"
     },
+     "availability": {
+    "ready": "Ready",
+    "comingSoon": "Coming Soon",
+    "free": "Free for a limited time",
+    "availableAt": "Available on {date}",
+    "freeUntil": "Free until {date}"
+  },
     "status": {
       "active": "Active",
       "notSubscribed": "Not subscribed"
@@ -592,7 +600,7 @@
       "editTitle": "Edit feature details",
       "name": "Name",
       "price": "Price",
-      "isActive": "Enable feature",
+      "isActive": "Show feature",
       "save": "Save changes",
       "cancel": "Cancel"
     },

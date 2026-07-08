@@ -12,6 +12,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 
@@ -26,7 +33,7 @@ export default function FeaturesTab() {
     // Modal State
     const [selectedFeature, setSelectedFeature] = useState(null);
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const [editForm, setEditForm] = useState({ name: "", price: 0, isActive: false });
+    const [editForm, setEditForm] = useState({ name: "", price: 0, isActive: false, availability: "" });
     const [saving, setSaving] = useState(false);
 
     const fetchFeatures = async () => {
@@ -54,7 +61,12 @@ export default function FeaturesTab() {
 
     const handleEditClick = (feature) => {
         setSelectedFeature(feature);
-        setEditForm({ name: feature.name, price: feature.price, isActive: feature.isActive });
+        setEditForm({ 
+            name: feature.name, 
+            price: feature.price, 
+            isActive: feature.isActive, 
+            availability: feature.availability || "" 
+        });
         setIsEditOpen(true);
     };
 
@@ -64,7 +76,8 @@ export default function FeaturesTab() {
             await api.patch(`/extra-features/features/${selectedFeature.id}`, {
                 name: editForm.name,
                 price: Number(editForm.price),
-                isActive: editForm.isActive
+                isActive: editForm.isActive,
+                availability: editForm.availability
             });
             toast.success(tf("messages.updateSuccess"));
             setIsEditOpen(false);
@@ -81,7 +94,29 @@ export default function FeaturesTab() {
         {
             key: "name",
             header: tf("columns.featureName"),
-            cell: (row) => <span className="font-semibold text-primary">{row.name}</span>,
+            cell: (row) => (
+                <div className="flex items-center gap-2">
+                    <span className="font-semibold text-primary">{row.name}</span>
+                    {(() => {
+                        switch (row.availability) {
+                            case "coming_soon":
+                                return (
+                                    <Badge className="bg-violet-50 text-violet-700 border-violet-200">
+                                        {tf("availability.comingSoon")}
+                                    </Badge>
+                                );
+                            case "free_trial":
+                                return (
+                                    <Badge className="bg-amber-50 text-amber-700 border-amber-200">
+                                        {tf("availability.free")}
+                                    </Badge>
+                                );
+                            default:
+                                return null;
+                        }
+                    })()}
+                </div>
+            ),
         },
         {
             key: "type",
@@ -174,12 +209,38 @@ export default function FeaturesTab() {
                                         <Input
                                             type="number"
                                             min="0"
-
                                             value={editForm.price}
                                             onChange={(e) => setEditForm((p) => ({ ...p, price: e.target.value }))}
                                             className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1 font-en"
                                             placeholder="0.00"
                                         />
+                                    </div>
+
+                                    {/* Availability Select */}
+                                    <div className="md:col-span-2">
+                                        <Label className="text-xs text-gray-500 dark:text-slate-400">
+                                            {tf("columns.availability")}
+                                        </Label>
+                                        <Select
+                                            value={editForm.availability}
+                                            onValueChange={(value) => setEditForm((p) => ({ ...p, availability: value }))}
+                                            disabled={saving}
+                                        >
+                                            <SelectTrigger className="rounded-full !w-full !h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1">
+                                                <SelectValue placeholder={tf("columns.availability")} />
+                                            </SelectTrigger>
+                                            <SelectContent className="max-h-72">
+                                                <SelectItem value="ready">
+                                                    {tf("availability.ready")}
+                                                </SelectItem>
+                                                <SelectItem value="coming_soon">
+                                                    {tf("availability.comingSoon")}
+                                                </SelectItem>
+                                                <SelectItem value="free_trial">
+                                                    {tf("availability.free")}
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
 

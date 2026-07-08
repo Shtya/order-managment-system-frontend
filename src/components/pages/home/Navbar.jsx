@@ -396,7 +396,7 @@ export default function Navbar({ t, locale, switchLocale, user }) {
     { key: "home", id: "home" },
     { key: "services", id: "services" },
     { key: "about", id: "how-it-works" },
-    { key: "pricing", id: "pricing" },
+    // { key: "pricing", id: "pricing" },
     { key: "contact", id: "contact" },
   ];
   const solidBg = scrolled || mobileOpen;

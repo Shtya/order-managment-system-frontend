@@ -23,6 +23,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { PLATFORM_CURRENCY } from "@/utils/healpers";
 
 export default function PurchasedFeaturesTab() {
     const tf = useTranslations("extraFeatures");
@@ -84,9 +85,29 @@ export default function PurchasedFeaturesTab() {
             key: "name",
             header: tf("columns.featureName").trim(),
             cell: (row) => (
-                <div className="flex flex-col">
-                    <span className="font-bold text-slate-900 dark:text-slate-100">{row.name.trim()}</span>
-                    <span className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">{row.type}</span>
+                <div className="flex gap-2 items-center">
+                    <div className="flex flex-col">
+                        <span className="font-bold text-slate-900 dark:text-slate-100">{row.name.trim()}</span>
+                        <span className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">{row.type}</span>
+                    </div>
+                    {(() => {
+                        switch (row.availability) {
+                            case "coming_soon":
+                                return (
+                                    <Badge className="bg-violet-50 text-violet-700 border-violet-200">
+                                        {tf("availability.comingSoon")}
+                                    </Badge>
+                                );
+                            case "free_trial":
+                                return (
+                                    <Badge className="bg-amber-50 text-amber-700 border-amber-200">
+                                        {tf("availability.free")}
+                                    </Badge>
+                                );
+                            default:
+                                return null;
+                        }
+                    })()}
                 </div>
             ),
         },
@@ -96,7 +117,7 @@ export default function PurchasedFeaturesTab() {
             cell: (row) => (
                 <div className="flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400">
                     <CreditCard size={12} />
-                    {formatCurrency(row.price)}
+                    {row.price} {PLATFORM_CURRENCY}
                 </div>
             ),
         },
@@ -148,7 +169,7 @@ export default function PurchasedFeaturesTab() {
                                     ),
                                     tooltip: tf("tooltips.purchaseNow").trim(),
                                     onClick: (r) => handlePurchase(r.id),
-                                    disabled: purchasingId === row.id,
+                                    disabled: purchasingId === row.id || row.price <= 0 || row.availability !== "ready",
                                     variant: "primary",
                                 },
                             ]}

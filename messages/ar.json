@@ -564,10 +564,18 @@
       "featureType": "نوع الميزة",
       "paidPrice": "السعر المدفوع",
       "price": "السعر",
-      "isActive": "نشط؟",
+      "isActive": "نشط",
       "purchaseDate": "تاريخ الشراء",
       "actions": "إجراءات",
-      "status": "الحالة"
+      "status": "الحالة",
+      "availability": "التوفر"
+    },
+    "availability": {
+      "ready": "متاح",
+      "comingSoon": "قريبًا",
+      "free": "مجاني لفترة محدودة",
+      "availableAt": "متاح اعتبارًا من {date}",
+      "freeUntil": "مجاني حتى {date}"
     },
     "status": {
       "active": "نشط",
@@ -592,7 +600,7 @@
       "editTitle": "تعديل بيانات الميزة",
       "name": "الاسم",
       "price": "السعر",
-      "isActive": "تفعيل الميزة",
+      "isActive": "اظهار الميزه",
       "save": "حفظ التغييرات",
       "cancel": "إلغاء"
     },
@@ -10765,7 +10773,7 @@
         "triggerTypes": {
           "order_created": "إنشاء طلب جديد",
           "order_updated": "تحديث حالة الطلب",
-           "shipment_created": "إنشاء شحنة جديدة",
+          "shipment_created": "إنشاء شحنة جديدة",
           "shipment_updated": "تحديث حالة الشحنة"
         },
         "actionTypes": {

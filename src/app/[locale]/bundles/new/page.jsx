@@ -179,10 +179,11 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 	}, []);
 
 	const filteredStores = React.useMemo(() => {
-		return stores.filter((s) => {
-			const provider = storeProviders.find((p) => p.code === s.provider);
-			return provider?.supportBundle;
-		});
+		// return stores.filter((s) => {
+		// 	const provider = storeProviders.find((p) => p.code === s.provider);
+		// 	return provider?.supportBundle;
+		// });
+		return stores;
 	}, [stores, storeProviders]);
 
 	useEffect(() => {

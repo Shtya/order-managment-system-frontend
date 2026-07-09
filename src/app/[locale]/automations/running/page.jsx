@@ -296,11 +296,11 @@ function RunningAutomationsContent() {
     return unsubscribe;
   }, [subscribe, setCurrentRun]);
 
-  const handleRestart = async () => {
+  const handleRestart = async (useLatestVersion = false) => {
     if (!selectedRun) return;
     const toastId = toast.loading(t("restarting"));
     try {
-      await api.post(`/automation/runs/${selectedRun?.id}/retry`);
+      await api.post(`/automation/runs/${selectedRun?.id}/retry`, { useLatestVersion });
       toast.success(t("restartSuccess"), { id: toastId });
       loadRunDetail(selectedRun?.id);
     } catch (error) {
@@ -366,20 +366,31 @@ function RunningAutomationsContent() {
               {hasPermission("automation.update") && (
                 <>
                   <button
-                    onClick={() => router.push(`/automations/edit/${selectedRun?.automationFlowId}?${version ? `v=${version}` : ''}`)}
+                    // onClick={() => router.push(`/automations/edit/${selectedRun?.automationFlowId}?${version ? `v=${version}` : ''}`)}
+                    onClick={() => router.push(`/automations/edit/${selectedRun?.automationFlowId}`)}
                     className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
                   >
                     <Pencil size={14} />
                     <span className="truncate">{t("editVersion")}</span>
                   </button>
                   <button
-                    onClick={handleRestart}
+                    onClick={() => handleRestart(false)}
                     disabled={runStatus !== "failed"}
                     className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
                   >
                     <RefreshCw size={14} />
                     <span className="truncate">{t("retryNow")}</span>
                   </button>
+                  {selectedRun?.version?.versionString !== selectedRun?.automationFlow?.latestVersion?.versionString && (
+                    <button
+                      onClick={() => handleRestart(true)}
+                      disabled={runStatus !== "failed"}
+                      className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                    >
+                      <RefreshCw size={14} />
+                      <span className="truncate">{t("retryNowLatestVersion") || "Retry Now (Latest)"}</span>
+                    </button>
+                  )}
                 </>
               )}
             </>

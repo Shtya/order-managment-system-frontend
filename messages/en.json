@@ -570,13 +570,13 @@
       "status": "Status",
       "availability": "Availability"
     },
-     "availability": {
-    "ready": "Ready",
-    "comingSoon": "Coming Soon",
-    "free": "Free for a limited time",
-    "availableAt": "Available on {date}",
-    "freeUntil": "Free until {date}"
-  },
+    "availability": {
+      "ready": "Ready",
+      "comingSoon": "Coming Soon",
+      "free": "Free for a limited time",
+      "availableAt": "Available on {date}",
+      "freeUntil": "Free until {date}"
+    },
     "status": {
       "active": "Active",
       "notSubscribed": "Not subscribed"
@@ -9087,8 +9087,9 @@
         "description": "Choose how to handle version updates for active or failed runs",
         "options": {
           "latest_major": {
-            "label": "Auto-update to latest major version",
-            "description": "Automatically migrates the system from the current version to the latest active version (e.g., from 2.0 to 5.0) to apply new structural changes to failed workflows."
+            "label": "Auto-update to latest major",
+            "description": "The system automatically transfers all failed operations from their current version to the latest version and runs them all.",
+            "warning": "Warning: This will reset automation execution from the start and delete all previous progress for the runs."
           },
           "latest_patch": {
             "label": "Auto-update to patch versions only (Recommended)",
@@ -10739,7 +10740,7 @@
       "triggers": {
         "order_created": "New Order Created",
         "order_updated": "Order Status Updated",
-         "shipment_created": "New Shipment Created",
+        "shipment_created": "New Shipment Created",
         "shipment_updated": "Shipment Status Updated"
       },
       "statuses": {
@@ -11205,8 +11206,8 @@
       "title": "Running Automations",
       "subtitle": "Monitor ongoing operations",
       "reorder": "Reorder",
-      "editVersion": "Edit Version",
-      "retryNow": "Retry Now",
+      "editVersion": "Edit Automations",
+      "retryNow": "Retry",
       "restarting": "Restarting...",
       "restartSuccess": "Restart request sent successfully",
       "restartFailed": "Failed to request restart",
@@ -11264,7 +11265,8 @@
       },
       "refreshed": "Data has been updated",
       "errorOccurred": "Sorry, something went wrong",
-      "retry": "Retry"
+      "retry": "Retry",
+      "retryNowLatestVersion": "Retry from the latest version"
     }
   },
   "systemErrors": {

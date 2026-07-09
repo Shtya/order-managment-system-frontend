@@ -17,7 +17,7 @@ import CustomEdge from "../../atoms/CustomEdge";
 import { ConfirmDeleteDialog } from "../../atoms/ConfirmDeleteDialog";
 import { ReactFlow, Background, Controls, MiniMap, Panel } from "@xyflow/react";
 import { useRef, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -41,6 +41,8 @@ const getMiniMapNodeColor = (node) => {
 
 function BuilderCanvas({ version }) {
   const t = useTranslations("whatsApp.automations.builder");
+  const locale = useLocale();
+  const isArabic = locale === 'ar';
   const reactFlowWrapper = useRef(null);
   const nodes = useFlowStore((s) => s.nodes);
   const edges = useFlowStore((s) => s.edges);
@@ -75,13 +77,13 @@ function BuilderCanvas({ version }) {
         <Background color="#94a3b8" variant="dots" gap={20} size={1} />
         <Controls position="bottom-right" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl shadow-lg" />
         <MiniMap nodeColor={getMiniMapNodeColor} className="!rounded-lg !border-slate-200 dark:!border-slate-800 !shadow-lg" nodeStrokeWidth={3} zoomable pannable />
-        <Panel position="top-end" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
+       {version && <Panel position={isArabic ? "top-right" : "top-left"} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             {
               version ? t("toolbar.viewAutomationVersion", { version }) : t("toolbar.viewAutomationLatest")
             }
           </span>
-        </Panel>
+        </Panel>}
       </ReactFlow>
 
       <ConfirmDeleteDialog />

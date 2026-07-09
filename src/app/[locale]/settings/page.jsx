@@ -661,8 +661,8 @@ export function AutomationsTab({ hideAccount = false, onSave }) {
   } = useOrdersSettings();
 
   const migrationOptions = [
-    { id: "latest_patch", key: "latest_patch" },
-    { id: "latest_major", key: "latest_major" },
+    // { id: "latest_patch", key: "latest_patch" },
+    { id: "latest_major", key: "latest_major", hasWarning: true },
     { id: "manual", key: "manual" },
   ];
 
@@ -714,6 +714,11 @@ export function AutomationsTab({ hideAccount = false, onSave }) {
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {t(`migrationStrategy.options.${opt.key}.description`)}
                   </p>
+                  {opt.hasWarning && (
+                    <p className="text-xs text-rose-600 dark:text-rose-400 leading-relaxed font-medium">
+                      {t(`migrationStrategy.options.${opt.key}.warning`)}
+                    </p>
+                  )}
                 </div>
                 <RadioGroupItem value={opt.id} id={opt.id} className="mt-1" />
               </Label>

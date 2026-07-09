@@ -195,7 +195,8 @@ export default function EditAutomationPage() {
     const fetchAutomation = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/automation/${automationId}${version ? `?version=${version}` : ''}`);
+        // const res = await api.get(`/automation/${automationId}${version ? `?version=${version}` : ''}`);
+        const res = await api.get(`/automation/${automationId}`);
         const data = res.data;
         const versionToUse = data.versions?.[0];
 

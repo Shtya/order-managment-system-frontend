@@ -8787,6 +8787,15 @@
         "label": "إعدادات التشغيل التلقائي",
         "description": "تهيئة كيفية تعامل التشغيل التلقائي"
       },
+      "language": {
+        "label": "اللغة",
+        "description": "تعيين اللغة الافتراضية للإشعارات والسجلات والرسائل البريدية"
+      },
+      "languageTab": {
+        "languageSettings": "إعدادات اللغة",
+        "defaultLanguageDescription": "تُستخدم هذه اللغة في الإشعارات والسجلات والرسائل البريدية",
+        "defaultLanguageLabel": "اللغة الافتراضية"
+      },
       "whatsappTab": {
         "accountSettings": "إعدادات الحساب",
         "defaultAccountDescription": "تحديد الرقم الافتراضي لعمليات الإرسال",

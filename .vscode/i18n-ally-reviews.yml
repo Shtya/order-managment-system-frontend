@@ -107,6 +107,13 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-05-07T16:58:43.171Z'
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: 91Flkowkythy6pYfFh631
+            type: approve
+            comment: ''
+            time: '2026-07-09T16:22:18.332Z'
   wallet.controlModal.amountPlaceholder:
     locales:
       ar:

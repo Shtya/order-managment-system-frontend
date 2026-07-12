@@ -460,11 +460,17 @@ export default function SettingsPage() {
       description: t("tabs.whatsapp.description")
     },
     {
-      id: "automations",
-      label: t("tabs.automations.label"),
-      icon: <Zap size={18} />,
-      description: t("tabs.automations.description")
-    },
+        id: "automations",
+        label: t("tabs.automations.label"),
+        icon: <Zap size={18} />,
+        description: t("tabs.automations.description")
+      },
+      {
+        id: "language",
+        label: t("tabs.language.label"),
+        icon: <Globe size={18} />,
+        description: t("tabs.language.description")
+      },
   ];
 
   const content = {
@@ -476,6 +482,7 @@ export default function SettingsPage() {
     notifications: <NotificationsTab />,
     whatsapp: <WhatsAppTab />,
     automations: <AutomationsTab />,
+    language: <LanguageTab />,
   };
 
   return (
@@ -643,6 +650,56 @@ export function WhatsAppTab({ hideAccount = false, onSave }) {
           value={tempSettings?.defaultWhatsAppAccountId}
           onChange={(val) => patch({ defaultWhatsAppAccountId: val })}
         />
+      </div>
+
+      {!hideAccount && <SaveFooter onSave={() => handleSave(onSave)} saving={saving} label={tSettings("common.saveChanges")} />}
+    </motion.div>
+  );
+}
+
+export function LanguageTab({ hideAccount = false, onSave }) {
+  const tSettings = useTranslations("settings");
+  const t = useTranslations("settings.tabs.languageTab");
+  const {
+    tempSettings,
+    patch,
+    saving,
+    handleSave,
+  } = useOrdersSettings();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className={cn("space-y-6")}
+    >
+      {/* 1. Language Selection */}
+      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <Globe size={20} />
+          </div>
+          <div>
+            <h3 className="text-base font-bold">{t("languageSettings")}</h3>
+            <p className="text-xs text-slate-400">{t("defaultLanguageDescription")}</p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-foreground">{t("defaultLanguageLabel")}</Label>
+          <Select
+            value={tempSettings?.defaultLang}
+            onValueChange={(val) => patch({ defaultLang: val })}
+          >
+            <SelectTrigger className="h-[52px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="ar">العربية</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {!hideAccount && <SaveFooter onSave={() => handleSave(onSave)} saving={saving} label={tSettings("common.saveChanges")} />}

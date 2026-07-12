@@ -72,15 +72,15 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
       await login(email, password);
       toast.success(t('signin.success'), { id: tid });
     } catch (error) {
-      const status = error?.response?.status || error?.status;
+      const status = error?.response?.status || error?.status ||error?.statusCode;
 
-      if (status === 401) {
-        toast.error(t("signin.session_expired"), { id: tid });
-      } else if (status === 403) {
-        toast.error(t("signin.no_permission"), { id: tid });
-      } else {
-        toast.error(t("signin.invalid_credentials"), { id: tid });
-      }
+      toast.error(t("signin.invalid_credentials"), { id: tid });
+      // if (status === 401) {
+      //   toast.error(t("signin.session_expired"), { id: tid });
+      // } else if (status === 403) {
+      //   toast.error(t("signin.no_permission"), { id: tid });
+      // } else {
+      // }
 
       setTimeout(() => {
         router.push("/auth?mode=signin");

@@ -34,7 +34,7 @@ const defaultSettings =  {
     notifyAdmin: false,
 
     notificationSettings: DEFAULT_NOTIFICATION_SETTINGS,
-
+    defaultLang: "en",
     notifyLowStock: false,
     notifyMarketing: false,
     stockDeductionStrategy: "on_shipment",
@@ -66,6 +66,7 @@ const buildSettingsObject = (data, prevSettings) => ({
   assignmentDelay: data.assignmentDelay ?? prevSettings.assignmentDelay,
   assignmentDelayUnit: data.assignmentDelayUnit ?? prevSettings.assignmentDelayUnit,
   enabled: data.enabled ?? prevSettings.enabled,
+  defaultLang: data.defaultLang ?? prevSettings.defaultLang,
   maxRetries: data.maxRetries ?? prevSettings.maxRetries,
   retryInterval: data.retryInterval ?? prevSettings.retryInterval,
   autoMoveStatus: data.autoMoveStatus ?? prevSettings.autoMoveStatus,
@@ -154,7 +155,7 @@ export function OrdersSettingsProvider({ children }) {
     setLoading(true);
     try {
       const [settingsRes] = await Promise.all([
-        api.get("/orders/retry-settings"),
+        api.get("/client-settings"),
       ]);
       const data = settingsRes.data;
 
@@ -246,7 +247,7 @@ export function OrdersSettingsProvider({ children }) {
         }
       }
 
-      const res = await api.post("/orders/retry-settings", payload);
+      const res = await api.post("/client-settings", payload);
       toast.success(t("messages.settingsSaved"));
 
       if (typeof onSuccess === "function")
@@ -271,7 +272,7 @@ export function OrdersSettingsProvider({ children }) {
       // Update tempSettings with the new value first
       setTempSettings((prev) => ({ ...prev, ...settingToSave }));
       
-      const res = await api.post("/orders/retry-settings", settingToSave);
+      const res = await api.post("/client-settings", settingToSave);
 
       if (res.data) {
         const updatedSettings = buildSettingsObject(res.data, tempSettings);

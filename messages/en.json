@@ -8802,6 +8802,15 @@
         "label": "Automation Settings",
         "description": "Configure how automation behaves"
       },
+      "language": {
+        "label": "Language",
+        "description": "Set default language for notifications, logs, and emails"
+      },
+      "languageTab": {
+        "languageSettings": "Language Settings",
+        "defaultLanguageDescription": "This language is used for notifications, logs, and emails",
+        "defaultLanguageLabel": "Default Language"
+      },
       "whatsappTab": {
         "accountSettings": "Account Settings",
         "defaultAccountDescription": "Select the default number for sending operations",

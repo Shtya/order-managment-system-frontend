@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
-import api from "@/utils/api";
+import api, { getLang } from "@/utils/api";
 
 const AuthContext = createContext();
 
@@ -105,9 +105,10 @@ export function AuthProvider({ children }) {
     }, [getDashboardRoute]);
 
     const login = useCallback(async (email, password) => {
+        const lang = getLang();
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'x-lang': lang },
             body: JSON.stringify({ email, password }),
         });
 

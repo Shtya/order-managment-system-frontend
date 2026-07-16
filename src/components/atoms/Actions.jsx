@@ -263,7 +263,7 @@ export function ActionButton({
 			{React.cloneElement(icon, { size: iconSz })}
 		</motion.button>
 	);
-	console.log(example)
+	
 	const btn = description ? (
 		<TutorialSpotlight 
 			title={tooltip} 

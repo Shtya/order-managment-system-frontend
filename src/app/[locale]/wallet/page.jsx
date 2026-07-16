@@ -19,9 +19,6 @@ const PaymentPurposeEnum = {
   WALLET_WITHDRAWAL: "wallet_withdrawal",
 };
 
-// ─── Deposit Modal ────────────────────────────────────────────────────────────
-
-
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const WalletIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -234,9 +231,19 @@ function DepositModal({ onClose, onDeposit, t, currency, rate: usdToEgp }) {
   async function submit(e) {
     e.preventDefault();
     const amt = parseFloat(amount);
-
+    
     if (!amount || isNaN(amt) || amt <= 0) {
       setErr(t("validation.validAmount"));
+      return;
+    }
+
+    if (amt < 50) {
+      setErr(t("errors.minAmountRequired", {amount: 50}));
+      return;
+    }
+    
+    if (!Number.isInteger(Number(amt))) {
+      setErr(t("errors.wholeNumberRequired"));
       return;
     }
 
@@ -271,9 +278,7 @@ function DepositModal({ onClose, onDeposit, t, currency, rate: usdToEgp }) {
         {/* Header */}
         <div className="relative overflow-hidden px-6 py-5 bg-gradient-to-br from-primary/10 to-primary/5 border-b border-gray-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w
-            
-            -12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
               <Plus size={24} className="text-white" />
             </div>
             <div className="flex-1">
@@ -302,8 +307,8 @@ function DepositModal({ onClose, onDeposit, t, currency, rate: usdToEgp }) {
             <div className="relative">
               <input
                 type="number"
-                min="0"
-                step="0.01"
+                min="50"
+                step="1"
                 value={amount}
                 onChange={(e) => {
                   setAmount(e.target.value);

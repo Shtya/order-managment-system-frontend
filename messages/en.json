@@ -8421,7 +8421,9 @@
       "depositFailed": "Failed to start deposit",
       "noCheckoutUrl": "No payment link was provided",
       "withdrawFailed": "Withdrawal failed",
-      "adjustBalanceFailed": "Error adjusting balance"
+      "adjustBalanceFailed": "Error adjusting balance",
+      "minAmountRequired": "Minimum amount is {amount}",
+      "wholeNumberRequired": "Amount must be a whole number without decimals"
     },
     "messages": {
       "depositSuccess": "Deposit started successfully",

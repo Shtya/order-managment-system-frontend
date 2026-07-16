@@ -8406,7 +8406,9 @@
       "depositFailed": "فشل في بدء عملية الشحن",
       "noCheckoutUrl": "لم يتم توفير رابط الدفع",
       "withdrawFailed": "فشل في عملية السحب",
-      "adjustBalanceFailed": "فشل تحديث الرصيد"
+      "adjustBalanceFailed": "فشل تحديث الرصيد",
+      "minAmountRequired": "الحد الأدنى للمبلغ هو {amount}",
+      "wholeNumberRequired": "يجب أن يكون المبلغ رقماً صحيحاً بدون أرقام عشرية"
     },
     "messages": {
       "depositSuccess": "تم بدء عملية الشحن بنجاح",

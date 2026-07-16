@@ -121,6 +121,7 @@ function buildExportQuery({ search, filters }) {
 export default function WhatsAppTemplatesPage() {
   const router = useRouter();
   const tCommon = useTranslations("common");
+  const tTutorial = useTranslations("tutorial.whatsapp.templates");
   const t = useTranslations("whatsApp.templates");
 
   const [search, setSearch] = useState("");
@@ -159,14 +160,14 @@ export default function WhatsAppTemplatesPage() {
 
   const statsCards = useMemo(
     () => [
-      { name: t("stats.total"), value: stats.total, icon: FileText, color: "#8b5cf6" },
-      { name: t("stats.approved"), value: stats.approved, icon: CheckCircle2, color: "#10b981" },
-      { name: t("stats.rejected"), value: stats.rejected, icon: XCircle, color: "#ef4444" },
-      { name: t("stats.lowQuality"), value: stats.lowQuality, icon: AlertTriangle, color: "#ef4444" },
-      { name: t("stats.usedLast48"), value: stats.usedLast48h, icon: History, color: "#3b82f6" },
-      { name: t("stats.errorsLast48"), value: stats.failedLast48h, icon: AlertCircle, color: "#f59e0b" },
+      { name: t("stats.total"), value: stats.total, icon: FileText, color: "#8b5cf6", description: tTutorial("stats.total.description"), example: tTutorial("stats.total.example") },
+      { name: t("stats.approved"), value: stats.approved, icon: CheckCircle2, color: "#10b981", description: tTutorial("stats.approved.description"), example: tTutorial("stats.approved.example") },
+      { name: t("stats.rejected"), value: stats.rejected, icon: XCircle, color: "#ef4444", description: tTutorial("stats.rejected.description"), example: tTutorial("stats.rejected.example") },
+      { name: t("stats.lowQuality"), value: stats.lowQuality, icon: AlertTriangle, color: "#ef4444", description: tTutorial("stats.lowQuality.description"), example: tTutorial("stats.lowQuality.example") },
+      { name: t("stats.usedLast48"), value: stats.usedLast48h, icon: History, color: "#3b82f6", description: tTutorial("stats.usedLast48.description"), example: tTutorial("stats.usedLast48.example") },
+      { name: t("stats.errorsLast48"), value: stats.failedLast48h, icon: AlertCircle, color: "#f59e0b", description: tTutorial("stats.errorsLast48.description"), example: tTutorial("stats.errorsLast48.example") },
     ],
-    [t, stats]
+    [t, tTutorial, stats]
   );
 
   const fetchAccounts = useCallback(async () => {

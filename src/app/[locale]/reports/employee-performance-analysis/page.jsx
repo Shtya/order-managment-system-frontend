@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -81,6 +82,7 @@ export const EMPLOYEE_STATS = [
 
 export function EmployeeStatisticsPage() {
     const t = useTranslations("orders");
+    const tTutorial = useTranslations("tutorial.employeePerformance");
     const router = useRouter();
     const { formatCurrency } = usePlatformSettings();
 
@@ -238,6 +240,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "employeeName",
                 header: t("employeeStats.columns.employeeName"),
+                description: tTutorial("columns.employeeName.description"),
+                example: tTutorial("columns.employeeName.example"),
                 cell: (row) => (
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
@@ -256,6 +260,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "activeAssignments",
                 header: t("employeeStats.columns.activeAssignments"),
+                description: tTutorial("columns.activeAssignments.description"),
+                example: tTutorial("columns.activeAssignments.example"),
                 cell: (row) => (
                     <span className="font-bold text-sm tabular-nums text-primary">
                         {row.activeAssignments ?? 0}
@@ -265,6 +271,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "receivedOrders",
                 header: t("employeeStats.columns.receivedOrders"),
+                description: tTutorial("columns.receivedOrders.description"),
+                example: tTutorial("columns.receivedOrders.example"),
                 cell: (row) => (
                     <span className="font-bold text-sm tabular-nums">
                         {row.totalAssigned} {/* تحديث: totalAssigned */}
@@ -274,6 +282,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "confirmedOrders",
                 header: t("employeeStats.columns.confirmedOrders"),
+                description: tTutorial("columns.confirmedOrders.description"),
+                example: tTutorial("columns.confirmedOrders.example"),
                 cell: (row) => (
                     <span className="font-bold text-sm tabular-nums">
                         {row.confirmed?.count ?? 0} {/* تحديث: confirmed.count */}
@@ -283,6 +293,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "confirmationRate",
                 header: t("employeeStats.columns.confirmationRate"),
+                description: tTutorial("columns.confirmationRate.description"),
+                example: tTutorial("columns.confirmationRate.example"),
                 cell: (row) => {
                     const rate = row.confirmed?.percent;
                     return (
@@ -300,6 +312,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "shippedOrders",
                 header: t("employeeStats.columns.shippedOrders"),
+                description: tTutorial("columns.shippedOrders.description"),
+                example: tTutorial("columns.shippedOrders.example"),
                 cell: (row) => (
                     <span className="font-bold text-sm tabular-nums">
                         {row.shipped?.count ?? 0} {/* تحديث: shipped.count بدلاً من upsell */}
@@ -309,6 +323,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "shippedRate",
                 header: t("employeeStats.columns.shippedRate"),
+                description: tTutorial("columns.shippedRate.description"),
+                example: tTutorial("columns.shippedRate.example"),
                 cell: (row) => {
                     const rate = row.shipped?.percent ?? 0; // تحديث: shipped.percent
                     return (
@@ -321,6 +337,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "deliveredOrders",
                 header: t("employeeStats.columns.deliveredOrders"),
+                description: tTutorial("columns.deliveredOrders.description"),
+                example: tTutorial("columns.deliveredOrders.example"),
                 cell: (row) => (
                     <span className="font-bold text-sm tabular-nums">
                         {row.delivered?.count ?? 0} {/* تحديث: delivered.count */}
@@ -330,6 +348,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "deliveryRate",
                 header: t("employeeStats.columns.deliveryRate"),
+                description: tTutorial("columns.deliveryRate.description"),
+                example: tTutorial("columns.deliveryRate.example"),
                 cell: (row) => {
                     const rate = row.delivered?.percent ?? 0; // تحديث: delivered.percent
                     return (
@@ -347,6 +367,8 @@ export function EmployeeStatisticsPage() {
             {
                 key: "preparationFailedCount",
                 header: t("employeeStats.columns.preparationFailedCount"),
+                description: tTutorial("columns.preparationFailedCount.description"),
+                example: tTutorial("columns.preparationFailedCount.example"),
                 cell: (row) => (
                     <span className="font-bold text-sm tabular-nums">
                         {row.preparationFailedCount ?? 0}
@@ -363,7 +385,7 @@ export function EmployeeStatisticsPage() {
             //     ),
             // },
         ],
-        [t]
+        [t, tTutorial]
     );
 
     /* ── Render ── */
@@ -387,6 +409,8 @@ export function EmployeeStatisticsPage() {
                 stats={EMPLOYEE_STATS.map((s) => ({
                     id: s.id,
                     name: t(s.nameKey),
+                    description: tTutorial(`stats.${s.code}.description`),
+                    example: tTutorial(`stats.${s.code}.example`),
                     value: s.isPercent ? `${statsData[s.code] ?? 0}%` : (statsData[s.code] ?? 0),
                     icon: s.icon,
                     color: s.color,

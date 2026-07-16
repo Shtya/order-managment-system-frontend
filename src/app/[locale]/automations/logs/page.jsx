@@ -22,6 +22,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import Button_ from "@/components/atoms/Button";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/navigation";
@@ -88,6 +89,7 @@ export default function AutomationLogsPage() {
     const tCommon = useTranslations("common");
     const tAutomations = useTranslations("whatsApp.automations");
     const t = useTranslations("whatsApp.automationLogs");
+    const tTutorial = useTranslations("tutorial.automationLogs");
 
     const [search, setSearch] = useState("");
     const { debouncedValue: debouncedSearch } = useDebounce({ value: search });
@@ -120,14 +122,14 @@ export default function AutomationLogsPage() {
 
     const statsCards = useMemo(
         () => [
-            { name: t("stats.total"), value: stats.total, icon: Clock, color: "#8b5cf6" },
-            { name: t("stats.running"), value: stats.running, icon: Play, color: "#3b82f6" },
-            { name: t("stats.problems"), value: stats.failed, icon: AlertCircle, color: "#ef4444" },
-            { name: t("stats.completed"), value: stats.completed, icon: CheckCircle, color: "#10b981" },
-            { name: t("stats.pending"), value: stats.pending, icon: Activity, color: "#64748b" },
-            { name: t("stats.paused"), value: stats.paused, icon: RefreshCw, color: "#f59e0b" },
+            { name: t("stats.total"), value: stats.total, icon: Clock, color: "#8b5cf6", description: tTutorial("stats.total.description"), example: tTutorial("stats.total.example") },
+            { name: t("stats.running"), value: stats.running, icon: Play, color: "#3b82f6", description: tTutorial("stats.running.description"), example: tTutorial("stats.running.example") },
+            { name: t("stats.problems"), value: stats.failed, icon: AlertCircle, color: "#ef4444", description: tTutorial("stats.problems.description"), example: tTutorial("stats.problems.example") },
+            { name: t("stats.completed"), value: stats.completed, icon: CheckCircle, color: "#10b981", description: tTutorial("stats.completed.description"), example: tTutorial("stats.completed.example") },
+            { name: t("stats.pending"), value: stats.pending, icon: Activity, color: "#64748b", description: tTutorial("stats.pending.description"), example: tTutorial("stats.pending.example") },
+            { name: t("stats.paused"), value: stats.paused, icon: RefreshCw, color: "#f59e0b", description: tTutorial("stats.paused.description"), example: tTutorial("stats.paused.example") },
         ],
-        [t, stats]
+        [t, stats, tTutorial]
     );
 
     const fetchStats = async () => {
@@ -218,6 +220,8 @@ export default function AutomationLogsPage() {
             {
                 header: t("table.automation"),
                 key: "automation",
+                description: tTutorial("columns.automation.description"),
+                example: tTutorial("columns.automation.example"),
                 cell: (row) => (
                     <div className="flex flex-col">
                         <span className="font-bold text-gray-700 dark:text-slate-200">
@@ -233,6 +237,8 @@ export default function AutomationLogsPage() {
             {
                 header: t("table.trigger"),
                 key: "trigger",
+                description: tTutorial("columns.trigger.description"),
+                example: tTutorial("columns.trigger.example"),
                 cell: (row) => (
                     <div className="flex flex-col gap-0.5">
                         <span className="text-xs">{tAutomations(`triggers.${row.automationFlow?.triggerType}`)}</span>
@@ -243,6 +249,8 @@ export default function AutomationLogsPage() {
             {
                 header: t("table.status"),
                 key: "status",
+                description: tTutorial("columns.status.description"),
+                example: tTutorial("columns.status.example"),
                 cell: (row) => (
                     <div
                         className={cn(
@@ -263,6 +271,8 @@ export default function AutomationLogsPage() {
             {
                 header: t("table.progress"),
                 key: "progress",
+                description: tTutorial("columns.progress.description"),
+                example: tTutorial("columns.progress.example"),
                 cell: (row) => {
                     const nodes = row.version?.flow?.nodes || [];
                     const currentNode = nodes.find((n) => n.id === row.currentNodeId);
@@ -290,6 +300,8 @@ export default function AutomationLogsPage() {
             {
                 header: t("table.startedAt"),
                 key: "startedAt",
+                description: tTutorial("columns.startedAt.description"),
+                example: tTutorial("columns.startedAt.example"),
                 cell: (row) => (
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Clock size={14} />
@@ -300,6 +312,8 @@ export default function AutomationLogsPage() {
             {
                 header: tCommon("actions"),
                 key: "actions",
+                description: tTutorial("columns.actions.description"),
+                example: tTutorial("columns.actions.example"),
                 cell: (row) => (
                     <ActionButtons
                         row={row}
@@ -316,7 +330,7 @@ export default function AutomationLogsPage() {
                 ),
             },
         ],
-        [t, tAutomations, tCommon, router]
+        [t, tAutomations, tCommon, router, tTutorial]
     );
 
     const applyFilters = () => {

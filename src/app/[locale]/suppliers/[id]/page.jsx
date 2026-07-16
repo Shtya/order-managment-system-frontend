@@ -26,6 +26,7 @@ import {
 import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import PageHeader from "@/components/atoms/Pageheader";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +51,8 @@ export default function SupplierDetailsPage() {
     const tReturns = useTranslations("purchasesReturn");
     const tCommon = useTranslations("common");
     const t = useTranslations("accounts.supplierAccounts");
+    const tTutorial = useTranslations("tutorial.suppliers.view");
+    const tTutorialTabs = useTranslations("tutorial.suppliers.tabs");
     const { formatCurrency } = usePlatformSettings();
 
     const [supplier, setSupplier] = useState(null);
@@ -436,8 +439,8 @@ export default function SupplierDetailsPage() {
                     { name: supplier.name }
                 ]}
                 stats={[
-                    { name: t("columns.pendingBalance"), value: formatCurrency(supplier.dueBalance || 0), icon: Wallet, color: "#F59E0B" },
-                    { name: t("statement.totalPurchases"), value: formatCurrency(supplier.purchaseValue || 0), icon: ReceiptText, color: "#6B7CFF" },
+                    { name: t("columns.pendingBalance"), value: formatCurrency(supplier.dueBalance || 0), icon: Wallet, color: "#F59E0B", description: tTutorial("pendingBalance.description"), example: tTutorial("pendingBalance.example") },
+                    { name: t("statement.totalPurchases"), value: formatCurrency(supplier.purchaseValue || 0), icon: ReceiptText, color: "#6B7CFF", description: tTutorial("totalPurchases.description"), example: tTutorial("totalPurchases.example") },
                 ]}
             />
 
@@ -528,22 +531,53 @@ export default function SupplierDetailsPage() {
             {/* Main Content Tabs */}
             <Tabs value={activeSubTab} onValueChange={setActiveSubTab} defaultValue="purchases" className="w-full dir-force ">
                 <TabsList className="grid w-full grid-cols-4 !h-auto mb-6 main-card">
-                    <TabsTrigger value="purchases" className="flex items-center gap-2 py-2.5">
-                        <ReceiptText size={18} />
-                        {t("details.purchasesTab")}
-                    </TabsTrigger>
-                    <TabsTrigger value="returns" className="flex items-center gap-2 py-2.5">
-                        <TrendingUp size={18} />
-                        {t("details.returnsTab")}
-                    </TabsTrigger>
-                    <TabsTrigger value="history" className="flex items-center gap-2 py-2.5">
-                        <History size={18} />
-                        {t("details.historyTab")}
-                    </TabsTrigger>
-                    <TabsTrigger value="payments" className="flex items-center gap-2 py-2.5">
-                        <MdOutlinePayment size={18} />
-                        {t("details.paymentsTab")}
-                    </TabsTrigger>
+                    {/* Purchases Tab */}
+                    <TutorialSpotlight
+                        title={t("details.purchasesTab")}
+                        description={tTutorialTabs("purchases.description")}
+                        example={tTutorialTabs("purchases.example")}
+                    >
+                        <TabsTrigger value="purchases" className="flex items-center gap-2 py-2.5">
+                            <ReceiptText size={18} />
+                            {t("details.purchasesTab")}
+                        </TabsTrigger>
+                    </TutorialSpotlight>
+
+                    {/* Returns Tab */}
+                    <TutorialSpotlight
+                        title={t("details.returnsTab")}
+                        description={tTutorialTabs("returns.description")}
+                        example={tTutorialTabs("returns.example")}
+                    >
+                        <TabsTrigger value="returns" className="flex items-center gap-2 py-2.5">
+                            <TrendingUp size={18} />
+                            {t("details.returnsTab")}
+                        </TabsTrigger>
+                    </TutorialSpotlight>
+
+                    {/* History Tab */}
+                    <TutorialSpotlight
+                        title={t("details.historyTab")}
+                        description={tTutorialTabs("history.description")}
+                        example={tTutorialTabs("history.example")}
+                    >
+                        <TabsTrigger value="history" className="flex items-center gap-2 py-2.5">
+                            <History size={18} />
+                            {t("details.historyTab")}
+                        </TabsTrigger>
+                    </TutorialSpotlight>
+
+                    {/* Payments Tab */}
+                    <TutorialSpotlight
+                        title={t("details.paymentsTab")}
+                        description={tTutorialTabs("payments.description")}
+                        example={tTutorialTabs("payments.example")}
+                    >
+                        <TabsTrigger value="payments" className="flex items-center gap-2 py-2.5">
+                            <MdOutlinePayment size={18} />
+                            {t("details.paymentsTab")}
+                        </TabsTrigger>
+                    </TutorialSpotlight>
                 </TabsList>
 
                 <TabsContent value="purchases">
@@ -677,6 +711,7 @@ export default function SupplierDetailsPage() {
                     <SupplierPaymentsTable supplierId={params.id} />
                 </TabsContent>
             </Tabs>
+
 
             {/* Modals */}
             <PurchaseDetailsModal

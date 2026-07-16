@@ -32,6 +32,7 @@ import { useSearchParams } from "next/navigation";
 
 import InfoCard from "@/components/atoms/InfoCard";
 import DataTable from "@/components/atoms/DataTable";
+import TutorialSpotlight from "@/components/atoms/TutorialSpotlight";
 
 import { ChevronDown } from "lucide-react";
 
@@ -1349,6 +1350,7 @@ function FilterField({ label, children }) {
 }
 export default function PurchasesPage() {
 	const t = useTranslations("purchases");
+	const tTutorial = useTranslations("tutorial.purchases");
 	const { formatCurrency, currency } = usePlatformSettings();
 	const router = useRouter();
 	const pathname = usePathname();
@@ -1587,6 +1589,8 @@ export default function PurchasesPage() {
 				cell: (row) => (
 					<span className="text-gray-600 dark:text-slate-200 font-medium">{row.receiptNumber}</span>
 				),
+				description: tTutorial("columns.receiptNumber.description"),
+				example: tTutorial("columns.receiptNumber.example"),
 			},
 			{
 				key: "supplier",
@@ -1596,6 +1600,8 @@ export default function PurchasesPage() {
 						{row?.supplier?.name ? row?.supplier?.name : "-"}
 					</span>
 				),
+				description: tTutorial("columns.supplier.description"),
+				example: tTutorial("columns.supplier.example"),
 			},
 			{
 				key: "created_at",
@@ -1605,6 +1611,8 @@ export default function PurchasesPage() {
 						{row.created_at ? new Date(row.created_at).toLocaleDateString() : "-"}
 					</span>
 				),
+				description: tTutorial("columns.date.description"),
+				example: tTutorial("columns.date.example"),
 			},
 			{
 				key: "subtotal",
@@ -1614,6 +1622,8 @@ export default function PurchasesPage() {
 						{formatCurrency(row.subtotal || 0)}
 					</span>
 				),
+				description: tTutorial("columns.subtotal.description"),
+				example: tTutorial("columns.subtotal.example"),
 			},
 			{
 				key: "paidAmount",
@@ -1623,6 +1633,8 @@ export default function PurchasesPage() {
 						{formatCurrency(row.paidAmount || 0)}
 					</span>
 				),
+				description: tTutorial("columns.paidAmount.description"),
+				example: tTutorial("columns.paidAmount.example"),
 			},
 			{
 				key: "remainingAmount",
@@ -1635,6 +1647,8 @@ export default function PurchasesPage() {
 						{formatCurrency(row.remainingAmount || 0)}
 					</span>
 				),
+				description: tTutorial("columns.remainingAmount.description"),
+				example: tTutorial("columns.remainingAmount.example"),
 			},
 			{
 				key: "products",
@@ -1651,6 +1665,8 @@ export default function PurchasesPage() {
 						))}
 					</div>
 				),
+				description: tTutorial("columns.products.description"),
+				example: tTutorial("columns.products.example"),
 			},
 			{
 				key: "safe",
@@ -1662,7 +1678,9 @@ export default function PurchasesPage() {
 						</div>
 						<span className="text-xs font-bold">{row.safe?.name || t("common.none")}</span>
 					</div>
-				)
+				),
+				description: tTutorial("columns.safe.description"),
+				example: tTutorial("columns.safe.example"),
 			},
 			{
 				key: "receiptAsset",
@@ -1677,6 +1695,8 @@ export default function PurchasesPage() {
 						/>
 					</div>
 				),
+				description: tTutorial("columns.receipt.description"),
+				example: tTutorial("columns.receipt.example"),
 			},
 			{
 				key: "status",
@@ -1708,6 +1728,8 @@ export default function PurchasesPage() {
 						</span>
 					);
 				},
+				description: tTutorial("columns.status.description"),
+				example: tTutorial("columns.status.example"),
 			},
 			{
 				key: "actions",
@@ -1780,9 +1802,11 @@ export default function PurchasesPage() {
 						</DropdownMenuContent>
 					</DropdownMenu>
 				),
+				description: tTutorial("columns.actions.description"),
+				example: tTutorial("columns.actions.example"),
 			},
 		];
-	}, [t, currency]);
+	}, [t, tTutorial, currency]);
 
 	return (
 		<div className="min-h-screen p-5">

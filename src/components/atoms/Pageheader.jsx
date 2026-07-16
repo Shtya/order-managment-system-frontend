@@ -5,13 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
+import { useTutorial } from "@/context/TutorialContext";
 /* ══════════════════════════════════════════════════════════════
 	 ANIMATED COUNTER
 ══════════════════════════════════════════════════════════════ */
@@ -70,301 +71,301 @@ function AnimatedCounter({ value, delay = 0 }) {
 	 INFO CARD
 ══════════════════════════════════════════════════════════════ */
 function InfoCard({
-  title, value, icon, editable,
-  isAddCard, onEdit, onDelete, onClick,
-  trend,
-  description,
-  tutorial,
+	title, value, icon, editable,
+	isAddCard, onEdit, onDelete, onClick,
+	trend,
+	description,
+	example,
 }) {
-  const t = useTranslations("orders");
-  const [hov, setHov] = useState(false);
-  const Icon = icon;
+	const t = useTranslations("orders");
+	const [hov, setHov] = useState(false);
+	const Icon = icon;
 
-  // Determine trend color
-  const isTrendEmpty = trend?.value === "—" || trend?.value === undefined;
-  const trendSuccessColor = "#10b981";
-  const trendDangerColor = "var(--destructive)";
-  const trendNeutralColor = "var(--muted-foreground)";
+	// Determine trend color
+	const isTrendEmpty = trend?.value === "—" || trend?.value === undefined;
+	const trendSuccessColor = "#10b981";
+	const trendDangerColor = "var(--destructive)";
+	const trendNeutralColor = "var(--muted-foreground)";
 
-  let trendColor = trendNeutralColor;
-  if (!isTrendEmpty) {
-    trendColor = trend.isGood ? trendSuccessColor : trendDangerColor;
-  }
+	let trendColor = trendNeutralColor;
+	if (!isTrendEmpty) {
+		trendColor = trend.isGood ? trendSuccessColor : trendDangerColor;
+	}
 
-  const accent = "var(--primary)";
-  const iconBg = "color-mix(in oklab, var(--primary) 12%, transparent)";
-  const iconBorder = "1px solid color-mix(in oklab, var(--primary) 18%, transparent)";
-  const glowColor = "color-mix(in oklab, var(--primary) 22%, transparent)";
-  const badgeBg = "color-mix(in oklab, var(--primary) 9%, transparent)";
-  const badgeBdr = "1px solid color-mix(in oklab, var(--primary) 20%, transparent)";
+	const accent = "var(--primary)";
+	const iconBg = "color-mix(in oklab, var(--primary) 12%, transparent)";
+	const iconBorder = "1px solid color-mix(in oklab, var(--primary) 18%, transparent)";
+	const glowColor = "color-mix(in oklab, var(--primary) 22%, transparent)";
+	const badgeBg = "color-mix(in oklab, var(--primary) 9%, transparent)";
+	const badgeBdr = "1px solid color-mix(in oklab, var(--primary) 20%, transparent)";
 
-  if (isAddCard) {
-    return (
-      <TutorialSpotlight {...tutorial}>
-        <motion.button
-          onClick={onClick}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
-          className="group"
-          style={{
-            width: "100%", height: 110,
-            borderRadius: "var(--radius)",
-            border: "1.5px dashed var(--border)",
-            background: "var(--card)",
-            cursor: "pointer", outline: "none",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-            transition: "border-color .2s, background .2s",
-          }}
-        >
-          <div
-            className="group-hover:!bg-[color-mix(in_oklab,var(--primary)_12%,transparent)]"
-            style={{
-              width: 32, height: 32,
-              borderRadius: "calc(var(--radius) - 2px)",
-              background: "var(--muted)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0, transition: "background .2s, color .2s",
-            }}
-          >
-            {Icon && (
-              <Icon
-                size={14}
-                className="group-hover:!text-[var(--primary)]"
-                style={{ color: "var(--muted-foreground)", transition: "color .2s" }}
-              />
-            )}
-          </div>
-          <span
-            className="group-hover:!text-[var(--primary)]"
-            style={{
-              fontSize: 10, fontWeight: 700,
-              letterSpacing: "0.16em", textTransform: "uppercase",
-              color: "var(--muted-foreground)", transition: "color .2s",
-            }}
-          >
-            {title}
-          </span>
-        </motion.button>
-      </TutorialSpotlight>
-    );
-  }
+	if (isAddCard) {
+		return (
+			<TutorialSpotlight title={title} description={description} example={example} style={{ borderRadius: "var(--radius)" }}>
+				<motion.button
+					onClick={onClick}
+					whileHover={{ scale: 1.01 }}
+					whileTap={{ scale: 0.98 }}
+					className="group"
+					style={{
+						width: "100%", height: 110,
+						borderRadius: "var(--radius)",
+						border: "1.5px dashed var(--border)",
+						background: "var(--card)",
+						cursor: "pointer", outline: "none",
+						display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+						transition: "border-color .2s, background .2s",
+					}}
+				>
+					<div
+						className="group-hover:!bg-[color-mix(in_oklab,var(--primary)_12%,transparent)]"
+						style={{
+							width: 32, height: 32,
+							borderRadius: "calc(var(--radius) - 2px)",
+							background: "var(--muted)",
+							display: "flex", alignItems: "center", justifyContent: "center",
+							flexShrink: 0, transition: "background .2s, color .2s",
+						}}
+					>
+						{Icon && (
+							<Icon
+								size={14}
+								className="group-hover:!text-[var(--primary)]"
+								style={{ color: "var(--muted-foreground)", transition: "color .2s" }}
+							/>
+						)}
+					</div>
+					<span
+						className="group-hover:!text-[var(--primary)]"
+						style={{
+							fontSize: 10, fontWeight: 700,
+							letterSpacing: "0.16em", textTransform: "uppercase",
+							color: "var(--muted-foreground)", transition: "color .2s",
+						}}
+					>
+						{title}
+					</span>
+				</motion.button>
+			</TutorialSpotlight>
+		);
+	}
 
-  return (
-    <TutorialSpotlight {...tutorial}>
-      <motion.div
-        onHoverStart={() => setHov(true)}
-        onHoverEnd={() => setHov(false)}
-        onClick={editable ? onClick : undefined}
-        whileHover={{ y: -2 }}
-        transition={{ type: "spring", stiffness: 400, damping: 28 }}
-        style={{
-          position: "relative", width: "100%", height: 106,
-          borderRadius: "var(--radius)",
-          background: "var(--card)",
-          border: `1px solid ${hov ? accent : "var(--border)"}`,
-          cursor: editable ? "pointer" : "default",
-          overflow: "hidden",
-          boxShadow: hov
-            ? `0 4px 20px ${glowColor}, 0 1px 4px rgba(0,0,0,0.06)`
-            : "0 1px 3px rgba(0,0,0,0.05)",
-          transition: "border-color .2s, box-shadow .2s",
-        }}
-      >
+	return (
+		<TutorialSpotlight  title={title} description={description} example={example} style={{ borderRadius: "var(--radius)" }}>
+			<motion.div
+				onHoverStart={() => setHov(true)}
+				onHoverEnd={() => setHov(false)}
+				onClick={editable ? onClick : undefined}
+				whileHover={{ y: -2 }}
+				transition={{ type: "spring", stiffness: 400, damping: 28 }}
+				style={{
+					position: "relative", width: "100%", height: 106,
+					borderRadius: "var(--radius)",
+					background: "var(--card)",
+					border: `1px solid ${hov ? accent : "var(--border)"}`,
+					cursor: editable ? "pointer" : "default",
+					overflow: "hidden",
+					boxShadow: hov
+						? `0 4px 20px ${glowColor}, 0 1px 4px rgba(0,0,0,0.06)`
+						: "0 1px 3px rgba(0,0,0,0.05)",
+					transition: "border-color .2s, box-shadow .2s",
+				}}
+			>
 
-        <div className="flex flex-col justify-between h-full" style={{ padding: "14px 16px 14px 22px" }}>
-          {/* السطر العلوي: العنوان + الأيقونة/أزرار التعديل */}
-          <div className="flex justify-between items-start w-full">
-            <div style={{ flex: 1, minWidth: 0 }} className="space-y-2">
-              <div
-                style={{
-                  marginTop: 5,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  minWidth: 0,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.15em",
-                    color: "var(--muted-foreground)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {title}
-                </span>
+				<div className="flex flex-col justify-between h-full" style={{ padding: "14px 16px 14px 22px" }}>
+					{/* السطر العلوي: العنوان + الأيقونة/أزرار التعديل */}
+					<div className="flex justify-between items-start w-full">
+						<div style={{ flex: 1, minWidth: 0 }} className="space-y-2">
+							<div
+								style={{
+									marginTop: 5,
+									display: "flex",
+									alignItems: "center",
+									gap: 6,
+									minWidth: 0,
+								}}
+							>
+								<span
+									style={{
+										fontSize: 11,
+										fontWeight: 700,
+										letterSpacing: "0.15em",
+										color: "var(--muted-foreground)",
+										overflow: "hidden",
+										textOverflow: "ellipsis",
+										whiteSpace: "nowrap",
+									}}
+								>
+									{title}
+								</span>
 
-                {description && (
-                  <TooltipProvider delayDuration={150}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={(e) => e.stopPropagation()}
-                          style={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: 999,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            border: "none",
-                            background: "transparent",
-                            color: hov ? "var(--primary)" : "var(--muted-foreground)",
-                            cursor: "help",
-                            padding: 0,
-                            transition: "all .18s",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <Info size={13} />
-                        </button>
-                      </TooltipTrigger>
+								{description && (
+									<TooltipProvider delayDuration={150}>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<button
+													onClick={(e) => e.stopPropagation()}
+													style={{
+														width: 16,
+														height: 16,
+														borderRadius: 999,
+														display: "flex",
+														alignItems: "center",
+														justifyContent: "center",
+														border: "none",
+														background: "transparent",
+														color: hov ? "var(--primary)" : "var(--muted-foreground)",
+														cursor: "help",
+														padding: 0,
+														transition: "all .18s",
+														flexShrink: 0,
+													}}
+												>
+													<Info size={13} />
+												</button>
+											</TooltipTrigger>
 
-                      <TooltipContent
-                        side="top"
-                        align="center"
-                        sideOffset={12}
-                        avoidCollisions
-                        collisionPadding={16}
-                        style={{
-                          width: 260,
-                          background: "var(--popover)",
-                          color: "var(--popover-foreground)",
-                          border: "1px solid var(--border)",
-                          borderRadius: 12,
-                          padding: "12px 14px",
-                          boxShadow: "0 16px 40px rgba(0,0,0,.16)",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            marginBottom: 4,
-                          }}
-                        >
-                          {title}
-                        </div>
+											<TooltipContent
+												side="top"
+												align="center"
+												sideOffset={12}
+												avoidCollisions
+												collisionPadding={16}
+												style={{
+													width: 260,
+													background: "var(--popover)",
+													color: "var(--popover-foreground)",
+													border: "1px solid var(--border)",
+													borderRadius: 12,
+													padding: "12px 14px",
+													boxShadow: "0 16px 40px rgba(0,0,0,.16)",
+												}}
+											>
+												<div
+													style={{
+														fontSize: 12,
+														fontWeight: 600,
+														marginBottom: 4,
+													}}
+												>
+													{title}
+												</div>
 
-                        <div
-                          style={{
-                            fontSize: 12,
-                            lineHeight: 1.5,
-                            color: "var(--muted-foreground)",
-                          }}
-                        >
-                          {description}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-              <div style={{
-                // fontFamily: "'Instrument Serif', serif",
-                fontSize: 24, fontWeight: 500, lineHeight: 1,
-                letterSpacing: "-0.025em",
-                color: hov ? accent : "var(--card-foreground)",
-                transition: "color .22s",
-              }}>
-                <AnimatedCounter value={value} />
-              </div>
-            </div>
-            <motion.div
-              animate={{ rotate: hov ? 6 : 0 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              style={{
-                flexShrink: 0, width: 38, height: 38,
-                borderRadius: "calc(var(--radius) - 1px)",
-                background: iconBg, border: iconBorder, marginBottom: 4,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: hov ? `0 0 14px ${glowColor}` : "none",
-                transition: "box-shadow .2s",
-              }}
-            >
-              {Icon && <Icon size={16} style={{ color: accent }} />}
-            </motion.div>
-            {editable && (
-              <>
-                <motion.div
-                  animate={{ opacity: hov ? 0 : 1 }}
-                  transition={{ duration: .15 }}
-                  style={{
-                    flexShrink: 0,
-                    display: "flex", alignItems: "center", gap: 4,
-                    padding: "3px 8px", borderRadius: 999,
-                    background: badgeBg, border: badgeBdr,
-                    fontSize: 9, fontWeight: 700,
-                    letterSpacing: "0.13em", textTransform: "uppercase",
-                    color: accent,
-                  }}
-                >
-                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: accent, display: "inline-block" }} />
-                  {t("custom")}
-                </motion.div>
-                <AnimatePresence>
-                  {hov && (
-                    <motion.div
-                      initial={{ opacity: 0, x: 6 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 6 }}
-                      transition={{ duration: .15 }}
-                      style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}
-                    >
-                      <button onClick={(e) => { e.stopPropagation(); onEdit?.(); }} style={{ width: 28, height: 28, borderRadius: 8, outline: "none", background: "color-mix(in oklab, var(--primary) 10%, var(--card))", border: "1px solid color-mix(in oklab, var(--primary) 24%, var(--border))", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background .15s, color .15s, transform .1s" }} onMouseEnter={e => { e.currentTarget.style.background = "var(--primary)"; e.currentTarget.style.color = "var(--primary-foreground)"; e.currentTarget.style.transform = "scale(1.08)"; }} onMouseLeave={e => { e.currentTarget.style.background = "color-mix(in oklab, var(--primary) 10%, var(--card))"; e.currentTarget.style.color = "var(--primary)"; e.currentTarget.style.transform = "scale(1)"; }}>
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); onDelete?.(); }} style={{ width: 28, height: 28, borderRadius: 8, outline: "none", background: "color-mix(in oklab, var(--destructive) 10%, var(--card))", border: "1px solid color-mix(in oklab, var(--destructive) 24%, var(--border))", color: "var(--destructive)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background .15s, color .15s, transform .1s" }} onMouseEnter={e => { e.currentTarget.style.background = "var(--destructive)"; e.currentTarget.style.color = "var(--destructive-foreground)"; e.currentTarget.style.transform = "scale(1.08)"; }} onMouseLeave={e => { e.currentTarget.style.background = "color-mix(in oklab, var(--destructive) 10%, var(--card))"; e.currentTarget.style.color = "var(--destructive)"; e.currentTarget.style.transform = "scale(1)"; }}>
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </>
-            )}
-          </div>
-          {trend && (
-            <div style={{
-              display: "flex", alignItems: "center", gap: 6, marginTop: 8
-            }}>
-              {/* صندوق السهم */}
-              {trend?.showArrow && <div style={{
-                width: 18, height: 18, borderRadius: 5,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                // استخدام color-mix ليعطي شفافية ناعمة من نفس لون الحالة
-                background: trend.isUp
-                  ? "color-mix(in oklab, #10b981 15%, transparent)"
-                  : "color-mix(in oklab, var(--destructive) 15%, transparent)",
-                color: trend.isUp ? "#10b981" : "var(--destructive)",
-              }}>
-                {trend.isUp ? (
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 17 10-10M7 7h10v10" /></svg>
-                ) : (
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 7 10 10M17 7v10H7" /></svg>
-                )}
-              </div>}
+												<div
+													style={{
+														fontSize: 12,
+														lineHeight: 1.5,
+														color: "var(--muted-foreground)",
+													}}
+												>
+													{description}
+												</div>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								)}
+							</div>
+							<div style={{
+								// fontFamily: "'Instrument Serif', serif",
+								fontSize: 24, fontWeight: 500, lineHeight: 1,
+								letterSpacing: "-0.025em",
+								color: hov ? accent : "var(--card-foreground)",
+								transition: "color .22s",
+							}}>
+								<AnimatedCounter value={value} />
+							</div>
+						</div>
+						<motion.div
+							animate={{ rotate: hov ? 6 : 0 }}
+							transition={{ type: "spring", stiffness: 300 }}
+							style={{
+								flexShrink: 0, width: 38, height: 38,
+								borderRadius: "calc(var(--radius) - 1px)",
+								background: iconBg, border: iconBorder, marginBottom: 4,
+								display: "flex", alignItems: "center", justifyContent: "center",
+								boxShadow: hov ? `0 0 14px ${glowColor}` : "none",
+								transition: "box-shadow .2s",
+							}}
+						>
+							{Icon && <Icon size={16} style={{ color: accent }} />}
+						</motion.div>
+						{editable && (
+							<>
+								<motion.div
+									animate={{ opacity: hov ? 0 : 1 }}
+									transition={{ duration: .15 }}
+									style={{
+										flexShrink: 0,
+										display: "flex", alignItems: "center", gap: 4,
+										padding: "3px 8px", borderRadius: 999,
+										background: badgeBg, border: badgeBdr,
+										fontSize: 9, fontWeight: 700,
+										letterSpacing: "0.13em", textTransform: "uppercase",
+										color: accent,
+									}}
+								>
+									<span style={{ width: 5, height: 5, borderRadius: "50%", background: accent, display: "inline-block" }} />
+									{t("custom")}
+								</motion.div>
+								<AnimatePresence>
+									{hov && (
+										<motion.div
+											initial={{ opacity: 0, x: 6 }}
+											animate={{ opacity: 1, x: 0 }}
+											exit={{ opacity: 0, x: 6 }}
+											transition={{ duration: .15 }}
+											style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}
+										>
+											<button onClick={(e) => { e.stopPropagation(); onEdit?.(); }} style={{ width: 28, height: 28, borderRadius: 8, outline: "none", background: "color-mix(in oklab, var(--primary) 10%, var(--card))", border: "1px solid color-mix(in oklab, var(--primary) 24%, var(--border))", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background .15s, color .15s, transform .1s" }} onMouseEnter={e => { e.currentTarget.style.background = "var(--primary)"; e.currentTarget.style.color = "var(--primary-foreground)"; e.currentTarget.style.transform = "scale(1.08)"; }} onMouseLeave={e => { e.currentTarget.style.background = "color-mix(in oklab, var(--primary) 10%, var(--card))"; e.currentTarget.style.color = "var(--primary)"; e.currentTarget.style.transform = "scale(1)"; }}>
+												<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+											</button>
+											<button onClick={(e) => { e.stopPropagation(); onDelete?.(); }} style={{ width: 28, height: 28, borderRadius: 8, outline: "none", background: "color-mix(in oklab, var(--destructive) 10%, var(--card))", border: "1px solid color-mix(in oklab, var(--destructive) 24%, var(--border))", color: "var(--destructive)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background .15s, color .15s, transform .1s" }} onMouseEnter={e => { e.currentTarget.style.background = "var(--destructive)"; e.currentTarget.style.color = "var(--destructive-foreground)"; e.currentTarget.style.transform = "scale(1.08)"; }} onMouseLeave={e => { e.currentTarget.style.background = "color-mix(in oklab, var(--destructive) 10%, var(--card))"; e.currentTarget.style.color = "var(--destructive)"; e.currentTarget.style.transform = "scale(1)"; }}>
+												<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+											</button>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</>
+						)}
+					</div>
+					{trend && (
+						<div style={{
+							display: "flex", alignItems: "center", gap: 6, marginTop: 8
+						}}>
+							{/* صندوق السهم */}
+							{trend?.showArrow && <div style={{
+								width: 18, height: 18, borderRadius: 5,
+								display: "flex", alignItems: "center", justifyContent: "center",
+								// استخدام color-mix ليعطي شفافية ناعمة من نفس لون الحالة
+								background: trend.isUp
+									? "color-mix(in oklab, #10b981 15%, transparent)"
+									: "color-mix(in oklab, var(--destructive) 15%, transparent)",
+								color: trend.isUp ? "#10b981" : "var(--destructive)",
+							}}>
+								{trend.isUp ? (
+									<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 17 10-10M7 7h10v10" /></svg>
+								) : (
+									<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 7 10 10M17 7v10H7" /></svg>
+								)}
+							</div>}
 
-              {/* النص المصاحب */}
-              <span className="space-x-1" style={{ fontSize: 10, fontWeight: 600, color: "var(--muted-foreground)" }}>
-                <span style={{
-                  // تلوين النسبة فقط بلون الحالة لسهولة القراءة
-                  color: trend.isUp ? "#10b981" : "var(--destructive)",
-                  marginRight: 4
-                }}>
-                  {trend.value !== undefined ? trend.value : ""}
-                </span>
-                <span>{trend.label}</span>
-              </span>
-            </div>
-          )}
-        </div>
-      </motion.div>
-    </TutorialSpotlight>
-  );
+							{/* النص المصاحب */}
+							<span className="space-x-1" style={{ fontSize: 10, fontWeight: 600, color: "var(--muted-foreground)" }}>
+								<span style={{
+									// تلوين النسبة فقط بلون الحالة لسهولة القراءة
+									color: trend.isUp ? "#10b981" : "var(--destructive)",
+									marginRight: 4
+								}}>
+									{trend.value !== undefined ? trend.value : ""}
+								</span>
+								<span>{trend.label}</span>
+							</span>
+						</div>
+					)}
+				</div>
+			</motion.div>
+		</TutorialSpotlight>
+	);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -375,7 +376,7 @@ function InfoCard({
 ══════════════════════════════════════════════════════════════ */
 
 
-function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
+function SwitcherTabs({ items, activeId, onChange, variant = "default", style = {} }) {
 
 	const scrollbarHideStyle = {
 		msOverflowStyle: 'none',
@@ -388,12 +389,12 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 			<div
 				// Changed from w-full to w-fit
 				className="flex items-center gap-1 p-1.5 rounded-full bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 w-fit overflow-x-auto"
-				style={{ ...scrollbarHideStyle, maxWidth: "100%" }}
+				style={{ ...scrollbarHideStyle, maxWidth: "100%", ...style }}
 			>
 				{items.map((item) => {
 					const isActive = item.id === activeId;
 					const Icon = item.icon;
-					return (
+					const button = (
 						<button
 							key={item.id}
 							type="button"
@@ -414,6 +415,20 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 							<span className="whitespace-nowrap">{item.label}</span>
 						</button>
 					);
+
+					if (item.label && item.description) {
+						return (
+							<TutorialSpotlight
+								key={item.id}
+								title={item.label}
+								description={item.description}
+								example={item.example}
+							>
+								{button}
+							</TutorialSpotlight>
+						);
+					}
+					return button;
 				})}
 			</div>
 		);
@@ -424,14 +439,14 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 		<div
 			// Removed w-full, changed to flex items-center
 			className="flex items-center w-full border-t border-border bg-slate-50/50 dark:bg-slate-900/40 px-2 overflow-y-auto"
-			style={{ ...scrollbarHideStyle }}
+			style={{ ...scrollbarHideStyle, ...style }}
 		>
 			<div className="flex items-stretch">
 				{items.map((item) => {
 					const Icon = item.icon;
 					const isActive = item.id === activeId;
 
-					return (
+					const button = (
 						<button
 							key={item.id}
 							type="button"
@@ -466,6 +481,20 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 							)}
 						</button>
 					);
+
+					if (item.label && item.description) {
+						return (
+							<TutorialSpotlight
+								key={item.id}
+								title={item.label}
+								description={item.description}
+								example={item.example}
+							>
+								{button}
+							</TutorialSpotlight>
+						);
+					}
+					return button;
 				})}
 			</div>
 
@@ -474,7 +503,7 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 		</div>
 	);
 }
-function SwitcherTabsCompact({ items, activeId, onChange, variant = "default" }) {
+function SwitcherTabsCompact({ items, activeId, onChange, variant = "default", style = {} }) {
 	// ستايل مشترك لإخفاء شريط التمرير
 	const scrollbarHideStyle = {
 		msOverflowStyle: 'none',
@@ -486,12 +515,12 @@ function SwitcherTabsCompact({ items, activeId, onChange, variant = "default" })
 		return (
 			<div
 				className="flex items-center gap-1 p-1 rounded-full bg-muted border border-border w-full md:w-auto overflow-x-auto "
-				style={{ ...scrollbarHideStyle, maxWidth: "100%" }}
+				style={{ ...scrollbarHideStyle, maxWidth: "100%", ...style }}
 			>
 				{items.map((item) => {
 					const Icon = item.icon;
 					const isActive = item.id === activeId;
-					return (
+					const button = (
 						<button
 							key={item.id}
 							type="button"
@@ -516,6 +545,21 @@ function SwitcherTabsCompact({ items, activeId, onChange, variant = "default" })
 							)}
 						</button>
 					);
+
+					if (item.label && item.description) {
+						return (
+							<TutorialSpotlight
+								key={item.id}
+								title={item.label}
+								description={item.description}
+								example={item.example}
+								className="rounded-full!"
+							>
+								{button}
+							</TutorialSpotlight>
+						);
+					}
+					return button;
 				})}
 			</div>
 		);
@@ -524,13 +568,13 @@ function SwitcherTabsCompact({ items, activeId, onChange, variant = "default" })
 	/* ── DEFAULT variant ── */
 	return (
 		<div
-			className="border-t border-border flex items-stretch w-full overflow-x-auto overflow-y-hidden"
-			style={{ ...scrollbarHideStyle }}
+			className="flex items-stretch w-full border-t border-border bg-slate-50/50 dark:bg-slate-900/40 px-2 overflow-x-auto overflow-y-hidden"
+			style={{ ...scrollbarHideStyle, ...style }}
 		>
 			{items.map((item) => {
 				const Icon = item.icon;
 				const isActive = item.id === activeId;
-				return (
+				const button = (
 					<button
 						key={item.id}
 						type="button"
@@ -559,6 +603,20 @@ function SwitcherTabsCompact({ items, activeId, onChange, variant = "default" })
 						)}
 					</button>
 				);
+
+				if (item.label && item.description) {
+					return (
+						<TutorialSpotlight
+							key={item.id}
+							title={item.label}
+							description={item.description}
+							example={item.example}
+						>
+							{button}
+						</TutorialSpotlight>
+					);
+				}
+				return button;
 			})}
 			{/* spacer لإبقاء التبويبات بجهة اليسار */}
 			<div className="flex-1" />
@@ -614,169 +672,169 @@ export function PageHeaderStatsSkeleton({ count = 6 }) {
 	 STATS GRID WITH COLLAPSE/EXPAND
 ══════════════════════════════════════════════════════════════ */
 export function StatsGrid({ stats }) {
-  const t = useTranslations("common");
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const gridRef = useRef(null);
+	const t = useTranslations("common");
+	const [isExpanded, setIsExpanded] = useState(false);
+	const [isOverflowing, setIsOverflowing] = useState(false);
+	const gridRef = useRef(null);
+	const { isTutorialMode } = useTutorial();
+	const COLLAPSED_HEIGHT = 240;
+	const MAX_ROWS = 2;
+	const shouldExpand = isTutorialMode || isExpanded;
+	useEffect(() => {
+		const gridEl = gridRef.current;
+		if (!gridEl) return;
 
-  const COLLAPSED_HEIGHT = 240;
-  const MAX_ROWS = 2;
+		const checkOverflow = () => {
+			const computedStyle = window.getComputedStyle(gridEl);
 
-  useEffect(() => {
-    const gridEl = gridRef.current;
-    if (!gridEl) return;
+			const gridColumnsString = computedStyle.getPropertyValue('grid-template-columns');
 
-    const checkOverflow = () => {
-      const computedStyle = window.getComputedStyle(gridEl);
+			const numColumns = gridColumnsString.split(' ').length;
 
-      const gridColumnsString = computedStyle.getPropertyValue('grid-template-columns');
+			const maxVisibleItems = numColumns * MAX_ROWS;
 
-      const numColumns = gridColumnsString.split(' ').length;
+			if (stats.length > maxVisibleItems) {
+				setIsOverflowing(true);
+			} else {
+				setIsOverflowing(false);
+				if (shouldExpand) setIsExpanded(false); // Auto-close if screen widens
+			}
+		};
 
-      const maxVisibleItems = numColumns * MAX_ROWS;
+		checkOverflow();
 
-      if (stats.length > maxVisibleItems) {
-        setIsOverflowing(true);
-      } else {
-        setIsOverflowing(false);
-        if (isExpanded) setIsExpanded(false); // Auto-close if screen widens
-      }
-    };
+		const observer = new ResizeObserver(() => {
+			checkOverflow();
+		});
 
-    checkOverflow();
+		observer.observe(gridEl);
+		return () => observer.disconnect();
 
-    const observer = new ResizeObserver(() => {
-      checkOverflow();
-    });
+	}, [shouldExpand, stats.length]);	
 
-    observer.observe(gridEl);
-    return () => observer.disconnect();
+	if (!stats) return null;
+	if (!Array.isArray(stats)) return <div>{stats}</div>;
+	if (!stats.length) return null;
 
-  }, [isExpanded, stats.length]);
+	const sorted = [...stats].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-  if (!stats) return null;
-  if (!Array.isArray(stats)) return <div>{stats}</div>;
-  if (!stats.length) return null;
+	return (
+		<div className="relative">
+			<div
+				className="relative"
+				style={{
+					// Using a large px value instead of 'none' ensures the CSS transition animates smoothly
+					maxHeight: shouldExpand ? "2000px" : `${COLLAPSED_HEIGHT}px`,
+					overflow: "hidden",
+					transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+				}}
+			>
+				<div
+					ref={gridRef}
+					className="grid gap-3 py-3"
+					style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}
+				>
+					{sorted.map((stat, i) => (
+						<motion.div
+							key={stat.id ?? i}
+							style={{ order: stat.sortOrder ?? i }}
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: i * 0.055, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+						>
+							{stat.isAddCard ? (
+								<InfoCard
+									title={stat.name}
+									icon={stat.icon}
+									isAddCard
+									onClick={stat.onClick}
+									example={stat.example}
+								/>
+							) : (
+								<InfoCard
+									title={stat.name}
+									value={String(stat.value ?? 0)}
+									icon={stat.icon}
+									editable={stat.editable ?? false}
+									onEdit={stat.onEdit}
+									onDelete={stat.onDelete}
+									onClick={stat.onClick}
+									trend={stat.trend}
+									description={stat.description}
+									example={stat.example}
+								/>
+							)}
+						</motion.div>
+					))}
+				</div>
 
-  const sorted = [...stats].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+				{isOverflowing && !shouldExpand && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: 0.2 }}
+						style={{
+							position: "absolute",
+							bottom: 0,
+							left: 0,
+							right: 0,
+							height: "80px",
+							background: "linear-gradient(to bottom, transparent 0%, var(--card) 90%)",
+							pointerEvents: "none",
+						}}
+					/>
+				)}
+			</div>
 
-  return (
-    <div className="relative">
-      <div
-        className="relative"
-        style={{
-          // Using a large px value instead of 'none' ensures the CSS transition animates smoothly
-          maxHeight: isExpanded ? "2000px" : `${COLLAPSED_HEIGHT}px`,
-          overflow: "hidden",
-          transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        }}
-      >
-        <div
-          ref={gridRef}
-          className="grid gap-3 py-3"
-          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}
-        >
-          {sorted.map((stat, i) => (
-            <motion.div
-              key={stat.id ?? i}
-              style={{ order: stat.sortOrder ?? i }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.055, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {stat.isAddCard ? (
-                <InfoCard 
-                  title={stat.name} 
-                  icon={stat.icon} 
-                  isAddCard 
-                  onClick={stat.onClick} 
-                  tutorial={stat.tutorial}
-                />
-              ) : (
-                <InfoCard
-                  title={stat.name}
-                  value={String(stat.value ?? 0)}
-                  icon={stat.icon}
-                  editable={stat.editable ?? false}
-                  onEdit={stat.onEdit}
-                  onDelete={stat.onDelete}
-                  onClick={stat.onClick}
-                  trend={stat.trend}
-                  description={stat.description}
-                  tutorial={stat.tutorial}
-                />
-              )}
-            </motion.div>
-          ))}
-        </div>
+			{isOverflowing && (
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.3 }}
+					className="flex justify-center pt-3"
+				>
+					<button
+						onClick={() => setIsExpanded(!isExpanded)}
+						className="group relative flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all outline-none"
+						style={{
+							background: "var(--muted)",
+							border: "1px solid var(--border)",
+							color: "var(--muted-foreground)",
+						}}
+						onMouseEnter={(e) => {
+							e.currentTarget.style.background = "color-mix(in oklab, var(--primary) 10%, var(--muted))";
+							e.currentTarget.style.borderColor = "color-mix(in oklab, var(--primary) 30%, var(--border))";
+							e.currentTarget.style.color = "var(--primary)";
+						}}
+						onMouseLeave={(e) => {
+							e.currentTarget.style.background = "var(--muted)";
+							e.currentTarget.style.borderColor = "var(--border)";
+							e.currentTarget.style.color = "var(--muted-foreground)";
+						}}
+					>
+						{/* Icon */}
+						<motion.svg
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							animate={{ rotate: shouldExpand ? 180 : 0 }}
+							transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+						>
+							<polyline points="6 9 12 15 18 9" />
+						</motion.svg>
 
-        {isOverflowing && !isExpanded && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: "80px",
-              background: "linear-gradient(to bottom, transparent 0%, var(--card) 90%)",
-              pointerEvents: "none",
-            }}
-          />
-        )}
-      </div>
-
-      {isOverflowing && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex justify-center pt-3"
-        >
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="group relative flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all outline-none"
-            style={{
-              background: "var(--muted)",
-              border: "1px solid var(--border)",
-              color: "var(--muted-foreground)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "color-mix(in oklab, var(--primary) 10%, var(--muted))";
-              e.currentTarget.style.borderColor = "color-mix(in oklab, var(--primary) 30%, var(--border))";
-              e.currentTarget.style.color = "var(--primary)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "var(--muted)";
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.color = "var(--muted-foreground)";
-            }}
-          >
-            {/* Icon */}
-            <motion.svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              animate={{ rotate: isExpanded ? 180 : 0 }}
-              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </motion.svg>
-
-            {/* Text */}
-            <span>{isExpanded ? t("stats.hide") : t("stats.showAll")}</span>
-          </button>
-        </motion.div>
-      )}
-    </div>
-  );
+						{/* Text */}
+						<span>{shouldExpand ? t("stats.hide") : t("stats.showAll")}</span>
+					</button>
+				</motion.div>
+			)}
+		</div>
+	);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -815,9 +873,16 @@ export function PageHeader({
 	itemsCompact = true,
 	...props
 }) {
+	const { isTutorialMode } = useTutorial();
 	const hasStats = statsLoading || (Array.isArray(stats) ? stats.length > 0 : !!stats);
 	const hasTabs = items?.length >= 1;
 	const hasButtons = !!buttons;
+
+	const shouldElevateTabs = React.useMemo(() => {
+		if (!isTutorialMode) return false;
+		// Returns true only if any item has both label and description
+		return items.some(item => Boolean(item.label) && Boolean(item.description));
+	}, [isTutorialMode, items]);
 
 	const isCompact = hasTabs && !hasStats && !hasButtons;
 
@@ -966,12 +1031,30 @@ export function PageHeader({
 							activeId={active}
 							onChange={setActive}
 							variant="inline"
+							style={{
+								...(shouldElevateTabs
+									? {
+										zIndex: 40,
+										position: "relative",
+										background: "var(--card)",
+									}
+									: {})
+							}}
 						/>
 					) : (<SwitcherTabs
 						items={items}
 						activeId={active}
 						onChange={setActive}
 						variant="inline"
+						style={{
+							...(shouldElevateTabs
+								? {
+									zIndex: 40,
+									position: "relative",
+									background: "var(--card)",
+								}
+								: {})
+						}}
 					/>)
 					}
 				</div>
@@ -1080,7 +1163,7 @@ export function PageHeader({
 							opacity: isHeaderScrolled && stacky ? 0 : 1,
 							marginBottom: isHeaderScrolled && stacky ? -20 : 0
 						}}
-					className="overflow-hidden"
+						className="overflow-hidden"
 					>
 						{statsLoading
 							? <PageHeaderStatsSkeleton count={statsCount} />
@@ -1098,6 +1181,16 @@ export function PageHeader({
 								activeId={active}
 								onChange={setActive}
 								variant="default"
+								style={{
+									...(shouldElevateTabs
+										? {
+											zIndex: 40,
+											position: "relative",
+											background: "var(--card)",
+											
+										}
+										: {})
+								}}
 							/>
 						) : (
 							<SwitcherTabs
@@ -1105,6 +1198,15 @@ export function PageHeader({
 								activeId={active}
 								onChange={setActive}
 								variant="default"
+								style={{
+									...(shouldElevateTabs
+										? {
+											zIndex: 40,
+											position: "relative",
+											background: "var(--card)",
+										}
+										: {})
+								}}
 							/>
 						)
 					) : null

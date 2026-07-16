@@ -47,6 +47,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import { Store } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import {TutorialSpotlight} from "@/components/atoms/TutorialSpotlight";
 import WhatsAppAccountSelect from "./atoms/WhatsAppAccountSelect";
 import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 import { useRouter } from "@/i18n/navigation";
@@ -70,6 +71,7 @@ function FilterField({ label, icon: FieldIcon, children }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function WhatsAppStatisticsPage() {
+  const tTutorial = useTranslations("tutorial.whatsapp");
   const torderAnalysis = useTranslations("orderAnalysis");
   const t = useTranslations("whatsApp");
   const locale = useLocale();
@@ -174,31 +176,31 @@ export default function WhatsAppStatisticsPage() {
   // Map backend stats to KPI cards
   const statsCards = [
     // --- Messages ---
-    { id: "sent", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.sent"), value: stats?.messages?.totalSent?.toLocaleString() || "0", icon: Send, color: "#10b981" },
-    { id: "delivered", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.delivered"), value: stats?.messages?.delivered?.toLocaleString() || "0", icon: CheckCircle2, color: "#10b981", pct: stats?.messages?.totalSent > 0 ? ((stats.messages.delivered / stats.messages.totalSent) * 100).toFixed(1) + "%" : "0%" },
-    { id: "read", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.read"), value: stats?.messages?.read?.toLocaleString() || "0", icon: Eye, color: "#3b82f6", pct: stats?.messages?.totalSent > 0 ? ((stats.messages.read / stats.messages.totalSent) * 100).toFixed(1) + "%" : "0%" },
-    { id: "clicks", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.clicks"), value: stats?.messages?.buttonClicks?.toLocaleString() || "0", icon: MousePointerClick, color: "#a855f7", pct: stats?.messages?.totalSent > 0 ? ((stats.messages.buttonClicks / stats.messages.totalSent) * 100).toFixed(1) + "%" : "0%" },
-    { id: "failed", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.failed"), value: stats?.messages?.failed?.toLocaleString() || "0", icon: AlertCircle, color: "#ef4444" },
+    { id: "sent", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.sent"), value: stats?.messages?.totalSent?.toLocaleString() || "0", icon: Send, color: "#10b981", description: tTutorial("overview.stats.messagesSent.description"), example: tTutorial("overview.stats.messagesSent.example") },
+    { id: "delivered", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.delivered"), value: stats?.messages?.delivered?.toLocaleString() || "0", icon: CheckCircle2, color: "#10b981", pct: stats?.messages?.totalSent > 0 ? ((stats.messages.delivered / stats.messages.totalSent) * 100).toFixed(1) + "%" : "0%", description: tTutorial("overview.stats.messagesDelivered.description"), example: tTutorial("overview.stats.messagesDelivered.example") },
+    { id: "read", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.read"), value: stats?.messages?.read?.toLocaleString() || "0", icon: Eye, color: "#3b82f6", pct: stats?.messages?.totalSent > 0 ? ((stats.messages.read / stats.messages.totalSent) * 100).toFixed(1) + "%" : "0%", description: tTutorial("overview.stats.messagesRead.description"), example: tTutorial("overview.stats.messagesRead.example") },
+    { id: "clicks", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.clicks"), value: stats?.messages?.buttonClicks?.toLocaleString() || "0", icon: MousePointerClick, color: "#a855f7", pct: stats?.messages?.totalSent > 0 ? ((stats.messages.buttonClicks / stats.messages.totalSent) * 100).toFixed(1) + "%" : "0%", description: tTutorial("overview.stats.buttonClicks.description"), example: tTutorial("overview.stats.buttonClicks.example") },
+    { id: "failed", name: t("overview.stats.prefixes.messages") + t("overview.stats.names.failed"), value: stats?.messages?.failed?.toLocaleString() || "0", icon: AlertCircle, color: "#ef4444", description: tTutorial("overview.stats.messagesFailed.description"), example: tTutorial("overview.stats.messagesFailed.example") },
 
     // --- Accounts ---
-    { id: "accounts", name: t("overview.stats.prefixes.accounts") + t("overview.stats.names.totalAccounts"), value: stats?.accounts?.toLocaleString() || "0", icon: Users, color: "#6366f1" },
+    { id: "accounts", name: t("overview.stats.prefixes.accounts") + t("overview.stats.names.totalAccounts"), value: stats?.accounts?.toLocaleString() || "0", icon: Users, color: "#6366f1", description: tTutorial("overview.stats.accounts.description"), example: tTutorial("overview.stats.accounts.example") },
 
     // --- Templates ---
-    { id: "tpl_total", name: t("overview.stats.prefixes.templates") + t("overview.stats.names.total"), value: stats?.templates?.total?.toLocaleString() || "0", icon: FileText, color: "#64748b" },
-    { id: "tpl_approved", name: t("overview.stats.prefixes.templates") + t("overview.stats.names.approved"), value: stats?.templates?.approved?.toLocaleString() || "0", icon: CheckCircle, color: "#10b981" },
-    { id: "tpl_rejected", name: t("overview.stats.prefixes.templates") + t("overview.stats.names.rejected"), value: stats?.templates?.rejected?.toLocaleString() || "0", icon: XCircle, color: "#ef4444" },
-    { id: "tpl_low", name: t("overview.stats.prefixes.templates") + t("overview.stats.names.lowQuality"), value: stats?.templates?.lowQuality?.toLocaleString() || "0", icon: AlertCircle, color: "#f59e0b" },
+    { id: "tpl_total", name: t("overview.stats.prefixes.templates") + t("overview.stats.names.total"), value: stats?.templates?.total?.toLocaleString() || "0", icon: FileText, color: "#64748b", description: tTutorial("overview.stats.templatesTotal.description"), example: tTutorial("overview.stats.templatesTotal.example") },
+    { id: "tpl_approved", name: t("overview.stats.prefixes.templates") + t("overview.stats.names.approved"), value: stats?.templates?.approved?.toLocaleString() || "0", icon: CheckCircle, color: "#10b981", description: tTutorial("overview.stats.templatesApproved.description"), example: tTutorial("overview.stats.templatesApproved.example") },
+    { id: "tpl_rejected", name: t("overview.stats.prefixes.templates") + t("overview.stats.names.rejected"), value: stats?.templates?.rejected?.toLocaleString() || "0", icon: XCircle, color: "#ef4444", description: tTutorial("overview.stats.templatesRejected.description"), example: tTutorial("overview.stats.templatesRejected.example") },
+    { id: "tpl_low", name: t("overview.stats.prefixes.templates") + t("overview.stats.names.lowQuality"), value: stats?.templates?.lowQuality?.toLocaleString() || "0", icon: AlertCircle, color: "#f59e0b", description: tTutorial("overview.stats.templatesLowQuality.description"), example: tTutorial("overview.stats.templatesLowQuality.example") },
 
     // --- Upsells ---
-    { id: "upsell_sent", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellSent"), value: stats?.upsells?.sent?.toLocaleString() || "0", icon: Send, color: "#3b82f6" },
-    { id: "upsell_accepted", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellAccepted"), value: stats?.upsells?.accepted?.toLocaleString() || "0", icon: DollarSign, color: "#10b981" },
-    { id: "upsell_rejected", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellRejected"), value: stats?.upsells?.rejected?.toLocaleString() || "0", icon: Ban, color: "#ef4444" },
-    { id: "upsell_no_answer", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellNoAnswer"), value: stats?.upsells?.noAnswer?.toLocaleString() || "0", icon: MessageSquare, color: "#64748b" },
-    { id: "upsell_expired", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellExpired"), value: stats?.upsells?.expired?.toLocaleString() || "0", icon: Clock, color: "#f59e0b" },
-    { id: "upsell_non_eligible", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellNonEligible"), value: stats?.upsells?.acceptedNonEligible?.toLocaleString() || "0", icon: AlertCircle, color: "#f59e0b" },
-    { id: "upsell_failed", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellFailed"), value: stats?.upsells?.failedToAdd?.toLocaleString() || "0", icon: XCircle, color: "#ef4444" },
-    { id: "upsell_delivered", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellDelivered"), value: stats?.upsells?.delivered?.toLocaleString() || "0", icon: Check, color: "#10b981" },
-    { id: "upsell_pending", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellPending"), value: stats?.upsells?.pending?.toLocaleString() || "0", icon: Clock, color: "#3b82f6" },
+    { id: "upsell_sent", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellSent"), value: stats?.upsells?.sent?.toLocaleString() || "0", icon: Send, color: "#3b82f6", description: tTutorial("overview.stats.upsellSent.description"), example: tTutorial("overview.stats.upsellSent.example") },
+    { id: "upsell_accepted", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellAccepted"), value: stats?.upsells?.accepted?.toLocaleString() || "0", icon: DollarSign, color: "#10b981", description: tTutorial("overview.stats.upsellAccepted.description"), example: tTutorial("overview.stats.upsellAccepted.example") },
+    { id: "upsell_rejected", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellRejected"), value: stats?.upsells?.rejected?.toLocaleString() || "0", icon: Ban, color: "#ef4444", description: tTutorial("overview.stats.upsellRejected.description"), example: tTutorial("overview.stats.upsellRejected.example") },
+    { id: "upsell_no_answer", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellNoAnswer"), value: stats?.upsells?.noAnswer?.toLocaleString() || "0", icon: MessageSquare, color: "#64748b", description: tTutorial("overview.stats.upsellNoAnswer.description"), example: tTutorial("overview.stats.upsellNoAnswer.example") },
+    { id: "upsell_expired", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellExpired"), value: stats?.upsells?.expired?.toLocaleString() || "0", icon: Clock, color: "#f59e0b", description: tTutorial("overview.stats.upsellExpired.description"), example: tTutorial("overview.stats.upsellExpired.example") },
+    { id: "upsell_non_eligible", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellNonEligible"), value: stats?.upsells?.acceptedNonEligible?.toLocaleString() || "0", icon: AlertCircle, color: "#f59e0b", description: tTutorial("overview.stats.upsellNonEligible.description"), example: tTutorial("overview.stats.upsellNonEligible.example") },
+    { id: "upsell_failed", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellFailed"), value: stats?.upsells?.failedToAdd?.toLocaleString() || "0", icon: XCircle, color: "#ef4444", description: tTutorial("overview.stats.upsellFailed.description"), example: tTutorial("overview.stats.upsellFailed.example") },
+    { id: "upsell_delivered", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellDelivered"), value: stats?.upsells?.delivered?.toLocaleString() || "0", icon: Check, color: "#10b981", description: tTutorial("overview.stats.upsellDelivered.description"), example: tTutorial("overview.stats.upsellDelivered.example") },
+    { id: "upsell_pending", name: t("overview.stats.prefixes.upsells") + t("overview.stats.names.upsellPending"), value: stats?.upsells?.pending?.toLocaleString() || "0", icon: Clock, color: "#3b82f6", description: tTutorial("overview.stats.upsellPending.description"), example: tTutorial("overview.stats.upsellPending.example") },
   ];
 
   // Funnel Data from stats
@@ -334,50 +336,57 @@ export default function WhatsAppStatisticsPage() {
         {/* Messaging Funnel */}
         <div className="grid grid-cols-1 gap-5">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card title={t("overview.cards.funnel")} icon={Activity}>
-              <div className="flex flex-col gap-3 mt-4">
-                {funnelData.map((item, i) => (
-                  <div
-                    key={item.label}
-                    dir="rtl"
-                    className="relative w-full h-8 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden flex items-center px-3"
-                  >
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: item.width }}
-                      className={cn("absolute right-0 top-0 bottom-0 z-0", item.color)}
-                    />
-                    <div className="relative z-10 w-full flex justify-between text-xs font-semibold text-slate-800 dark:text-white">
-                      <div className="flex gap-2">
-                        <span>{item.value.toLocaleString()}</span>
-                        <span className="font-normal opacity-80">{item.label}</span>
+            <TutorialSpotlight title={t("overview.cards.funnel")} description={tTutorial("overview.widgets.messagingFunnel.description")} example={tTutorial("overview.widgets.messagingFunnel.example")} overview={true}>
+              <Card title={t("overview.cards.funnel")} icon={Activity}>
+                <div className="flex flex-col gap-3 mt-4">
+                  {funnelData.map((item, i) => (
+                    <div
+                      key={item.label}
+                      dir="rtl"
+                      className="relative w-full h-8 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden flex items-center px-3"
+                    >
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: item.width }}
+                        className={cn("absolute right-0 top-0 bottom-0 z-0", item.color)}
+                      />
+                      <div className="relative z-10 w-full flex justify-between text-xs font-semibold text-slate-800 dark:text-white">
+                        <div className="flex gap-2">
+                          <span>{item.value.toLocaleString()}</span>
+                          <span className="font-normal opacity-80">{item.label}</span>
+                        </div>
+                        <span>{item.pct}</span>
                       </div>
-                      <span>{item.pct}</span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
+                  ))}
+                </div>
+              </Card>
+            </TutorialSpotlight>
           </motion.div>
 
           {/* Messages Over Time */}
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="lg:col-span-1">
-            <Card title={t("overview.cards.trend")} icon={TrendingUp} >
-              <TrendChart data={trends} loading={loading} configs={chartConfigs} />
-            </Card>
+            <TutorialSpotlight title={t("overview.cards.trend")} description={tTutorial("overview.widgets.trendsChart.description")} example={tTutorial("overview.widgets.trendsChart.example")} overview={true}>
+              <Card title={t("overview.cards.trend")} icon={TrendingUp} >
+                <TrendChart data={trends} loading={loading} configs={chartConfigs} />
+              </Card>
+            </TutorialSpotlight>
           </motion.div>
         </div>
 
         <div className="grid grid-cols-1 gap-5">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} >
-            <Card title={t("overview.cards.buttons")} icon={CheckCircle}>
-              <MiniTable columns={buttonCols} data={topButtons} loading={loading} />
-            </Card>
+            <TutorialSpotlight title={t("overview.cards.buttons")} description={tTutorial("overview.widgets.topButtons.description")} example={tTutorial("overview.widgets.topButtons.example")} overview={true}>
+              <Card title={t("overview.cards.buttons")} icon={CheckCircle}>
+                <MiniTable columns={buttonCols} data={topButtons} loading={loading} />
+              </Card>
+            </TutorialSpotlight>
           </motion.div>
           {/* Row 4: Heatmap */}
           <div className="">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-              <Card title={t("overview.cards.heatmap")} icon={CheckCircle}>
+              <TutorialSpotlight title={t("overview.cards.heatmap")} description={tTutorial("overview.widgets.activityHeatmap.description")} example={tTutorial("overview.widgets.activityHeatmap.example")} overview={true}>
+                <Card title={t("overview.cards.heatmap")} icon={CheckCircle}>
                 {/* Changed to gap-2 for automatic RTL/LTR support instead of hardcoded ml-2 */}
                 <div className="mt-4 flex gap-2">
 
@@ -447,50 +456,57 @@ export default function WhatsAppStatisticsPage() {
                 <span>{t("overview.heatmap.high")}</span>
               </div>
             </Card>
+              </TutorialSpotlight>
           </motion.div>
         </div>
 
       </div>
       {/* By Category */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <Card title={t("overview.cards.type")} icon={PieIcon}>
-          <StatusDonut
-            data={categories}
-            loading={loading}
-            label={t("overview.common.messageLabel")}
-            config={{
-              key: "count",
-              label: "name",
-            }}
-          />
-        </Card>
+        <TutorialSpotlight title={t("overview.cards.type")} description={tTutorial("overview.widgets.messagesByCategory.description")} example={tTutorial("overview.widgets.messagesByCategory.example")} overview={true}>
+          <Card title={t("overview.cards.type")} icon={PieIcon}>
+            <StatusDonut
+              data={categories}
+              loading={loading}
+              label={t("overview.common.messageLabel")}
+              config={{
+                key: "count",
+                label: "name",
+              }}
+            />
+          </Card>
+        </TutorialSpotlight>
       </motion.div>
     </div>
 
       {/* Row 3: Tables */ }
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-      <Card title={t("overview.cards.templates")} action={<Button_
-        variant="ghost"
-        size="sm"
-        label={t("overview.common.viewAll")}
-        className="text-[10px] h-6"
-        onClick={() => router.push("/whatsapp/templates")}
-      />} icon={MessageSquare}>
-        <MiniTable columns={templatesCols} data={topTemplates} loading={loading} />
-      </Card>
+      <TutorialSpotlight title={t("overview.cards.templates")} description={tTutorial("overview.widgets.topTemplates.description")} example={tTutorial("overview.widgets.topTemplates.example")} overview={true}>
+        <Card title={t("overview.cards.templates")} action={<Button_
+          variant="ghost"
+          size="sm"
+          label={t("overview.common.viewAll")}
+          className="text-[10px] h-6"
+          onClick={() => router.push("/whatsapp/templates")}
+        />} icon={MessageSquare}>
+          <MiniTable columns={templatesCols} data={topTemplates} loading={loading} />
+        </Card>
+      </TutorialSpotlight>
     </motion.div>
 
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} >
-      <Card title={t("overview.cards.automation")} action={<Button_
-        variant="ghost"
-        size="sm"
-        label={t("overview.common.viewAll")}
-        className="text-[10px] h-6"
-        onClick={() => router.push("/automations")}
-      />} icon={CheckCircle}>
-        <MiniTable columns={automationCols} data={topAutomations} loading={loading} />
-      </Card>
+      <TutorialSpotlight title={t("overview.cards.automation")} description={tTutorial("overview.widgets.topAutomations.description")} example={tTutorial("overview.widgets.topAutomations.example")} overview={true}>
+        <Card title={t("overview.cards.automation")} action={<Button_
+          variant="ghost"
+          size="sm"
+          label={t("overview.common.viewAll")}
+          className="text-[10px] h-6"
+          onClick={() => router.push("/automations")}
+        />} icon={CheckCircle}>
+          <MiniTable columns={automationCols} data={topAutomations} loading={loading} />
+        </Card>
+      </TutorialSpotlight>
     </motion.div>
   </div>
     </div >

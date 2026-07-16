@@ -171,6 +171,7 @@ export function ProductOrdersByStatusModal({
 export default function useProductsTab({ setExternalModal, searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
 	const router = useRouter();
 	const t = useTranslations("products");
+	const tTutorial = useTranslations("tutorial");
 	const requestIdRef = useRef(0);
 	const { formatCurrency } = usePlatformSettings();
 	const { reservedEnabled, calculateAvailableStock } = useOrdersSettings();
@@ -662,6 +663,8 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 								tooltip: t('actions.fetchExternalDetails'),
 								variant: "warning",
 								disabled: row?.syncStates?.[0]?.status !== 'synced' || !row.store?.isActive || !row.store.isIntegrated,
+								description: tTutorial("products.tableActions.fetchExternal.description"),
+								example: tTutorial("products.tableActions.fetchExternal.example"),
 								permission: "products.read",
 								onClick: () => setExternalModal({ isOpen: true, remoteId: row?.syncStates?.[0]?.remoteProductId, provider: row?.store?.provider })
 							},
@@ -724,7 +727,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 		];
 	}, [reservedEnabled, router, t, onAskDelete, onOpenView, formatCurrency, activetab, pager.per_page, selectedProducts, openProductOrders]);
 
-	return { loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal, handleShippingCompanyChange, handleOrdersExport, exportLoading };
+	return { tutorialActions: true,loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal, handleShippingCompanyChange, handleOrdersExport, exportLoading };
 }
 
 export function SkuPrintModal({ open, onClose, product }) {

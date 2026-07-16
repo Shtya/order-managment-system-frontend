@@ -1436,6 +1436,7 @@ const IntegrationProgressModal = ({ isOpen, onClose, steps }) => {
 export default function WhatsAppAccountsPage() {
   const tCommon = useTranslations("common");
   const t = useTranslations("whatsApp.accounts");
+  const tTutorial = useTranslations("tutorial.whatsapp.accounts");
   const { settings, isSettingsLoading } = usePlatformSettings();
   const { patch, saveSetting, refreshOrdersSettings } = useOrdersSettings();
   const [guideModalOpen, setGuideModalOpen] = useState(false);
@@ -1474,11 +1475,11 @@ export default function WhatsAppAccountsPage() {
   });
 
   const statsCards = useMemo(() => [
-    { name: t("stats.deliveryRate"), value: `${stats.deliveryRate}%`, icon: CheckCircle2, color: "#10b981" },
-    { name: t("stats.readRate"), value: `${stats.readRate}%`, icon: Eye, color: "#3b82f6" },
-    { name: t("stats.newConversations"), value: stats.newConversations, icon: MessageSquare, color: "#8b5cf6" },
-    { name: t("stats.failureRate"), value: `${stats.failureRate}%`, icon: AlertCircle, color: "#f59e0b" },
-  ], [t, stats]);
+    { name: t("stats.deliveryRate"), value: `${stats.deliveryRate}%`, icon: CheckCircle2, color: "#10b981", description: tTutorial("stats.deliveryRate.description"), example: tTutorial("stats.deliveryRate.example") },
+    { name: t("stats.readRate"), value: `${stats.readRate}%`, icon: Eye, color: "#3b82f6", description: tTutorial("stats.readRate.description"), example: tTutorial("stats.readRate.example") },
+    { name: t("stats.newConversations"), value: stats.newConversations, icon: MessageSquare, color: "#8b5cf6", description: tTutorial("stats.newConversations.description"), example: tTutorial("stats.newConversations.example") },
+    { name: t("stats.failureRate"), value: `${stats.failureRate}%`, icon: AlertCircle, color: "#f59e0b", description: tTutorial("stats.failureRate.description"), example: tTutorial("stats.failureRate.example") },
+  ], [t, tTutorial, stats]);
 
   const fetchStats = async () => {
     try {

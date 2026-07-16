@@ -25,6 +25,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import Button_ from "@/components/atoms/Button";
 import ActionButtons from "@/components/atoms/Actions";
+import {TutorialSpotlight} from "@/components/atoms/TutorialSpotlight";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/navigation";
@@ -97,6 +98,7 @@ export default function AutomationsPage() {
   const router = useRouter();
   const tCommon = useTranslations("common");
   const t = useTranslations("whatsApp.automations");
+  const tTutorial = useTranslations("tutorial.automations");
 
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({ value: search });
@@ -334,32 +336,39 @@ export default function AutomationsPage() {
   };
   return (
     <div className="min-h-screen p-5 space-y-6 bg-slate-50/50 dark:bg-transparent">
-      <PageHeader
-        breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/dashboard" },
-          { name: t("breadcrumb.automations") },
-        ]}
-        buttons={
-          <>
-            {/* <Button_
-              size="sm"
-              label={t("actions.openSettings") || "Settings"}
-              variant="outline"
-              onClick={() => setSettingsOpen(true)}
-              icon={<Settings size={18} />}
-            /> */}
-            <Button_
-              size="sm"
-              label={t("toolbar.addAutomation")}
-              variant="solid"
-              onClick={() => router.push("/automations/builder")}
-              icon={<Plus size={18} />}
-              permission="automation.create"
-            />
-          </>
-        }
-        stats={statsCards}
-      />
+      <TutorialSpotlight
+        title={t("breadcrumb.automations")}
+        description={tTutorial("description")}
+        example={tTutorial("example")}
+        overview={true}
+      >
+        <PageHeader
+          breadcrumbs={[
+            { name: t("breadcrumb.home"), href: "/dashboard" },
+            { name: t("breadcrumb.automations") },
+          ]}
+          buttons={
+            <>
+              {/* <Button_
+                size="sm"
+                label={t("actions.openSettings") || "Settings"}
+                variant="outline"
+                onClick={() => setSettingsOpen(true)}
+                icon={<Settings size={18} />}
+              /> */}
+              <Button_
+                size="sm"
+                label={t("toolbar.addAutomation")}
+                variant="solid"
+                onClick={() => router.push("/automations/builder")}
+                icon={<Plus size={18} />}
+                permission="automation.create"
+              />
+            </>
+          }
+          stats={statsCards}
+        />
+      </TutorialSpotlight>
 
       <Table
         isLoading={loading}

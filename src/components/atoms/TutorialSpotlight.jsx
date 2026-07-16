@@ -9,7 +9,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 
 export function TutorialSpotlight({
   children,
@@ -17,38 +18,66 @@ export function TutorialSpotlight({
   description,
   example,
   disabled = false,
+  style,
+  className,
+  card = "none",
+  overview = false,
 }) {
   const { isTutorialMode } = useTutorial();
+  const t = useTranslations("tutorial");
   const [hovered, setHovered] = useState(false);
-
   if (disabled || !isTutorialMode || !title || !description) {
     return <>{children}</>;
   }
-
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
+            className={className}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             style={{
               position: "relative",
               zIndex: 60,
-              borderRadius: 16,
-              outline: hovered
-                ? "3px solid var(--primary)"
-                : "2px solid color-mix(in oklab, var(--primary) 30%, transparent)",
-              outlineOffset: 4,
-              transition: "outline 0.2s ease",
-              boxShadow: hovered
-                ? "0 0 0 4px color-mix(in oklab, var(--primary) 20%, transparent), 0 8px 30px color-mix(in oklab, var(--primary) 15%, transparent)"
-                : "none",
+              pointerEvents: "auto",
+              // width: "100%",
+              height: overview ? "fit-content" : "100%",
+              display: "block",
+              borderRadius: overview ? " var(--radius-lg)" : "0px", // Base radius
+              backgroundColor: "var(--card)",
+              ...(card && card !== "none" && {
+                borderRadius: "12px",
+                padding: card === "xs" 
+                  ? "0.25rem" 
+                  : card === "sm" 
+                    ? "0.5rem" 
+                    : card === "lg" 
+                      ? "1rem" 
+                      : "0.75rem", // default md
+              }),
+              ...style // This cleanly overrides the 0px with var(--radius)
             }}
           >
-            {children}
-           
+            {/* 1. Your Content */}
+            <div style={{ pointerEvents: "none", width: "100%", height: overview ? "fit-content" : "100%" }}>
+              {children}
+            </div>
+
+            {/* 2. The Border Overlay (Sits ON TOP of children) */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0, // Stretches to cover the parent exactly
+                pointerEvents: "none", // Ensures it doesn't block clicks
+                borderRadius: "inherit", // Automatically matches the parent's var(--radius)
+                transition: "box-shadow 0.2s ease",
+                boxShadow: hovered
+                  ? "inset 0 0 0 3px var(--primary), 0 0 0 4px color-mix(in oklab, var(--primary) 20%, transparent), 0 8px 30px color-mix(in oklab, var(--primary) 15%, transparent)"
+                  : "inset 0 0 0 2px color-mix(in oklab, var(--primary) 30%, transparent)",
+              }}
+            />
           </motion.div>
         </TooltipTrigger>
         <TooltipContent
@@ -109,7 +138,7 @@ export function TutorialSpotlight({
                   letterSpacing: "0.08em",
                 }}
               >
-                المثال
+                {t("example")}
               </div>
               <div
                 style={{

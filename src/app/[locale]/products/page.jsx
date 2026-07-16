@@ -57,6 +57,7 @@ function subMonths(date, months) {
 
 export default function ProductsPage() {
 	const tFailed = useTranslations('orders.failedOrders');
+	const tTutorial = useTranslations("tutorial");
 	const t = useTranslations("products");
 	const router = useRouter();
 	const searchParams = useSearchParams();
@@ -185,6 +186,7 @@ export default function ProductsPage() {
 				value: summary.productCount.toString(),
 				icon: Package,
 				color: "#10B981", // Green
+				example: tTutorial("products.totalProducts.example")
 			},
 			{
 				name: t("stats.totalStock"),
@@ -192,6 +194,7 @@ export default function ProductsPage() {
 				value: (Number(summary.purchases.acceptedQuantity) - Number(summary.purchaseReturns.acceptedReturnedQuantity || 0)).toString(),
 				icon: Layers,
 				color: "#10B981", // Green
+				example: tTutorial("products.totalStock.example")
 			},
 			{
 				name: t("stats.availableItems"),
@@ -199,6 +202,8 @@ export default function ProductsPage() {
 				value: summary.inventory.totalOnHand.toString(),
 				icon: PackageSearch,
 				color: "#3B82F6", // Blue
+				example: tTutorial("products.availableItems.example")
+				
 			},
 			{
 				name: t("stats.withShippingCompanies"),
@@ -206,6 +211,8 @@ export default function ProductsPage() {
 				value: summary.orders.inTransitQuantity.toString(), // From 'shipped' status
 				icon: Truck,
 				color: "#6B7CFF",
+				example: tTutorial("products.withShippingCompanies.example")
+				
 			},
 			{
 				name: t("stats.soldPieces"),
@@ -213,6 +220,8 @@ export default function ProductsPage() {
 				value: summary.orders.soldQuantity.toString(), // From 'delivered' status
 				icon: CheckCircle,
 				color: "#F59E0B",
+				example: tTutorial("products.soldPieces.example")
+				
 			},
 			...(reservedEnabled ? [{
 				// ✅ Updated to show Reserved Items
@@ -221,6 +230,8 @@ export default function ProductsPage() {
 				value: summary.inventory.reserved.toString(),
 				icon: Boxes, // ✅ Correct Lucide icon
 				color: "#3B82F6",
+				example: tTutorial("products.reservedItems.example")
+				
 			}] : []),
 			{
 				// ✅ Updated to show Reserved Items
@@ -229,6 +240,8 @@ export default function ProductsPage() {
 				value: (Number(summary.orders.inTransitQuantity || 0) + Number(summary.inventory.totalOnHand || 0)).toString(),
 				icon: PackageSearch, // ✅ Correct Lucide icon
 				color: "#3B82F6",
+				example: tTutorial("products.remaingStock.example")
+				
 			},
 		];
 	}, [summary, t, reservedEnabled]);
@@ -430,7 +443,7 @@ export default function ProductsPage() {
 
 	const current = ["bundles", "deleted_bundles"]?.includes(active) ? bundlesLogic : active === "idle" ? idleLogic : productsLogic;
 
-
+	const tutorialActions = ["bundles", "deleted_bundles"]?.includes(active) ? bundlesLogic?.tutorialActions : active === "idle" ? idleLogic?.tutorialActions : productsLogic?.tutorialActions;
 	return (
 		<div className="min-h-screen p-5">
 
@@ -473,6 +486,7 @@ export default function ProductsPage() {
 					emptyTitle: t("empty"),
 					emptySubtitle: "",
 				}}
+				tutorialActions={tutorialActions}
 				actions={[
 					{
 						key: "exportToStore",

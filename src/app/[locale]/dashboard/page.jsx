@@ -71,8 +71,8 @@ function FilterField({ label, icon: FieldIcon, children }) {
 
 export default function DashboardPage() {
   const tDates = useTranslations("orderAnalysis");
+  const tTutorial = useTranslations("tutorial");
   const t = useTranslations("dashboard");
-  const { toggleTutorialMode } = useTutorial();
 
   const [quickRange, setQuickRange] = useState("this_month");
   const [filters, setFilters] = useState({
@@ -167,11 +167,7 @@ export default function DashboardPage() {
       description: t("kpiDescription.totalSales"),
       icon: TrendingUp,
       color: "#6366f1",
-      tutorial: {
-        title: "إجمالي المبيعات",
-        description: "يعرض إجمالي الإيرادات المتولدة من المبيعات ضمن النطاق الزمني المحدد.",
-        example: "إذا اخترت 'هذا الشهر' وكانت مبيعاتك 50,000 دولار، ستعرض هذه البطاقة 50,000 دولار."
-      }
+      example: tTutorial("dashboard.stats_example.totalSales")
     },
     {
       key: "costOfGoods",
@@ -180,11 +176,7 @@ export default function DashboardPage() {
       icon: Briefcase,
       color: "#f59e0b",
       isInverse: true,
-      tutorial: {
-        title: "تكلفة البضائع",
-        description: "يعرض إجمالي تكلفة المنتجات المباعة، مما يساعدك في حساب الربح الإجمالي.",
-        example: "إذا بعت منتجات بتكلفة 30,000 دولار، ستعرض هذه البطاقة 30,000 دولار."
-      }
+      example: tTutorial("dashboard.stats_example.costOfGoods")
     },
     {
       key: "totalProfit",
@@ -192,11 +184,7 @@ export default function DashboardPage() {
       description: t("kpiDescription.totalProfit"),
       icon: DollarSign,
       color: "#8b5cf6",
-      tutorial: {
-        title: "إجمالي الربح",
-        description: "يحسب الربح بطرح تكلفة البضائع من إجمالي المبيعات.",
-        example: "إذا كانت إجمالي المبيعات 50,000 دولار وتكلفة البضائع 30,000 دولار، فإن الربح هو 20,000 دولار."
-      }
+      example: tTutorial("dashboard.stats_example.totalProfit")
     },
     {
       key: "profitMargin",
@@ -205,11 +193,7 @@ export default function DashboardPage() {
       icon: Percent,
       color: "#06b6d4",
       pct: true,
-      tutorial: {
-        title: "هامش الربح",
-        description: "يعرض النسبة المئوية للربح مقارنة بإجمالي المبيعات، مما يشير إلى الربحية.",
-        example: "هامش 40% يعني أن 40 سنتًا من كل دولار في المبيعات هو ربح."
-      }
+      example: tTutorial("dashboard.stats_example.profitMargin")
     },
     {
       key: "confirmRate",
@@ -218,11 +202,7 @@ export default function DashboardPage() {
       icon: CheckCircle,
       color: "#3b82f6",
       pct: true,
-      tutorial: {
-        title: "نسبة التأكيد",
-        description: "النسبة المئوية للطلبات التي تم تأكيدها من قبل العميل أو المسؤول.",
-        example: "إذا تم تأكيد 90 من 100 طلب، فإن النسبة هي 90%."
-      }
+      example: tTutorial("dashboard.stats_example.confirmRate")
     },
     {
       key: "deliveryRate",
@@ -231,11 +211,7 @@ export default function DashboardPage() {
       icon: Truck,
       color: "#10b981",
       pct: true,
-      tutorial: {
-        title: "نسبة التوصيل",
-        description: "النسبة المئوية للطلبات التي تم توصيلها بنجاح إلى العملاء.",
-        example: "إذا تم توصيل 85 من 100 طلب، فإن النسبة هي 85%."
-      }
+      example: tTutorial("dashboard.stats_example.deliveryRate")
     },
     {
       key: "cancelled",
@@ -245,11 +221,7 @@ export default function DashboardPage() {
       color: "#ef4444",
       pct: true,
       isInverse: true,
-      tutorial: {
-        title: "الطلبات الملغاة",
-        description: "النسبة المئوية للطلبات التي تم إلغاؤها قبل الانتهاء.",
-        example: "إذا تم إلغاء 10 من 100 طلب، فإن النسبة هي 10%."
-      }
+      example: tTutorial("dashboard.stats_example.cancelled")
     },
     {
       key: "returned",
@@ -259,11 +231,7 @@ export default function DashboardPage() {
       color: "#607d8b",
       pct: true,
       isInverse: true,
-      tutorial: {
-        title: "الطلبات المرتجعة",
-        description: "النسبة المئوية للطلبات التي تم إرجاعها من قبل العملاء بعد التوصيل.",
-        example: "إذا تم إرجاع 5 من 100 طلب، فإن النسبة هي 5%."
-      }
+      example: tTutorial("dashboard.stats_example.returned")
     },
     {
       key: "inDelivery",
@@ -271,11 +239,7 @@ export default function DashboardPage() {
       description: t("kpiDescription.inDelivery"),
       icon: Activity,
       color: "#f97316",
-      tutorial: {
-        title: "قيد التوصيل",
-        description: "عدد الطلبات الموجودة حاليًا في الطريق إلى العميل.",
-        example: "إذا كان هناك 15 طلبًا في الطريق للتوصيل، ستعرض هذه البطاقة 15."
-      }
+      example: tTutorial("dashboard.stats_example.inDelivery")
     },
     {
       key: "newOrders",
@@ -283,11 +247,7 @@ export default function DashboardPage() {
       description: t("kpiDescription.newOrders"),
       icon: ShoppingCart,
       color: "#ec4899",
-      tutorial: {
-        title: "الطلبات الجديدة",
-        description: "عدد الطلبات الجديدة المستلمة ضمن النطاق الزمني المحدد.",
-        example: "إذا استلمت 50 طلبًا جديدًا اليوم، ستعرض هذه البطاقة 50."
-      }
+      example: tTutorial("dashboard.stats_example.newOrders")
     },
     {
       key: "totalOrders",
@@ -295,11 +255,7 @@ export default function DashboardPage() {
       description: t("kpiDescription.totalOrders"),
       icon: BarChart3,
       color: "#475569",
-      tutorial: {
-        title: "إجمالي الطلبات",
-        description: "الإجمالي للطلبات المقدمة ضمن النطاق الزمني المحدد.",
-        example: "إذا كان لديك 200 طلبًا هذا الشهر، ستعرض هذه البطاقة 200."
-      }
+      example: tTutorial("dashboard.stats_example.totalOrders")
     },
     {
       key: "totalCollected",
@@ -307,11 +263,7 @@ export default function DashboardPage() {
       description: t("kpiDescription.totalCollected"),
       icon: CreditCard,
       color: "#0ea5e9",
-      tutorial: {
-        title: "المجموع المحصل",
-        description: "إجمالي المبلغ المحصل من العملاء مقابل الطلبات.",
-        example: "إذا جمعت 45,000 دولار في المدفوعات، ستعرض هذه البطاقة 45,000 دولار."
-      }
+      example: tTutorial("dashboard.stats_example.totalCollected")
     },
   ];
 
@@ -368,7 +320,7 @@ export default function DashboardPage() {
           icon: card.icon,
           color: card.color,
           description: card.description,
-          tutorial: card.tutorial,
+          example: card.example,
           trend: {
             label: hasComparison ? comparisonLabel : t("common.noComparisonData"),
             value: hasComparison ? `${Math.abs(Math.round(change))}%` : "",
@@ -494,7 +446,7 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="min-h-screen p-4 md:p-5 space-between" ref={pageRef}> 
+    <div className="min-h-screen p-4 md:p-5 space-between" ref={pageRef}>
       {/* Page header */}
       <PageHeader
         breadcrumbs={[
@@ -508,9 +460,8 @@ export default function DashboardPage() {
               label={t("actions.howToUse")}
               variant="ghost"
               icon={<Info size={18} />}
-              onClick={toggleTutorialMode}
             />
-           
+
           </>
         }
         stats={statsData}
@@ -552,9 +503,10 @@ export default function DashboardPage() {
           className="lg:col-span-2"
         >
           <TutorialSpotlight
-            title="مخطط التقارير العامة"
-            description="يعرض هذا المخطط اتجاه المبيعات والطلبات بمرور الوقت، مما يساعدك في تحديد الأنماط وفترات الذروة."
-            example="إذا اخترت 'هذا الأسبوع'، يمكنك معرفة كيف تغيرت المبيعات يومًا بعد يوم."
+            title={tTutorial("dashboard.generalReports.title")}
+            description={tTutorial("dashboard.generalReports.description")}
+            example={tTutorial("dashboard.generalReports.example")}
+            overview={true}
           >
             <Card
               title={t("charts.generalReports")}
@@ -576,9 +528,10 @@ export default function DashboardPage() {
           transition={{ delay: 0.2 }}
         >
           <TutorialSpotlight
-            title="مخطط المنتجات الأكثر مبيعًا"
-            description="يعرض هذا المخطط الدائري منتجاتك الأكثر مبيعًا، مما يساعدك في التركيز على ما يدفع الإيرادات."
-            example="إذا كان للمنتج أ 30% من المبيعات، سيكون الشريحة الأكبر في المخطط."
+            title={tTutorial("dashboard.topProducts.title")}
+            description={tTutorial("dashboard.topProducts.description")}
+            example={tTutorial("dashboard.topProducts.example")}
+            overview={true}
           >
             <Card title={t("charts.topProducts")} icon={PieIcon} color={PRIMARY}>
               <StatusDonut
@@ -604,9 +557,10 @@ export default function DashboardPage() {
         transition={{ delay: 0.25 }}
       >
         <TutorialSpotlight
-          title="جدول تقرير الربح"
-          description="يُحلل هذا الجدول الربح حسب الفترة الزمنية، مع عرض المبيعات والتكاليف وهامش الربح لمساعدتك في تحليل الأداء."
-          example="يمكنك معرفة أن الأسبوع الماضي كان لديه 10,000 دولار في المبيعات، 6,000 دولار في التكاليف، و4,000 دولار في الربح (هامش 40%)."
+          title={tTutorial("dashboard.profitTable.title")}
+          description={tTutorial("dashboard.profitTable.description")}
+          example={tTutorial("dashboard.profitTable.example")}
+          overview={true}
         >
           <Card
             title={t("profitTable.title")}

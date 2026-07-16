@@ -6559,7 +6559,7 @@
       "totalOrders": "Total number of all orders received",
       "totalCollected": "Total amount collected from orders",
       "correctedOrders": "Total number of orders excluding duplicate, out of delivery area, and wrong number orders",
-      "confirmedCount": "Total number of orders that were confirmed at any time",
+      "confirmedCount": "Total number of orders that were confirmed at any time in order life",
       "deliveredFromConfirmed": "Total number of delivered orders that were previously confirmed. Calculated as ((delivered from confirmed / confirmed count) * 100)",
       "deliveredFromTotal": "Total number of delivered orders out of all orders. Calculated as ((delivered / total orders) * 100)",
       "deliveredSales": "Total revenue from delivered orders only",
@@ -11410,7 +11410,7 @@
       "noAnswer": "Number of upsells where the customer did not respond (still pending)",
       "expired": "Number of upsells where the customer accepted after the offer's time limit expired",
       "acceptedNonEligible": "Number of upsells accepted, but the order was already delivered or entered warehouse preparation (so upsell was no longer eligible)",
-      "failedToAdd": "Number of upsells that failed to add to the order (due to insufficient stock, deleted/inactive product, etc.)",
+      "failedToAdd": "Number of upsells that failed to add to the order (due to deleted/inactive product, etc.)",
       "delivered": "Number of upsells accepted and the order was successfully delivered"
     },
     "table": {
@@ -11728,5 +11728,1289 @@
     },
     "empty": "No cities found matching your search"
   },
-  "description": "Description"
+  "description": "Description",
+  "tutorial": {
+    "example": "Example",
+    "title": "Tutorial mode enabled",
+    "description": "Learn about every element in the system and how it works",
+    "exit": "Exit tutorial mode",
+    "dashboard": {
+      "generalReports": {
+        "title": "General Reports Chart",
+        "description": "This chart shows sales and order trends over time, helping you identify patterns and peak periods.",
+        "example": "If you select 'This Month', it splits the period into 12 segments. For each segment, it shows the number of orders created and total sales (sum of finalTotal for delivered orders)."
+      },
+      "topProducts": {
+        "title": "Top Products Chart",
+        "description": "This pie chart shows your best-selling products, helping you focus on what drives revenue.",
+        "example": "If you have total 1000 items sold from delivered orders, and Product A has 300 items sold, Product B 200, then Product A will have 30% of the pie (300/1000 *100) and be the largest slice."
+      },
+      "profitTable": {
+        "title": "Profit Report Table",
+        "description": "This table analyzes profit by time period, showing sales, costs, and profit margin to help you analyze performance.",
+        "example": "It splits the period into 4 segments. For each segment: sales = finalTotal minus shippingCost for delivered orders; costs = sum of (unitCost * quantity) for items in those delivered orders; profit = sales - costs; margin = (profit / sales) *100."
+      },
+      "stats_example": {
+        "totalSales": "If you have 2 delivered orders with final totals of $500 each, totalSales will be $1000.",
+        "costOfGoods": "If you have 2 delivered orders: first with total sales $500 and profit $200, second with total sales $500 and profit $200, costOfGoods is ($500-$200) + ($500-$200) = $600.",
+        "totalProfit": "If you have 2 delivered orders. First order has 2 items: item 1 costs $200 and sells for $300, item 2 costs $200 and sells for $300. Profit for first order is ($300-$200) + ($300-$200) = $200. If second order also has $200 profit, totalProfit is $400.",
+        "profitMargin": "If you have total sales of $1000 and total profit of $400, profit margin is ($400 / $1000) * 100 = 40%.",
+        "confirmRate": "If you have 100 total orders and 90 of them were confirmed at any time, confirmRate is (90 / 100) * 100 = 90%.",
+        "deliveryRate": "If you have 100 total orders and 85 of them were delivered, deliveryRate is (85 / 100) * 100 = 85%.",
+        "cancelled": "If you have 100 total orders and 10 of them were cancelled, cancelled rate is (10 / 100) * 100 = 10%.",
+        "returned": "If you have 100 total orders and 5 of them were returned, returned rate is (5 / 100) * 100 = 5%.",
+        "inDelivery": "If there are 15 orders in SHIPPED status, inDelivery will display 15.",
+        "newOrders": "If 50 new orders were created during this period, newOrders will display 50.",
+        "totalOrders": "If you received 200 orders total during this period, totalOrders will display 200.",
+        "totalCollected": "If you collected a total of $45,000 from all orders, totalCollected will display 45000."
+      }
+    },
+    "accounts": {
+      "tabs": {
+        "overview": {
+          "description": "A bird's-eye view of your financial health — combines expenses trend, breakdown, supplier balances, city deliveries, recent transactions, and month closing status into one dashboard.",
+          "example": "Use this tab to quickly spot which expense category is highest, which suppliers have outstanding balances, and whether the current month is profitable."
+        },
+        "manualExpenses": {
+          "description": "Manage your operating expense categories and record expenses like rent, salaries, utilities, and other overhead costs.",
+          "example": "Create a 'Rent' category, then add a $500 expense under it to track your monthly office rent separately from product purchases."
+        },
+        "supplierAccounts": {
+          "description": "View detailed financial accounts for each supplier — tracks total purchases, payments made, returns, and the net amount owed to or from each supplier.",
+          "example": "If you purchased $8000 from Supplier A and paid $6000, this tab will show $2000 as the outstanding balance you still owe."
+        },
+        "supplierPayments": {
+          "description": "Record and track cash payments made to suppliers through your safe/treasury accounts. Each payment can be allocated to specific purchase invoices or left as a general credit.",
+          "example": "Register a $1000 payment to Supplier B from your Main Cash safe, allocating $700 to Invoice #101 and $300 as a general credit."
+        },
+        "monthClosing": {
+          "description": "Close each accounting month to finalize profit calculations. Shows revenue, product cost, operational expenses, returns cost, and net profit for the selected month.",
+          "example": "Close January's books to lock in the net profit figure. After closing, January's data becomes read-only."
+        },
+        "safes": {
+          "description": "Manage your financial accounts (cash, bank, wallets) and track all money inflows and outflows. Includes transfers between accounts with commission tracking.",
+          "example": "Add a 'Main Cash' safe account, deposit $10,000 as initial balance, then record a $500 withdrawal for operating expenses."
+        }
+      },
+      "overview": {
+        "expensesTrend": {
+          "title": "Expenses Trend Chart",
+          "description": "A line chart that visualizes your expenses over time, broken down into product purchases, manual operating expenses, and total costs.",
+          "example": "If you select a date range of 'This Month', the chart divides the period into segments. For each segment, it shows the sum of accepted purchase invoice totals (productCost) and manual expense amounts (manualExpenses), with a combined total line."
+        },
+        "expensesBreakdown": {
+          "title": "Expenses Breakout Donut",
+          "description": "A donut chart that shows the proportion of your total expenses between product purchases and manual operating expenses.",
+          "example": "If your product purchases total $5000 and manual expenses total $1000, the donut will show 83% for product purchases and 17% for manual expenses."
+        },
+        "suppliers": {
+          "title": "Top Supplier Balances",
+          "description": "A summary card showing your top 3 suppliers ranked by their outstanding balance. Displays the supplier name, absolute balance, and whether you owe them (Payable) or they owe you (Receivable).",
+          "example": "If Supplier A has an unpaid invoice balance of $3000 and Supplier B has a return credit of $500, Supplier A will show as 'Payable' with $3000 and Supplier B as 'Receivable' with $500."
+        },
+        "cityDeliveries": {
+          "title": "City Deliveries Report",
+          "description": "A summary card showing delivery performance by city, with the top 3 cities by shipment count. Displays actual deliveries vs total shipments and the success rate percentage.",
+          "example": "If Cairo has 100 shipments with 85 delivered successfully, it will show '85/100' with an 85% success rate bar."
+        },
+        "lastExpenses": {
+          "title": "Recent Expenses Table",
+          "description": "A table showing the 6 most recent financial transactions, combining accepted purchase invoices and manual operating expenses, sorted by date.",
+          "example": "If your latest transactions are a $1200 purchase invoice from Supplier X and a $200 rent expense, both will appear with their respective amounts and dates."
+        },
+        "monthClosing": {
+          "title": "Month Closing Preview",
+          "description": "A quick-view card showing the current month's net profit calculation and closing status. Click to navigate to the full month closing page.",
+          "example": "If this month's revenue is $10000, product cost is $6000, returns cost is $500, and operational expenses are $1500, the card will display a net profit of $2000 with a 'Pending' status."
+        }
+      },
+      "stats_example": {
+        "overview_productPurchases": "If you have 3 accepted purchase invoices worth $500, $1200, and $800, product purchases will display 2500.",
+        "overview_manualExpenses": "If you recorded expenses of $200 for rent and $50 for supplies, operating expenses will display 250.",
+        "overview_totalExpenses": "If product purchases is 2500 and operating expenses is 250, total expenses will display 2750.",
+        "overview_returns": "If you have 2 accepted purchase returns worth $150 and $100, returns will display 250.",
+        "supplierAccounts_totalPurchases": "If you purchased $5000 worth of goods from Supplier A and $3000 from Supplier B, total purchases will display 8000.",
+        "supplierAccounts_totalPaid": "If you paid $4000 to Supplier A and $2000 to Supplier B, total paid will display 6000.",
+        "supplierAccounts_returns": "If you returned $500 worth of goods to Supplier A and $200 to Supplier B, total returns will display 700.",
+        "supplierAccounts_totalReceived": "If Supplier A refunded $200 and Supplier B credited $100, total received will display 300.",
+        "supplierAccounts_finalBalance": "If you purchased $8000, paid $6000, returned $700, and received $300, final balance will be $8000 - $6000 - $700 + $300 = 1600.",
+        "monthClosing_lastMonthProfit": "If last month's revenue was $10000, product cost was $6000, returns cost was $500, and operational expenses were $1500, last month profit will be $10000 - $6000 - $500 - $1500 = $2000.",
+        "monthClosing_currentRevenue": "If you delivered 5 orders with final totals (minus shipping) of $1000, $500, $800, $1200, and $600, current revenue will display 4100.",
+        "monthClosing_productCost": "If delivered order items cost $200, $100, $150, $300, and $180 respectively, product cost will display 930.",
+        "monthClosing_operationalExpenses": "If you recorded $500 for rent and $200 for utilities this month, operational expenses will display 700.",
+        "monthClosing_returnsCost": "If returned items from delivered orders cost $100, returns cost will display 100.",
+        "monthClosing_currentNetProfit": "If revenue is 4100, product cost is 930, returns cost is 100, and operational expenses are 700, current net profit will be 4100 - 930 - 100 - 700 = 2370.",
+        "safes_totalBalance": "If Account A has $5000 and Account B has $3000, total balance will display 8000.",
+        "safes_totalIn": "If you received $2000 in Account A and $1500 in Account B, total inflow will display 3500.",
+        "safes_totalOut": "If you disbursed $1000 from Account A and $800 from Account B, total outflow will display 1800.",
+        "safes_accountsCount": "If you have Main Cash, Bank Account, and Petty Cash, active accounts will display 3.",
+        "supplierPayments_totalSuppliers": "If you have 10 suppliers registered in the system, total suppliers will display 10.",
+        "supplierPayments_totalShouldPay": "If Supplier A has $2000 due and Supplier B has $500 due, total owed to suppliers will display 2500.",
+        "supplierPayments_totalShouldCollect": "If Supplier C has a $300 credit balance, total credits from suppliers will display 300."
+      }
+    },
+    "products": {
+      "totalProducts": {
+        "description": "The total number of active products in your inventory",
+        "example": "If you have 150 products created in your store and none are deactivated, totalProducts will display 150."
+      },
+      "totalStock": {
+        "description": "Total quantity of products purchased and added to your inventory from accepted purchase invoices, minus returned quantities from accepted return invoices",
+        "example": "If you received 1000 items from accepted purchase invoices and returned 50 items from accepted return invoices, totalStock will be 1000 - 50 = 950."
+      },
+      "availableItems": {
+        "description": "Total items currently available in your warehouse that are not reserved and can be sold immediately. Calculated as (stockOnHand - reserved) across all product variants",
+        "example": "If you have total stockOnHand of 500 items and 100 items are reserved for shipped orders, availableItems will be 500 - 100 = 400."
+      },
+      "withShippingCompanies": {
+        "description": "Total quantity of items that have been shipped and are currently in transit with delivery companies",
+        "example": "If you have 5 shipped orders with 10 items each, withShippingCompanies will display 50 (sum of all item quantities in SHIPPED status)."
+      },
+      "soldPieces": {
+        "description": "Total quantity of items that have been successfully delivered to customers",
+        "example": "If you have 10 delivered orders with varying quantities (5 + 3 + 8 + 4 + 6 + 7 + 9 + 2 + 10 + 6), soldPieces will display 60."
+      },
+      "reservedItems": {
+        "description": "Total quantity of items that are reserved for active orders and cannot be sold until those orders are completed or cancelled",
+        "example": "If you have 8 pending orders with reserved quantities (15 + 20 + 10 + 25 + 18 + 12 + 22 + 8), reservedItems will display 130."
+      },
+      "remaingStock": {
+        "description": "Total inventory available across all locations including items currently in your warehouse and items in transit with shipping companies",
+        "example": "If you have 400 available items in your warehouse (availableItems) and 50 items with shipping companies (withShippingCompanies), remaingStock will be 400 + 50 = 450."
+      },
+      "tableActions": {
+        "fetchExternal": {
+          "description": "Sync product details from your integrated store (like Shopify or WooCommerce)",
+          "example": "Click to update product information from your Shopify store after making changes there"
+        },
+        "edit": {
+          "description": "Open the product editor to modify product details, prices, and inventory",
+          "example": "Edit the product name, description, and pricing information"
+        },
+        "view": {
+          "description": "View complete product information including images, variants, and stock levels",
+          "example": "See all details about a product including all its variants and current inventory"
+        },
+        "printSku": {
+          "description": "Print barcode labels for product SKUs for inventory tracking",
+          "example": "Print barcode stickers to label your products in the warehouse"
+        },
+        "delete": {
+          "description": "Remove a product from the system permanently"
+        },
+        "reactivate": {
+          "description": "Restore a deleted product back to your active inventory",
+          "example": "Bring back a previously deleted product to sell again"
+        }
+      }
+    },
+    "callCenter": {
+      "tabs": {
+        "manual": {
+          "description": "Manually assign orders to employees. View employee workload, confirmations, and locked assignments to make informed distribution decisions.",
+          "example": "Switch to this tab to see which employees have the fewest active orders and assign new orders to them directly."
+        },
+        "automatic": {
+          "description": "Configure automated routing rules that assign incoming orders to employees based on conditions like city, product, amount range, or store.",
+          "example": "Create a rule that auto-assigns all Cairo orders to Employee A using Round Robin strategy."
+        },
+        "assignments": {
+          "description": "View all currently active order assignments across employees. See which orders are assigned, locked, and pending action.",
+          "example": "Check this tab to see a summary of all unprocessed assignments and how many employees are actively handling orders."
+        }
+      },
+      "stats": {
+        "new": {
+          "description": "Total number of new orders created today that have not yet been assigned to any employee.",
+          "example": "If 25 new orders were placed today and none have been assigned yet, this stat will display 25."
+        },
+        "confirmed": {
+          "description": "Number of orders confirmed by employees today. An order is confirmed when an employee accepts and begins processing it.",
+          "example": "If Employee A confirmed 5 orders and Employee B confirmed 3 orders today, this stat will display 8."
+        },
+        "cancelled": {
+          "description": "Number of orders cancelled by employees today. Counts assignments where the employee marked the order as cancelled.",
+          "example": "If 2 orders were cancelled by employees today due to customer requests, this stat will display 2."
+        },
+        "total": {
+          "description": "Total number of automated routing rules configured in the system, regardless of their active status.",
+          "example": "If you have 5 rules (3 active + 2 inactive), this stat will display 5."
+        },
+        "active": {
+          "description": "Number of automated routing rules that are currently active and will be applied to incoming orders.",
+          "example": "If you have 5 total rules and 3 are toggled on, this stat will display 3."
+        },
+        "manual": {
+          "description": "Number of auto-assign rules that have no conditions (catch-all rules applied to all orders).",
+          "example": "If you have 2 catch-all rules, this stat will display 2."
+        },
+        "product": {
+          "description": "Number of auto-assign rules that filter orders based on specific products.",
+          "example": "If you have 3 rules targeting different product categories, this stat will display 3."
+        },
+        "city": {
+          "description": "Number of auto-assign rules that filter orders based on the delivery city.",
+          "example": "If you have rules for Cairo, Alexandria, and Giza, this stat will display 3."
+        },
+        "amountRange": {
+          "description": "Number of auto-assign rules that filter orders based on a minimum and maximum order amount.",
+          "example": "If you have a rule for orders between $100-$500 and another for $500+, this stat will display 2."
+        },
+        "paymentStatus": {
+          "description": "Number of auto-assign rules that filter orders based on payment status (paid, pending, partial).",
+          "example": "If you have a rule that only assigns paid orders, this stat will display 1."
+        },
+        "store": {
+          "description": "Number of auto-assign rules that filter orders based on the originating store.",
+          "example": "If you have rules for Shopify store and WooCommerce store, this stat will display 2."
+        },
+        "activeAssignments": {
+          "description": "Total number of order assignments currently active across all employees. Each active assignment represents an order that is being processed.",
+          "example": "If Employee A has 5 active orders and Employee B has 3, this stat will display 8."
+        },
+        "assignedEmployees": {
+          "description": "Number of unique employees who currently have at least one active order assignment.",
+          "example": "If 6 different employees have active orders, this stat will display 6."
+        },
+        "lockedAssignments": {
+          "description": "Number of assignments that are currently locked. Locked assignments cannot be reassigned until the lock expires.",
+          "example": "If 3 orders are locked to their current employee until tomorrow, this stat will display 3."
+        }
+      },
+      "columns": {
+        "employeeName": {
+          "description": "The name and avatar of the employee. Click to view their full assignment history.",
+          "example": "Employee names like 'Ahmed Hassan' or 'Sara Mohamed' appear here."
+        },
+        "status": {
+          "description": "Whether the employee is currently active (available to receive assignments) or inactive (not accepting new orders).",
+          "example": "An 'Active' status means the employee can receive new order assignments."
+        },
+        "activeAssignments": {
+          "description": "The number of orders currently assigned to this employee that are still being processed.",
+          "example": "If Ahmed has 5 orders in progress, this column will display 5."
+        },
+        "lockedAssignments": {
+          "description": "The number of orders currently locked to this employee. Locked orders cannot be reassigned to other employees until the lock expires.",
+          "example": "If two orders are locked for Ahmed until the end of the day, this column will display 2, and Ahmed will be able to process them once the lock expires."
+        },
+        "confirmedToday": {
+          "description": "The number of orders this employee confirmed (accepted for processing) today.",
+          "example": "If Ahmed confirmed 3 orders today, this column will display 3."
+        }
+      },
+      "autoAssign": {
+        "columns": {
+          "name": {
+            "description": "The unique name of the auto-assign rule used for identification.",
+            "example": "Rule names like 'Cairo Express' or 'High Value Orders' help you quickly identify each rule."
+          },
+          "description": {
+            "description": "A brief explanation of what this rule does and when it applies.",
+            "example": "A description like 'Assigns all Cairo orders to the express team' clarifies the rule's purpose."
+          },
+          "type": {
+            "description": "The condition type that triggers this rule — determines which order attribute is matched.",
+            "example": "A 'City' type rule matches orders based on their delivery city. A 'Product' type matches based on the ordered product."
+          },
+          "strategy": {
+            "description": "Determines how orders are assigned to the selected employees when this distribution rule is triggered. You can choose between a fair rotation strategy (Round Robin) or a workload-based strategy (Least Active Orders).",
+            "example": "Round Robin assigns one order to each employee in turn before starting the cycle again. Least Active Orders always assigns the next order to the employee with the fewest active orders. If multiple employees have the same number of active orders, the system distributes orders fairly among them."
+          },
+          "status": {
+            "description": "Whether this rule is currently active and being applied to incoming orders.",
+            "example": "An active rule will automatically assign matching orders. An inactive rule is paused and won't affect any orders."
+          },
+          "priority": {
+            "description": "The execution order of this rule. Rules with lower priority numbers are evaluated and applied first.",
+            "example": "A rule with priority 1 is evaluated before a rule with priority 5. The first matching rule wins."
+          },
+          "employees": {
+            "description": "The list of employees who will receive orders when this rule matches. Only the first 2 are shown; click to see all.",
+            "example": "If a rule targets Ahmed and Sara, both will receive orders in rotation when the rule matches."
+          },
+          "actions": {
+            "description": "Buttons to view, activate/deactivate, edit, or delete the rule.",
+            "example": "Click the edit icon to modify the rule's conditions or target employees."
+          }
+        }
+      }
+    },
+    "orders": {
+      "actions": {
+        "view": {
+          "description": "Opens the full order details page showing customer info, items, payments, and all order detials.",
+          "example": "Click the eye icon on order #1234 to see order detials."
+        },
+        "cancelAssignment": {
+          "description": "Removes the current employee assignment from the order, making it available for reassignment.",
+          "example": "If Ahmed is assigned order #1234 but can't process it, clicking this unassigns it so it can be given to another employee."
+        },
+        "distribute": {
+          "description": "Redirects to the warehouse distribution page to assign this confirmed order to a shipping company.",
+          "example": "Order #1234 is confirmed. Click distribute to go to warehouse and assign it to Aramex or J&T Express for delivery."
+        },
+        "print": {
+          "description": "Redirects to the warehouse print page to print waybills for this distributed order.",
+          "example": "Order #1234 is distributed. Click print to generate and print the waybill sticker to attach to the package."
+        },
+        "startPreparing": {
+          "description": "Redirects to the warehouse scanning page to begin scanning and preparing items for this printed order.",
+          "example": "Order #1234 is printed. Click start preparing to scan each item (e.g., 2x Phone Cases, 1x Charger) into the package."
+        },
+        "continuePreparing": {
+          "description": "Redirects to the warehouse scanning page to continue scanning items for an order that was partially scanned.",
+          "example": "You scanned 2 of 5 items in order #1234 before leaving. Click continue preparing to scan the remaining 3 items."
+        },
+        "scanOutgoing": {
+          "description": "Redirects to the outgoing scan page to scan this ready order into a shipping manifest for dispatch.",
+          "example": "Order #1234 is packed and ready. Click scan outgoing to add it to a manifest before the shipping truck departs."
+        },
+        "createManifest": {
+          "description": "Redirects to the outgoing manifest page to create a shipping manifest for a group of scanned orders.",
+          "example": "5 orders are scanned outgoing. Click create manifest to generate a manifest document that the shipping company signs."
+        },
+        "createReturnManifest": {
+          "description": "Redirects to the returns manifest page to create a return manifest for orders being sent back to the warehouse.",
+          "example": "Order #1234 was rejected by the customer. Click create return manifest to add it to a return batch for the warehouse."
+        },
+        "trackShipment": {
+          "description": "Opens a modal showing real-time shipment tracking details from the shipping company.",
+          "example": "Order #1234 is shipped with tracking number TRK-5678. Click track shipment to see it's current status."
+        },
+        "statusHistory": {
+          "description": "Opens a modal showing the complete status change history of this order with timestamps.",
+          "example": "Click status history to see order #1234 went from New → Confirmed → Distributed → Printed → Shipped, each with date and time."
+        },
+        "duplicate": {
+          "description": "Creates a new order pre-filled with the same customer, items, and details as this order.",
+          "example": "Customer wants to reorder the same items. Click duplicate to create order #1235 with the same 3 items and address — just update the quantity if needed."
+        },
+        "edit": {
+          "description": "Opens the order edit page to modify customer info, items, amounts, or other details.",
+          "example": "Customer called to change their address. Click edit to update the delivery address from '123 Main St' to '456 Oak Ave'."
+        },
+        "delete": {
+          "description": "Permanently deletes this order after confirmation. Cannot be undone.",
+          "example": "A duplicate test order was created by mistake. Click delete to permanently remove it from the system."
+        },
+        "bulkCancelAssignments": {
+          "description": "Removes the employee assignment from all currently selected orders in bulk, making them available for reassignment.",
+          "example": "You selected 10 orders assigned to Ahmed. Click this to unassign all 10 at once so they can be redistributed to other employees."
+        },
+        "bulkUpload": {
+          "description": "Opens the bulk upload dialog to import multiple orders at once using an Excel file. You can download a template first which contains separate sheets for properties that require specific values (like store, payment method).",
+          "example": "You have 30 orders to enter. Click bulk upload, download the template, fill in each order row across the sheets (customer info, items,...), then upload the completed Excel file to create all 30 orders at once."
+        }
+      },
+      "shipping": {
+        "tabs": {
+          "normal": {
+            "description": "Displays all shipped orders currently in transit. Use this as the default view to monitor all active shipments.",
+            "example": "Switch to this tab to see all 150 orders currently with shipping companies, including their tracking status and how many shipping days have elapsed."
+          },
+          "late": {
+            "description": "Displays only shipped orders that have exceeded the maximum allowed shipping days for their delivery city. The max days are configured per city in the Cities settings page.",
+            "example": "Cairo has a max shipping day setting of 6. An order shipped 8 days ago to Cairo will appear here as late. Export this list to contact the shipping company about delays."
+          }
+        },
+        "columns": {
+          "shippingDays": {
+            "description": "The number of days elapsed since the order was shipped, calculated by counting calendar days from the shipped date to today (inclusive). The badge color indicates whether the order is within the city's shipping range: green = on time, yellow = near the limit, red = exceeded the max.",
+            "example": "Order was shipped on July 8 and today is July 14 → shipping days = 7. If Cairo's max is 6 days, this badge turns red indicating the order is late."
+          }
+        }
+      },
+      "failedOrders": {
+        "stats": {
+          "pending": {
+            "description": "Number of orders received from external stores (Easy Order, Shopify, etc.) that failed to be created in the system due to errors like product not found, variant not found, or insufficient quantity. These have not been handled yet.",
+            "example": "A Shopify order arrived but the product variant ID doesn't match any in your catalog. It stays in pending until you resolve it."
+          },
+          "retrying": {
+            "description": "Number of failed orders currently being retried by the system to be added again automatically.",
+            "example": "You retry creating an order that previously failed due to a temporary stock issue. Stock is now available, so the retry is in progress."
+          },
+          "success": {
+            "description": "Number of failed orders that have been successfully retried and created in the system.",
+            "example": "A order previously failed because the variant was missing. After you added the variant, the retry succeeded and the order now exists in the system."
+          },
+          "failed": {
+            "description": "Number of failed orders that could not be created even after retrying. These require intervention again to resolve.",
+            "example": "An order failed to create because the product was deleted from the catalog. The retry also failed since the product no longer exists. You need to handle this."
+          }
+        },
+        "problems": {
+          "description": "Shows the specific issue preventing each cart item from being added to the system. Each item has one of: product not found, product inactive, variant not found, variant inactive, or insufficient stock.",
+          "example": "If an item shows 'Product Not Found', it means the product from the store doesn't exist locally. The available fix actions change depending on which problem is shown.",
+          "PRODUCT_NOT_FOUND": {
+            "description": "The product from the external store does not exist in your local catalog. The system cannot create the order because it cannot match the remote product to any local product.",
+            "example": "A Shopify order includes 'Blue Widget' but no product with that remote ID exists in your catalog. You need to create or import the product first."
+          },
+          "PRODUCT_INACTIVE": {
+            "description": "The product exists in your catalog but is currently inactive (deleted or deactivated). The system refuses to create orders with inactive products.",
+            "example": "The product 'Red Gadget' was archived last week. A new order arrived for it, but since it's inactive, the order fails. You need to reactivate the product."
+          },
+          "SKU_NOT_FOUND": {
+            "description": "The product exists but the specific variant (size, color, option) from the store does not match any local variant. For single-type products, it means no SKU exists at all.",
+            "example": "The store sent variant 'Large / Blue' but your product only has 'Small / Red' and 'Medium / Blue' variants. You need to add the missing variant or choose a different SKU."
+          },
+          "SKU_INACTIVE": {
+            "description": "The product variant exists in your catalog but is currently inactive (disabled or deleted). The system cannot use an inactive variant to create an order.",
+            "example": "The 'Large / Blue' variant was disabled because it was discontinued. A new order references it, so the order fails until you reactivate or replace the variant."
+          },
+          "INSUFFICIENT_STOCK": {
+            "description": "The product and variant are found, but there is not enough available stock to fulfill the ordered quantity. The order fails because it would oversell the product.",
+            "example": "The customer ordered 5 units of 'Red Widget' but you only have 2 units available in stock. You need to restock or reduce the ordered quantity."
+          }
+        },
+        "actions": {
+          "description": "Dynamic actions available per cart item based on its problem. Actions change depending on the problem type — you may see options to view external data, create the product, choose a different SKU, edit the product, or include in a purchase order.",
+          "example": "For a 'Product Not Found' item, you'll see actions to view external data and create the product. For 'Insufficient Stock', you'll see a checkbox to include it in a purchase order.",
+          "fetchExternalDetails": {
+            "description": "Available for all problem types. Opens a modal showing the raw product data received from the external store so you can compare it with your local catalog.",
+            "example": "Click the eye icon to see the product title, SKU, price, and options that Shopify sent, then compare them with what exists in your system."
+          },
+          "createProduct": {
+            "description": "Available only when the problem is PRODUCT_NOT_FOUND. Redirects to the external product import page where you can create a new local product from the store's data.",
+            "example": "The product 'Blue Widget' doesn't exist locally. Click the store icon to import it from Shopify with all its variants, images, and pricing."
+          },
+          "chooseDifferentSku": {
+            "description": "Available when the product exists locally (for SKU_NOT_FOUND, SKU_INACTIVE, or INSUFFICIENT_STOCK). Opens a SKU selector to map the order item to a different variant of the same product.",
+            "example": "The store sent 'Large / Blue' but you only have 'Medium / Blue'. Click this to re-map the order item to the 'Medium / Blue' variant instead."
+          },
+          "editProductAndAddVariant": {
+            "description": "Available only for SKU_NOT_FOUND or SKU_INACTIVE problems. Redirects to the product edit page where you can add the missing variant or reactivate an inactive one.",
+            "example": "The variant 'Large / Blue' doesn't exist. Click the edit icon to go to the product page and add this variant with its SKU, stock, and pricing."
+          },
+          "includeInPurchaseOrder": {
+            "description": "Available only for INSUFFICIENT_STOCK. A checkbox that marks this item to be included in a purchase order so you can restock the product from your supplier.",
+            "example": "You're out of 'Red Widget' stock. Check this box to include it in a purchase order to your supplier so you can fulfill the order once stock arrives."
+          }
+        }
+      }
+    },
+    "warehouse": {
+      "distribution": {
+        "stats": {
+          "totalConfirmed": {
+            "description": "Total number of orders with status 'Confirmed' that are ready to be distributed to a shipping company. These orders have been confirmed by employees but not yet assigned to a carrier.",
+            "example": "If 12 orders were confirmed today and none have been assigned to a carrier yet, this stat shows 12."
+          },
+          "withCarrier": {
+            "description": "Total number of orders that have been distributed (assigned) to a shipping company, regardless of whether their waybill has been printed or not.",
+            "example": "If 8 orders were assigned to Aramex and 5 to J&T Express, this stat shows 13."
+          },
+          "readyToPrint": {
+            "description": "Number of orders that have been distributed to a carrier but their waybill has not been printed yet. These orders need their waybill sticker printed before they can move to preparation.",
+            "example": "If 10 orders are assigned to carriers but 4 of them haven't had their waybills printed, this stat shows 4."
+          }
+        },
+        "tabs": {
+          "unassigned": {
+            "description": "Shows all confirmed orders that are waiting to be assigned to a shipping company. Assign orders from this tab to send them to carriers.",
+            "example": "Switch to this tab to see the 12 confirmed orders waiting for distribution and assign each to the appropriate shipping company."
+          },
+          "assigned": {
+            "description": "Shows all orders that have been distributed to a shipping company. Track which orders are with carriers and monitor their waybill printing status.",
+            "example": "Switch to this tab to see the 13 orders already assigned to carriers."
+          }
+        }
+      },
+      "preparation": {
+        "stats": {
+          "scanning": {
+            "description": "Number of orders currently being scanned and prepared. These orders have had their waybill printed and scanning has started but is not yet complete.",
+            "example": "If 3 warehouse workers are each scanning orders, this stat shows how many orders are actively being processed."
+          },
+          "notStarted": {
+            "description": "Number of printed orders waiting to be scanned. These orders have their waybills printed but no scanning activity has begun yet.",
+            "example": "If 8 orders have printed waybills but no one has started scanning them, this stat shows 8."
+          },
+          "total": {
+            "description": "Total number of orders in the preparation pipeline — includes both orders waiting to be scanned and orders currently being scanned.",
+            "example": "If 5 orders are being scanned and 8 are waiting, this stat shows 13 as the total preparation workload."
+          }
+        }
+      },
+      "logs": {
+        "stats": {
+          "totalOps": {
+            "description": "Total number of warehouse operation log entries recorded. Each entry represents a single action like distributing, printing, preparing, or dispatching an order.",
+            "example": "If the warehouse processed 200 operations today across all stages, this stat shows 200."
+          },
+          "success": {
+            "description": "Number of warehouse operations that completed successfully without any errors.",
+            "example": "If 195 out of 200 operations completed without issues, this stat shows 195."
+          },
+          "failed": {
+            "description": "Number of warehouse operations that failed during execution. Failed operations may need to be retried or investigated.",
+            "example": "If 5 operations failed due to scanning errors or system issues, this stat shows 5."
+          },
+          "rate": {
+            "description": "The percentage of warehouse operations that succeeded out of all operations. Calculated as (success / total) × 100.",
+            "example": "If 195 out of 200 operations succeeded, the success rate is 97.5%."
+          }
+        },
+        "columns": {
+          "opType": {
+            "description": "The type of warehouse operation performed. Includes actions like order confirmation, courier assignment, preparation start, waybill printing, manifest printing, outgoing dispatch, and returns.",
+            "example": "An operation type of 'COURIER_ASSIGNED' means the order was assigned to a shipping company during distribution."
+          },
+          "result": {
+            "description": "Whether the warehouse operation completed successfully or failed. A success result means the action was performed without errors; failed means something went wrong.",
+            "example": "A 'SUCCESS' result on a WAYBILL_PRINTED operation means the waybill was printed correctly. A 'FAILED' result means the print failed and may need to be retried."
+          }
+        }
+      }
+    },
+    "upsells": {
+      "stats": {
+        "sent": {
+          "example": "You sent 50 upsell offers to customers who placed qualifying orders. All 50 are counted in this stat regardless of customer response."
+        },
+        "accepted": {
+          "example": "Out of 50 offers sent, 12 customers tapped 'Add to Order'. These 12 are counted here while their orders are still being processed."
+        },
+        "delivered": {
+          "example": "8 of the 12 accepted upsells had their orders successfully delivered to customers. Those 8 are counted here."
+        },
+        "rejected": {
+          "example": "20 customers tapped 'No Thanks' on the upsell offer. Those 20 rejections are counted here."
+        },
+        "noAnswer": {
+          "example": "15 customers received the upsell offer but haven't responded yet. These are pending and counted here."
+        },
+        "expired": {
+          "example": "3 customers accepted the upsell after the 30-minute expiration window passed. Their acceptance didn't count as a valid order update."
+        },
+        "acceptedNonEligible": {
+          "example": "2 customers accepted the upsell but their order was already delivered or entered preparation before the offer was processed, so the upsell couldn't be applied."
+        },
+        "failedToAdd": {
+          "example": "5 customers accepted the upsell but the system couldn't add it to their order due to an inactive product variant."
+        }
+      },
+      "addPage": {
+        "overview": {
+          "title": "Overview",
+          "description": "Upsell offers are not sent automatically when an order is created. An upsell message is sent only when an order reaches an **Upsell** step inside one of your automation flows. If the order matches the upsell configuration, the customer receives the WhatsApp upsell offer.",
+          "example": "Suppose you have an automation flow that starts when a new order is created. After checking several conditions, the flow reaches an Upsell step. Only at that point will the customer receive the WhatsApp upsell offer—not immediately when the order is created."
+        },
+        "triggerProduct": {
+          "description": "The product that must exist in the customer's order for this upsell offer to be eligible when the order reaches an Upsell step in an automation flow. If the order does not contain this product, the upsell will not be sent.",
+          "example": "Set the trigger product to 'Wireless Earbuds'. When an order containing Wireless Earbuds reaches an Upsell step, the customer will receive the configured upsell offer."
+        },
+        "upsellProduct": {
+          "description": "The product offered as an upsell to the customer. When they accept, this product gets added to their order. This is the product you want to cross-sell.",
+          "example": "Set upsell product to 'Phone Case'. Customers who bought earbuds get offered a phone case at a discounted price."
+        },
+        "selectedSku": {
+          "description": "The specific variant (size, color, SKU) of the upsell product that will be added to the order when the customer accepts. Different SKUs have different prices and stock levels.",
+          "example": "If the phone case comes in 'Black / Slim' and 'Clear / Heavy', select 'Black / Slim' as the SKU to offer. Its price and stock determine what the customer sees."
+        },
+        "price": {
+          "description": "The discounted price offered to the customer for the upsell product. This is typically lower than the regular product price to incentivize the customer to accept.",
+          "example": "The phone case normally costs $25 but you offer it as an upsell for $15. The customer sees the $15 price in the WhatsApp message."
+        },
+        "expireTime": {
+          "description": "The time limit (in minutes) after which the upsell offer expires. If the customer doesn't respond within this window, the offer is no longer valid and any late acceptance is counted as expired.",
+          "example": "Set to 30 minutes. If the customer receives the offer at 2:00 PM and accepts at 2:35 PM, the acceptance is counted as expired since it's past the 30-minute window."
+        },
+        "messageImage": {
+          "title": "Message Header Image",
+          "description": "The image shown in the WhatsApp message header. When the header type is set to 'Image' and no custom image is uploaded, the upsell product's main image is automatically used as the offer image. If you change the upsell product later, the image in sent messages will reflect the new product's image.",
+          "example": "Set header type to Image but don't upload a file. When the upsell is sent, the phone case's main product photo appears as the message header image."
+        }
+      }
+    },
+    "whatsapp": {
+      "overview": {
+        "stats": {
+          "messagesSent": {
+            "description": "Total number of outbound WhatsApp messages sent during the selected date range. This includes all message types (templates, text, images, etc.) sent from all linked WhatsApp accounts.",
+            "example": "If you sent 1,200 messages this month across 3 WhatsApp accounts, this stat shows 1,200."
+          },
+          "messagesDelivered": {
+            "description": "Number of outbound messages that were successfully delivered to the recipient's device. A message is counted as delivered when WhatsApp confirms the device received it (status: delivered, read, or played). The percentage shows delivery rate out of total sent.",
+            "example": "Of 1,200 messages sent, 1,140 reached the recipient's phone. The delivery rate is 95%."
+          },
+          "messagesRead": {
+            "description": "Number of outbound messages that were opened or listened to by the recipient (status: read or played). This indicates actual engagement, not just delivery. The percentage shows read rate out of total sent.",
+            "example": "Of 1,200 messages sent, 840 were actually read or played by recipients. The read rate is 70%."
+          },
+          "buttonClicks": {
+            "description": "Number of inbound messages where the customer clicked a button (quick reply or interactive button). This measures how actively customers engage with your interactive messages. The percentage shows click rate out of total sent.",
+            "example": "Of 300 interactive messages sent with buttons, 120 customers clicked a button. The click rate is 40%."
+          },
+          "messagesFailed": {
+            "description": "Number of outbound messages that were accepted by Meta for processing but ultimately failed to be delivered. This can happen when Meta encounters an error while processing the message, such as being unable to download an attached image or media, or when a required media asset becomes unavailable or invalid.",
+            "example": "100 image messages were submitted successfully to Meta, but 8 failed because Meta couldn't download the attached product images from their URLs. These messages are counted as failed."
+          },
+          "accounts": {
+            "description": "Total number of WhatsApp Business Accounts linked to your system. Each account represents a separate WhatsApp Business number that can send and receive messages independently.",
+            "example": "You have 3 WhatsApp accounts linked: one for sales, one for support, and one for marketing. This stat shows 3."
+          },
+          "templatesTotal": {
+            "description": "Total number of WhatsApp message templates created across all linked accounts. Templates must be approved by Meta before they can be used for outbound messaging.",
+            "example": "You have 25 templates total: 15 for order updates, 5 for promotions, and 5 for authentication."
+          },
+          "templatesApproved": {
+            "description": "Number of templates that have been approved by Meta and are ready to use for sending messages. Only approved templates can be sent to customers.",
+            "example": "Of your 25 templates, 20 have been approved by Meta and can be used immediately."
+          },
+          "templatesRejected": {
+            "description": "Number of templates that were rejected by Meta during the review process. Rejected templates cannot be sent and need to be modified and resubmitted for review.",
+            "example": "5 templates were rejected because they violated Meta's marketing template guidelines. You need to edit and resubmit them."
+          },
+          "templatesLowQuality": {
+            "description": "Number of approved templates that received a 'low quality' rating from Meta. Low quality templates may be paused by Meta if they continue to receive negative feedback from recipients.",
+            "example": "2 of your approved templates have low quality ratings because recipients frequently report them as spam. Consider improving their content."
+          },
+          "upsellSent": {
+            "description": "Total number of upsell offers sent to customers via WhatsApp during the selected period. Each offer is triggered when a qualifying order contains the trigger product.",
+            "example": "50 upsell offers were sent this month to customers who ordered products matching your trigger criteria."
+          },
+          "upsellAccepted": {
+            "description": "Number of upsell offers accepted by customers. The upsell product was added to their order, but the order may not yet be delivered.",
+            "example": "12 out of 50 upsell offers were accepted by customers and the products were added to their orders."
+          },
+          "upsellRejected": {
+            "description": "Number of upsell offers that customers explicitly rejected by tapping 'No Thanks'.",
+            "example": "20 customers tapped 'No Thanks' on the upsell offer, rejecting the cross-sell."
+          },
+          "upsellNoAnswer": {
+            "description": "Number of upsell offers where the customer has not yet responded. These offers are still pending and waiting for customer action.",
+            "example": "15 customers received the upsell offer but haven't responded yet. They may still accept or reject it."
+          },
+          "upsellExpired": {
+            "description": "Number of upsell offers where the customer accepted after the expiration time limit. The acceptance was received too late to be processed as a valid order update.",
+            "example": "3 customers accepted the upsell after the 30-minute expiration window. Their acceptances are counted as expired."
+          },
+          "upsellNonEligible": {
+            "description": "Number of upsell offers accepted, but the customer's order was already delivered or entered warehouse preparation before the upsell could be applied. The upsell was no longer eligible at the time of acceptance.",
+            "example": "2 customers accepted the upsell but their orders had already been shipped, so the upsell couldn't be added."
+          },
+          "upsellFailed": {
+            "description": "Number of upsell offers that the system failed to add to the order after customer acceptance. Failure reasons include deleted/inactive products, or inactive variants.",
+            "example": "5 customers accepted the upsell but the product was deleted, so the system couldn't add it to their orders."
+          },
+          "upsellDelivered": {
+            "description": "Number of accepted upsell offers where the order was successfully delivered to the customer. This is the final successful outcome of the upsell flow.",
+            "example": "8 of the 12 accepted upsells had their orders delivered to customers. These represent completed upsell conversions."
+          },
+          "upsellPending": {
+            "description": "Number of accepted upsell offers that are still being processed — the order is confirmed but not yet delivered. These are in progress between acceptance and delivery.",
+            "example": "4 accepted upsells are still in the warehouse being prepared for shipment. These show as pending until delivered."
+          }
+        },
+        "widgets": {
+          "messagingFunnel": {
+            "description": "A visual funnel showing the progression of your messages from sent to engaged. Each bar represents a stage: Sent (100%), Delivered (reached device), Read (opened by recipient), and Clicks (button interactions). The narrowing bars show where customers drop off in the messaging journey.",
+            "example": "Your funnel shows 1,200 sent → 1,140 delivered (95%) → 840 read (70%) → 360 clicked (30%). This means 70% of recipients read your messages and 30% engaged with buttons."
+          },
+          "trendsChart": {
+            "description": "A line chart showing message volume trends over time. Each line represents a metric: Sent (green), Delivered (emerald), Read (blue), and Clicks (purple). Use this to identify peak engagement times and track how your messaging performance changes over days or weeks.",
+            "example": "The chart shows a spike in sent and read messages every Monday morning when you send your weekly promotion. Clicks peak on Tuesdays when customers respond."
+          },
+          "topButtons": {
+            "description": "A table showing the most frequently clicked button labels from inbound messages. This helps you understand which interactive options customers engage with most, so you can optimize your message buttons for higher engagement.",
+            "example": "'Confirm Order' was clicked 150 times, 'Track Shipment' 120 times, and 'Cancel' 30 times. This tells you customers mostly use WhatsApp to confirm orders."
+          },
+          "activityHeatmap": {
+            "description": "A 7×24 grid showing inbound message volume by day of week and hour (in Cairo timezone). Darker green cells indicate higher customer activity. Use this to schedule your outbound messages during peak engagement windows. The heatmap always shows the last 7 days regardless of the date filter.",
+            "example": "The heatmap shows the darkest cells on weekdays between 10 AM–2 PM and 7 PM–10 PM. Schedule your marketing messages during these windows for maximum visibility."
+          },
+          "messagesByCategory": {
+            "description": "A donut chart showing the distribution of all messages by type (template, text, image, etc.). This includes both inbound and outbound messages. Templates are shown in green, text in blue, and other types in amber.",
+            "example": "Your chart shows 60% templates (green), 25% text messages (blue), and 15% other types (amber). Most of your communication uses pre-approved templates."
+          },
+          "topTemplates": {
+            "description": "A table of your best-performing WhatsApp templates ranked by button click count. Shows each template's name, category (marketing/utility/authentication), times sent, times read, and times a button was clicked. Use this to identify which templates drive the most customer engagement.",
+            "example": "'order_confirmation_v2' (utility) was sent 500 times, read 450 times, and had 200 button clicks — your most engaging template."
+          },
+          "topAutomations": {
+            "description": "A table of your most active automation flows ranked by total execution count. Shows each flow's name, total runs, completed/failed counts, and success rate percentage. Use this to monitor automation health and identify flows that need attention.",
+            "example": "'Welcome New Customer' automation ran 300 times with 98% success rate. 'Order Status Update' ran 250 times but only 85% success rate — investigate the failures."
+          }
+        }
+      },
+      "templates": {
+        "stats": {
+          "total": {
+            "description": "Total number of WhatsApp message templates belonging to your account, regardless of status or quality. This counts all templates you've created across all linked WhatsApp accounts.",
+            "example": "You have 25 templates total: 15 for order updates, 5 for promotions, and 5 for authentication, across 3 WhatsApp accounts."
+          },
+          "approved": {
+            "description": "Number of templates that have been approved by Meta and are ready to use for sending messages. Only approved templates can be sent to customers. A template must pass Meta's content review before it gets this status.",
+            "example": "Of your 25 templates, 20 have been approved by Meta and can be used immediately to message customers."
+          },
+          "rejected": {
+            "description": "Number of templates that were rejected by Meta during the review process. Rejected templates cannot be sent and need to be edited and resubmitted for review. Common reasons include policy violations or misleading content.",
+            "example": "5 templates were rejected because they violated Meta's marketing template guidelines. You need to edit and resubmit them."
+          },
+          "lowQuality": {
+            "description": "Number of templates that received a 'low quality' rating from Meta. This is independent of status — a template can be both approved AND low quality. Low quality templates may be paused by Meta if they continue receiving negative feedback from recipients.",
+            "example": "3 of your approved templates have low quality ratings because recipients frequently report them as spam. Consider improving their content to avoid being paused."
+          },
+          "usedLast48": {
+            "description": "Number of template-type messages that were successfully sent, delivered, or read in the last 48 hours. This counts actual message sends using templates, not the templates themselves. Only messages with status sent, delivered, or read are included.",
+            "example": "In the last 48 hours, 350 template messages were sent or delivered to customers — these are the templates actively being used for communication."
+          },
+          "errorsLast48": {
+            "description": "Number of template-type messages that failed to send in the last 48 hours. These are messages attempted using templates but that encountered delivery failures (invalid numbers, blocked accounts, policy violations, etc.).",
+            "example": "15 template messages failed in the last 48 hours — 10 due to invalid phone numbers and 5 due to the recipients blocking the business account."
+          }
+        }
+      },
+      "accounts": {
+        "stats": {
+          "deliveryRate": {
+            "description": "Percentage of all outbound WhatsApp messages that successfully reached the recipient's phone. A message is counted as delivered when its status is delivered, read, or played. This is calculated over all-time outbound messages.",
+            "example": "Of 1,000 outbound messages sent from this account, 950 reached the recipient's phone. The delivery rate is 95%."
+          },
+          "readRate": {
+            "description": "Percentage of delivered messages that were subsequently read or played by the recipient. The denominator is delivered messages only (not total sent), so this measures engagement among messages that actually reached the phone. Statuses read and played count as 'read'.",
+            "example": "Of 950 delivered messages, 760 were read or played by recipients. The read rate is 80% — meaning 80% of people who received your message actually opened it."
+          },
+          "newConversations": {
+            "description": "Number of new WhatsApp conversations started with customers in the last 48 hours. A conversation is created when a customer initiates contact or when a business sends the first message to a customer. This count is filtered to the last 48 hours.",
+            "example": "45 new conversations were started in the last 48 hours — 30 from customers messaging first and 15 from business-initiated outreach."
+          },
+          "failureRate": {
+            "description": "Percentage of all outbound WhatsApp messages that failed to send. This is calculated over all-time outbound messages. Messages with status 'failed' are counted as failures. Messages stuck in 'sent' or 'accepted' status are counted in the denominator but not as failures.",
+            "example": "Of 1,000 outbound messages, 50 failed. The failure rate is 5%. These failures could be due to invalid numbers, blocked accounts, or policy violations."
+          }
+        }
+      }
+    },
+    "orderAnalysis": {
+      "stats": {
+        "totalOrders": {
+          "description": "Total number of orders placed in your store during the selected date range. This includes all orders regardless of their status — new, confirmed, delivered, cancelled, or returned.",
+          "example": "You received 500 orders this month across all stores. This stat shows 500 regardless of whether they were delivered or cancelled."
+        },
+        "correctedOrders": {
+          "description": "Number of orders that are valid and processable — total orders minus those with DUPLICATE, OUT_OF_DELIVERY_AREA, or WRONG_NUMBER statuses. These are the orders your team actually needs to work on.",
+          "example": "Of 500 total orders, 30 were duplicates, 15 had wrong numbers, and 10 were out of delivery area. Corrected orders = 500 - 55 = 445."
+        },
+        "confirmedCount": {
+          "description": "Number of orders where the 'isConfirmed' flag is set to true. These are orders that have been verified by your call center team and are ready for processing.",
+          "example": "320 out of 445 corrected orders have been confirmed by the call center. The confirmation rate is 72%."
+        },
+        "deliveredFromConfirmed": {
+          "description": "Number of orders that were both confirmed (isConfirmed = true) AND have reached the 'delivered' status. This measures the success rate of your confirmed orders — how many actually made it to the customer.",
+          "example": "Of 320 confirmed orders, 240 were delivered. The delivery rate from confirmed is 75%."
+        },
+        "deliveredFromTotal": {
+          "description": "Total number of orders that reached the 'delivered' status, regardless of whether they were confirmed or not. This is the overall delivery count.",
+          "example": "260 orders were delivered in total this month — including 240 that were confirmed and 20 that skipped confirmation."
+        },
+        "totalSales": {
+          "description": "Sum of the 'finalTotal' field across ALL orders in the selected period, regardless of their status. This represents the total order value before any cancellations or returns.",
+          "example": "The total value of all 500 orders is $50,000. This includes orders that were later cancelled or returned."
+        },
+        "deliveredSales": {
+          "description": "Sum of the 'finalTotal' field only for orders that reached the 'delivered' status. This represents actual revenue from completed sales.",
+          "example": "Of $50,000 in total orders, $38,000 came from delivered orders. This is your actual revenue for the period."
+        },
+        "collectedAmount": {
+          "description": "Sum of the 'collectedAmount' field across all orders. This represents the cash actually collected from customers (cash on delivery or prepaid amounts).",
+          "example": "Of $38,000 in delivered sales, $35,500 was actually collected from customers. The remaining $2,500 may be pending collection or partial payments."
+        },
+        "pendingOrders": {
+          "description": "Number of webhook order failures that have not yet been resolved. These are orders that failed to sync from your store and are awaiting manual intervention or retry.",
+          "example": "8 orders failed to sync from Shopify due to webhook errors. They appear here until you resolve them or they auto-retry successfully."
+        },
+        "inWarehouseOrders": {
+          "description": "Number of orders currently in warehouse processing stages. Includes orders with statuses: DISTRIBUTED, PRINTED, PREPARING, READY, PACKED, or SHIPPED. These orders are being prepared for shipment.",
+          "example": "25 orders are currently in the warehouse — 10 being prepared, 8 packed, and 7 shipped but not yet delivered."
+        },
+        "new": {
+          "description": "Number of orders with the NEW status. These are freshly received orders that haven't been processed or confirmed yet.",
+          "example": "45 new orders arrived today and are waiting to be reviewed by the call center."
+        },
+        "returned": {
+          "description": "Number of orders with the RETURNED status. These orders were delivered but the customer returned the product.",
+          "example": "12 orders were returned this month — 8 because the product didn't match expectations and 4 due to damaged items."
+        },
+        "postponed": {
+          "description": "Number of orders with the POSTPONED status. The customer requested to delay delivery to a later date.",
+          "example": "18 orders were postponed this month — customers asked to reschedule delivery to next week."
+        },
+        "outOfDelivery": {
+          "description": "Number of orders with the OUT_OF_DELIVERY_AREA status. The delivery address is outside your shipping company's service area.",
+          "example": "7 orders were marked as out of delivery area because the customer's address is in a remote region not covered by your courier."
+        },
+        "wrongNumber": {
+          "description": "Number of orders with the WRONG_NUMBER status. The phone number provided by the customer is invalid or unreachable.",
+          "example": "5 orders had wrong phone numbers — the call center couldn't reach the customers to confirm delivery."
+        },
+        "canceled": {
+          "description": "Number of orders with the CANCELLED status. These orders were permanently cancelled and will not be processed further.",
+          "example": "22 orders were cancelled this month — 15 by customer request and 7 due to failed delivery attempts."
+        },
+        "canceledAndUnderReview": {
+          "description": "Number of orders with the CANCELLED_FOLLOW_UP status. These orders were initially cancelled but are under review for possible reactivation.",
+          "example": "6 orders are in cancellation follow-up — customers changed their mind and the call center is reviewing whether to reactivate them."
+        },
+        "noAnswerFollowUp": {
+          "description": "Number of orders with the NO_ANSWER_FOLLOW_UP status. The customer didn't answer the phone during the first delivery attempt and needs a follow-up call.",
+          "example": "14 orders are in no-answer follow-up — the courier couldn't reach the customer and the call center needs to reschedule delivery."
+        },
+        "confirmed": {
+          "description": "Number of orders with the CONFIRMED status (from the status workflow). These orders have passed the initial review and are moving toward warehouse processing.",
+          "example": "85 orders are currently in confirmed status, waiting to be distributed to the warehouse for preparation."
+        },
+        "shipped": {
+          "description": "Number of orders with the SHIPPED status. These orders have left the warehouse and are in transit to the customer.",
+          "example": "40 orders are currently shipped and on their way to customers via the shipping company."
+        },
+        "delivered": {
+          "description": "Number of orders with the DELIVERED status. These orders have been successfully received by the customer.",
+          "example": "260 orders were delivered this month, representing a 52% delivery rate from total orders."
+        }
+      },
+      "charts": {
+        "weeklyTrend": {
+          "description": "A bar chart showing the daily trend of new orders (purple) and delivered orders (green) over the last 7 days. Always shows the last 7 days regardless of the selected date filter. Helps you spot daily patterns and compare intake vs. fulfillment.",
+          "example": "Monday shows 80 new orders and 65 delivered. Tuesday shows 90 new and 70 delivered. You can see delivery keeps pace with intake throughout the week."
+        },
+        "statusDonut": {
+          "description": "A doughnut chart showing the distribution of all orders across their current statuses. Each slice represents a status (new, confirmed, shipped, delivered, cancelled, etc.) with its count and percentage. Shows the overall order pipeline at a glance.",
+          "example": "The donut shows 30% delivered, 20% confirmed, 15% shipped, 10% new, 15% cancelled, and 10% other statuses. Most orders are progressing through the pipeline."
+        }
+      },
+      "tables": {
+        "areas": {
+          "description": "A table showing order performance broken down by city/area. Each row represents a city and shows: total orders, corrected orders (excluding duplicates/wrong numbers/out-of-area), confirmed orders, shipped orders, delivered orders, and orders delivered from confirmed. Sorted by delivered count descending.",
+          "example": "Cairo has 150 orders with 85% corrected rate and 70% delivery rate. Alexandria has 80 orders with 90% corrected rate and 75% delivery rate. Cairo has more volume but Alexandria has better delivery performance."
+        },
+        "products": {
+          "description": "A table showing order performance broken down by product. Each row represents a product and shows the same metrics as the areas table: total orders containing that product, corrected orders, confirmed, shipped, delivered, and delivered from confirmed. Sorted by delivered count descending.",
+          "example": "Wireless Earbuds appeared in 120 delivered orders this month. Phone Cases appeared in 90 delivered orders. Earbuds have higher demand but a slightly lower confirmation rate."
+        }
+      },
+      "percentageStats": {
+        "deliveredSales": {
+          "description": "A donut chart showing delivered sales as a proportion of total sales. The center shows the delivered sales amount. This measures what percentage of your total order value actually converted to completed sales.",
+          "example": "Delivered sales are $38,000 out of $50,000 total sales (76%). The remaining $12,000 is from orders that were cancelled, returned, or are still in progress."
+        },
+        "collectedAmount": {
+          "description": "A donut chart showing collected amount as a proportion of delivered sales. The center shows the collected amount. This measures how much of your delivered sales revenue was actually collected from customers.",
+          "example": "Collected amount is $35,500 out of $38,000 delivered sales (93.4%). The gap of $2,500 represents pending cash-on-delivery collections."
+        },
+        "correctedOrders": {
+          "description": "A donut chart showing corrected orders as a percentage of total orders. Corrected orders exclude duplicates, wrong numbers, and out-of-delivery-area orders. Higher percentage means fewer invalid orders.",
+          "example": "445 corrected orders out of 500 total (89%). 11% of orders were invalid due to duplicates, wrong numbers, or out-of-area addresses."
+        },
+        "confirmedCount": {
+          "description": "A donut chart showing confirmed orders as a percentage of total orders. This measures how many of all incoming orders were verified and confirmed by the call center.",
+          "example": "320 confirmed out of 500 total orders (64%). 36% of orders are still pending confirmation or were cancelled before confirmation."
+        },
+        "deliveredFromTotal": {
+          "description": "A donut chart showing delivered orders as a percentage of total orders. This is the overall delivery rate — the most important metric for order success.",
+          "example": "260 delivered out of 500 total orders (52%). About half of all orders placed this month were successfully delivered."
+        },
+        "newOrders": {
+          "description": "A donut chart showing new (unprocessed) orders as a percentage of total orders. High percentage may indicate a backlog in order processing.",
+          "example": "45 new orders out of 500 total (9%). Most orders have been processed, with only 9% still waiting for initial review."
+        },
+        "returnedOrders": {
+          "description": "A donut chart showing returned orders as a percentage of total orders. High return rates may indicate product quality or expectation mismatch issues.",
+          "example": "12 returned out of 500 total orders (2.4%). This is a healthy return rate for an e-commerce business."
+        },
+        "postponedOrders": {
+          "description": "A donut chart showing postponed orders as a percentage of total orders. These are orders where the customer requested a delivery delay.",
+          "example": "18 postponed out of 500 total orders (3.6%). A small portion of customers needed delivery rescheduling."
+        },
+        "outOfDeliveryOrders": {
+          "description": "A donut chart showing out-of-delivery-area orders as a percentage of total orders. High percentage may indicate you need to expand your shipping coverage.",
+          "example": "7 out-of-area out of 500 total orders (1.4%). Very few orders are from areas your courier doesn't cover."
+        },
+        "wrongNumberOrders": {
+          "description": "A donut chart showing wrong-number orders as a percentage of total orders. High percentage may indicate issues with your checkout form or data quality.",
+          "example": "5 wrong number out of 500 total orders (1%). Most customers provide correct contact information."
+        },
+        "canceledOrders": {
+          "description": "A donut chart showing cancelled orders as a percentage of total orders. High cancellation rates may indicate pricing, expectation, or customer service issues.",
+          "example": "22 cancelled out of 500 total orders (4.4%). Most cancellations were due to customer requests or failed delivery attempts."
+        },
+        "canceledAndUnderReview": {
+          "description": "A donut chart showing cancelled-and-under-review orders as a percentage of total orders. These are orders being evaluated for possible reactivation.",
+          "example": "6 under review out of 500 total orders (1.0%). A few customers reconsidered their cancellations."
+        },
+        "noAnswerFollowUp": {
+          "description": "A donut chart showing no-answer-follow-up orders as a percentage of total orders. High percentage may indicate customers are hard to reach or phone numbers need verification.",
+          "example": "14 no-answer out of 500 total orders (2.8%). Some customers didn't answer delivery calls and need follow-up scheduling."
+        },
+        "confirmedOrders": {
+          "description": "A donut chart showing orders with CONFIRMED status as a percentage of total orders. These are orders in the confirmation workflow stage.",
+          "example": "85 in-confirmed-status out of 500 total orders (17%). These orders are confirmed but not yet shipped."
+        },
+        "shippedOrders": {
+          "description": "A donut chart showing orders with SHIPPED status as a percentage of total orders. These orders are in transit to customers.",
+          "example": "40 shipped out of 500 total orders (8%). These orders are on their way to customers."
+        },
+        "deliveredOrders": {
+          "description": "A donut chart showing orders with DELIVERED status as a percentage of total orders. Same as deliveredFromTotal but shown as a standalone percentage donut.",
+          "example": "260 delivered out of 500 total orders (52%). Over half of all orders were successfully completed."
+        },
+        "deliveredFromConfirmed": {
+          "description": "A donut chart showing delivered orders from confirmed orders as a percentage. This measures the success rate of your confirmation-to-delivery pipeline.",
+          "example": "240 delivered from 320 confirmed orders (75%). Three-quarters of confirmed orders made it to successful delivery."
+        }
+      }
+    },
+    "employeePerformance": {
+      "stats": {
+        "totalAssignments": {
+          "description": "Total number of order assignments distributed across all employees during the selected period. Counts every unique assignment (employee-to-order link).",
+          "example": "350 total assignments — 8 employees shared 350 order handling tasks between them."
+        },
+        "confirmedPercent": {
+          "description": "Percentage of assigned orders that employees successfully confirmed (moved to confirmed status) out of all assignments. A higher rate indicates efficient employee follow-up.",
+          "example": "72% confirmation rate — out of 350 assignments, employees confirmed 252 orders, meaning they successfully contacted customers and verified 252 orders."
+        },
+        "cancelledPercent": {
+          "description": "Percentage of assigned orders that were cancelled out of all assignments. A high cancellation rate may indicate issues with order verification or customer responsiveness.",
+          "example": "8% cancellation rate — 28 out of 350 assignments ended in cancellation, possibly because customers changed their minds or could not be reached."
+        },
+        "preparationFailedCount": {
+          "description": "Number of preparation-phase scan failures across all employees. These are cases where an employee attempted to prepare an order but the scan failed (e.g., item not found).",
+          "example": "20 preparation failures — employees attempted to prepare 15 orders but encountered scan errors during the warehouse preparation phase."
+        }
+      },
+      "columns": {
+        "employeeName": {
+          "description": "The name and avatar of the employee being evaluated. This is the team member whose performance metrics are displayed in the row.",
+          "example": "Ahmed Hassan — the employee whose confirmed, shipped, delivered, and failed counts are shown across the row."
+        },
+        "activeAssignments": {
+          "description": "Number of order assignments currently active for this employee.",
+          "example": "12 active assignments — Ahmed currently has 12 orders in his active work queue that he is handling."
+        },
+        "receivedOrders": {
+          "description": "Total number of orders assigned to this employee during the selected period. all orders this employee was responsible for.",
+          "example": "45 received orders — Ahmed was assigned 45 orders this month to handle."
+        },
+        "confirmedOrders": {
+          "description": "Number of orders that this employee successfully confirmed (moved to confirmed status). These are orders where the employee contacted the customer and verified the order.",
+          "example": "32 confirmed orders — Ahmed confirmed 32 out of 45 assigned orders by contacting customers and verifying details."
+        },
+        "confirmationRate": {
+          "description": "Percentage of assigned orders this employee confirmed. Calculated as (confirmedCount / totalAssigned) * 100. Higher rates indicate more effective customer follow-up.",
+          "example": "71.1% confirmation rate — Ahmed confirmed 32 out of 45 orders, which is a strong confirmation performance."
+        },
+        "shippedOrders": {
+          "description": "Number of orders assigned to this employee that reached the SHIPPED status.",
+          "example": "28 shipped orders — 28 of Ahmed's assigned orders were shipped out for delivery."
+        },
+        "shippedRate": {
+          "description": "Percentage of assigned orders that were shipped. Calculated as (shippedCount / totalAssigned) * 100. Shows how many of the employee's orders made it to the shipping stage.",
+          "example": "62.2% shipped rate — 28 out of 45 orders Ahmed handled were shipped to customers."
+        },
+        "deliveredOrders": {
+          "description": "Number of orders assigned to this employee that reached the DELIVERED status. These are successfully completed deliveries from this employee's workload.",
+          "example": "22 delivered orders — 22 of Ahmed's orders were successfully delivered to customers."
+        },
+        "deliveryRate": {
+          "description": "Percentage of assigned orders that were successfully delivered. Calculated as (deliveredCount / totalAssigned) * 100. This is the ultimate success metric for an employee's order handling.",
+          "example": "48.9% delivery rate — 22 out of 45 orders Ahmed handled were successfully delivered. A good delivery rate indicates efficient end-to-end order processing."
+        },
+        "preparationFailedCount": {
+          "description": "Number of preparation-phase scan failures for this employee. These are cases where the employee tried to prepare an order but the scan failed during the warehouse phase.",
+          "example": "3 preparation failures — Ahmed had 3 failed preparation scans, possibly due to stock issues or incorrect item scanning."
+        }
+      }
+    },
+    "shipping": {
+      "stats": {
+        "topCity": {
+          "description": "The city with the highest number of delivered shipments across all time. Shows the city name and the count of successfully delivered shipments.",
+          "example": "Cairo (450) — Cairo has the most delivered shipments with 450 successful deliveries, making it your top-performing delivery city."
+        },
+        "lowestCity": {
+          "description": "The city with the lowest number of delivered shipments. This may indicate areas with fewer orders, delivery challenges, or areas that need more coverage.",
+          "example": "Luxor (12) — Luxor has only 12 delivered shipments, indicating either low demand or potential delivery issues in that area."
+        },
+        "avgDeliveries": {
+          "description": "Overall delivery success rate across all cities. Calculated as (total delivered shipments / total shipments) * 100. This is the global delivery performance metric.",
+          "example": "87.5% delivery rate — out of all shipments, 87.5% were successfully delivered, indicating strong overall delivery performance."
+        }
+      },
+      "columns": {
+        "city": {
+          "description": "The city/area name for the shipment data row. Each row represents aggregated shipment statistics for a specific city.",
+          "example": "Cairo — this row shows all shipment statistics for the Cairo area."
+        },
+        "totalShipments": {
+          "description": "Total number of shipments sent to this city during the selected period. Includes all shipment statuses — delivered, failed, and cancelled.",
+          "example": "200 total shipments to Cairo — 200 packages were sent to Cairo during this period."
+        },
+        "actualDeliveries": {
+          "description": "Number of shipments that were successfully delivered (status = DELIVERED) in this city. This is the count of completed deliveries.",
+          "example": "175 actual deliveries in Cairo — 175 out of 200 shipments to Cairo were successfully delivered to customers."
+        },
+        "failedShipments": {
+          "description": "Number of shipments that failed or were cancelled (status = FAILED or CANCELLED) in this city. These are deliveries that did not reach the customer.",
+          "example": "25 failed/cancelled shipments in Cairo — 25 out of 200 shipments to Cairo were not delivered due to failures or cancellations."
+        },
+        "successRate": {
+          "description": "Delivery success rate for this city. Calculated as (actualDeliveries / totalShipments) * 100. Color-coded: green for 85%+, orange for 60-84%, red for below 60%.",
+          "example": "87.5% success rate for Cairo — 175 out of 200 shipments were delivered, showing excellent delivery performance for this city."
+        }
+      }
+    },
+    "automationLogs": {
+      "stats": {
+        "total": {
+          "description": "The total number of automation executions (excluding cancelled ones). This includes all triggered automation runs across all workflows — pending, running, completed, failed, and paused.",
+          "example": "1,251 total automation runs — across all automation workflows, 1,251 executions have been triggered by order-related events."
+        },
+        "running": {
+          "description": "The number of automation executions currently in progress. These workflows are actively processing their steps right now (sending messages, updating statuses, assigning employees, etc.).",
+          "example": "8 running executions — 8 automation workflows are currently processing their steps, such as sending WhatsApp templates and updating order statuses."
+        },
+        "problems": {
+          "description": "The number of automation executions that failed at any step. A workflow fails when any action encounters an error — such as a WhatsApp message failure, an upsell offer failure, an invalid template, or an incorrect phone number. These executions require review or manual retry.",
+          "example": "3 failed executions — 3 automations stopped due to errors (for example, a missing WhatsApp template, an invalid customer phone number, or insufficient stock for an upsell product). Click 'View' to see which step failed and why."
+        },
+        "completed": {
+          "description": "The number of automation executions that completed all steps successfully. Every action in the workflow (status updates, WhatsApp messages, employee assignments, etc.) was executed without errors.",
+          "example": "1,240 completed executions — 1,240 automations ran from the trigger to the final action without any errors, completing their entire workflow successfully."
+        },
+        "pending": {
+          "description": "The number of automation executions waiting in the queue to start. These workflows have been triggered but have not begun processing yet — they are waiting for available resources.",
+          "example": "2 pending executions — 2 automations have been triggered and are currently queued, waiting to start processing their steps."
+        },
+        "paused": {
+          "description": "The number of automation executions that have been temporarily paused. These workflows started running but were stopped during execution — either manually by a user or due to system conditions. They can be resumed later.",
+          "example": "1 paused execution — 1 automation was paused during execution (for example, for review or because of rate limiting) and can be resumed later."
+        }
+      },
+      "columns": {
+        "automation": {
+          "description": "The name and version of the automation workflow that was executed. This helps identify exactly which workflow design was used for this execution.",
+          "example": "Welcome Message v1.2 — this execution ran the 'Welcome Message' automation workflow using version 1.2 of its design."
+        },
+        "trigger": {
+          "description": "The event type that triggered this automation execution. Examples include 'order_created', 'order_updated', 'shipment_created', and 'shipment_updated'.",
+          "example": "Order Created — this automation execution started when a new order was created in the system."
+        },
+        "status": {
+          "description": "The current execution status. Possible values are: pending (queued), running (currently executing), completed (all steps succeeded), failed (stopped because of an error), and paused (temporarily stopped).",
+          "example": "Failed — the automation started running but encountered an error during one of its steps, such as a WhatsApp API error or a failed condition evaluation."
+        },
+        "progress": {
+          "description": "Displays execution progress, including the number of completed steps, the current or failed node, and the error message if the workflow failed. For completed executions, it shows the total number of steps completed.",
+          "example": "3 steps completed — failed at 'Send WhatsApp Template': 'Template not found'. This execution completed 3 steps before failing because the WhatsApp template was deleted or renamed."
+        },
+        "startedAt": {
+          "description": "The date and time when the automation execution was triggered and started processing. This corresponds to the moment the trigger event occurred.",
+          "example": "Started at 2025-01-15 14:30:00 — the automation was triggered on January 15 at 2:30 PM when a new order was created."
+        },
+        "actions": {
+          "description": "Action buttons for this execution. Click 'View' to open the full execution details page, where you can see step-by-step execution data, inputs, outputs, timing information, and error details.",
+          "example": "Click the eye icon to open the execution details page and see which steps succeeded, which failed, and the complete execution path."
+        }
+      }
+    },
+    "automations": {
+      "description": "Automation is a sequence of steps that execute one after another, triggered by a specific event. Each automation starts with a trigger — such as when an order is created, an order status is updated, a shipment is created, or a shipment is updated. Once triggered, the automation runs through its configured steps in order. Each step can depend on the result of the previous step — for example, checking if an order meets certain conditions before sending a WhatsApp message. If a step requires a response (like waiting for a customer reply on WhatsApp), the automation pauses at that step and resumes automatically once the response is received. This allows you to build smart workflows that react to real events and customer interactions without manual intervention.",
+      "example": "Example: You create an automation triggered on 'order_created'. Step 1 checks if the order total is above $50. If yes, Step 2 sends a WhatsApp confirmation template to the customer. Step 3 waits for the customer to reply. Once the customer responds, Step 4 assigns the order to a specific employee. If the customer doesn't respond within 24 hours, Step 5 sends a follow-up reminder. This entire flow runs automatically without you touching anything."
+    },
+    "cities": {
+      "description": "This page allows you to configure shipping settings for each city. You can set the minimum and maximum shipping days, which represent the average delivery timeframe for that city. These values are used to track late shipments. If an order's shipping duration exceeds the maximum days you set for its city, that order is marked as a late shipping order. You can then go to the Shipping tab, filter for late orders, export the list, and share it with the shipping company to investigate delays and improve delivery performance.",
+      "example": "Example: For Cairo, you set min = 2 days and max = 5 days. This means most orders to Cairo take 2-5 days to deliver. If an order to Cairo is still not delivered after 5 days, it is flagged as 'late'. You go to the Shipping tab, filter by 'Late' status, export those orders, and send the list to your shipping partner asking why they are late.",
+      "columns": {
+        "minDays": {
+          "description": "The minimum expected shipping days for this city. This represents the fastest realistic delivery time based on historical data and is used as a baseline for the expected delivery window.",
+          "example": "Example: Cairo has min = 2 days, meaning the fastest orders to Cairo arrive in 2 days."
+        },
+        "maxDays": {
+          "description": "The maximum allowed shipping days for this city. If an order takes longer than this to ship, it is automatically marked as a late shipping order. This is the threshold used to identify problematic deliveries.",
+          "example": "Example: Cairo has max = 5 days. If an order to Cairo hasn't shipped after 5 days, it appears in the 'Late Orders' list in the Shipping tab."
+        },
+        "status": {
+          "description": "Shows whether shipping configuration (min/max days) has been set for this city. 'Configured' means the city has shipping day limits. 'Not Configured' means the city has no shipping settings yet and orders to this city won't be tracked for late shipping.",
+          "example": "Example: Cairo shows 'Configured' because you set min=2 and max=5. Alexandria shows 'Not Configured' because you haven't set shipping days for it yet."
+        }
+      }
+    },
+    "roles": {
+      "columns": {
+        "type": {
+          "description": "Shows whether a role is Global or Custom. Global roles come pre-configured from the system and cannot be edited or deleted — they provide standard permission sets that are always available. Custom roles are created by you with specific permissions, allowing you to give your employees exactly the access they need.",
+          "example": "Example: 'Super Admin' is a Global role with full system access that you cannot modify. 'Warehouse Manager' is a Custom role you created with only warehouse-related permissions like order.view and shipment.update."
+        }
+      }
+    },
+    "suppliers": {
+      "stats": {
+        "totalPurchases": {
+          "description": "The total value of all purchases recorded from all suppliers in your system. This represents your complete purchase history with suppliers and increases whenever new purchases are added. It is a historical total and is not reduced when payments are made.",
+          "example": "Example: If you bought $15,000 from Supplier A, $8,500 from Supplier B, and $22,000 from Supplier C, the total purchases shown will be $45,500."
+        },
+        "totalDue": {
+          "description": "The current net balance between your business and all suppliers. A positive amount means your business still needs to pay suppliers. A negative amount means suppliers owe money back to your business, such as from returns, credits, or overpayments.",
+          "example": "Example: If you owe Supplier A $3,200, have a $500 credit with Supplier B, and owe Supplier C $7,800, the net amount shown will be $10,500."
+        }
+      },
+      "columns": {
+        "categories": {
+          "description": "The product categories associated with this supplier, displayed as tags. Categories help you organize suppliers by the types of products they provide, such as Electronics, Clothing, or Food. A supplier can belong to multiple categories.",
+          "example": "Example: A supplier may be listed under Electronics, Accessories, and Mobile Parts."
+        },
+        "dueBalance": {
+          "description": "The current balance with this supplier. If the amount is positive, your business still needs to pay the supplier. If the amount is negative, the supplier owes money back to your business because of credits, returns, or overpayments.",
+          "example": "Example: If you bought goods worth $10,000 and have already paid $6,500, the remaining balance is $3,500. If the balance becomes -$200, the supplier owes your business $200."
+        },
+        "purchaseValue": {
+          "description": "The total amount your business has purchased from this supplier since they were added to the system. This is your complete purchase history with the supplier and increases whenever a new purchase is recorded.",
+          "example": "Example: If you made purchases of $2,000, $5,500, and $3,000 from the same supplier, the total shown will be $10,500."
+        }
+      },
+      "view": {
+        "pendingBalance": {
+          "description": "The current balance between your business and this supplier after all purchases, returns, refunds, credits, and payments have been calculated. A positive balance means your business still owes money to the supplier. A negative balance means the supplier owes money back to your business, such as from product returns, credit notes, or overpayments.",
+          "example": "Example: If your purchases total $10,000 and your payments total $6,500, the balance is $3,500, meaning you still owe the supplier $3,500. If the balance becomes -$200, the supplier owes your business $200."
+        },
+        "totalPurchases": {
+          "description": "The total value of all purchases you have made from this supplier. This is your complete buying history with them — every purchase invoice is added to this total. It increases whenever you make a new purchase and is not reduced by payments.",
+          "example": "Example: You placed orders of $2,000, $5,500, and $3,000 with this supplier over time. The total purchases shown will be $10,500."
+        }
+      },
+      "tabs": {
+        "purchases": {
+          "description": "Shows all purchase invoices for this supplier. Each row represents a purchase you made from the supplier, including the invoice date, total amount, how much was paid, and what remains. You can filter by date range to find specific purchases and click to view full invoice details.",
+          "example": "Example: You want to check all purchases you made from Supplier X in January. You open the Purchases tab, set the date range to January 1-31, and see a list of all invoices with their amounts and payment status."
+        },
+        "returns": {
+          "description": "Shows all return invoices related to this supplier. When you return products to a supplier (damaged, wrong items, etc.), the return is recorded here. Each row shows the return date, total return amount, how much the supplier refunded, and the status of the return (accepted, pending, or rejected).",
+          "example": "Example: You returned $800 worth of defective products to Supplier Y. The Returns tab shows this return with status 'Accepted' and confirms the $800 credit has been applied to your balance."
+        },
+        "history": {
+          "description": "Shows all closed purchase and return periods for this supplier. When you close a period, all purchase invoices and return invoices within that timeframe are finalized and locked from further changes. You can select a year, review the closed periods, and see the total purchases, returns, and final balance for each period.",
+          "example": "Example: You close the period for Q1 2024 (January-March) for Supplier Z. The History tab shows this period was closed on March 31, 2024, with $25,000 in purchases, $2,000 in returns, and a final balance of $23,000."
+        },
+        "payments": {
+          "description": "Shows all payments recorded for this supplier. Each payment record includes the amount paid, the payment date, whether the payment was made for a specific invoice or as a general payment toward the supplier's balance, and any notes added during the payment process.",
+          "example": "Example: You recorded a payment of $5,000 to Supplier A on March 15 via bank transfer and linked it to Purchase Invoice #INV-1024. The Payments tab shows the amount, date, the invoice it was paid for, and any notes entered with the payment."
+        }
+      }
+    },
+    "purchases": {
+      "columns": {
+        "receiptNumber": {
+          "description": "A unique identifier assigned to each purchase invoice. It is automatically generated when a new purchase is created and is used to track and reference the invoice throughout the system.",
+          "example": "Example: If this is the first purchase created, the receipt number might be PUR-001. The next purchase would be PUR-002, and so on."
+        },
+        "supplier": {
+          "description": "The name of the supplier from whom the products were purchased. If a supplier was not selected during purchase creation, this field will display a dash (-). The supplier determines who the business owes payment to.",
+          "example": "Example: If you purchased 50 units of Phone Cases from 'Tech Supplies Co.', the supplier column will show 'Tech Supplies Co.'."
+        },
+        "date": {
+          "description": "The date when the purchase invoice was created. This is the date the purchase was recorded in the system, which may differ from the actual delivery or payment date.",
+          "example": "Example: If you created a purchase invoice on March 15, 2024, the date column will show '3/15/2024'."
+        },
+        "subtotal": {
+          "description": "The sum of all item line totals in the purchase invoice before any additional adjustments. This is calculated by multiplying each item's quantity by its purchase cost and summing all line totals.",
+          "example": "Example: If you bought 10 units of Product A at $20 each (line total $200) and 5 units of Product B at $30 each (line total $150), the subtotal will be $350."
+        },
+        "paidAmount": {
+          "description": "The amount that has been paid to the supplier at the time the purchase was created. If no payment was made, this will be $0. This amount is deducted from the total to calculate the remaining balance.",
+          "example": "Example: If the purchase total is $1,000 and you paid $400 upfront, the paid amount column will show $400 in green."
+        },
+        "remainingAmount": {
+          "description": "The amount still owed to the supplier for this purchase. It is calculated as the purchase total minus the paid amount. A positive value means you still owe the supplier. A zero value means the purchase is fully paid.",
+          "example": "Example: If the purchase total is $1,000 and you paid $400, the remaining amount will be $600 shown in orange. If you paid the full $1,000, it will show $0 in gray."
+        },
+        "products": {
+          "description": "A list of all items included in this purchase invoice. Each item shows the product name, SKU (stock keeping unit), quantity purchased, and the purchase cost per unit. This gives you a quick overview of what was purchased.",
+          "example": "Example: 'iPhone Case - IC-001 - (x10) (x$5.00 SYP)' means 10 units of iPhone Case (SKU: IC-001) were purchased at $5.00 each."
+        },
+        "safe": {
+          "description": "The cash safe or payment account used to fund this purchase. This indicates which of your financial accounts the payment was made from or will be made from.",
+          "example": "Example: If you paid from your 'Main Cash Safe', the safe column will show 'Main Cash Safe' with a wallet icon."
+        },
+        "receipt": {
+          "description": "An uploaded image or document of the physical receipt or invoice from the supplier. This serves as proof of the purchase and can be previewed by clicking on it.",
+          "example": "Example: A scanned copy of the supplier's printed invoice showing the items purchased, quantities, and prices."
+        },
+        "status": {
+          "description": "The current status of the purchase invoice. Statuses include: Pending (not yet reviewed), Accepted (approved and confirmed), Rejected (denied), and Draft (saved but not submitted).",
+          "example": "Example: A new purchase starts as 'Pending'. After review, it can be 'Accepted' (green), 'Rejected' (red), or remain 'Draft' (gray)."
+        },
+        "actions": {
+          "description": "Row-level actions for managing this purchase invoice. Includes viewing details, checking audit logs, accepting or rejecting the invoice, and changing status. Available actions depend on the current status of the invoice.",
+          "example": "Example: Click the three-dot menu on a pending purchase to accept it (green check), reject it (red X), or view the full invoice details."
+        }
+      }
+    },
+    "purchasesReturn": {
+      "columns": {
+        "returnNumber": {
+          "description": "A unique identifier assigned to each purchase return invoice. It is automatically generated when a new return is created and is used to track and reference the return throughout the system.",
+          "example": "Example: The first return invoice might be PRN-001. The next return would be PRN-002, and so on."
+        },
+        "invoiceNumber": {
+          "description": "The receipt number of the original purchase invoice that this return references. This links the return back to the specific purchase from which the products are being returned.",
+          "example": "Example: If you are returning items from purchase PUR-015, the invoice number column will show 'PUR-015'."
+        },
+        "returnDate": {
+          "description": "The date when the purchase return invoice was created. This is the date the return was recorded in the system.",
+          "example": "Example: If you created a return on April 5, 2024, the return date column will show '4/5/2024'."
+        },
+        "createdBy": {
+          "description": "The name of the user who created this purchase return invoice. This tracks accountability for who initiated the return in the system.",
+          "example": "Example: If employee 'Ahmed Hassan' created the return, this column will display 'Ahmed Hassan'."
+        },
+        "supplierName": {
+          "description": "A snapshot of the supplier name at the time the return was created. This is captured from the original purchase invoice and saved separately so the return record retains the correct supplier name even if the supplier's details change later.",
+          "example": "Example: If the original purchase was from 'Tech Supplies Co.', the supplier name column will show 'Tech Supplies Co.' even if the supplier was renamed later."
+        },
+        "subtotal": {
+          "description": "The sum of all returned item line subtotals before tax. This is calculated by multiplying each returned item's quantity by its unit cost and summing all line subtotals.",
+          "example": "Example: If you returned 5 units of Product A at $10 each (line subtotal $50) and 3 units of Product B at $20 each (line subtotal $60), the subtotal will be $110."
+        },
+        "tax": {
+          "description": "The total tax amount applied to all returned items. Tax is calculated per item based on whether the item is tax-inclusive and its tax rate. This shows the total tax being refunded.",
+          "example": "Example: If Product A has a 10% tax rate on a $100 subtotal ($10 tax) and Product B has a 5% tax rate on a $60 subtotal ($3 tax), the tax total will be $13."
+        },
+        "totalReturn": {
+          "description": "The total value of this return invoice, calculated as the subtotal plus the tax total. This is the full amount the supplier should refund or credit back to your business.",
+          "example": "Example: If the subtotal is $110 and the tax is $13, the total return will be $123. This is the total amount the supplier owes you for this return."
+        },
+        "safe": {
+          "description": "The cash safe or payment account associated with this return. This indicates which financial account is affected by the return transaction.",
+          "example": "Example: If the return refund is recorded against your 'Main Cash Safe', this column will show 'Main Cash Safe' with a wallet icon."
+        },
+        "paidAmount": {
+          "description": "The amount the supplier has already refunded or credited for this return. If no refund has been received yet, this will be $0.",
+          "example": "Example: If the total return is $123 and the supplier refunded $80 so far, the paid amount will show $80 in green."
+        },
+        "remainingAmount": {
+          "description": "The amount still owed by the supplier for this return. It is calculated as totalReturn minus paidAmount. A positive value means the supplier still owes you money. A zero value means the return is fully settled.",
+          "example": "Example: If the total return is $123 and you received an $80 refund, the remaining amount will be $43 shown in orange. If the full amount was refunded, it shows $0 in gray."
+        },
+        "products": {
+          "description": "A list of all items included in this return invoice. Each item shows the product name, SKU, returned quantity, unit cost, and tax rate. This gives you a quick overview of what was returned.",
+          "example": "Example: 'iPhone Case - IC-001 - (x3) (x$5.00 SYP) (Tax 10%)' means 3 units of iPhone Case were returned at $5.00 each with 10% tax."
+        },
+        "receipt": {
+          "description": "An uploaded image or document of the return receipt or credit note from the supplier. This serves as proof of the return transaction and can be previewed by clicking on it.",
+          "example": "Example: A photo of the supplier's signed return acknowledgment or credit note showing the returned items and refund amount."
+        },
+        "status": {
+          "description": "The current status of the purchase return invoice. Common statuses include Accepted, Pending, and Rejected. The status reflects whether the return has been approved and processed by the supplier.",
+          "example": "Example: A return starts as 'Pending'. After the supplier processes it, it becomes 'Accepted' (green) or 'Rejected' (red)."
+        },
+        "actions": {
+          "description": "Row-level actions for managing this purchase return invoice. Includes viewing details, checking audit logs, and editing the paid amount. The edit paid amount action is disabled if the return is linked to a closed period.",
+          "example": "Example: Click the three-dot menu on a return to view full details, check logs, or update the refund amount received from the supplier."
+        }
+      }
+    }
+  }
 }

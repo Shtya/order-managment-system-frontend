@@ -40,6 +40,8 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import InteractiveMessageBuilder from "@/components/molecules/InteractiveMessageBuilder";
 import TemplatePreview from "@/app/[locale]/whatsapp/atoms/TemplatePreview";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
+import { useTutorial } from "@/context/TutorialContext";
 
 // ─── UPSELL SKU SELECTOR MODAL ──────────────────────────────────────────────
 function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [], isRtl, formatCurrency, shouldHaveStock = true }) {
@@ -148,7 +150,9 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
   const router = useRouter();
   const tCommon = useTranslations("common");
   const tValidation = useTranslations("validation");
+  const tTutorial = useTranslations("tutorial.upsells");
   const t = useTranslations("upsells");
+  const {isTutorialMode} = useTutorial();
   const { formatCurrency, currency } = usePlatformSettings();
   const locale = useLocale();
   const isRtl = locale === 'ar';
@@ -281,7 +285,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
         setSubmitting(false);
         return;
       }
-      
+
 
       let forcedUrl = data.messageConfig.headerUrl;
       // 2. معالجة رفع الملفات إن وجدت قبل تحديث القالب
@@ -291,7 +295,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
         const up = await api.post("/upsells/upload-header-media", fdMedia);
         forcedUrl = up.data?.headerUrl;
       }
-      console.log(isImageAndSettingNull, isImage , !isEdit , !headerMediaFile)
+      console.log(isImageAndSettingNull, isImage, !isEdit, !headerMediaFile)
       const payload = {
         triggerProductId: data.triggerProductId,
         upsellProductId: data.upsellProductId,
@@ -319,30 +323,38 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
       setSubmitting(false);
     }
   };
-  
-  
-  
+
+
+
   return (
     <div className="min-h-screen p-5 space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/dashboard" },
-          { name: t("breadcrumb.upsells"), href: "/upsells" },
-          { name: isEdit ? t("actions.edit") : t("toolbar.addUpsell") },
-        ]}
-        title={isEdit ? t("actions.edit") : t("toolbar.addUpsell")}
-        buttons={
-          <div className="flex items-center gap-3">
-            <Button_
-              label={tCommon("save")}
-              variant="solid"
-              onClick={handleSubmit(onSubmit)}
-              disabled={submitting}
-              icon={submitting ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
-            />
-          </div>
-        }
-      />
+      <TutorialSpotlight
+        title={tTutorial("addPage.overview.title")}
+        description={tTutorial("addPage.overview.description")}
+        example={tTutorial("addPage.overview.example")}
+        overview={true}
+
+      >
+        <PageHeader
+          breadcrumbs={[
+            { name: t("breadcrumb.home"), href: "/dashboard" },
+            { name: t("breadcrumb.upsells"), href: "/upsells" },
+            { name: isEdit ? t("actions.edit") : t("toolbar.addUpsell") },
+          ]}
+          title={isEdit ? t("actions.edit") : t("toolbar.addUpsell")}
+          buttons={
+            <div className="flex items-center gap-3">
+              <Button_
+                label={tCommon("save")}
+                variant="solid"
+                onClick={handleSubmit(onSubmit)}
+                disabled={submitting}
+                icon={submitting ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
+              />
+            </div>
+          }
+        />
+      </TutorialSpotlight>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Message Builder */}
@@ -356,38 +368,53 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <Controller
-                    name="triggerProductId"
-                    control={control}
-                    render={({ field }) => (
-                      <ProductFilter
-                        showAllOption={false}
-                        label={t("table.triggerProduct")}
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    )}
-                  />
+                  <TutorialSpotlight
+                    title={t("table.triggerProduct")}
+                    description={tTutorial("addPage.triggerProduct.description")}
+                    example={tTutorial("addPage.triggerProduct.example")}
+                    card="default"
+
+                  >
+                    <Controller
+                      name="triggerProductId"
+                      control={control}
+                      render={({ field }) => (
+                        <ProductFilter
+                          showAllOption={false}
+                          label={t("table.triggerProduct")}
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </TutorialSpotlight>
                   {errors.triggerProductId && (
                     <p className="text-xs text-red-500 px-1">{errors.triggerProductId.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-1">
-                  <Controller
-                    name="upsellProductId"
-                    control={control}
-                    render={({ field }) => (
-                      <ProductFilter
-                        showAllOption={false}
-                        label={t("table.upsellProduct")}
-                        value={field.value}
-                        onChange={field.onChange}
-                        // mode="upsell"
-                        excludeIds={[triggerProductId]}
-                      />
-                    )}
-                  />
+                  <TutorialSpotlight
+                    title={t("table.upsellProduct")}
+                    description={tTutorial("addPage.upsellProduct.description")}
+                    example={tTutorial("addPage.upsellProduct.example")}
+                    card="default"
+                  >
+                    <Controller
+                      name="upsellProductId"
+                      control={control}
+                      render={({ field }) => (
+                        <ProductFilter
+                          showAllOption={false}
+                          label={t("table.upsellProduct")}
+                          value={field.value}
+                          onChange={field.onChange}
+                          // mode="upsell"
+                          excludeIds={[triggerProductId]}
+                        />
+                      )}
+                    />
+                  </TutorialSpotlight>
                   {errors.upsellProductId && (
                     <p className="text-xs text-red-500 px-1">{errors.upsellProductId.message}</p>
                   )}
@@ -395,50 +422,64 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
 
                 {upsellProduct && (
                   <div className="space-y-2">
-                    <Label>{isRtl ? "الصنف المختار" : "Selected Sku"}</Label>
-                    <div
-                      onClick={() => setSkuModalOpen(true)}
-                      className={cn(
-                        "flex items-center justify-between p-3 rounded-xl border-2 border-dashed hover:border-primary cursor-pointer transition-all bg-slate-50 dark:bg-slate-950",
-                        errors.selectedSku ? "border-red-500 bg-red-50/30" : "border-slate-200 dark:border-slate-800"
-                      )}
+                    <TutorialSpotlight
+                      title={isRtl ? "الصنف المختار" : "Selected Sku"}
+                      description={tTutorial("addPage.selectedSku.description")}
+                      example={tTutorial("addPage.selectedSku.example")}
+                      card="default"
                     >
-                      {selectedSku ? (
-                        <div className="flex items-center gap-3">
-                          <Badge variant="outline" className="font-mono">{selectedSku.sku || `#${selectedSku.id.slice(0, 6)}`}</Badge>
-                          <span className="text-sm font-bold">{formatCurrency(selectedSku.price)}</span>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-slate-400">{isRtl ? "اضغط لاختيار الصنف..." : "Click to select Sku..."}</span>
+                      <Label>{isRtl ? "الصنف المختار" : "Selected Sku"}</Label>
+                      <div
+                        onClick={() => setSkuModalOpen(true)}
+                        className={cn(
+                          "flex items-center justify-between p-3 rounded-xl border-2 border-dashed hover:border-primary cursor-pointer transition-all bg-slate-50 dark:bg-slate-950",
+                          errors.selectedSku ? "border-red-500 bg-red-50/30" : "border-slate-200 dark:border-slate-800"
+                        )}
+                      >
+                        {selectedSku ? (
+                          <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="font-mono">{selectedSku.sku || `#${selectedSku.id.slice(0, 6)}`}</Badge>
+                            <span className="text-sm font-bold">{formatCurrency(selectedSku.price)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-slate-400">{isRtl ? "اضغط لاختيار الصنف..." : "Click to select Sku..."}</span>
+                        )}
+                        <Boxes size={18} className="text-slate-400" />
+                      </div>
+                      {errors.selectedSku && (
+                        <p className="text-xs text-red-500 px-1">{errors.selectedSku.message}</p>
                       )}
-                      <Boxes size={18} className="text-slate-400" />
-                    </div>
-                    {errors.selectedSku && (
-                      <p className="text-xs text-red-500 px-1">{errors.selectedSku.message}</p>
-                    )}
+                    </TutorialSpotlight>
                   </div>
                 )}
 
                 <div className="space-y-2">
-                  <Label>{t("table.price")}</Label>
-                  <div className="relative">
-                    <Controller
-                      name="price"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          {...field}
-                          className={cn("h-11 pe-12", errors.price && "border-red-500 focus-visible:ring-red-500")}
-                        />
-                      )}
-                    />
-                    <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">{currency}</span>
-                  </div>
-                  {errors.price && (
-                    <p className="text-xs text-red-500 px-1">{errors.price.message}</p>
-                  )}
+                  <TutorialSpotlight
+                    title={t("table.price")}
+                    description={tTutorial("addPage.price.description")}
+                    example={tTutorial("addPage.price.example")}
+                    card="default"
+                  >
+                    <Label>{t("table.price")}</Label>
+                    <div className="relative">
+                      <Controller
+                        name="price"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            type="number"
+                            placeholder="0.00"
+                            {...field}
+                            className={cn("h-11 pe-12", errors.price && "border-red-500 focus-visible:ring-red-500")}
+                          />
+                        )}
+                      />
+                      <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">{currency}</span>
+                    </div>
+                    {errors.price && (
+                      <p className="text-xs text-red-500 px-1">{errors.price.message}</p>
+                    )}
+                  </TutorialSpotlight>
                 </div>
 
                 <div className="flex flex-col md:flex-row items-center gap-4 pt-2">
@@ -460,26 +501,33 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
                     </Label>
                   </div>
                   {expireTimeEnabled && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <Controller
-                          name="expireTime"
-                          control={control}
-                          render={({ field }) => (
-                            <Input
-                              type="number"
-                              {...field}
-                              className={cn("h-11 w-24", errors.expireTime && "border-red-500 focus-visible:ring-red-500")}
-                              placeholder="30"
-                            />
-                          )}
-                        />
-                        <span className="text-sm text-slate-500">{isRtl ? "دقيقة" : "Minutes"}</span>
+                    <TutorialSpotlight
+                      title={isRtl ? "تحديد وقت انتهاء العرض" : "Set expiration time for this offer"}
+                      description={tTutorial("addPage.expireTime.description")}
+                      example={tTutorial("addPage.expireTime.example")}
+                      card="sm"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <Controller
+                            name="expireTime"
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                type="number"
+                                {...field}
+                                className={cn("h-11 w-24", errors.expireTime && "border-red-500 focus-visible:ring-red-500")}
+                                placeholder="30"
+                              />
+                            )}
+                          />
+                          <span className="text-sm text-slate-500">{isRtl ? "دقيقة" : "Minutes"}</span>
+                        </div>
+                        {errors.expireTime && (
+                          <p className="text-xs text-red-500 px-1">{errors.expireTime.message}</p>
+                        )}
                       </div>
-                      {errors.expireTime && (
-                        <p className="text-xs text-red-500 px-1">{errors.expireTime.message}</p>
-                      )}
-                    </div>
+                    </TutorialSpotlight>
                   )}
                 </div>
               </div>
@@ -515,26 +563,34 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
 
         </div>
         {/* Right Column: Preview */}
-        <div className="lg:col-span-4 space-y-6 sticky top-4">
+        <div className={`lg:col-span-4 space-y-6 ${!isTutorialMode && "sticky top-4"}`}>
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col ">
             <h3 className="font-bold text-slate-800 dark:text-white mb-6 flex items-center justify-between">
-              معاينة حية
+              {t("table.preview")}
             </h3>
 
             {/* Template Preview Component - Reduced Height */}
             <div className="h-full w-full overflow-y-auto w-full flex justify-center custom-scrollbar mb-6">
-              <TemplatePreview
-                isInteractive={true}
-                template={{
-                  headerType: messageConfig.headerType,
-                  headerText: messageConfig.headerText,
-                  headerUrl: messageConfig.headerUrl ? messageConfig.headerUrl : messageConfig.headerType?.toUpperCase() === "IMAGE" ? upsellProduct?.mainImage || "" : "",
-                  bodyText: messageConfig.bodyText,
-                  footerText: messageConfig.footerText,
-                  buttons: messageConfig.buttons,
-                  language: isRtl ? "ar" : "en"
-                }}
-              />
+              <TutorialSpotlight
+                title={tTutorial("addPage.messageImage.title")}
+                description={tTutorial("addPage.messageImage.description")}
+                example={tTutorial("addPage.messageImage.example")}
+                overview={true}
+
+              >
+                <TemplatePreview
+                  isInteractive={true}
+                  template={{
+                    headerType: messageConfig.headerType,
+                    headerText: messageConfig.headerText,
+                    headerUrl: messageConfig.headerUrl ? messageConfig.headerUrl : messageConfig.headerType?.toUpperCase() === "IMAGE" ? upsellProduct?.mainImage || "" : "",
+                    bodyText: messageConfig.bodyText,
+                    footerText: messageConfig.footerText,
+                    buttons: messageConfig.buttons,
+                    language: isRtl ? "ar" : "en"
+                  }}
+                />
+              </TutorialSpotlight>
             </div>
           </div>
         </div>

@@ -114,6 +114,7 @@ function HeaderIconBtn({ onClick, children }) {
 // ─────────────────────────────────────────────────────────────
 export default function LogsTab({ orders = [] }) {
   const t = useTranslations("warehouse.logs");
+  const tTutorial = useTranslations("tutorial.warehouse");
   const { formatCurrency } = usePlatformSettings();
 
   const [search, setSearch] = useState("");
@@ -240,6 +241,8 @@ export default function LogsTab({ orders = [] }) {
       icon: ClipboardList,
       color: "#64748b",
       sortOrder: 0,
+      description: tTutorial("logs.stats.totalOps.description"),
+      example: tTutorial("logs.stats.totalOps.example"),
     },
     {
       id: "success",
@@ -248,6 +251,8 @@ export default function LogsTab({ orders = [] }) {
       icon: CheckCircle2,
       color: "#10b981",
       sortOrder: 1,
+      description: tTutorial("logs.stats.success.description"),
+      example: tTutorial("logs.stats.success.example"),
     },
     {
       id: "failed",
@@ -256,6 +261,8 @@ export default function LogsTab({ orders = [] }) {
       icon: XCircle,
       color: "#ef4444",
       sortOrder: 2,
+      description: tTutorial("logs.stats.failed.description"),
+      example: tTutorial("logs.stats.failed.example"),
     },
     {
       id: "rate",
@@ -264,6 +271,8 @@ export default function LogsTab({ orders = [] }) {
       icon: Package,
       color: "#a855f7",
       sortOrder: 3,
+      description: tTutorial("logs.stats.rate.description"),
+      example: tTutorial("logs.stats.rate.example"),
     },
   ];
 
@@ -284,6 +293,8 @@ export default function LogsTab({ orders = [] }) {
       {
         key: "actionType",
         header: t("table.opType"),
+        description: tTutorial("logs.columns.opType.description"),
+        example: tTutorial("logs.columns.opType.example"),
         cell: (row) => (
           <span className="text-sm font-medium">
             {t(OPERATION_TYPE_KEYS[row.actionType] ?? "opTypes.unknown")}
@@ -312,6 +323,8 @@ export default function LogsTab({ orders = [] }) {
       {
         key: "result",
         header: t("table.result"),
+        description: tTutorial("logs.columns.result.description"),
+        example: tTutorial("logs.columns.result.example"),
         cell: (row) => (
           <Badge
             className={cn(

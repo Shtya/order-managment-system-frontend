@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/utils/cn";
 import { useAuth } from "@/context/AuthContext";
+import { useTutorial } from "@/context/TutorialContext";
+import { TutorialSpotlight } from "./TutorialSpotlight";
 
 // ─────────────────────────────────────────────────────────────
 // COLOR VARIANTS
@@ -144,6 +146,7 @@ export function CustomTooltip({ children, label, color }) {
 
 	return (
 		<>
+
 			<span
 				ref={triggerRef}
 				onMouseEnter={show}
@@ -230,14 +233,19 @@ export function ActionButton({
 	size = "md",
 	disabled = false,
 	className,
-}) {
+	example,
+	description,
+	style,
+	}) {
+	const { isTutorialMode } = useTutorial();
 	const v = VARIANTS[variant] || VARIANTS.slate;
 	const sz = size === "sm" ? "w-7 h-7" : size === "lg" ? "w-10 h-10" : size === "md" ? "w-9 h-9" : size === 'xl' ? "w-12 h-12" : size === "xxl" ? "w-14 h-14" : "";
 	const iconSz = size === "sm" ? 12 : size === "lg" ? 18 : 15;
 
-	const btn = (
+	const buttonContent = (
 		<motion.button
 			type="button"
+			style={style}
 			onClick={disabled ? undefined : onClick}
 			whileHover={disabled ? {} : { scale: 1.1 }}
 			whileTap={disabled ? {} : { scale: 0.92 }}
@@ -255,6 +263,18 @@ export function ActionButton({
 			{React.cloneElement(icon, { size: iconSz })}
 		</motion.button>
 	);
+	console.log(example)
+	const btn = description ? (
+		<TutorialSpotlight 
+			title={tooltip} 
+			description={description} 
+			example={example} 
+			style={{ borderRadius: "9999px" }}
+			card="xs"
+		>
+			{buttonContent}
+		</TutorialSpotlight>
+	) : buttonContent;
 
 	if (!tooltip) return btn;
 
@@ -270,7 +290,9 @@ export function ActionButton({
 // ─────────────────────────────────────────────────────────────
 export function ActionButtons({ row, actions = [], gap = "gap-1.5" }) {
 	const { hasPermission } = useAuth();
+	const { isTutorialMode } = useTutorial();
 	const visible = actions.filter((a) => {
+		if (isTutorialMode) return true; // Show all actions in tutorial mode
 		if (a.hidden) return false;
 		if (a.permission && !hasPermission(a.permission)) return false;
 		return true;
@@ -281,6 +303,7 @@ export function ActionButtons({ row, actions = [], gap = "gap-1.5" }) {
 			{visible.map((action, i) => (
 				<ActionButton
 					key={i}
+					style={isTutorialMode ? { pointerEvents: "none" } : {}}
 					icon={action.icon}
 					tooltip={action.tooltip}
 					onClick={() => action.onClick?.(row)}
@@ -288,6 +311,8 @@ export function ActionButtons({ row, actions = [], gap = "gap-1.5" }) {
 					size={action.size || "md"}
 					disabled={action.disabled}
 					className={action.className}
+					description={action.description}
+					example={action.example}
 				/>
 			))}
 		</div>

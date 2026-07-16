@@ -37,6 +37,7 @@ import toast from "react-hot-toast";
 
 import InfoCard from "@/components/atoms/InfoCard";
 import DataTable from "@/components/atoms/DataTable";
+import TutorialSpotlight from "@/components/atoms/TutorialSpotlight";
 
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
@@ -126,6 +127,7 @@ function JsonBlock({ value }) {
 
 export default function PurchasesReturnPage() {
 	const t = useTranslations("purchasesReturn");
+	const tTutorial = useTranslations("tutorial.purchasesReturn");
 	const { formatCurrency,currency } = usePlatformSettings();
 	const router = useRouter();
 	const pathname = usePathname();
@@ -413,11 +415,15 @@ export default function PurchasesReturnPage() {
 				key: "returnNumber",
 				header: t("table.returnNumber"),
 				className: "text-gray-600 dark:text-slate-200",
+				description: tTutorial("columns.returnNumber.description"),
+				example: tTutorial("columns.returnNumber.example"),
 			},
 			{
 				key: "invoiceNumber",
 				header: t("table.invoiceNumber"),
 				className: "text-gray-600 dark:text-slate-200",
+				description: tTutorial("columns.invoiceNumber.description"),
+				example: tTutorial("columns.invoiceNumber.example"),
 			},
 
 			{
@@ -428,6 +434,8 @@ export default function PurchasesReturnPage() {
 						{new Date(row.created_at).toLocaleDateString()}
 					</span>
 				),
+				description: tTutorial("columns.returnDate.description"),
+				example: tTutorial("columns.returnDate.example"),
 			},
 
 			{
@@ -438,6 +446,8 @@ export default function PurchasesReturnPage() {
 						{row.createdBy?.name || "-"}
 					</span>
 				),
+				description: tTutorial("columns.createdBy.description"),
+				example: tTutorial("columns.createdBy.example"),
 			},
 			{
 				key: "supplierNameSnapshot",
@@ -447,6 +457,8 @@ export default function PurchasesReturnPage() {
 						{row.supplierNameSnapshot || "-"}
 					</span>
 				),
+				description: tTutorial("columns.supplierName.description"),
+				example: tTutorial("columns.supplierName.example"),
 			},
 			// {
 			// 	key: "returnType",
@@ -463,6 +475,8 @@ export default function PurchasesReturnPage() {
 						{formatCurrency(row.subtotal || 0)}
 					</span>
 				),
+				description: tTutorial("columns.subtotal.description"),
+				example: tTutorial("columns.subtotal.example"),
 			},
 			{
 				key: "taxTotal",
@@ -472,6 +486,8 @@ export default function PurchasesReturnPage() {
 						{formatCurrency(row.taxTotal || 0)}
 					</span>
 				),
+				description: tTutorial("columns.tax.description"),
+				example: tTutorial("columns.tax.example"),
 			},
 			,
 			{
@@ -482,6 +498,8 @@ export default function PurchasesReturnPage() {
 						{formatCurrency(row.totalReturn || 0)}
 					</span>
 				),
+				description: tTutorial("columns.totalReturn.description"),
+				example: tTutorial("columns.totalReturn.example"),
 			},
 			{
 				key: "safe",
@@ -493,7 +511,9 @@ export default function PurchasesReturnPage() {
 						</div>
 						<span className="text-xs font-bold">{row.safe?.name || t("common.none")}</span>
 					</div>
-				)
+				),
+				description: tTutorial("columns.safe.description"),
+				example: tTutorial("columns.safe.example"),
 			},
 			{
 				key: "paidAmount",
@@ -503,6 +523,8 @@ export default function PurchasesReturnPage() {
 						{formatCurrency(row.paidAmount || 0)}
 					</span>
 				),
+				description: tTutorial("columns.paidAmount.description"),
+				example: tTutorial("columns.paidAmount.example"),
 			},
 			{
 				key: "remainingAmount",
@@ -518,6 +540,8 @@ export default function PurchasesReturnPage() {
 						</span>
 					);
 				},
+				description: tTutorial("columns.remainingAmount.description"),
+				example: tTutorial("columns.remainingAmount.example"),
 			},
 			{
 				key: "products",
@@ -535,6 +559,8 @@ export default function PurchasesReturnPage() {
 						))}
 					</div>
 				),
+				description: tTutorial("columns.products.description"),
+				example: tTutorial("columns.products.example"),
 			},
 			{
 				key: "receiptAsset",
@@ -549,6 +575,8 @@ export default function PurchasesReturnPage() {
 						/>
 					</div>
 				),
+				description: tTutorial("columns.receipt.description"),
+				example: tTutorial("columns.receipt.example"),
 			},
 			{
 				key: "status",
@@ -557,6 +585,8 @@ export default function PurchasesReturnPage() {
 					const style = getStatusBadgeStyle(row.status);
 					return <Badge className={style}>{t(`statuses.${row.status}`)}</Badge>;
 				},
+				description: tTutorial("columns.status.description"),
+				example: tTutorial("columns.status.example"),
 			},
 			{
 				key: "actions",
@@ -629,9 +659,11 @@ export default function PurchasesReturnPage() {
 						</DropdownMenuContent>
 					</DropdownMenu>
 				),
+				description: tTutorial("columns.actions.description"),
+				example: tTutorial("columns.actions.example"),
 			},
 		];
-	}, [t, formatCurrency]);
+	}, [t, tTutorial, formatCurrency]);
 
 	return (
 		<div className="min-h-screen p-5">

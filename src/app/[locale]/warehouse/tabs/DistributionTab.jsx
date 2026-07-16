@@ -79,6 +79,7 @@ export default function DistributionTab({ subtab, setSubtab }) {
   const tCommon = useTranslations("common");
   const tStats = useTranslations("warehouse.distribution.stats");
   const t = useTranslations("warehouse.distribution");
+  const tTutorial = useTranslations("tutorial.warehouse");
 
   const [statsData, setStatsData] = useState({
     lifecycle: { confirmed: 0, distributed: 0, distributedNotPrinted: 0 },
@@ -139,6 +140,8 @@ export default function DistributionTab({ subtab, setSubtab }) {
       color: "#10b981",
       bgColor: "#10b98115",
       sortOrder: 0,
+      description: tTutorial("distribution.stats.totalConfirmed.description"),
+      example: tTutorial("distribution.stats.totalConfirmed.example"),
     },
     {
       id: "with-carrier",
@@ -148,6 +151,8 @@ export default function DistributionTab({ subtab, setSubtab }) {
       color: "#6763af",
       bgColor: "#6763af15",
       sortOrder: 2,
+      description: tTutorial("distribution.stats.withCarrier.description"),
+      example: tTutorial("distribution.stats.withCarrier.example"),
     },
     {
       id: "ready-to-print",
@@ -157,6 +162,8 @@ export default function DistributionTab({ subtab, setSubtab }) {
       color: "var(--primary)",
       bgColor: "#ff6a1e15",
       sortOrder: 3,
+      description: tTutorial("distribution.stats.readyToPrint.description"),
+      example: tTutorial("distribution.stats.readyToPrint.example"),
     },
   ];
 
@@ -206,12 +213,16 @@ export default function DistributionTab({ subtab, setSubtab }) {
             label: t("tabs.unassigned"),
             count: statsData.lifecycle.confirmed,
             icon: AlertCircle,
+            description: tTutorial("distribution.tabs.unassigned.description"),
+            example: tTutorial("distribution.tabs.unassigned.example"),
           },
           {
             id: "assigned",
             label: t("tabs.assigned"),
             count: statsData.lifecycle.distributed,
             icon: Truck,
+            description: tTutorial("distribution.tabs.assigned.description"),
+            example: tTutorial("distribution.tabs.assigned.example"),
           },
         ]}
         active={subtab}

@@ -684,6 +684,7 @@ export default function ShippedOrders({ statuses = [] }) {
   const ts = useTranslations("orders.shippedOrders");
   const router = useRouter();
   const t = useTranslations("orders");
+  const tTutorial = useTranslations("tutorial.orders");
   const { formatCurrency } = usePlatformSettings();
   const [viewMode, setViewMode] = useState("normal");
   const [search, setSearch] = useState("");
@@ -713,10 +714,10 @@ export default function ShippedOrders({ statuses = [] }) {
 
   const viewModes = useMemo(
     () => [
-      { id: "normal", label: ts("views.normal"), icon: Truck },
-      { id: "late", label: ts("views.late"), icon: AlertTriangle },
+      { id: "normal", label: ts("views.normal"), icon: Truck, description: tTutorial("shipping.tabs.normal.description"), example: tTutorial("shipping.tabs.normal.example") },
+      { id: "late", label: ts("views.late"), icon: AlertTriangle, description: tTutorial("shipping.tabs.late.description"), example: tTutorial("shipping.tabs.late.example") },
     ],
-    [ts],
+    [ts, tTutorial],
   );
 
   useEffect(() => {
@@ -1041,6 +1042,8 @@ export default function ShippedOrders({ statuses = [] }) {
       {
         key: "shippingDays",
         header: ts("table.shippingDays"),
+        description: tTutorial("shipping.columns.shippingDays.description"),
+        example: tTutorial("shipping.columns.shippingDays.example"),
         cell: (row) => {
           if (!row.shippedAt) {
             return <span className="text-muted-foreground text-sm">—</span>;

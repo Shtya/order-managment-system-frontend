@@ -53,6 +53,7 @@ import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
+import TutorialSpotlight from "@/components/atoms/TutorialSpotlight";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { COUNTRIES } from "../settings/page";
 import SafeSelect from "../../../components/molecules/SafeSelect";
@@ -67,6 +68,7 @@ export default function SuppliersPage() {
 	const tCommon = useTranslations("common");
 	const tCountries = useTranslations("countries");
 	const t = useTranslations("suppliers");
+	const tTutorial = useTranslations("tutorial.suppliers");
 	const router = useRouter();
 
 	const [search, setSearch] = useState("");
@@ -134,18 +136,22 @@ export default function SuppliersPage() {
 				name: t("stats.totalPurchases"),
 				value: `${formatCurrency(stats.totalPurchases ?? 0)}`,
 				icon: TrendingUp,
-				color: "#6B7CFF", // blue
+				color: "#6B7CFF",
 				sortOrder: 0,
+				description: tTutorial("stats.totalPurchases.description"),
+				example: tTutorial("stats.totalPurchases.example"),
 			},
 			{
 				name: t("stats.totalDue"),
 				value: `${formatCurrency(stats.totalDue ?? 0)}`,
 				icon: DollarSign,
-				color: "#F59E0B", // amber
+				color: "#F59E0B",
 				sortOrder: 1,
+				description: tTutorial("stats.totalDue.description"),
+				example: tTutorial("stats.totalDue.example"),
 			},
 		],
-		[t, stats, tCommon]
+		[t, stats, tCommon, tTutorial]
 	);
 
 	const fetchSuppliers = useCallback(
@@ -289,6 +295,8 @@ export default function SuppliersPage() {
 					) : (
 						"—"
 					),
+				description: tTutorial("columns.categories.description"),
+				example: tTutorial("columns.categories.example"),
 			},
 			{
 				key: "dueBalance",
@@ -302,6 +310,8 @@ export default function SuppliersPage() {
 						</div>
 					</TooltipProvider>
 				),
+				description: tTutorial("columns.dueBalance.description"),
+				example: tTutorial("columns.dueBalance.example"),
 			},
 			{
 				key: "purchaseValue",
@@ -315,6 +325,8 @@ export default function SuppliersPage() {
 						</div>
 					</TooltipProvider>
 				),
+				description: tTutorial("columns.purchaseValue.description"),
+				example: tTutorial("columns.purchaseValue.example"),
 			},
 			{
 				key: "options",
@@ -357,7 +369,7 @@ export default function SuppliersPage() {
 				),
 			},
 		],
-		[t]
+		[t, tTutorial]
 	);
 	const hasActiveFilters = useMemo(() => {
 		return (

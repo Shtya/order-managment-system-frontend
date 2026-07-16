@@ -24,6 +24,8 @@ import { useTranslations } from "next-intl";
 
 import { useAuth } from "@/context/AuthContext";
 import { avatarSrc } from "./UserSelect";
+import { TutorialSpotlight } from "./TutorialSpotlight";
+import { useTutorial } from "@/context/TutorialContext";
 
 const ACTION_KEYS = new Set(["actions", "options"]);
 const DEFAULT_PER_PAGE_OPTIONS = [6, 12, 24, 48];
@@ -81,8 +83,8 @@ function useIsRTL() {
 /* ══════════════════════════════════════════════════════════════
    FILTER FIELD
 ══════════════════════════════════════════════════════════════ */
-export function FilterField({ label, children, className, lableClass, icon: FieldIcon, iconClass }) {
-  return (
+export function FilterField({ label, children, className, lableClass, icon: FieldIcon, iconClass, title, description, example, card = "sm" }) {
+  const content = (
     <div className={cn("space-y-1.5", className)}>
       {label && (
         <label className={`flex items-center gap-1.5  text-[10px] font-black uppercase tracking-widest text-muted-foreground/80  ${lableClass}`}>
@@ -93,6 +95,16 @@ export function FilterField({ label, children, className, lableClass, icon: Fiel
       {children}
     </div>
   );
+
+  if (description) {
+    return (
+      <TutorialSpotlight title={title || label} description={description} example={example} card={card}>
+        {content}
+      </TutorialSpotlight>
+    );
+  }
+
+  return content;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -115,6 +127,7 @@ export const TableToolbar = memo(function TableToolbar({
     if (e.key === "Enter") { e.preventDefault(); onSearch?.(); }
   };
 
+  const { isTutorialMode } = useTutorial();
   const filteredActions = useMemo(() => {
     return actions.filter((action) => {
       if (!action.permission) return true;
@@ -131,7 +144,7 @@ export const TableToolbar = memo(function TableToolbar({
         searchPlaceholder={searchPlaceholder}
       />}
 
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap" style={{ pointerEvents: "auto" }}>
         {onToggleFilters && (
           <motion.button
             whileHover={{ scale: 1.02, y: -1 }}
@@ -168,21 +181,23 @@ export const TableToolbar = memo(function TableToolbar({
         )}
 
         {filteredActions.map((action) => (
-          <motion.button
-            key={action.key}
-            whileHover={{ scale: 1.02, y: -1 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={action.onClick}
-            type="button"
-            disabled={action.disabled}
-            className={cn(
-              ACTION_COLORS[action.color ?? "default"] ?? ACTION_COLORS.default,
-              "disabled:opacity-50 disabled:cursor-not-allowed gap-1.5",
-            )}
-          >
-            {action.icon}
-            {action.label}
-          </motion.button>
+          <TutorialSpotlight title={action.label} description={action.description} example={action.example} card="sm">
+            <motion.button
+              key={action.key}
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={action.onClick}
+              type="button"
+              disabled={action.disabled}
+              className={cn(
+                ACTION_COLORS[action.color ?? "default"] ?? ACTION_COLORS.default,
+                "disabled:opacity-50 disabled:cursor-not-allowed gap-1.5",
+              )}
+            >
+              {action.icon}
+              {action.label}
+            </motion.button>
+          </TutorialSpotlight>
         ))}
       </div>
     </div>
@@ -195,6 +210,34 @@ export const TableToolbar = memo(function TableToolbar({
 export const TableFilters = memo(function TableFilters({
   children, onApply, applyLabel = "Apply",
 }) {
+  const { isTutorialMode } = useTutorial();
+
+  const shouldElevateFilters = useMemo(() => {
+    if (!isTutorialMode) return false;
+
+    const checkChildren = (kids) => {
+      let found = false;
+      React.Children.forEach(kids, (child) => {
+        if (!child) return;
+
+        if (child.props && (child.props.description || child.props.example)) {
+          found = true;
+        }
+      });
+      return found;
+    };
+
+    // If children is an array with one element that has children, check those first
+    const childrenArray = React.Children.toArray(children);
+    if (childrenArray.length === 1 && childrenArray[0].props && childrenArray[0].props.children) {
+      if (checkChildren(childrenArray[0].props.children)) {
+        return true;
+      }
+    }
+
+    return checkChildren(children);
+  }, [isTutorialMode, children]);
+
   return (
     <motion.div
       initial={{ height: 0, opacity: 0 }}
@@ -203,7 +246,16 @@ export const TableFilters = memo(function TableFilters({
       transition={{ duration: 0.22, ease: "easeInOut" }}
       className=""
     >
-      <div className="overflow-hidden !shadow-none mt-3 rounded-2xl border border-border/60 overflow-hidden main-card !p-0 backdrop-blur-sm">
+      <div
+        className="overflow-hidden !shadow-none mt-3 rounded-2xl border border-border/60 overflow-hidden main-card !p-0 backdrop-blur-sm"
+        style={{
+          ...(shouldElevateFilters ? {
+            zIndex: 60,
+            position: "relative",
+          } : {}),
+          ...(isTutorialMode ? { pointerEvents: "auto" } : {})
+        }}
+      >
         {/* <AccentBar /> */}
         <div className="p-4 flex max-sm:flex-col items-end gap-6">
           <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -511,14 +563,16 @@ const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
 export default function Table({
   searchValue = "", onSearchChange, onSearch, hasSearch = true,
   actions = [], filters, hasActiveFilters = false, onApplyFilters,
-  labels = {}, columns = [], data = [], isLoading = false,
+  labels = {}, columns = [], data = [], tutorialData = [], isLoading = false,
   rowKey = (row, i) => row?.id ?? i,
   emptyState, striped = false, compact = false, hoverable = true,
   pagination = null, onPageChange,
   pageParamName = "page", limitParamName = "limit",
   perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "", flat = false,
-  rowClassName = () => ""
+  rowClassName = () => "", tutorialActions = false
 }) {
+  const { isTutorialMode } = useTutorial();
+  const displayData = isTutorialMode && tutorialData.length > 0 ? tutorialData : data;
   const isRTL = useIsRTL();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [imgModal, setImgModal] = useState({ open: false, src: "", alt: "" });
@@ -532,7 +586,12 @@ export default function Table({
   const stickyShadow = isRTL
     ? "shadow-[8px_0_12px_-10px_rgba(0,0,0,0.15)] dark:shadow-[8px_0_12px_-10px_rgba(0,0,0,0.45)]"
     : "shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.15)] dark:shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.45)]";
+  const shouldElevateHeader = useMemo(() => {
+    if (!isTutorialMode) return false;
 
+    // Returns true only if any column has both a header and a description
+    return columns.some(col => Boolean(col.header) && Boolean(col.description));
+  }, [isTutorialMode, columns]);
   return (
     <div className={cn("w-full", className)}>
       <motion.div
@@ -567,19 +626,29 @@ export default function Table({
         </div>
 
         {/* ── Table ────────────────────────────────────────── */}
-        <div className="relative overflow-x-auto">
+        <div
+          className="relative overflow-x-auto"
+          style={isTutorialMode ? { pointerEvents: "auto" } : {}}
+        >
           <ShadTable>
             {/* Header */}
             <TableHeader
               className="border-b border-border/40"
-              style={{ background: "color-mix(in oklab, var(--muted) 50%, var(--card))" }}
+              style={{
+                background: "color-mix(in oklab, var(--muted) 50%, var(--card))", ...(shouldElevateHeader
+                  ? {
+                    zIndex: 40,
+                    position: "relative",
+                  }
+                  : {})
+              }}
             >
               <TableRow className="hover:bg-transparent">
                 {columns.map((col, idx) => (
                   <TableHead
                     key={idx}
                     className={cn(
-                      "!px-5 whitespace-nowrap ltr:text-left rtl:text-right",
+                      "!px-5 whitespace-nowrap ltr:text-left rtl:text-right align-middle",
                       compact ? "py-3" : "py-3.5",
                       col.headClassName,
                       ACTION_KEYS.has(col.key) && cn("md:sticky md:z-30", stickyEnd, stickyShadow),
@@ -588,14 +657,24 @@ export default function Table({
                       background: "color-mix(in oklab, var(--muted) 50%, var(--card))",
                     } : {}}
                   >
-                    <motion.span
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.035 }}
-                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/80"
+                    {/* 1. TutorialSpotlight goes INSIDE the TableHead */}
+                    <TutorialSpotlight
+                      title={col.header}
+                      description={col.description}
+                      example={col.example}
+                      overview={true}
+                      className="inline-block w-fit p-2!"
                     >
-                      {col.header}
-                    </motion.span>
+                      {/* 2. Your content stays wrapped by the spotlight */}
+                      <motion.span
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.035 }}
+                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/80"
+                      >
+                        {col.header}
+                      </motion.span>
+                    </TutorialSpotlight>
                   </TableHead>
                 ))}
               </TableRow>
@@ -607,7 +686,7 @@ export default function Table({
                 {isLoading ? (
                   <TableSkeleton key="skel" columns={columns} rows={Number(pagination?.per_page ?? 6)} compact={compact} />
 
-                ) : data.length === 0 ? (
+                ) : displayData.length === 0 ? (
                   <TableRow key="empty">
                     <TableCell colSpan={columns.length} className="py-20">
                       <motion.div
@@ -646,7 +725,7 @@ export default function Table({
                   </TableRow>
 
                 ) : (
-                  data.map((row, i) => (
+                  displayData.map((row, i) => (
                     <motion.tr
                       key={rowKey(row, i)}
                       initial={{ opacity: 0, x: -6 }}
@@ -687,6 +766,7 @@ export default function Table({
                             )}
                             style={ACTION_KEYS.has(col.key) ? {
                               background: "color-mix(in oklab, var(--card) 97%, transparent)",
+                              ...(tutorialActions ? { zIndex: 60 } : {})
                             } : {}}
                           >
                             {typeof col.cell === "function" ? col.cell(row, i, helpers) : row[col.key]}

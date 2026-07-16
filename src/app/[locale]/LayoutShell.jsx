@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Header from "@/components/molecules/Header";
 import Sidebar, { excludedSubcriptionPaths } from "@/components/molecules/Sidebar";
 import { usePathname } from "next/navigation";
@@ -88,6 +88,7 @@ const pathsWitohutLayout = ["/onboarding"];
 function DashboardLayout({ children }) {
   const locale = useLocale();
   const isRTL = locale === "ar";
+  const t = useTranslations();
   const AllPathname = usePathname();
   const pathname = AllPathname?.slice(3, 1000);
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -203,8 +204,7 @@ function DashboardLayout({ children }) {
         />
 
         {/* Scrollable page content */}
-        <main className={`z-[10] flex-1 overflow-y-auto overflow-x-hidden relative layout-content ${isTutorialMode ? '' : ''}`}>
-          {/* Tutorial mode overlay */}
+        <main className={`z-[10] flex-1 overflow-y-auto overflow-x-hidden relative layout-content`} >
           {/* Tutorial mode overlay */}
           <div
             className="pointer-events-none absolute inset-0"
@@ -259,9 +259,9 @@ function DashboardLayout({ children }) {
                       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                     </svg>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold">وضع الشرح مفعّل</div>
-                    <div className="text-xs opacity-80">تعرف على كل عنصر في النظام وطريقة العمل</div>
+                  <div className="">
+                    <div className="text-sm font-bold">{t("tutorial.title")}</div>
+                    <div className="text-xs opacity-80">{t("tutorial.description")}</div>
                   </div>
                 </div>
 
@@ -277,12 +277,12 @@ function DashboardLayout({ children }) {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M18 6L6 18M6 6l12 12"></path>
                     </svg>
-                    خروج وضع الشرح
+                    {t("tutorial.exit")}
                   </button>
               </div>
             )}
 
-            {isLocked ? <SubscriptionLock /> : children}
+            {isLocked ? <SubscriptionLock /> : <div style={{ pointerEvents: isTutorialMode ? 'none' : 'auto' }}>{children}</div>}
           </div>
         </main>
       </div>

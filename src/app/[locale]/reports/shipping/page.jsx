@@ -22,11 +22,13 @@ import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 
 export default function ShippingReport() {
     const tCommon = useTranslations("accounts");
     const tCity = useTranslations("accounts.cityDeliveries");
     const tOrders = useTranslations("orders");
+    const tTutorial = useTranslations("tutorial.shipping");
 
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
@@ -128,29 +130,37 @@ export default function ShippingReport() {
         return [
             {
                 name: tCity("stats.topCity"),
+                description: tTutorial("stats.topCity.description"),
+                example: tTutorial("stats.topCity.example"),
                 value: stats?.highestCity?.city && stats?.highestCity?.count !== undefined ? `${stats.highestCity.city} (${stats.highestCity.count})` : "N/A",
                 icon: CheckCircle,
                 color: "#10b981"
             },
             {
                 name: tCity("stats.lowestCity"),
+                description: tTutorial("stats.lowestCity.description"),
+                example: tTutorial("stats.lowestCity.example"),
                 value: stats?.lowestCity?.city && stats?.lowestCity?.count !== undefined ? `${stats.lowestCity.city} (${stats.lowestCity.count})` : "N/A",
                 icon: Info,
                 color: "#ef4444"
             },
             {
                 name: tCity("stats.avgDeliveries"),
+                description: tTutorial("stats.avgDeliveries.description"),
+                example: tTutorial("stats.avgDeliveries.example"),
                 value: stats?.deliveriesRate !== undefined ? `${stats.deliveriesRate}%` : "0%",
                 icon: BarChart2,
                 color: "#3b82f6"
             },
         ];
-    }, [stats, tCity]);
+    }, [stats, tCity, tTutorial]);
 
     const columns = useMemo(() => [
         {
             key: "city",
             header: tCity("columns.city"),
+            description: tTutorial("columns.city.description"),
+            example: tTutorial("columns.city.example"),
             cell: (row) => (
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -163,11 +173,15 @@ export default function ShippingReport() {
         {
             key: "totalShipments",
             header: tCity("columns.total"),
+            description: tTutorial("columns.totalShipments.description"),
+            example: tTutorial("columns.totalShipments.example"),
             cell: (row) => <span className="text-sm font-semibold tabular-nums">{row.totalShipments}</span>
         },
         {
             key: "actualDeliveries",
             header: tCity("columns.delivered"),
+            description: tTutorial("columns.actualDeliveries.description"),
+            example: tTutorial("columns.actualDeliveries.example"),
             cell: (row) => (
                 <div className="flex items-center gap-1.5 text-emerald-600 font-bold tabular-nums">
                     <TrendingUp size={14} />
@@ -178,6 +192,8 @@ export default function ShippingReport() {
         {
             key: "failedShipments",
             header: tCity("columns.returns"),
+            description: tTutorial("columns.failedShipments.description"),
+            example: tTutorial("columns.failedShipments.example"),
             cell: (row) => (
                 <div className="flex items-center gap-1.5 text-red-600 font-bold tabular-nums">
                     <XCircle size={14} />
@@ -188,6 +204,8 @@ export default function ShippingReport() {
         {
             key: "successRate",
             header: tCity("columns.successRate"),
+            description: tTutorial("columns.successRate.description"),
+            example: tTutorial("columns.successRate.example"),
             cell: (row) => {
                 const rate = row.successRate;
                 let colorClass = "text-emerald-600 bg-emerald-50";
@@ -211,7 +229,7 @@ export default function ShippingReport() {
                 );
             }
         }
-    ], [tCity]);
+    ], [tCity, tTutorial]);
 
     return (
         <div className="min-h-screen p-4 md:p-5 space-y-5">

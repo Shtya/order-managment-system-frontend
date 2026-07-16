@@ -32,6 +32,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { FaInfoCircle } from "react-icons/fa";
 import { GEO_CONFIG } from "@/utils/order-utils";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -133,7 +134,7 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 					)}
 				</SelectTrigger>
 				<SelectContent>
-					{items.map((item) =>  (
+					{items.map((item) => (
 						<SelectItem key={item.id} value={String(item.id)}>
 							{item[nameKey] || item.nameEn || item.id}
 						</SelectItem>
@@ -177,7 +178,7 @@ export function AddressSection({
 	const [providerDistricts, setproviderDistricts] = useState([]);
 
 	const currentConfig = GEO_CONFIG[shippingProvider] || GEO_CONFIG.default;
-	
+
 	// Derived: districts filtered by selected zone (parentId === zoneId)
 	const filteredDistricts = useMemo(() => {
 		if (!currentConfig.showDistrict) return [];
@@ -254,7 +255,7 @@ export function AddressSection({
 		if (!providerCities || !providerCities?.length) return;
 
 		const newProviderId = providerCities.find(city => city.id === currentCityId)?.providerCityId || "";
-		if(!newProviderId) return;
+		if (!newProviderId) return;
 		setProviderMeta((prev) => {
 			if (newProviderId === prev.cityId) return prev;
 			return {
@@ -351,11 +352,11 @@ export function AddressSection({
 
 	// Find current area ID based on the area name
 	const currentAreaId = useMemo(() => {
-		
+
 		if (!areaValue || !areas.length) return "";
 		const found = areas.find((a) => a.nameAr === areaValue || a.nameEn === areaValue);
-		
-		
+
+
 		return found ? found.id : "";
 	}, [areaValue, areas]);
 
@@ -391,11 +392,11 @@ export function AddressSection({
 			if (!zone && providerLoading.zones) return;
 
 			setProviderMeta((prev) => ({ ...prev, zoneId: zoneId, districtId: "" }));
-			
+
 			// rebuild area: zone name (district will be appended later)
 			if (zone) setValue("area", zone[nameKey] || zone.nameEn, { shouldValidate: false });
 		},
-		[providerZones, nameKey,  setValue, providerMeta.zoneId, providerLoading.zones]
+		[providerZones, nameKey, setValue, providerMeta.zoneId, providerLoading.zones]
 	);
 
 	const handleDistrictChange = useCallback(
@@ -411,7 +412,7 @@ export function AddressSection({
 			if (!district && providerLoading.districts) return;
 
 			setProviderMeta((prev) => ({ ...prev, districtId: districtId }));
-			
+
 
 			const zonePart = zone?.[nameKey] || zone?.nameEn;
 			const distinctPart = district?.[nameKey] || district?.nameEn;
@@ -422,7 +423,7 @@ export function AddressSection({
 				setValue("area", zonePart, { shouldValidate: false });
 			}
 		},
-		[providerZones, filteredDistricts, providerMeta.zoneId, providerMeta.districtId, nameKey,  setValue, providerLoading.districts]
+		[providerZones, filteredDistricts, providerMeta.zoneId, providerMeta.districtId, nameKey, setValue, providerLoading.districts]
 	);
 
 	const handleAreaChange = useCallback(
@@ -595,24 +596,28 @@ export function AddressSection({
 				</div>
 
 				{/* Address — full width */}
-				<div className="md:col-span-2 space-y-2">
-					<Label className="text-sm text-gray-600 dark:text-slate-300">
-						{t("fields.address")} *
-					</Label>
-					<Controller
-						name="address"
-						control={control}
-						render={({ field }) => (
-							<Textarea
-								{...field}
-								placeholder={t("placeholders.address")}
-								className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
+				<div className="md:col-span-2">
+					{/* <TutorialSpotlight description="test" title={t("fields.address")} example={t("placeholders.address")} card="default"> */}
+						<div className="space-y-2">
+							<Label className="text-sm text-gray-600 dark:text-slate-300">
+								{t("fields.address")} *
+							</Label>
+							<Controller
+								name="address"
+								control={control}
+								render={({ field }) => (
+									<Textarea
+										{...field}
+										placeholder={t("placeholders.address")}
+										className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
+									/>
+								)}
 							/>
-						)}
-					/>
-					{errors.address && (
-						<p className="text-xs text-red-500">{errors.address.message}</p>
-					)}
+							{errors.address && (
+								<p className="text-xs text-red-500">{errors.address.message}</p>
+							)}
+						</div>
+					{/* </TutorialSpotlight> */}
 				</div>
 
 				{/* Landmark — full width */}

@@ -32,6 +32,7 @@ import {
   THIRD
 } from "../../reports/order-analysis/page";
 import Button_ from "@/components/atoms/Button";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
@@ -47,6 +48,7 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
 
   const { currency } = usePlatformSettings();
   const t = useTranslations("accounts");
+  const tTutorial = useTranslations("tutorial");
   // const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [lastExpenses, setLastExpenses] = useState({ lastPurchases: [], lastManualExpenses: [] });
@@ -229,38 +231,53 @@ const { formatTrendLabel } = useTrendLabelFormatter();
 
         {/* 1. Trend Chart */}
         <div className="lg:col-span-2">
-          <Card
-            title={t("overview.expensesTrend")}
-            icon={TrendingUp}
-            color={PRIMARY}
+          <TutorialSpotlight
+            title={tTutorial("accounts.overview.expensesTrend.title")}
+            description={tTutorial("accounts.overview.expensesTrend.description")}
+            example={tTutorial("accounts.overview.expensesTrend.example")}
+            overview={true}
+            
           >
-            <TrendChart
-              loading={loading}
-              data={trend}
-              configs={[
-                { key: 'productCost', label: t("stats.productPurchases"), color: '#8b5cf6' },
-                { key: 'manualExpenses', label: t("stats.manualExpenses"), color: '#a855f7' },
-                { key: 'totalCost', label: t("stats.totalExpenses"), color: PRIMARY }
-              ]}
-            />
-          </Card>
+            <Card
+              title={t("overview.expensesTrend")}
+              icon={TrendingUp}
+              color={PRIMARY}
+            >
+              <TrendChart
+                loading={loading}
+                data={trend}
+                configs={[
+                  { key: 'productCost', label: t("stats.productPurchases"), color: '#8b5cf6' },
+                  { key: 'manualExpenses', label: t("stats.manualExpenses"), color: '#a855f7' },
+                  { key: 'totalCost', label: t("stats.totalExpenses"), color: PRIMARY }
+                ]}
+              />
+            </Card>
+          </TutorialSpotlight>
         </div>
 
         {/* 2. Donut Chart */}
         <div>
-          <Card title={t("overview.expensesBreakdown")} icon={PieIcon} color={SECONDARY}>
-            <div className="py-4">
-              <div className="">
-                <StatusDonut
-                  loading={loading || loadingStats}
-                  data={expensesBreakdownData}
-                  label={currency}
-                  config={{ key: 'count', label: 'name' }}
-                />
-              </div>
+          <TutorialSpotlight
+            title={tTutorial("accounts.overview.expensesBreakdown.title")}
+            description={tTutorial("accounts.overview.expensesBreakdown.description")}
+            example={tTutorial("accounts.overview.expensesBreakdown.example")}
+            overview={true}
+          >
+            <Card title={t("overview.expensesBreakdown")} icon={PieIcon} color={SECONDARY}>
+              <div className="py-4">
+                <div className="">
+                  <StatusDonut
+                    loading={loading || loadingStats}
+                    data={expensesBreakdownData}
+                    label={currency}
+                    config={{ key: 'count', label: 'name' }}
+                  />
+                </div>
 
-            </div>
-          </Card>
+              </div>
+            </Card>
+          </TutorialSpotlight>
         </div>
       </div>
 
@@ -269,123 +286,151 @@ const { formatTrendLabel } = useTrendLabelFormatter();
         {/* 3. Summary Cards (Suppliers, Employees, Cities) */}
         <div className="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Suppliers */}
-          <SummaryCard
-            loading={loading}
-            title={t("overview.suppliers")}
-            icon={Building2}
-            color="#10b981"
-            href="?tab=supplierAccounts"
-            items={supplierBalances.slice(0, 3).map(s => ({
-              label: s.supplierName,
-              value: `${s.absoluteBalance.toLocaleString()}ج`,
-              status: s.financialStatus === 'PAYABLE' ? t("overview.payable") : t("overview.receivable"),
-              statusColor: s.financialStatus === 'PAYABLE' ? "bg-orange-50 text-orange-600" : "bg-emerald-50 text-emerald-600"
-            }))}
-            t={t}
-          />
+          <TutorialSpotlight
+            title={tTutorial("accounts.overview.suppliers.title")}
+            description={tTutorial("accounts.overview.suppliers.description")}
+            example={tTutorial("accounts.overview.suppliers.example")}
+            overview={true}
+          >
+            <SummaryCard
+              loading={loading}
+              title={t("overview.suppliers")}
+              icon={Building2}
+              color="#10b981"
+              href="?tab=supplierAccounts"
+              items={supplierBalances.slice(0, 3).map(s => ({
+                label: s.supplierName,
+                value: `${s.absoluteBalance.toLocaleString()}ج`,
+                status: s.financialStatus === 'PAYABLE' ? t("overview.payable") : t("overview.receivable"),
+                statusColor: s.financialStatus === 'PAYABLE' ? "bg-orange-50 text-orange-600" : "bg-emerald-50 text-emerald-600"
+              }))}
+              t={t}
+            />
+          </TutorialSpotlight>
 
           {/* City Deliveries */}
-          <SummaryCard
-            loading={loading}
-            title={t("overview.cityDeliveries")}
-            icon={Truck}
-            color="#3b82f6"
-            href="?tab=cityDeliveries"
-            items={cityReport.slice(0, 3).map(c => ({
-              label: c.city || t("overview.unknownCity"),
-              value: `${c.actualDeliveries.toLocaleString()} / ${c.totalShipments.toLocaleString()}`,
-              percent: c.successRate
-            }))}
-            t={t}
-          />
+          <TutorialSpotlight
+            title={tTutorial("accounts.overview.cityDeliveries.title")}
+            description={tTutorial("accounts.overview.cityDeliveries.description")}
+            example={tTutorial("accounts.overview.cityDeliveries.example")}
+            overview={true}
+          >
+            <SummaryCard
+              loading={loading}
+              title={t("overview.cityDeliveries")}
+              icon={Truck}
+              color="#3b82f6"
+              href="?tab=cityDeliveries"
+              items={cityReport.slice(0, 3).map(c => ({
+                label: c.city || t("overview.unknownCity"),
+                value: `${c.actualDeliveries.toLocaleString()} / ${c.totalShipments.toLocaleString()}`,
+                percent: c.successRate
+              }))}
+              t={t}
+            />
+          </TutorialSpotlight>
         </div>
 
         {/* 4. Last Expenses Table */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card
-            title={t("overview.lastExpenses")}
-            icon={DollarSign}
-            color={THIRD}
-            action={
-              <Button_
-                variant="ghost"
-                size="sm"
-                label={t("overview.viewOperetionalExpenses")}
-                className="text-[10px] h-6"
-                onClick={() => window.location.search = "?tab=manualExpenses"}
-              />
-            }
+          <TutorialSpotlight
+            title={tTutorial("accounts.overview.lastExpenses.title")}
+            description={tTutorial("accounts.overview.lastExpenses.description")}
+            example={tTutorial("accounts.overview.lastExpenses.example")}
+            overview={true}
           >
-            <div className="mt-2">
-              <MiniTable columns={lastExpensesColumns} data={combinedExpenses} />
-            </div>
-          </Card>
+            <Card
+              title={t("overview.lastExpenses")}
+              icon={DollarSign}
+              color={THIRD}
+              action={
+                <Button_
+                  variant="ghost"
+                  size="sm"
+                  label={t("overview.viewOperetionalExpenses")}
+                  className="text-[10px] h-6"
+                  onClick={() => window.location.search = "?tab=manualExpenses"}
+                />
+              }
+            >
+              <div className="mt-2">
+                <MiniTable columns={lastExpensesColumns} data={combinedExpenses} />
+              </div>
+            </Card>
+          </TutorialSpotlight>
 
           {/* 5. Month Closing Card */}
-          <motion.div
-            whileHover={{ y: -4 }}
-            className="p-4 rounded-2xl border border-border bg-card relative overflow-hidden group cursor-pointer"
-            onClick={() => window.location.search = `?tab=monthClosing&year=${closingMonth.year}&month=${closingMonth.month}`}
+          <TutorialSpotlight
+            title={tTutorial("accounts.overview.monthClosing.title")}
+            description={tTutorial("accounts.overview.monthClosing.description")}
+            example={tTutorial("accounts.overview.monthClosing.example")}
+            overview={true}
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 blur-3xl -mr-8 -mt-8" />
+            <motion.div
+              whileHover={{ y: -4 }}
+              className="p-4 rounded-2xl border border-border bg-card relative overflow-hidden group cursor-pointer"
+              onClick={() => window.location.search = `?tab=monthClosing&year=${closingMonth.year}&month=${closingMonth.month}`}
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 blur-3xl -mr-8 -mt-8" />
 
-            {loadingClosingPreview ? (
-              <div className="animate-pulse space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800" />
-                    <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800 rounded" />
-                  </div>
-                  <div className="h-4 w-12 bg-slate-100 dark:bg-slate-800 rounded-full" />
-                </div>
-                <div className="flex flex-col items-center py-2 space-y-2">
-                  <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded" />
-                  <div className="h-8 w-32 bg-slate-100 dark:bg-slate-800 rounded" />
-                </div>
-                <div className="pt-3 border-t border-dashed border-border flex items-center justify-between">
-                  <div className="h-3 w-28 bg-slate-100 dark:bg-slate-800 rounded" />
-                  <div className="h-4 w-4 bg-slate-100 dark:bg-slate-800 rounded" />
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                      <Calendar size={16} />
+              {loadingClosingPreview ? (
+                <div className="animate-pulse space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800" />
+                      <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800 rounded" />
                     </div>
-                    <span className="font-bold text-sm">{t("overview.monthClosing")}</span>
+                    <div className="h-4 w-12 bg-slate-100 dark:bg-slate-800 rounded-full" />
                   </div>
-
-                  {/* Status Badge */}
-                  <div className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${closingPreview?.isClosed
-                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                    : "bg-amber-50 text-amber-600 border-amber-100"
-                    }`}>
-                    {closingPreview?.isClosed ? t("monthClosing.status.closed") : t("monthClosing.status.pending")}
+                  <div className="flex flex-col items-center py-2 space-y-2">
+                    <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded" />
+                    <div className="h-8 w-32 bg-slate-100 dark:bg-slate-800 rounded" />
                   </div>
-                </div>
-
-                <div className="flex flex-col items-center justify-center py-2">
-                  <span className="text-muted-foreground text-[11px] mb-1">
-                    {t("monthClosing.netResult")}
-                  </span>
-                  <div className={`text-xl font-black flex items-center gap-1 ${closingPreview?.netProfit >= 0 ? "text-emerald-500" : "text-red-500"
-                    }`}>
-                    {closingPreview?.netProfit >= 0 ? "+" : ""}
-                    {new Intl.NumberFormat().format(closingPreview?.netProfit || 0)}
+                  <div className="pt-3 border-t border-dashed border-border flex items-center justify-between">
+                    <div className="h-3 w-28 bg-slate-100 dark:bg-slate-800 rounded" />
+                    <div className="h-4 w-4 bg-slate-100 dark:bg-slate-800 rounded" />
                   </div>
                 </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                        <Calendar size={16} />
+                      </div>
+                      <span className="font-bold text-sm">{t("overview.monthClosing")}</span>
+                    </div>
 
-                <div className="mt-4 pt-3 border-t border-dashed border-border flex items-center justify-between">
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase">
-                    {t("overview.closingFor", { month: closingMonth.month, year: closingMonth.year })}
-                  </span>
-                  <ChevronLeft size={14} className="text-muted-foreground group-hover:translate-x-[-4px] transition-transform" />
-                </div>
-              </>
-            )}
-          </motion.div>
+                    {/* Status Badge */}
+                    <div className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${closingPreview?.isClosed
+                      ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                      : "bg-amber-50 text-amber-600 border-amber-100"
+                      }`}>
+                      {closingPreview?.isClosed ? t("monthClosing.status.closed") : t("monthClosing.status.pending")}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center py-2">
+                    <span className="text-muted-foreground text-[11px] mb-1">
+                      {t("monthClosing.netResult")}
+                    </span>
+                    <div className={`text-xl font-black flex items-center gap-1 ${closingPreview?.netProfit >= 0 ? "text-emerald-500" : "text-red-500"
+                      }`}>
+                      {closingPreview?.netProfit >= 0 ? "+" : ""}
+                      {new Intl.NumberFormat().format(closingPreview?.netProfit || 0)}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-dashed border-border flex items-center justify-between">
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase">
+                      {t("overview.closingFor", { month: closingMonth.month, year: closingMonth.year })}
+                    </span>
+                    <ChevronLeft size={14} className="text-muted-foreground group-hover:translate-x-[-4px] transition-transform" />
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </TutorialSpotlight>
         </div>
       </div>
     </div >

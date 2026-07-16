@@ -78,6 +78,7 @@ import UserSelect from "@/components/atoms/UserSelect";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
 import QRCode from "react-qr-code";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 const PDFArrowUp = ({ color = "#059669" }) => (
   <Svg viewBox="0 0 24 24" width={10} height={10}>
     <Path d="M12 4l-8 8h6v8h4v-8h6z" fill={color} />
@@ -1532,6 +1533,7 @@ function FilterField({ label, icon: FieldIcon, children }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function OrdersStatisticsPage() {
+  const tTutorial = useTranslations("tutorial.orderAnalysis");
   const tOrders = useTranslations("orders");
   const tDash = useTranslations("dashboard");
   const t = useTranslations("orderAnalysis");
@@ -1648,21 +1650,27 @@ export default function OrdersStatisticsPage() {
       totalKey: "totalOrders",
       title: t("kpi.correctedOrders"),
       totalLabel: t("kpi.totalOrders"),
-      color: "#6366f1"
+      color: "#6366f1",
+      description: tTutorial("percentageStats.correctedOrders.description"),
+      example: tTutorial("percentageStats.correctedOrders.example"),
     },
     {
       key: "confirmedCount",
       totalKey: "totalOrders",
       title: t("kpi.confirmedCount"),
       totalLabel: t("kpi.totalOrders"),
-      color: "#3b82f6"
+      color: "#3b82f6",
+      description: tTutorial("percentageStats.confirmedCount.description"),
+      example: tTutorial("percentageStats.confirmedCount.example"),
     },
     {
       key: "deliveredFromTotal",
       totalKey: "totalOrders",
       title: t("kpi.deliveredFromTotal"),
       totalLabel: t("kpi.totalOrders"),
-      color: "#10b981"
+      color: "#10b981",
+      description: tTutorial("percentageStats.deliveredFromTotal.description"),
+      example: tTutorial("percentageStats.deliveredFromTotal.example"),
     },
     // Statuses (relative to totalOrders)
     {
@@ -1671,7 +1679,9 @@ export default function OrdersStatisticsPage() {
       title: t("kpi.newOrders"),
       totalLabel: t("kpi.totalOrders"),
       color: "#f59e0b",
-      nested: "statuses"
+      nested: "statuses",
+      description: tTutorial("percentageStats.newOrders.description"),
+      example: tTutorial("percentageStats.newOrders.example"),
     },
     {
       key: "returned",
@@ -1679,7 +1689,9 @@ export default function OrdersStatisticsPage() {
       title: t("kpi.returnedOrders"),
       totalLabel: t("kpi.totalOrders"),
       color: "#ec4899",
-      nested: "statuses"
+      nested: "statuses",
+      description: tTutorial("percentageStats.returnedOrders.description"),
+      example: tTutorial("percentageStats.returnedOrders.example"),
     },
     {
       key: "postponed",
@@ -1687,7 +1699,9 @@ export default function OrdersStatisticsPage() {
       title: t("kpi.postponedOrders"),
       totalLabel: t("kpi.totalOrders"),
       color: "#8b5cf6",
-      nested: "statuses"
+      nested: "statuses",
+      description: tTutorial("percentageStats.postponedOrders.description"),
+      example: tTutorial("percentageStats.postponedOrders.example"),
     },
     {
       key: "outOfDelivery",
@@ -1695,7 +1709,9 @@ export default function OrdersStatisticsPage() {
       title: t("kpi.outOfDeliveryOrders"),
       totalLabel: t("kpi.totalOrders"),
       color: "#14b8a6",
-      nested: "statuses"
+      nested: "statuses",
+      description: tTutorial("percentageStats.outOfDeliveryOrders.description"),
+      example: tTutorial("percentageStats.outOfDeliveryOrders.example"),
     },
     {
       key: "wrongNumber",
@@ -1703,7 +1719,9 @@ export default function OrdersStatisticsPage() {
       title: t("kpi.wrongNumberOrders"),
       totalLabel: t("kpi.totalOrders"),
       color: "#f97316",
-      nested: "statuses"
+      nested: "statuses",
+      description: tTutorial("percentageStats.wrongNumberOrders.description"),
+      example: tTutorial("percentageStats.wrongNumberOrders.example"),
     },
     {
       key: "canceled",
@@ -1711,21 +1729,27 @@ export default function OrdersStatisticsPage() {
       title: t("kpi.canceledOrders"),
       totalLabel: t("kpi.totalOrders"),
       color: "#dc2626",
-      nested: "statuses"
+      nested: "statuses",
+      description: tTutorial("percentageStats.canceledOrders.description"),
+      example: tTutorial("percentageStats.canceledOrders.example"),
     },
     {
       key: "canceledAndUnderReview",
       totalKey: "totalOrders",
       title: t("kpi.canceledAndUnderReview"),
       totalLabel: t("kpi.totalOrders"),
-      color: "#ef4444"
+      color: "#ef4444",
+      description: tTutorial("percentageStats.canceledAndUnderReview.description"),
+      example: tTutorial("percentageStats.canceledAndUnderReview.example"),
     },
     {
       key: "noAnswerFollowUp",
       totalKey: "totalOrders",
       title: t("kpi.noAnswerFollowUp"),
       totalLabel: t("kpi.totalOrders"),
-      color: "#ef4444"
+      color: "#ef4444",
+      description: tTutorial("percentageStats.noAnswerFollowUp.description"),
+      example: tTutorial("percentageStats.noAnswerFollowUp.example"),
     },
     {
       key: "confirmed",
@@ -1733,7 +1757,9 @@ export default function OrdersStatisticsPage() {
       title: t("kpi.confirmedOrders"),
       totalLabel: t("kpi.totalOrders"),
       color: "#2563eb",
-      nested: "statuses"
+      nested: "statuses",
+      description: tTutorial("percentageStats.confirmedOrders.description"),
+      example: tTutorial("percentageStats.confirmedOrders.example"),
     },
     {
       key: "shipped",
@@ -1741,7 +1767,9 @@ export default function OrdersStatisticsPage() {
       title: t("kpi.shippedOrders"),
       totalLabel: t("kpi.totalOrders"),
       color: "#0ea5e9",
-      nested: "statuses"
+      nested: "statuses",
+      description: tTutorial("percentageStats.shippedOrders.description"),
+      example: tTutorial("percentageStats.shippedOrders.example"),
     },
     {
       key: "delivered",
@@ -1749,7 +1777,9 @@ export default function OrdersStatisticsPage() {
       title: t("kpi.deliveredOrders"),
       totalLabel: t("kpi.totalOrders"),
       color: "#10b981",
-      nested: "statuses"
+      nested: "statuses",
+      description: tTutorial("percentageStats.deliveredOrders.description"),
+      example: tTutorial("percentageStats.deliveredOrders.example"),
     },
     // Delivered from confirmed
     {
@@ -1757,15 +1787,18 @@ export default function OrdersStatisticsPage() {
       totalKey: "confirmedCount",
       title: t("kpi.deliveredFromConfirmed"),
       totalLabel: t("kpi.confirmedCount"),
-      color: "#22c55e"
+      color: "#22c55e",
+      description: tTutorial("percentageStats.deliveredFromConfirmed.description"),
+      example: tTutorial("percentageStats.deliveredFromConfirmed.example"),
     }
-  ], [t]);
+  ], [t, tTutorial]);
 
   const KPI = [
     {
       key: "totalOrders",
       title: t("kpi.totalOrders"),
       description: tDash("kpiDescription.totalOrders"),
+      example: tTutorial("stats.totalOrders.example"),
       icon: ShoppingCart,
       color: PRIMARY,
     },
@@ -1773,6 +1806,7 @@ export default function OrdersStatisticsPage() {
       key: "correctedOrders",
       title: t("kpi.correctedOrders") || "Corrected Orders",
       description: tDash("kpiDescription.correctedOrders"),
+      example: tTutorial("stats.correctedOrders.example"),
       icon: CheckCircle,
       color: "#6366f1",
     },
@@ -1780,6 +1814,7 @@ export default function OrdersStatisticsPage() {
       key: "confirmedCount",
       title: t("kpi.confirmedCount") || "Confirmed Count",
       description: tDash("kpiDescription.confirmedCount"),
+      example: tTutorial("stats.confirmedCount.example"),
       icon: CheckCircle,
       color: "#3b82f6",
     },
@@ -1787,6 +1822,7 @@ export default function OrdersStatisticsPage() {
       key: "deliveredFromConfirmed",
       title: t("kpi.deliveredFromConfirmed") || "Delivered from Confirmed",
       description: tDash("kpiDescription.deliveredFromConfirmed"),
+      example: tTutorial("stats.deliveredFromConfirmed.example"),
       icon: Truck,
       color: "#22c55e",
     },
@@ -1794,6 +1830,7 @@ export default function OrdersStatisticsPage() {
       key: "deliveredFromTotal",
       title: t("kpi.deliveredFromTotal") || "Delivered from Total",
       description: tDash("kpiDescription.deliveredFromTotal"),
+      example: tTutorial("stats.deliveredFromTotal.example"),
       icon: TrendingUp,
       color: "#10b981",
     },
@@ -1801,6 +1838,7 @@ export default function OrdersStatisticsPage() {
       key: "totalSales",
       title: t("kpi.totalSales"),
       description: tDash("kpiDescription.totalSales"),
+      example: tTutorial("stats.totalSales.example"),
       icon: TrendingUp,
       money: true,
       color: "#10b981",
@@ -1809,6 +1847,7 @@ export default function OrdersStatisticsPage() {
       key: "deliveredSales",
       title: t("kpi.deliveredSales") || "Delivered Sales",
       description: tDash("kpiDescription.deliveredSales"),
+      example: tTutorial("stats.deliveredSales.example"),
       icon: Truck,
       money: true,
       color: "#10b981",
@@ -1817,6 +1856,7 @@ export default function OrdersStatisticsPage() {
       key: "collectedAmount",
       title: t("kpi.collectedAmount") || "Collected Amount",
       description: tDash("kpiDescription.collectedAmount"),
+      example: tTutorial("stats.collectedAmount.example"),
       icon: TrendingUp,
       color: "#f59e0b",
     },
@@ -1824,6 +1864,7 @@ export default function OrdersStatisticsPage() {
       key: "pendingOrders",
       title: t("kpi.pendingOrders") || "Pending",
       description: tDash("kpiDescription.pendingOrders"),
+      example: tTutorial("stats.pendingOrders.example"),
       icon: Package,
       color: "#f59e0b",
     },
@@ -1831,6 +1872,7 @@ export default function OrdersStatisticsPage() {
       key: "inWarehouseOrders",
       title: t("kpi.inWarehouseOrders") || "In Warehouse Orders",
       description: tDash("kpiDescription.inWarehouseOrders"),
+      example: tTutorial("stats.inWarehouseOrders.example"),
       icon: Store,
       color: "#0ea5e9",
     },
@@ -1838,6 +1880,7 @@ export default function OrdersStatisticsPage() {
       key: "new",
       title: t("kpi.newOrders") || "New Orders",
       description: tDash("kpiDescription.new"),
+      example: tTutorial("stats.new.example"),
       icon: Package,
       color: "#f59e0b",
     },
@@ -1845,6 +1888,7 @@ export default function OrdersStatisticsPage() {
       key: "returned",
       title: t("kpi.returnedOrders") || "Returned Orders",
       description: tDash("kpiDescription.returnedOrders"),
+      example: tTutorial("stats.returned.example"),
       icon: XCircle,
       color: "#ec4899",
     },
@@ -1852,6 +1896,7 @@ export default function OrdersStatisticsPage() {
       key: "postponed",
       title: t("kpi.postponedOrders") || "Postponed Orders",
       description: tDash("kpiDescription.postponed"),
+      example: tTutorial("stats.postponed.example"),
       icon: Package,
       color: "#8b5cf6",
     },
@@ -1859,6 +1904,7 @@ export default function OrdersStatisticsPage() {
       key: "outOfDelivery",
       title: t("kpi.outOfDeliveryOrders") || "Out of Delivery Area Orders",
       description: tDash("kpiDescription.outOfDelivery"),
+      example: tTutorial("stats.outOfDelivery.example"),
       icon: MapPin,
       color: "#14b8a6",
     },
@@ -1866,6 +1912,7 @@ export default function OrdersStatisticsPage() {
       key: "wrongNumber",
       title: t("kpi.wrongNumberOrders") || "Wrong Number Orders",
       description: tDash("kpiDescription.wrongNumber"),
+      example: tTutorial("stats.wrongNumber.example"),
       icon: XCircle,
       color: "#f97316",
     },
@@ -1873,6 +1920,7 @@ export default function OrdersStatisticsPage() {
       key: "canceled",
       title: t("kpi.canceledOrders"),
       description: tDash("kpiDescription.canceled"),
+      example: tTutorial("stats.canceled.example"),
       icon: XCircle,
       color: "#dc2626",
     },
@@ -1880,6 +1928,7 @@ export default function OrdersStatisticsPage() {
       key: "canceledAndUnderReview",
       title: t("kpi.canceledAndUnderReview") || "Canceled & Under Review",
       description: tDash("kpiDescription.canceledAndUnderReview"),
+      example: tTutorial("stats.canceledAndUnderReview.example"),
       icon: XCircle,
       color: "#ef4444",
     },
@@ -1887,6 +1936,7 @@ export default function OrdersStatisticsPage() {
       key: "noAnswerFollowUp",
       title: t("kpi.noAnswerFollowUp") || "Canceled & Under Review",
       description: tDash("kpiDescription.noAnswerFollowUp"),
+      example: tTutorial("stats.noAnswerFollowUp.example"),
       icon: XCircle,
       color: "#ef4444",
     },
@@ -1894,6 +1944,7 @@ export default function OrdersStatisticsPage() {
       key: "confirmed",
       title: t("kpi.confirmedOrders"),
       description: tDash("kpiDescription.confirmed"),
+      example: tTutorial("stats.confirmed.example"),
       icon: CheckCircle,
       color: "#2563eb",
     },
@@ -1901,6 +1952,7 @@ export default function OrdersStatisticsPage() {
       key: "shipped",
       title: t("kpi.shippedOrders"),
       description: tDash("kpiDescription.shipped"),
+      example: tTutorial("stats.shipped.example"),
       icon: Truck,
       color: "#0ea5e9",
     },
@@ -1908,6 +1960,7 @@ export default function OrdersStatisticsPage() {
       key: "delivered",
       title: t("kpi.deliveredOrders"),
       description: tDash("kpiDescription.delivered"),
+      example: tTutorial("stats.delivered.example"),
       icon: CheckCircle,
       color: "#10b981",
     },
@@ -2141,6 +2194,7 @@ export default function OrdersStatisticsPage() {
         id: card.key,
         name: card.title,
         description: card.description,
+        example: card.example,
         value: val,
         icon: card.icon,
         color: card.color,
@@ -2732,20 +2786,27 @@ export default function OrdersStatisticsPage() {
           transition={{ delay: 0.15 }}
           className="lg:col-span-2"
         >
-          <Card
+          <TutorialSpotlight
             title={t("charts.ordersPercent")}
-            icon={TrendingUp}
-            color={PRIMARY}
+            description={tTutorial("charts.weeklyTrend.description")}
+            example={tTutorial("charts.weeklyTrend.example")}
+            overview={true}
           >
-            <BarChart
-              data={weeklyTrend}
-              loading={loading}
-              configs={[
-                { key: "created", label: t("charts.newOrders"), color: "#6366f1" },
-                { key: "delivered", label: t("charts.deliveredOrders"), color: "#10b981" },
-              ]}
-            />
-          </Card>
+            <Card
+              title={t("charts.ordersPercent")}
+              icon={TrendingUp}
+              color={PRIMARY}
+            >
+              <BarChart
+                data={weeklyTrend}
+                loading={loading}
+                configs={[
+                  { key: "created", label: t("charts.newOrders"), color: "#6366f1" },
+                  { key: "delivered", label: t("charts.deliveredOrders"), color: "#10b981" },
+                ]}
+              />
+            </Card>
+          </TutorialSpotlight>
         </motion.div>
 
         <motion.div
@@ -2753,19 +2814,26 @@ export default function OrdersStatisticsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card title={t("charts.perStatus")} icon={PieIcon} color={PRIMARY}>
-            <StatusDonut
-              showLabels={false}
-              data={advancedStats?.statusBreakdown?.map((s, i) => ({
-                ...s,
-                label: s.system ? tOrders(`statuses.${s.code}`) : s.name,
-                count: s.count,
-                color: [PRIMARY, "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"][i % 6],
-              }))}
-              loading={loading}
-              config={{ key: "count", label: "label" }}
-            />
-          </Card>
+          <TutorialSpotlight
+            title={t("charts.perStatus")}
+            description={tTutorial("charts.statusDonut.description")}
+            example={tTutorial("charts.statusDonut.example")}
+            overview={true}
+          >
+            <Card title={t("charts.perStatus")} icon={PieIcon} color={PRIMARY}>
+              <StatusDonut
+                showLabels={false}
+                data={advancedStats?.statusBreakdown?.map((s, i) => ({
+                  ...s,
+                  label: s.system ? tOrders(`statuses.${s.code}`) : s.name,
+                  count: s.count,
+                  color: [PRIMARY, "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"][i % 6],
+                }))}
+                loading={loading}
+                config={{ key: "count", label: "label" }}
+              />
+            </Card>
+          </TutorialSpotlight>
         </motion.div>
       </div>
 
@@ -2778,25 +2846,32 @@ export default function OrdersStatisticsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
       >
-        <Card
+        <TutorialSpotlight
           title={t("areas.title")}
-          icon={MapPin}
-          color="#10b981"
-          action={
-            <ExportBtn
-              loading={exAreas}
-              onClick={() =>
-                doExport(
-                  "/dashboard/orders/top-areas/export",
-                  setExAreas,
-                  "top_areas",
-                )
-              }
-            />
-          }
+          description={tTutorial("tables.areas.description")}
+          example={tTutorial("tables.areas.example")}
+          overview={true}
         >
-          <MiniTable columns={areasCols} data={topCitiesStats} loading={loading} />
-        </Card>
+          <Card
+            title={t("areas.title")}
+            icon={MapPin}
+            color="#10b981"
+            action={
+              <ExportBtn
+                loading={exAreas}
+                onClick={() =>
+                  doExport(
+                    "/dashboard/orders/top-areas/export",
+                    setExAreas,
+                    "top_areas",
+                  )
+                }
+              />
+            }
+          >
+            <MiniTable columns={areasCols} data={topCitiesStats} loading={loading} />
+          </Card>
+        </TutorialSpotlight>
       </motion.div>
 
       {/* Products table */}
@@ -2805,25 +2880,32 @@ export default function OrdersStatisticsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card
+        <TutorialSpotlight
           title={t("products.title")}
-          icon={Package}
-          color="#3b82f6"
-          action={
-            <ExportBtn
-              loading={exProducts}
-              onClick={() =>
-                doExport(
-                  "/dashboard/orders/top-products/export",
-                  setExProducts,
-                  "top_products",
-                )
-              }
-            />
-          }
+          description={tTutorial("tables.products.description")}
+          example={tTutorial("tables.products.example")}
+          overview={true}
         >
-          <MiniTable columns={productsCols} data={topProductsStats} loading={loading} />
-        </Card>
+          <Card
+            title={t("products.title")}
+            icon={Package}
+            color="#3b82f6"
+            action={
+              <ExportBtn
+                loading={exProducts}
+                onClick={() =>
+                  doExport(
+                    "/dashboard/orders/top-products/export",
+                    setExProducts,
+                    "top_products",
+                  )
+                }
+              />
+            }
+          >
+            <MiniTable columns={productsCols} data={topProductsStats} loading={loading} />
+          </Card>
+        </TutorialSpotlight>
       </motion.div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -2833,34 +2915,41 @@ export default function OrdersStatisticsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.22 }}
         >
-          <Card
+          <TutorialSpotlight
             title={t("kpi.deliveredSales")}
-            icon={TrendingUp}
-            color="#10b981"
+            description={tTutorial("percentageStats.deliveredSales.description")}
+            example={tTutorial("percentageStats.deliveredSales.example")}
+            overview={true}
           >
-            <StatusDonut
-              showLabels={true}
-              data={[
-                {
-                  label: t("kpi.deliveredSales"),
-                  count: advancedStats?.deliveredSales || 0,
-                  color: "#10b981"
-                },
-                {
-                  label: t("kpi.totalSales"),
-                  count: advancedStats?.totalSales || 0,
-                  color: "#e2e8f0"
-                }
-              ]}
-              loading={loading}
-              config={{
-                key: "count",
-                label: "label",
-                centerValue: advancedStats?.deliveredSales || 0,
-                centerLabel: t("kpi.deliveredSales")
-              }}
-            />
-          </Card>
+            <Card
+              title={t("kpi.deliveredSales")}
+              icon={TrendingUp}
+              color="#10b981"
+            >
+              <StatusDonut
+                showLabels={true}
+                data={[
+                  {
+                    label: t("kpi.deliveredSales"),
+                    count: advancedStats?.deliveredSales || 0,
+                    color: "#10b981"
+                  },
+                  {
+                    label: t("kpi.totalSales"),
+                    count: advancedStats?.totalSales || 0,
+                    color: "#e2e8f0"
+                  }
+                ]}
+                loading={loading}
+                config={{
+                  key: "count",
+                  label: "label",
+                  centerValue: advancedStats?.deliveredSales || 0,
+                  centerLabel: t("kpi.deliveredSales")
+                }}
+              />
+            </Card>
+          </TutorialSpotlight>
         </motion.div>
 
         <motion.div
@@ -2868,34 +2957,41 @@ export default function OrdersStatisticsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.23 }}
         >
-          <Card
+          <TutorialSpotlight
             title={t("kpi.collectedAmount")}
-            icon={TrendingUp}
-            color="#f59e0b"
+            description={tTutorial("percentageStats.collectedAmount.description")}
+            example={tTutorial("percentageStats.collectedAmount.example")}
+            overview={true}
           >
-            <StatusDonut
-              showLabels={true}
-              data={[
-                {
-                  label: t("kpi.collectedAmount"),
-                  count: advancedStats?.collectedAmount || 0,
-                  color: "#f59e0b"
-                },
-                {
-                  label: t("kpi.deliveredSales"),
-                  count: advancedStats?.deliveredSales || 0,
-                  color: "#e2e8f0"
-                }
-              ]}
-              loading={loading}
-              config={{
-                key: "count",
-                label: "label",
-                centerValue: advancedStats?.collectedAmount || 0,
-                centerLabel: t("kpi.collectedAmount")
-              }}
-            />
-          </Card>
+            <Card
+              title={t("kpi.collectedAmount")}
+              icon={TrendingUp}
+              color="#f59e0b"
+            >
+              <StatusDonut
+                showLabels={true}
+                data={[
+                  {
+                    label: t("kpi.collectedAmount"),
+                    count: advancedStats?.collectedAmount || 0,
+                    color: "#f59e0b"
+                  },
+                  {
+                    label: t("kpi.deliveredSales"),
+                    count: advancedStats?.deliveredSales || 0,
+                    color: "#e2e8f0"
+                  }
+                ]}
+                loading={loading}
+                config={{
+                  key: "count",
+                  label: "label",
+                  centerValue: advancedStats?.collectedAmount || 0,
+                  centerLabel: t("kpi.collectedAmount")
+                }}
+              />
+            </Card>
+          </TutorialSpotlight>
         </motion.div>
 
         {/* Percentage Stats */}

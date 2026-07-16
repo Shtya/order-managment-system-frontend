@@ -33,6 +33,7 @@ import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import { useAuth } from "@/context/AuthContext";
+import TutorialSpotlight from "@/components/atoms/TutorialSpotlight";
 
 /* ═══════════════════════════════════════════════════════════════
 	 DATA HOOK — unchanged logic, same API
@@ -666,6 +667,7 @@ function DeleteDialog({ t, open, onOpenChange, roleName, onConfirm, loading }) {
 ═══════════════════════════════════════════════════════════════ */
 export default function RolesPermissionsPage() {
 	const t = useTranslations("roles-client");
+	const tTutorial = useTranslations("tutorial.roles");
 	const { user } = useAuth();
 
 	const [search, setSearch] = useState("");
@@ -753,6 +755,8 @@ export default function RolesPermissionsPage() {
 			key: "type",
 			header: t("table.type"),
 			cell: (row) => <TypeBadge isGlobal={row.isGlobal} t={t} />,
+			description: tTutorial("columns.type.description"),
+			example: tTutorial("columns.type.example"),
 		},
 		{
 			key: "permissions",
@@ -793,7 +797,7 @@ export default function RolesPermissionsPage() {
 				</div>
 			),
 		},
-	], [t]);
+	], [t, tTutorial]);
 
 	/* ── Render ── */
 	return (

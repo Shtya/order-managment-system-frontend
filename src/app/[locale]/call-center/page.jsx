@@ -1075,6 +1075,7 @@ const DEFAULT_FILTERS = {
 export default function CallCenterPage() {
     const tCommon = useTranslations("common");
 
+    const tTutorial = useTranslations("tutorial");
     const t = useTranslations();
     const { tempSettings, patch, saving, handleSave } = useOrdersSettings();
 
@@ -1125,10 +1126,10 @@ export default function CallCenterPage() {
     const searchTimer = useRef(null);
 
     const viewModes = useMemo(() => [
-        { id: "manual", label: t("callCenter.tabs.manual"), icon: Users },
-        { id: "automatic", label: t("callCenter.tabs.automatic"), icon: Activity },
-        { id: "assignments", label: t("callCenter.tabs.assignments"), icon: Activity },
-    ], [t]);
+        { id: "manual", label: t("callCenter.tabs.manual"), title: t("callCenter.tabs.manual"), icon: Users, description: tTutorial("callCenter.tabs.manual.description"), example: tTutorial("callCenter.tabs.manual.example") },
+        { id: "automatic", label: t("callCenter.tabs.automatic"), icon: Activity, description: tTutorial("callCenter.tabs.automatic.description"), example: tTutorial("callCenter.tabs.automatic.example") },
+        { id: "assignments", label: t("callCenter.tabs.assignments"), icon: Activity, description: tTutorial("callCenter.tabs.assignments.description"), example: tTutorial("callCenter.tabs.assignments.example") },
+    ], [t, tTutorial]);
 
     const handleViewModeChange = (mode) => {
         setViewMode(mode);
@@ -1409,6 +1410,8 @@ export default function CallCenterPage() {
             {
                 key: "employeeName",
                 header: t("callCenter.columns.employeeName"),
+                description: tTutorial("callCenter.columns.employeeName.description"),
+                example: tTutorial("callCenter.columns.employeeName.example"),
                 cell: (row) => (
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
@@ -1427,6 +1430,8 @@ export default function CallCenterPage() {
             {
                 key: "isActive",
                 header: t("callCenter.columns.status"),
+                description: tTutorial("callCenter.columns.status.description"),
+                example: tTutorial("callCenter.columns.status.example"),
                 cell: (row) => (
                     <span style={{ background: "color-mix(in oklab, var(--muted) 50%, var(--card))" }} className={cn(
                         "px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-foreground",
@@ -1439,6 +1444,8 @@ export default function CallCenterPage() {
             {
                 key: "activeAssignments",
                 header: t("callCenter.columns.activeAssignments"),
+                description: tTutorial("callCenter.columns.activeAssignments.description"),
+                example: tTutorial("callCenter.columns.activeAssignments.example"),
                 cell: (row) => (
                     <div className="flex items-center gap-1.5">
                         <Activity size={14} className="text-primary" />
@@ -1451,6 +1458,8 @@ export default function CallCenterPage() {
             {
                 key: "lockedAssignments",
                 header: t("callCenter.columns.lockedAssignments"),
+                description: tTutorial("callCenter.columns.lockedAssignments.description"),
+                example: tTutorial("callCenter.columns.lockedAssignments.example"),
                 cell: (row) => (
                     <div className="flex items-center gap-1.5">
                         <Lock size={14} className="text-primary" />
@@ -1463,6 +1472,8 @@ export default function CallCenterPage() {
             {
                 key: "confirmedToday",
                 header: t("callCenter.columns.confirmedToday"),
+                description: tTutorial("callCenter.columns.confirmedToday.description"),
+                example: tTutorial("callCenter.columns.confirmedToday.example"),
                 cell: (row) => (
                     <div className="flex items-center gap-1.5">
                         <CheckCircle size={14} className="text-emerald-500" />
@@ -1473,7 +1484,7 @@ export default function CallCenterPage() {
                 ),
             },
         ],
-        [t]
+        [t, tTutorial]
     );
 
     const ruleColumns = useMemo(
@@ -1481,6 +1492,8 @@ export default function CallCenterPage() {
             {
                 key: "name",
                 header: t("callCenter.autoAssign.columns.name"),
+                description: tTutorial("callCenter.autoAssign.columns.name.description"),
+                example: tTutorial("callCenter.autoAssign.columns.name.example"),
                 cell: (row) => (
                     <span className="font-semibold text-foreground">
                         {row.name}
@@ -1490,6 +1503,8 @@ export default function CallCenterPage() {
             {
                 key: "description",
                 header: t("description"),
+                description: tTutorial("callCenter.autoAssign.columns.description.description"),
+                example: tTutorial("callCenter.autoAssign.columns.description.example"),
                 cell: (row) => (
                     <span
                         className="max-w-xs truncate text-muted-foreground"
@@ -1502,11 +1517,15 @@ export default function CallCenterPage() {
             {
                 key: "ruleType",
                 header: t("callCenter.autoAssign.columns.type"),
+                description: tTutorial("callCenter.autoAssign.columns.type.description"),
+                example: tTutorial("callCenter.autoAssign.columns.type.example"),
                 cell: (row) => <Badge variant="outline" className="capitalize">{row.ruleType ? t(`callCenter.autoAssign.stats.${row.ruleType}`) : null}</Badge>,
             },
             {
                 key: "strategy",
                 header: t("callCenter.autoAssign.columns.strategy"),
+                description: tTutorial("callCenter.autoAssign.columns.strategy.description"),
+                example: tTutorial("callCenter.autoAssign.columns.strategy.example"),
                 cell: (row) => (
                     <span className="text-sm font-medium text-muted-foreground capitalize">
                         {row.strategy ? t(`callCenter.autoAssign.strategy.${row.strategy}`) : null}
@@ -1516,6 +1535,8 @@ export default function CallCenterPage() {
             {
                 key: "isActive",
                 header: t("callCenter.autoAssign.columns.status"),
+                description: tTutorial("callCenter.autoAssign.columns.status.description"),
+                example: tTutorial("callCenter.autoAssign.columns.status.example"),
                 cell: (row) => (
                     <Badge variant={row.isActive ? "secondary" : "success"}>
                         {row.isActive ? t("common.statusCodes.active") : t("common.statusCodes.inactive")}
@@ -1525,11 +1546,15 @@ export default function CallCenterPage() {
             {
                 key: "priority",
                 header: t("callCenter.autoAssign.columns.priority"),
+                description: tTutorial("callCenter.autoAssign.columns.priority.description"),
+                example: tTutorial("callCenter.autoAssign.columns.priority.example"),
                 className: "text-center font-mono",
             },
             {
                 key: "employees",
                 header: t("callCenter.autoAssign.columns.employees"),
+                description: tTutorial("callCenter.autoAssign.columns.employees.description"),
+                example: tTutorial("callCenter.autoAssign.columns.employees.example"),
                 cell: (row) => (
                     <div className="flex flex-wrap gap-1 max-w-[250px]">
                         {row.employees?.slice(0, 2).map((emp, i) => (
@@ -1548,6 +1573,8 @@ export default function CallCenterPage() {
             {
                 key: "actions",
                 header: t("callCenter.autoAssign.columns.actions"),
+                description: tTutorial("callCenter.autoAssign.columns.actions.description"),
+                example: tTutorial("callCenter.autoAssign.columns.actions.example"),
                 cell: (row) => (
                     <ActionButtons
                         row={row}
@@ -1584,7 +1611,7 @@ export default function CallCenterPage() {
                 ),
             },
         ],
-        [t]
+        [t, tTutorial]
     );
 
     const headerStats = useMemo(() => {
@@ -1596,6 +1623,8 @@ export default function CallCenterPage() {
                 icon: s.icon,
                 color: s.color,
                 sortOrder: s.sortOrder,
+                description: tTutorial(`callCenter.stats.${s.code}.description`),
+                example: tTutorial(`callCenter.stats.${s.code}.example`),
             }));
         } else if (viewMode === "automatic") {
             const typeStats = [
@@ -1615,6 +1644,8 @@ export default function CallCenterPage() {
                     icon: Layers,
                     color: "var(--primary)",
                     sortOrder: 1,
+                    description: tTutorial("callCenter.stats.total.description"),
+                    example: tTutorial("callCenter.stats.total.example"),
                 },
                 {
                     id: "active",
@@ -1623,6 +1654,8 @@ export default function CallCenterPage() {
                     icon: Activity,
                     color: "#10b981",
                     sortOrder: 2,
+                    description: tTutorial("callCenter.stats.active.description"),
+                    example: tTutorial("callCenter.stats.active.example"),
                 },
             ];
 
@@ -1633,6 +1666,8 @@ export default function CallCenterPage() {
                 icon: ts.icon,
                 color: ts.color,
                 sortOrder: index + 3,
+                description: ts.id ? tTutorial(`callCenter.stats.${ts.id}.description`) : null,
+                example: ts.id ? tTutorial(`callCenter.stats.${ts.id}.example`) : null,
             }));
 
             return [...baseStats, ...extraStats];
@@ -1645,6 +1680,8 @@ export default function CallCenterPage() {
                     icon: Activity,
                     color: "var(--primary)",
                     sortOrder: 1,
+                    description: tTutorial("callCenter.stats.activeAssignments.description"),
+                    example: tTutorial("callCenter.stats.activeAssignments.example"),
                 },
                 {
                     id: "assignedEmployees",
@@ -1653,6 +1690,8 @@ export default function CallCenterPage() {
                     icon: Users,
                     color: "#6366f1",
                     sortOrder: 2,
+                    description: tTutorial("callCenter.stats.assignedEmployees.description"),
+                    example: tTutorial("callCenter.stats.assignedEmployees.example"),
                 },
                 // {
                 //     id: "activeAssignedToday",
@@ -1669,11 +1708,13 @@ export default function CallCenterPage() {
                     icon: Lock,
                     color: "#f59e0b",
                     sortOrder: 4,
+                    description: tTutorial("callCenter.stats.lockedAssignments.description"),
+                    example: tTutorial("callCenter.stats.lockedAssignments.example"),
                 },
             ];
             return assignmentStats;
         }
-    }, [viewMode, manualStatsData, autoStatsData, assignmentStatsData, t]);
+    }, [viewMode, manualStatsData, autoStatsData, assignmentStatsData, t, tTutorial]);
 
     return (
         <div className="min-h-screen p-5">

@@ -377,6 +377,7 @@ export default function FailedOrderDetailsPage() {
     const id = params.id;
     const tCommon = useTranslations('common');
     const t = useTranslations('orders.failedOrders');
+    const tTutorial = useTranslations('tutorial.orders');
     const router = useRouter();
     const { formatCurrency } = usePlatformSettings();
 
@@ -599,6 +600,8 @@ export default function FailedOrderDetailsPage() {
         {
             key: "problem",
             header: t('table.problem'),
+            description: tTutorial('failedOrders.problems.description'),
+            example: tTutorial('failedOrders.problems.example'),
             cell: (row) => {
                 const problem = problems.find(p => p.slug === row.productSlug && p.key === row.variant.key);
 
@@ -622,6 +625,8 @@ export default function FailedOrderDetailsPage() {
         {
             key: "actions",
             header: t('table.actions'),
+            description: tTutorial('failedOrders.actions.description'),
+            example: tTutorial('failedOrders.actions.example'),
             cell: (row, i) => {
                 const problem = problems.find(p => p.slug === row.productSlug && p.key === row.variant.key);
 

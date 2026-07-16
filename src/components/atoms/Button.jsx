@@ -3,6 +3,8 @@
 import { Loader2 } from "lucide-react";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useTutorial } from "@/context/TutorialContext";
+import { TutorialSpotlight } from "./TutorialSpotlight";
 
 
 export default function Button_({
@@ -18,9 +20,12 @@ export default function Button_({
 	className = "",
 	type = "button",
 	permission,
+	description,
+	example,
 	...props
 }) {
 	const { hasPermission } = useAuth();
+	const { isTutorialMode } = useTutorial();
 
 	if (permission && !hasPermission(permission)) {
 		return null;
@@ -42,12 +47,32 @@ export default function Button_({
 		.filter(Boolean)
 		.join(" ");
 
-	return (
+	const buttonContent = (
 		<Tag {...extra} className={classes}>
 			{icon && icon}
 			{label}
 		</Tag>
 	);
+
+	const btn = description ? (
+		<TutorialSpotlight 
+			title={label} 
+			description={description} 
+			example={example} 
+			style={{ borderRadius: "var(--radius)" }}
+			card="sm"
+		>
+			{buttonContent}
+		</TutorialSpotlight>
+	) : buttonContent;
+
+	const wrapperStyle = isTutorialMode && description ? {
+		zIndex: 40,
+		position: "relative",
+		display: "inline-flex",
+	} : { display: "inline-flex" };
+
+	return <span style={wrapperStyle}>{btn}</span>;
 }
 
 /**

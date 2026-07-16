@@ -146,50 +146,45 @@ export const OrderStatus = {
 };
 
 // // Helper function to generate random order number like ORD77QURTE
-// const generateOrderNumber = () => {
-//   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-//   let suffix = '';
-//   for (let i = 0; i < 7; i++) {
-//     suffix += chars.charAt(Math.floor(Math.random() * chars.length));
-//   }
-//   return `ORD${suffix}`;
-// };
 
 // // Mock Egyptian Orders for Demo
-// const mockOrders = [
-//   {
-//     id: "1",
-//     customerName: "Ahmed Mohamed",
-//     orderNumber: generateOrderNumber(),
-//     duplicateCount: 0,
-//     originalOrderNumber: null,
-//     city: "Cairo",
-//     address: "123 Street Name, Nasr City, Cairo",
-//     finalTotal: 350,
-//     shippingCost: 30,
-//     phoneNumber: "01012345678",
-//     status: {
-//       id: "6aa5ba0a-61b5-4a4f-87fb-c7fea5bac389",
-//       code: OrderStatus.NEW,
-//       system: true,
-//       name: "New",
-//       color: "#2196F3",
-//     },
-//     postponedDate: null,
-//     shippedAt: null,
-//     cityDetails: {
-//       tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
-//     },
-//     items: [
-//       {
-//         variant: {
-//           product: { name: "T-Shirt" },
-//           sku: "TS-001",
-//         },
-//         quantity: 2,
-//       },
-//     ],
-//   },
+const tutorialData = [
+  {
+    id: "1",
+    customerName: "Ahmed Mohamed",
+    orderNumber: "tutorial-order-123",
+    duplicateCount: 0,
+    originalOrderNumber: null,
+    city: "Cairo",
+    address: "123 Street Name, Nasr City, Cairo",
+    finalTotal: 350,
+    shippingCost: 30,
+    phoneNumber: "01100000000",
+    status: {
+      id: "6aa5ba0a-61b5-4a4f-87fb-c7fea5bac389",
+      code: OrderStatus.NEW,
+      system: true,
+      name: "New",
+      color: "#2196F3",
+    },
+    postponedDate: null,
+    shippedAt: null,
+    cityDetails: {
+      tenantConfigs: [{ minShippingDays: 2, maxShippingDays: 4 }],
+    },
+    created_at: new Date(),
+    updated_at: new Date(),
+    paymentMethod: "card",
+    items: [
+      {
+        variant: {
+          product: { name: "T-Shirt" },
+          sku: "TS-001",
+        },
+        quantity: 2,
+      },
+    ],
+  }]
 //   {
 //     id: "2",
 //     customerName: "Fatma Ali",
@@ -736,6 +731,7 @@ export default function OrdersTab({
 }) {
 
   const t = useTranslations("orders");
+  const tTutorial = useTranslations("tutorial.orders");
   const { formatCurrency } = usePlatformSettings();
   const { user, isSuperAdmin } = useAuth();
   const restrictedSet = useMemo(() => {
@@ -1830,6 +1826,8 @@ export default function OrdersTab({
                 },
                 variant: "primary",
                 permission: "orders.read",
+                description: tTutorial("actions.view.description"),
+                example: tTutorial("actions.view.example"),
               },
               {
                 icon: <UserMinus />,
@@ -1837,6 +1835,8 @@ export default function OrdersTab({
                 onClick: (r) => setCancelModalOpen({ open: true, ids: [r.id] }),
                 variant: "red",
                 permission: "orders.assign",
+                description: tTutorial("actions.cancelAssignment.description"),
+                example: tTutorial("actions.cancelAssignment.example"),
               },
             ] : [
               // --- WAREHOUSE ACTIONS ---
@@ -1847,6 +1847,8 @@ export default function OrdersTab({
                 variant: "primary",
                 permission: "orders.update",
                 hidden: isSuperAdmin || row?.status?.code !== OrderStatus.CONFIRMED,
+                description: tTutorial("actions.distribute.description"),
+                example: tTutorial("actions.distribute.example"),
               },
               {
                 icon: <Printer size={18} />,
@@ -1855,6 +1857,8 @@ export default function OrdersTab({
                 variant: "primary",
                 permission: "orders.update",
                 hidden: isSuperAdmin || row?.status?.code !== OrderStatus.DISTRIBUTED,
+                description: tTutorial("actions.print.description"),
+                example: tTutorial("actions.print.example"),
               },
               {
                 icon: <ScanBarcode size={18} />,
@@ -1863,6 +1867,8 @@ export default function OrdersTab({
                 variant: "primary",
                 permission: "orders.update",
                 hidden: isSuperAdmin || row?.status?.code !== OrderStatus.PRINTED,
+                description: tTutorial("actions.startPreparing.description"),
+                example: tTutorial("actions.startPreparing.example"),
               },
               {
                 icon: <ScanLine size={18} />,
@@ -1871,6 +1877,8 @@ export default function OrdersTab({
                 variant: "primary",
                 permission: "orders.update",
                 hidden: isSuperAdmin || row?.status?.code !== OrderStatus.PREPARING,
+                description: tTutorial("actions.continuePreparing.description"),
+                example: tTutorial("actions.continuePreparing.example"),
               },
               {
                 icon: <Send size={18} />,
@@ -1879,6 +1887,8 @@ export default function OrdersTab({
                 variant: "primary",
                 permission: "orders.update",
                 hidden: isSuperAdmin || row?.status?.code !== OrderStatus.READY,
+                description: tTutorial("actions.scanOutgoing.description"),
+                example: tTutorial("actions.scanOutgoing.example"),
               },
               {
                 icon: <ClipboardList size={18} />,
@@ -1887,6 +1897,8 @@ export default function OrdersTab({
                 variant: "primary",
                 permission: "orders.update",
                 hidden: isSuperAdmin || row?.status?.code !== OrderStatus.PACKED,
+                description: tTutorial("actions.createManifest.description"),
+                example: tTutorial("actions.createManifest.example"),
               },
               {
                 icon: <Undo2 size={18} />,
@@ -1895,6 +1907,8 @@ export default function OrdersTab({
                 variant: "primary",
                 permission: "orders.update",
                 hidden: isSuperAdmin || row?.status?.code !== OrderStatus.RETURN_PREPARING,
+                description: tTutorial("actions.createReturnManifest.description"),
+                example: tTutorial("actions.createReturnManifest.example"),
               },
               {
                 icon: <Truck />,
@@ -1907,6 +1921,8 @@ export default function OrdersTab({
                 permission: "orders.read",
                 disabled: !row.trackingNumber,
                 hidden: row?.status?.code !== OrderStatus.SHIPPED && row?.status?.code !== OrderStatus.DELIVERED,
+                description: tTutorial("actions.trackShipment.description"),
+                example: tTutorial("actions.trackShipment.example"),
               },
               {
                 icon: <History />,
@@ -1917,6 +1933,8 @@ export default function OrdersTab({
                 },
                 variant: "primary",
                 permission: "orders.read",
+                description: tTutorial("actions.statusHistory.description"),
+                example: tTutorial("actions.statusHistory.example"),
               },
               // -----------------------------
               {
@@ -1931,6 +1949,8 @@ export default function OrdersTab({
                 },
                 variant: "primary",
                 permission: "orders.read",
+                description: tTutorial("actions.view.description"),
+                example: tTutorial("actions.view.example"),
               },
               {
                 icon: <Copy />,
@@ -1938,7 +1958,9 @@ export default function OrdersTab({
                 onClick: (r) => router.push(`/orders/new?from=${r.id}`),
                 variant: "primary",
                 permission: "orders.create",
-                hidden: isSuperAdmin
+                hidden: isSuperAdmin,
+                description: tTutorial("actions.duplicate.description"),
+                example: tTutorial("actions.duplicate.example"),
               },
               {
                 icon: <Edit2 />,
@@ -1947,7 +1969,9 @@ export default function OrdersTab({
                 disabled: row?.status?.code === OrderStatus.SHIPPED || row?.status?.code === OrderStatus.DELIVERED,
                 variant: "primary",
                 permission: "orders.update",
-                hidden: isSuperAdmin
+                hidden: isSuperAdmin,
+                description: tTutorial("actions.edit.description"),
+                example: tTutorial("actions.edit.example"),
               },
 
               {
@@ -1959,7 +1983,9 @@ export default function OrdersTab({
                 },
                 variant: "red",
                 permission: "orders.delete",
-                hidden: isSuperAdmin || readOnlyStatus
+                hidden: isSuperAdmin || readOnlyStatus,
+                description: tTutorial("actions.delete.description"),
+                example: tTutorial("actions.delete.example"),
               },
             ]}
           />
@@ -2069,6 +2095,7 @@ export default function OrdersTab({
         searchValue={search}
         onSearchChange={setSearch}
         onSearch={applyFilters}
+        tutorialActions={true}
         // ── i18n labels ───────────────────────────────────────────────────────
         labels={{
           searchPlaceholder: t("toolbar.searchPlaceholder"),
@@ -2090,6 +2117,8 @@ export default function OrdersTab({
               onClick: () => setCancelModalOpen({ open: true, ids: selectedOrderIds }),
               disabled: selectedOrderIds.length === 0,
               permission: "orders.assign",
+              description: tTutorial("actions.bulkCancelAssignments.description"),
+              example: tTutorial("actions.bulkCancelAssignments.example"),
             }] : []),
           {
             key: "export",
@@ -2112,6 +2141,8 @@ export default function OrdersTab({
               color: "primary",
               onClick: () => setBulkUploadOpen(true),
               permission: "orders.create",
+              description: tTutorial("actions.bulkUpload.description"),
+              example: tTutorial("actions.bulkUpload.example"),
             }]
             : []),
         ]}
@@ -2249,6 +2280,7 @@ export default function OrdersTab({
         // ── Table ─────────────────────────────────────────────────────────────
         columns={columns}
         data={pager.records}
+        tutorialData={tutorialData}
         isLoading={ordersLoading || loading}
         // ── Pagination ────────────────────────────────────────────────────────
         pagination={{

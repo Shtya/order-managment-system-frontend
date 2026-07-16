@@ -31,6 +31,7 @@ import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
 import { ActionButtons } from "@/components/atoms/Actions";
+import {TutorialSpotlight} from "@/components/atoms/TutorialSpotlight";
 import { Badge } from "@/components/ui/badge";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 
@@ -157,6 +158,7 @@ function CityConfigFormDialog({ open, onOpenChange, city, onSuccess }) {
 
 export default function CitiesConfigPage() {
 	const t = useTranslations("shippingCities");
+	const tTutorial = useTranslations("tutorial.cities");
 	const [loading, setLoading] = useState(false);
 	const [pager, setPager] = useState({
 		total_records: 0,
@@ -293,11 +295,15 @@ export default function CitiesConfigPage() {
 				key: "minDays",
 				header: t("table.minDays"),
 				cell: (row) => row.tenantConfigs?.[0]?.minShippingDays ?? "—",
+				description: tTutorial("columns.minDays.description"),
+				example: tTutorial("columns.minDays.example"),
 			},
 			{
 				key: "maxDays",
 				header: t("table.maxDays"),
 				cell: (row) => row.tenantConfigs?.[0]?.maxShippingDays ?? "—",
+				description: tTutorial("columns.maxDays.description"),
+				example: tTutorial("columns.maxDays.example"),
 			},
 			{
 				key: "status",
@@ -311,6 +317,8 @@ export default function CitiesConfigPage() {
 						</Badge>
 					);
 				},
+				description: tTutorial("columns.status.description"),
+				example: tTutorial("columns.status.example"),
 			},
 			{
 				key: "options",
@@ -340,17 +348,24 @@ export default function CitiesConfigPage() {
 				),
 			},
 		],
-		[t]
+		[t, tTutorial]
 	);
 
 	return (
 		<div className="min-h-screen p-5">
-			<PageHeader
-				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/dashboard" },
-					{ name: t("breadcrumb.cities") },
-				]}
-			/>
+			<TutorialSpotlight
+				title={t("breadcrumb.cities")}
+				description={tTutorial("description")}
+				example={tTutorial("example")}
+				overview={true}
+			>
+				<PageHeader
+					breadcrumbs={[
+						{ name: t("breadcrumb.home"), href: "/dashboard" },
+						{ name: t("breadcrumb.cities") },
+					]}
+				/>
+			</TutorialSpotlight>
 
 			<Table
 				columns={columns}

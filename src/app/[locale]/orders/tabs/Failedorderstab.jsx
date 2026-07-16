@@ -231,6 +231,7 @@ function ErrorReasonCell({ row }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export function FailedOrdersTab() {
   const t = useTranslations("orders");
+  const tTutorial = useTranslations("tutorial.orders");
   const { subscribe } = useSocket();
   const router = useRouter()
   const [search, setSearch] = useState("");
@@ -432,8 +433,10 @@ export function FailedOrdersTab() {
         color: s.color,
         sortOrder: s.id,
         loading: statsLoading,
+        description: tTutorial(`failedOrders.stats.${s.code}.description`),
+        example: tTutorial(`failedOrders.stats.${s.code}.example`),
       })),
-    [stats, statsLoading, t],
+    [stats, statsLoading, t, tTutorial],
   );
 
   // ── Modal State ──────────────────────────────────────────────────────────

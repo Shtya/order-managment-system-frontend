@@ -297,6 +297,7 @@ export default function PreparationTab({
 	setDistributionDialog, setSelectedOrdersGlobal, resetToken,
 }) {
 	const t = useTranslations("warehouse.preparation");
+	const tTutorial = useTranslations("tutorial.warehouse");
 
 	const [panelOpen, setPanelOpen] = useState(false);
 	const [jumpToOrder, setJumpToOrder] = useState(null);
@@ -340,9 +341,9 @@ export default function PreparationTab({
 	useEffect(() => { if (subtab !== "scanning") setJumpToOrder(null); }, [subtab]);
 
 	const stats = [
-		{ id: "scanning", name: t("stats.scanning"), value: statsData.scanning, icon: Clock, color: DS.accent, sortOrder: 0 },
-		{ id: "not-started", name: t("stats.notStarted"), value: statsData.notStarted, icon: Package, color: DS.warning, sortOrder: 1 },
-		{ id: "total", name: t("stats.total"), value: statsData.total, icon: CheckCircle2, color: DS.primary, sortOrder: 2 },
+		{ id: "scanning", name: t("stats.scanning"), value: statsData.scanning, icon: Clock, color: DS.accent, sortOrder: 0, description: tTutorial("preparation.stats.scanning.description"), example: tTutorial("preparation.stats.scanning.example") },
+		{ id: "not-started", name: t("stats.notStarted"), value: statsData.notStarted, icon: Package, color: DS.warning, sortOrder: 1, description: tTutorial("preparation.stats.notStarted.description"), example: tTutorial("preparation.stats.notStarted.example") },
+		{ id: "total", name: t("stats.total"), value: statsData.total, icon: CheckCircle2, color: DS.primary, sortOrder: 2, description: tTutorial("preparation.stats.total.description"), example: tTutorial("preparation.stats.total.example") },
 	];
 
 	return (

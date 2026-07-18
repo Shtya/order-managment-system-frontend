@@ -5906,7 +5906,7 @@
     },
     "autoAssign": {
       "toolbar": {
-        "addRole": "Create Assignment Rule",
+        "addRole": "Create automation Rule",
         "export": "Rules"
       },
       "strategy": {

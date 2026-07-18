@@ -5891,7 +5891,7 @@
     },
     "autoAssign": {
       "toolbar": {
-        "addRole": "إنشاء قاعدة إسناد",
+        "addRole": "إنشاء قاعدة أتممة",
         "export": "تصدير"
       },
       "strategy": {

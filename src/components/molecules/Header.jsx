@@ -225,7 +225,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
           </IconBtn>
 
           {/* Tutorial Mode */}
-          <IconBtn
+          {!isSuperAdmin && <IconBtn
             onClick={toggleTutorialMode}
             label={isTutorialMode ? "Exit tutorial" : "Tutorial mode"}
             className={isTutorialMode ? "bg-primary/10 border-primary/35 text-primary" : ""}
@@ -241,7 +241,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
                 {isTutorialMode ? <XCircle size={14} /> : <GraduationCap size={14} />}
               </motion.span>
             </AnimatePresence>
-          </IconBtn>
+          </IconBtn>}
 
           {/* Notifications */}
           <Popover>

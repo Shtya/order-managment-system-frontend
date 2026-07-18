@@ -104,7 +104,7 @@ export default function Orders() {
 	const items = useMemo(
 		() => [
 			{ id: "orders", label: t("tabs.orders"), icon: ShoppingCart },
-			// { id: "replacement", label: t("tabs.replacement"), icon: ArrowLeftRight },
+			{ id: "replacement", label: t("tabs.replacement"), icon: ArrowLeftRight },
 			{ id: "failedOrders", label: t("tabs.failedOrders"), icon: XCircle },
 			{ id: "shippedOrders", label: t("tabs.shippedOrders"), icon: Truck },
 			{ id: "rejected", label: t("tabs.rejected"), icon: XCircle },

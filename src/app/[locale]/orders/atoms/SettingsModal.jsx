@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/select";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import { FieldTooltip } from "@/components/ui/field-tooltip";
 import { P_08, P_04, P_12, P_20, P_25 } from "../../settings/page";
 import { MdNotificationAdd } from "react-icons/md";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
@@ -788,7 +789,10 @@ export function GeneralTab({ settings, patch, t }) {
               {settings.assignmentMode === "disabled" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
             </div>
             <div className="flex-1">
-              <div className="font-medium">{t("retrySettings.autoAssignment.disabled")}</div>
+              <div className="font-medium flex items-center gap-2">
+                {t("retrySettings.autoAssignment.disabled")}
+                <FieldTooltip description={t("retrySettings.autoAssignment.disabledDescription")} stopPropagation />
+              </div>
               <div className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.disabledDesc")}</div>
             </div>
           </div>
@@ -804,7 +808,10 @@ export function GeneralTab({ settings, patch, t }) {
               {settings.assignmentMode === "immediate" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
             </div>
             <div className="flex-1">
-              <div className="font-medium">{t("retrySettings.autoAssignment.immediate")}</div>
+              <div className="font-medium flex items-center gap-2">
+                {t("retrySettings.autoAssignment.immediate")}
+                <FieldTooltip description={t("retrySettings.autoAssignment.immediateDescription")} stopPropagation />
+              </div>
               <div className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.immediateDesc")}</div>
             </div>
           </div>
@@ -820,7 +827,10 @@ export function GeneralTab({ settings, patch, t }) {
               {settings.assignmentMode === "delayed" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
             </div>
             <div className="flex-1">
-              <div className="font-medium">{t("retrySettings.autoAssignment.delayed")}</div>
+              <div className="font-medium flex items-center gap-2">
+                {t("retrySettings.autoAssignment.delayed")}
+                <FieldTooltip description={t("retrySettings.autoAssignment.delayedDescription")} stopPropagation />
+              </div>
               <div className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.delayedDesc")}</div>
             </div>
           </div>

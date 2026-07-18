@@ -541,7 +541,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           href: "/orders?tab=failedOrders",
         },
         {
-          icon:Truck,
+          icon: Truck,
           labelKey: "shippedOrders",
           href: "/orders?tab=shippedOrders",
         }
@@ -646,12 +646,6 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       ],
     },
     {
-      labelKey: "upsell",
-      href: "/upsells",
-      icon: FaChartPie,
-      permission: "upsells.read",
-    },
-    {
       icon: FaWhatsapp,
       labelKey: "whatsapp",
       href: "/whatsapp",
@@ -675,7 +669,13 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "chats",
           href: "/whatsapp/chats",
           icon: FaMessage,
-        }
+        },
+        {
+          labelKey: "upsell",
+          href: "/upsells",
+          icon: FaChartPie,
+          permission: "upsells.read",
+        },
 
       ]
     },
@@ -817,12 +817,6 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           href: "/roles",
         },
       ],
-    },
-    {
-      icon: MapPin,
-      labelKey: "cities",
-      href: "/cities",
-      permission: "city.read"
     },
     {
       icon: Settings,

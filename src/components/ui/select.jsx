@@ -5,6 +5,7 @@ import * as SelectPrimitive from "@radix-ui/react-select"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { cn } from "@/utils/cn"
 import { fieldBase } from "./input"
+import { FieldTooltip } from "@/components/ui/field-tooltip"
 
 /* ─────────────────────────────────────────────────────────────────────────
    Body-scroll unlock while dropdown is open (Radix portal workaround)
@@ -185,7 +186,7 @@ function SelectLabel({ className, ...props }) {
 /* ─────────────────────────────────────────────────────────────────────────
    Item
 ───────────────────────────────────────────────────────────────────────── */
-function SelectItem({ className, children, ...props }) {
+function SelectItem({ className, children, description, ...props }) {
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
@@ -209,6 +210,13 @@ function SelectItem({ className, children, ...props }) {
       <SelectPrimitive.ItemText className="flex-1 truncate">
         {children}
       </SelectPrimitive.ItemText>
+
+      <FieldTooltip
+        description={description}
+        side="top"
+        sideOffset={8}
+        stopPropagation
+      />
 
       <span
         aria-hidden

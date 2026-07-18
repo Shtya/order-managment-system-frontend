@@ -36,6 +36,7 @@ import toast from "react-hot-toast";
 import api from "@/utils/api";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FieldTooltip } from "@/components/ui/field-tooltip";
 
 
 // ── WeekDay Enum & Bitmask Helpers ────────────────────────────────────────────
@@ -472,22 +473,22 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                 <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-sm font-semibold">{t("form.name")}</Label>
-                            <Input {...register("name")} className="rounded-xl h-[50px]" />
+                            <Label className="text-sm font-semibold" >{t("form.name")}</Label>
+                            <Input {...register("name")} placeholder={t("form.name")}  className="rounded-xl h-[50px]" />
                             {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-sm font-semibold">{t("form.priority")}</Label>
+                            <Label className="text-sm font-semibold" description={t("form.priorityDescription")}>{t("form.priority")}</Label>
                             <Input type="number" {...register("priority")} className="rounded-xl h-[50px]" />
                             {errors.priority && <p className="text-xs text-red-600">{errors.priority.message}</p>}
                         </div>
                         <div className="space-y-2 col-span-2">
                             <Label className="text-sm font-semibold">{t("form.description")}</Label>
-                            <Textarea {...register("description")} className="rounded-xl min-h-[100px]" />
+                            <Textarea {...register("description")} placeholder={t("form.descriptionPlaceholder")} className="rounded-xl min-h-[100px]" />
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-sm font-semibold">{t("form.ruleType")}</Label>
+                            <Label className="text-sm font-semibold" description={t("form.ruleTypeDescription")}>{t("form.ruleType")}</Label>
                             <Controller
                                 control={control}
                                 name="ruleType"
@@ -509,7 +510,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-sm font-semibold">{t("form.strategy")}</Label>
+                            <Label className="text-sm font-semibold" description={t("form.strategyDescription")}>{t("form.strategy")}</Label>
                             <Controller
                                 control={control}
                                 name="strategy"
@@ -519,8 +520,8 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="roundRobin">{t("strategy.roundRobin")}</SelectItem>
-                                            <SelectItem value="leastActiveOrders">{t("strategy.leastActiveOrders")}</SelectItem>
+                                            <SelectItem value="roundRobin" description={t("strategy.roundRobinDescription")}>{t("strategy.roundRobin")}</SelectItem>
+                                            <SelectItem value="leastActiveOrders" description={t("strategy.leastActiveOrdersDescription")}>{t("strategy.leastActiveOrders")}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 )}
@@ -535,7 +536,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                     <Switch checked={field.value} onCheckedChange={field.onChange} />
                                 )}
                             />
-                            <Label className="text-sm font-semibold">{t("form.isActive")}</Label>
+                            <Label className="text-sm font-semibold" description={t("form.isActiveDescription")}>{t("form.isActive")}</Label>
                         </div>
                     </div>
 
@@ -560,7 +561,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                         />
                                     )}
                                 />
-                                <Label className="text-sm font-semibold">{t("form.timeWindow")}</Label>
+                                <Label className="text-sm font-semibold" description={t("form.timeWindowDescription")}>{t("form.timeWindow")}</Label>
                             </div>
                             {(watch("timeWindowEnabled") || watch("startTime") || watch("endTime")) && (
                                 <div className="grid grid-cols-2 gap-4">
@@ -604,7 +605,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                                         />
                                     )}
                                 />
-                                <Label className="text-sm font-semibold">{t("form.dayWindow")}</Label>
+                                <Label className="text-sm font-semibold" description={t("form.dayWindowDescription")}>{t("form.dayWindow")}</Label>
                             </div>
                             {(watch("dateRangeEnabled") || watch("activeFrom") || watch("activeUntil")) && (
                                 <div className="grid grid-cols-2 gap-4">
@@ -641,7 +642,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                         {/* Week Days */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between gap-2">
-                                <Label className="text-sm font-semibold">{t("form.weekDays")}</Label>
+                                <Label className="text-sm font-semibold" description={t("form.weekDaysDescription")}>{t("form.weekDays")}</Label>
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -701,7 +702,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
 
                     <div className="space-y-4 border-t pt-4">
                         <div className="space-y-2">
-                            <Label className="text-sm font-semibold">{t("form.employees")}</Label>
+                            <Label className="text-sm font-semibold" description={t("form.employeesDescription")}>{t("form.employees")}</Label>
                             <Controller
                                 control={control}
                                 name="employeeIds"
@@ -1942,7 +1943,10 @@ export default function CallCenterPage() {
                                         {tempSettings.assignmentMode === "disabled" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="font-medium">{t("orders.retrySettings.autoAssignment.disabled")}</div>
+                                        <div className="font-medium flex items-center gap-2">
+                                            {t("orders.retrySettings.autoAssignment.disabled")}
+                                            <FieldTooltip description={t("orders.retrySettings.autoAssignment.disabledDescription")} stopPropagation />
+                                        </div>
                                         <div className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.disabledDesc")}</div>
                                     </div>
                                 </div>
@@ -1958,7 +1962,10 @@ export default function CallCenterPage() {
                                         {tempSettings.assignmentMode === "immediate" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="font-medium">{t("orders.retrySettings.autoAssignment.immediate")}</div>
+                                        <div className="font-medium flex items-center gap-2">
+                                            {t("orders.retrySettings.autoAssignment.immediate")}
+                                            <FieldTooltip description={t("orders.retrySettings.autoAssignment.immediateDescription")} stopPropagation />
+                                        </div>
                                         <div className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.immediateDesc")}</div>
                                     </div>
                                 </div>
@@ -1974,7 +1981,10 @@ export default function CallCenterPage() {
                                         {tempSettings.assignmentMode === "delayed" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="font-medium">{t("orders.retrySettings.autoAssignment.delayed")}</div>
+                                        <div className="font-medium flex items-center gap-2">
+                                            {t("orders.retrySettings.autoAssignment.delayed")}
+                                            <FieldTooltip description={t("orders.retrySettings.autoAssignment.delayedDescription")} stopPropagation />
+                                        </div>
                                         <div className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.delayedDesc")}</div>
                                     </div>
                                 </div>

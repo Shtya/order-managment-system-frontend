@@ -264,6 +264,10 @@ export const ConversationProvider = ({ children }) => {
         setMessages([]);
     }, [setSelectedConversation]);
 
+    const activeConvIdRef = useRef(selectedConversation?.id);
+    useEffect(() => {
+        activeConvIdRef.current = selectedConversation?.id;
+    }, [selectedConversation?.id]);
     useEffect(() => {
         const unsubConversation = subscribe("WHATSAPP_CONVERSATION_NEW", (payload) => {
             if (!payload?.conversation) return;
@@ -278,116 +282,134 @@ export const ConversationProvider = ({ children }) => {
 
         const unsubMessage = subscribe("WHATSAPP_MESSAGE_NEW", (payload) => {
             if (!payload?.message) return;
+
             const msg = payload.message;
             const localId = msg.metadata?.localId;
             const isReaction = msg.messageType === "reaction";
 
+            // Read from the ref to avoid stale closure issues!
+            const isConversationOpen = activeConvIdRef.current === msg.conversationId;
+
+            // DO DOM READS HERE, completely outside of React state setters
+            const nearBottom = isConversationOpen ? checkIsNearBottom() : false;
+
             let shouldMarkAsRead = false;
             let shouldIncrementUnread = false;
             let shouldScrollToBottom = false;
-            // Update conversations list (last preview, unread count, etc.)
+
+            if (msg.direction === "inbound") {
+                if (!isConversationOpen) {
+                    shouldIncrementUnread = true;
+                } else if (nearBottom) {
+                    shouldMarkAsRead = true;
+                    shouldScrollToBottom = true;
+                } else {
+                    shouldIncrementUnread = true;
+                }
+            }
+
+            // FIRE API CALL HERE, outside of state setters
+            if (shouldMarkAsRead) {
+                markAsRead(msg.conversationId, true);
+            }
+
+            // UPDATE 1: PURE STATE UPDATE FOR CONVERSATIONS
             setConversations(prev => {
                 const existing = prev.find(c => c.id === msg.conversationId);
                 if (!existing) return prev;
-
-                const isConversationOpen = selectedConversation?.id === msg.conversationId;
-
-                if (msg.direction === "inbound") {
-                    if (!isConversationOpen) {
-                        shouldMarkAsRead = false;
-                        shouldIncrementUnread = true;
-                        shouldScrollToBottom = false;
-
-                    } else {
-                        // Open conversation: check scroll position using our unified function
-                        const nearBottom = checkIsNearBottom();
-
-
-                        if (nearBottom) {
-                            // Near bottom: mark as read and scroll
-                            shouldMarkAsRead = true;
-                            shouldIncrementUnread = false;
-                            shouldScrollToBottom = true;
-                        } else {
-                            // Away from bottom: don't mark, increment unread
-                            shouldMarkAsRead = false;
-                            shouldIncrementUnread = true;
-                            shouldScrollToBottom = false;
-                        }
-                    }
-                }
 
                 const updated = {
                     ...existing,
                     lastMessage: msg,
                     lastMessageAt: msg.createdAt,
-                    lastMessagePreview: msg.messageType === "text" ? msg.content?.text?.body : (isReaction ? `Reaction: ${msg.content?.reaction?.emoji}` : `[${msg.messageType.toUpperCase()}]`),
-                    unreadCount: shouldIncrementUnread ? (existing.unreadCount || 0) + 1 : (shouldMarkAsRead ? 0 : existing.unreadCount)
+                    lastMessagePreview: msg.messageType === "text"
+                        ? msg.content?.text?.body
+                        : (isReaction ? `Reaction: ${msg.content?.reaction?.emoji}` : `[${msg.messageType.toUpperCase()}]`),
+                    unreadCount: shouldIncrementUnread
+                        ? (existing.unreadCount || 0) + 1
+                        : (shouldMarkAsRead ? 0 : existing.unreadCount)
                 };
-
-                if (shouldMarkAsRead) {
-                    markAsRead(msg.conversationId, true);
-                }
 
                 return [updated, ...prev.filter(c => c.id !== msg.conversationId)];
             });
 
-            // If it's for the currently selected conversation, update or append
-            setSelectedConversation(prevSelected => {
-                if (prevSelected?.id === msg.conversationId) {
-                    setMessages(prevMsgs => {
-                        // 1. If it's a reaction, find the parent message and update its reactions array
-                        if (isReaction && msg.reactionToId) {
-                            return prevMsgs.map(m => {
-                                if (m.id === msg.reactionToId) {
-                                    const reactions = m.reactions || [];
-                                    // Ensure one inbound and one outbound: filter out previous of same direction
-                                    const filtered = reactions.filter(r =>
-                                        r.direction !== msg.direction &&
-                                        r.id !== msg.id &&
-                                        r.metadata?.localId !== localId
-                                    );
-                                    return { ...m, reactions: [...filtered, msg] };
-                                }
-                                return m;
-                            });
-                        }
+            // UPDATE 2: UPDATE MESSAGES ONLY IF THIS CONVERSATION IS OPEN
+            if (isConversationOpen) {
+                setMessages(prevMsgs => {
+                    // Handle Reactions
+                    if (isReaction && msg.reactionToId) {
+                        return prevMsgs.map(m => {
+                            if (m.id === msg.reactionToId) {
+                                const reactions = m.reactions || [];
+                                const filtered = reactions.filter(r =>
+                                    r.direction !== msg.direction &&
+                                    r.id !== msg.id &&
+                                    r.metadata?.localId !== localId
+                                );
+                                return { ...m, reactions: [...filtered, msg] };
+                            }
+                            return m;
+                        });
+                    }
 
-                        // 2. If it's a normal message, handle deduplication and replacement
-                        const exists = prevMsgs.some(m => m.id === msg.id || (localId && m.metadata?.localId === localId));
+                    // Handle Normal Messages
+                    const existsIndex = prevMsgs.findIndex(m =>
+                        m.id === msg.id || (localId && m.metadata?.localId === localId)
+                    );
 
-                        if (localId) {
-                            // Replace optimistic message with real one
-                            return prevMsgs.map(m => m.metadata?.localId === localId ? msg : m);
-                        }
+                    if (existsIndex > -1) {
+                        // DON'T just return prevMsgs! 
+                        // Replace the existing message to capture status updates (like sent -> delivered)
+                        const newMsgs = [...prevMsgs];
+                        newMsgs[existsIndex] = msg;
+                        return newMsgs;
+                    }
 
-                        if (exists) return prevMsgs;
+                    return [...prevMsgs, msg];
+                });
 
-                        if (shouldScrollToBottom && scrollRef.current) {
-                            // Use setTimeout to allow DOM to update
-                            // isAutoScrolling.current = true;
-                            setTimeout(() => {
-                                scrollToBottom("instant")
-                                setTimeout(() => {
-                                    isAutoScrolling.current = false;
-                                }, 50);
-                            }, 0);
-                        }
-
-                        return [...prevMsgs, msg];
-                    });
+                // HANDLE DOM WRITES (SCROLLING) HERE, outside of state setters
+                if (shouldScrollToBottom && scrollRef.current) {
+                    // Using a slight delay allows React to flush the state to the DOM first
+                    setTimeout(() => {
+                        scrollToBottom("instant");
+                    }, 50);
                 }
-                return prevSelected;
-            });
+            }
         });
-
         const unsubMessageUpdate = subscribe("WHATSAPP_MESSAGE_UPDATED", (payload) => {
             if (!payload?.message) return;
-            const msg = payload.message;
 
-            setMessages(prevMsgs => prevMsgs.map(m =>
-                m.id === msg.id ? { ...m, ...msg } : m
-            ));
+            const msg = payload.message;
+            const localId = msg.metadata?.localId;
+
+            // 1. UPDATE THE SIDEBAR (so read receipts/status show up in the conversation list)
+            setConversations(prev => prev.map(c => {
+                // Only update if this message is the latest message in that conversation
+                const isTargetConv = c.id === msg.conversationId;
+                const isLatestMessage = c.lastMessage?.id === msg.id ||
+                    (localId && c.lastMessage?.metadata?.localId === localId);
+
+                if (isTargetConv && isLatestMessage) {
+                    return {
+                        ...c,
+                        lastMessage: { ...c.lastMessage, ...msg }
+                    };
+                }
+                return c;
+            }));
+
+            // 2. ONLY UPDATE MESSAGES ARRAY IF THIS CONVERSATION IS CURRENTLY OPEN
+            const isConversationOpen = activeConvIdRef.current === msg.conversationId;
+
+            if (isConversationOpen) {
+                setMessages(prevMsgs => prevMsgs.map(m => {
+                    // Match on real ID *OR* localId! This guarantees optimistic messages get updated.
+                    const isMatch = m.id === msg.id || (localId && m.metadata?.localId === localId);
+
+                    return isMatch ? { ...m, ...msg } : m;
+                }));
+            }
         });
 
         return () => {

@@ -323,7 +323,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             </div>
         );
     }
-    console.log(isNearBottom)
+    
     return (
         <div className="flex-1 flex flex-col h-full whatsapp-wallpaper overflow-hidden relative">
             <MediaPreviewOverlay

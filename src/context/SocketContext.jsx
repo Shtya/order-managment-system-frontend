@@ -96,7 +96,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-    if (!user?.id || !token) return;
+    if (!token) return;
 
     // Disconnect if token changes
     if (socketRef.current) {
@@ -109,8 +109,14 @@ export const SocketProvider = ({ children }) => {
 
     // Create socket instance
     if (!socketRef.current) {
-      socketRef.current = io(process.env.NEXT_PUBLIC_BASE_URL, {
-        auth: { token },
+     socketRef.current = io(process.env.NEXT_PUBLIC_BASE_URL, {
+        // 1. CRITICAL FIX: Use an auth callback. 
+        // This guarantees Socket.io fetches the FRESHEST token from localStorage 
+        // on the initial connection AND every single time it tries to reconnect.
+        auth: (cb) => {
+          const currentToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+          cb({ token: currentToken });
+        },
         transports: ["websocket", "polling"],
         reconnection: true,
         reconnectionDelay: 1000,
@@ -237,8 +243,11 @@ export const SocketProvider = ({ children }) => {
       socket.off("whatsapp:message-updated");
       socket.off("whatsapp:conversation-new");
       socket.off("whatsapp:customer-new");
+
+      socket.disconnect();
+      socketRef.current = null;
     };
-  }, [user?.id]);
+  }, []);
 
   const isOnboarding = getOnboardingStatus();
   // Fetch unread counts on mount and when user changes

@@ -281,6 +281,7 @@ export const ConversationProvider = ({ children }) => {
         });
 
         const unsubMessage = subscribe("WHATSAPP_MESSAGE_NEW", (payload) => {
+            console.log("Received WHATSAPP_MESSAGE_NEW event:", payload);
             if (!payload?.message) return;
 
             const msg = payload.message;
@@ -296,7 +297,7 @@ export const ConversationProvider = ({ children }) => {
             let shouldMarkAsRead = false;
             let shouldIncrementUnread = false;
             let shouldScrollToBottom = false;
-
+            console.log(`Message direction: ${msg.direction}, isConversationOpen: ${isConversationOpen}, nearBottom: ${nearBottom}`);
             if (msg.direction === "inbound") {
                 if (!isConversationOpen) {
                     shouldIncrementUnread = true;
@@ -310,12 +311,18 @@ export const ConversationProvider = ({ children }) => {
 
             // FIRE API CALL HERE, outside of state setters
             if (shouldMarkAsRead) {
-                markAsRead(msg.conversationId, true);
+                try {
+                    console.log(`Marking conversation ${msg.conversationId} as read due to new inbound message.`);
+                    markAsRead(msg.conversationId, true);
+                } catch (error) {
+                    console.error("Failed to mark as read:", error);
+                }
             }
 
             // UPDATE 1: PURE STATE UPDATE FOR CONVERSATIONS
             setConversations(prev => {
                 const existing = prev.find(c => c.id === msg.conversationId);
+                console.log(`Updating conversation ${msg.conversationId}: existing=${!!existing}, shouldIncrementUnread=${shouldIncrementUnread}, shouldMarkAsRead=${shouldMarkAsRead}`);
                 if (!existing) return prev;
 
                 const updated = {
@@ -332,11 +339,12 @@ export const ConversationProvider = ({ children }) => {
 
                 return [updated, ...prev.filter(c => c.id !== msg.conversationId)];
             });
-
+            console.log(`Updated conversations state for message ${msg.id} - conversation: ${msg.conversationId}`);
             // UPDATE 2: UPDATE MESSAGES ONLY IF THIS CONVERSATION IS OPEN
             if (isConversationOpen) {
                 setMessages(prevMsgs => {
                     // Handle Reactions
+                    console.log(`Handling message ${msg.id} in conversation ${msg.conversationId}: isReaction=${isReaction}, localId=${localId}`);
                     if (isReaction && msg.reactionToId) {
                         return prevMsgs.map(m => {
                             if (m.id === msg.reactionToId) {
@@ -356,7 +364,7 @@ export const ConversationProvider = ({ children }) => {
                     const existsIndex = prevMsgs.findIndex(m =>
                         m.id === msg.id || (localId && m.metadata?.localId === localId)
                     );
-
+                    console.log(`Message ${msg.id} exists in current messages: ${existsIndex > -1}`);
                     if (existsIndex > -1) {
                         // DON'T just return prevMsgs! 
                         // Replace the existing message to capture status updates (like sent -> delivered)
@@ -378,6 +386,7 @@ export const ConversationProvider = ({ children }) => {
             }
         });
         const unsubMessageUpdate = subscribe("WHATSAPP_MESSAGE_UPDATED", (payload) => {
+            console.log("Received WHATSAPP_MESSAGE_UPDATED event:", payload);
             if (!payload?.message) return;
 
             const msg = payload.message;
@@ -389,7 +398,7 @@ export const ConversationProvider = ({ children }) => {
                 const isTargetConv = c.id === msg.conversationId;
                 const isLatestMessage = c.lastMessage?.id === msg.id ||
                     (localId && c.lastMessage?.metadata?.localId === localId);
-
+                console.log(`Updating conversation ${c.id}: isTargetConv=${isTargetConv}, isLatestMessage=${isLatestMessage}`);
                 if (isTargetConv && isLatestMessage) {
                     return {
                         ...c,
@@ -401,12 +410,12 @@ export const ConversationProvider = ({ children }) => {
 
             // 2. ONLY UPDATE MESSAGES ARRAY IF THIS CONVERSATION IS CURRENTLY OPEN
             const isConversationOpen = activeConvIdRef.current === msg.conversationId;
-
+            console.log(`Is conversation ${msg.conversationId} open? ${isConversationOpen}`);
             if (isConversationOpen) {
                 setMessages(prevMsgs => prevMsgs.map(m => {
                     // Match on real ID *OR* localId! This guarantees optimistic messages get updated.
                     const isMatch = m.id === msg.id || (localId && m.metadata?.localId === localId);
-
+                    console.log(`Checking message ${m.id}: isMatch=${isMatch}`);
                     return isMatch ? { ...m, ...msg } : m;
                 }));
             }

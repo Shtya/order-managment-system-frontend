@@ -36,6 +36,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FieldTooltip } from '@/components/ui/field-tooltip';
 import Button_ from '@/components/atoms/Button';
 import { useRouter } from '@/i18n/navigation';
 import { cn } from '@/utils/cn';
@@ -583,12 +584,13 @@ function PurchaseDataForm({
 }
 
 // ─── Section Header ──────────────────────────────────────────────────────────
-function SectionHeader({ title, action }) {
+function SectionHeader({ title, description, action }) {
 	return (
 		<div className="flex items-center justify-between mb-6">
 			<h3 className="text-[15px] font-semibold text-gray-800 dark:text-slate-100 flex items-center gap-3">
 				<span className="w-[3px] h-5 bg-primary rounded-full block shrink-0" />
 				{title}
+				{description && <FieldTooltip description={description} />}
 			</h3>
 			{action && <div>{action}</div>}
 		</div>
@@ -596,12 +598,13 @@ function SectionHeader({ title, action }) {
 }
 
 // ─── Field wrapper ────────────────────────────────────────────────────────────
-function Field({ label, error, children, className }) {
+function Field({ label, description, error, children, className }) {
 	return (
 		<div className={cn("space-y-1.5", className)}>
 			{label && (
-				<Label className="text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide">
+				<Label className="text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide flex items-center gap-1.5">
 					{label}
+					{description && <FieldTooltip description={description} />}
 				</Label>
 			)}
 			{children}
@@ -1795,9 +1798,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						{/* Upselling Card */}
 						<motion.div variants={fadeUp}>
 							<Card>
-								<SectionHeader title={t('sections.upselling')} />
+								<SectionHeader title={t('sections.upselling')} description={t('sections.upsellingDescription')} />
 								<div className="space-y-4">
-									<Field label={t('upsell.callCenterDesc')} error={errors?.callCenterProductDescription?.message}>
+									<Field label={t('upsell.callCenterDesc')} description={t('upsell.callCenterDescDescription')} error={errors?.callCenterProductDescription?.message}>
 										<Input
 											{...register('callCenterProductDescription')}
 											placeholder={t('placeholders.callCenterDesc')}
@@ -1816,8 +1819,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 													id="upselling-enabled"
 													className="rounded-md"
 												/>
-												<span className="text-[13px] font-medium text-slate-600 dark:text-slate-300 select-none group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors">
+												<span className="text-[13px] font-medium text-slate-600 dark:text-slate-300 select-none group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors flex items-center gap-1.5">
 													{t('upsell.enableUpselling')}
+													<FieldTooltip description={t('upsell.enableUpsellingDescription')} />
 												</span>
 											</label>
 										)}

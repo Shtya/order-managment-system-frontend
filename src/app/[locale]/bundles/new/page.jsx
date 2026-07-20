@@ -288,10 +288,11 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 				{/* Bundle Info */}
 				<motion.div className="main-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-					<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+					<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
 						<div className="w-1 h-6 bg-primary rounded-full" />
-						{t('sections.bundleInfo')}
+					{t('sections.bundleInfo')}
 					</h3>
+					<p className="text-sm text-muted-foreground mb-6 mt-1">{t('sections.bundleInfoDescription')}</p>
 
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 						<Field label={t('fields.bundleName')} error={errors?.name?.message}>
@@ -383,7 +384,8 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 
 				{/* Bundle Items */}
 				<motion.div className="main-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
-					<div className="flex items-center justify-between mb-6">
+				<div className="mb-6">
+					<div className="flex items-center justify-between">
 						<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
 							<div className="w-1 h-6 bg-primary rounded-full" />
 							{t('bundles.title')}
@@ -393,6 +395,8 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 							{t('bundles.addSku')}
 						</Button>
 					</div>
+					<p className="text-sm text-muted-foreground mt-1">{t('sections.bundleItemsDescription')}</p>
+				</div>
 
 					{(errors?.bundleItems?.message || errors.bundleItems?.root?.message) && <div className="text-sm text-red-600 mb-4">{errors.bundleItems?.root?.message || errors.bundleItems?.message}</div>}
 

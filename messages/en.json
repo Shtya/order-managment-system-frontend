@@ -354,10 +354,10 @@
   },
   "sidebar": {
     "stores": "Stores",
-    "syncFailures": "Product Sync Errors",
+    "syncFailures": "Product Synchronization Errors",
     "cities": "Cities",
     "administration": "Purchases",
-    "synchronization": "Synchronization",
+    "synchronization": "Synchronization & Integration",
     "upsell": "Upsells",
     "finance": "Plans & Subscriptions",
     "team": "Team",
@@ -367,7 +367,7 @@
     "subscription_required": "Subscription Required",
     "logo": "Logo",
     "users": "Users",
-    "roles": "Roles",
+    "roles": "Roles and responsibilities",
     "plans": "Plans",
     "dashboard": "Dashboard",
     "whatsAppAccounts": "My Accounts",
@@ -1420,7 +1420,7 @@
       "roles": "Roles & Permissions"
     },
     "toolbar": {
-      "addRole": "Add Role",
+      "addRole": "Add new role",
       "searchPlaceholder": "Search for a role...",
       "filter": "Filters"
     },
@@ -3640,7 +3640,10 @@
       "isSingleProduct": "Is Single Product?",
       "productInfo": "Product Information",
       "bundleInfo": "Bundle Information",
-      "upselling": "Upselling"
+      "bundleInfoDescription": "A bundle is a single product sold as a combined offer, consisting of more than one product or SKU. When a bundle is sold, its components will be deducted from inventory according to the specified quantities.",
+      "bundleItemsDescription": "Select the products or SKUs that make up the bundle, and specify the quantity of each product.",
+      "upselling": "Upsell settings",
+      "upsellingDescription": "When upselling is enabled, this product will appear as a suggestion for the call center employee to offer to the customer during order confirmation."
     },
     "fields": {
       "productName": "Product Name",
@@ -3654,7 +3657,7 @@
       "warehouse": "Warehouse",
       "productType": "Product Type",
       "description": "Description",
-      "sku": "SKU Code",
+      "sku": "Add SKU to the bundle",
       "totalPrice": "Total Price",
       "mainVariant": "Main Variant",
       "salePrice": "Sale Price"
@@ -3799,7 +3802,7 @@
       "purchase": "Purchase invoice"
     },
     "bundles": {
-      "title": "Products in Bundle",
+      "title": "Products in the bundle",
       "addProduct": "Add Product",
       "addSku": "Add SKU",
       "empty": "No products in this bundle",
@@ -3811,8 +3814,10 @@
       "totalPriceRequired": "Total price is required for the bundle"
     },
     "upsell": {
-      "callCenterDesc": "Call Center Description",
+      "callCenterDesc": "Description of the upsell to the call center employee",
+      "callCenterDescDescription": "Write a short description that helps the call center employee present the product to the customer clearly and quickly",
       "enableUpselling": "Enable Upselling",
+      "enableUpsellingDescription": "When this option is enabled, the selected products below will appear as upselling suggestions for the call center employee when confirming an order that contains this product",
       "selectProducts": "Select Products",
       "searchProducts": "Search products",
       "failedToLoad": "Failed to load products",
@@ -3986,8 +3991,8 @@
       "totalProducts": "Total number of active products in your inventory",
       "totalStock": "Total Inventory: Total inventory is calculated as the total quantity of items in accepted purchase invoices minus the quantity of items in accepted purchase return invoices.",
       "availableItems": "Total available inventory that decreases once a shipment is out",
-      "withShippingCompanies": "Number of items currently with shipping companies (shipped status)",
-      "soldPieces": "Number of items sold (delivered status)",
+      "withShippingCompanies": "The number of items currently held by shipping companies that have not yet been delivered to customers or returned",
+      "soldPieces": "Total number of items sold and delivered to customers",
       "reservedItems": "Number of items currently reserved",
       "remaingStock": "The remaining inventory is calculated as ((inventory in shipping companies, inventory on the shelf))"
     },
@@ -8443,7 +8448,7 @@
     "currency": "EGP",
     "transactions": {
       "title": "Transactions",
-      "subtitle": "Track all deposits and withdrawals"
+      "subtitle": "Charge your wallet and track all deposits and debits from your account"
     },
     "deposit": {
       "title": "Deposit Funds",
@@ -8493,8 +8498,8 @@
       "available": "Available Balance",
       "pendingCOD": "Pending Cash on Delivery",
       "currentBalance": "Current balance",
-      "totalCharged": "Total top-ups",
-      "totalWithdrawn": "Total Withdrawn"
+      "totalCharged": "Total deposits",
+      "totalWithdrawn": "Total withdrawal"
     },
     "tabs": {
       "all": "All",
@@ -10052,11 +10057,11 @@
     "transactionNumber": "Transaction number"
   },
   "syncFailures": {
-    "title": "Product Sync Errors",
+    "title": "Product Synchronization Errors",
     "breadcrumb": {
       "home": "Home",
       "stores": "Stores",
-      "syncFailures": "Product Sync Errors"
+      "syncFailures": "Product Synchronization Errors"
     },
     "stats": {
       "total": "Total Errors",
@@ -10268,7 +10273,7 @@
         "searchPlaceholder": "Search by name, number, WABA ID, or phone number ID...",
         "filter": "Filter",
         "export": "Export",
-        "addAccount": "Add Account"
+        "addAccount": "Connect Your Meta Business Account"
       },
       "filters": {
         "apply": "Apply",
@@ -13055,6 +13060,88 @@
         "actions": {
           "description": "Row-level actions for managing this purchase return invoice. Includes viewing details, checking audit logs, and editing the paid amount. The edit paid amount action is disabled if the return is linked to a closed period.",
           "example": "Example: Click the three-dot menu on a return to view full details, check logs, or update the refund amount received from the supplier."
+        }
+      }
+    },
+    "orderSettings": {
+      "tabs": {
+        "general": {
+          "description": "The General tab controls core order processing behavior: duplicate detection, automatic order assignment to employees, the master retry system toggle, and retry limits (how many times and how often the system retries contacting customers).",
+          "example": "Example: Set max retries to 3 with a 30-minute interval, enable auto-assignment in 'Immediate' mode, and configure a 24-hour duplicate detection window to prevent the same customer from placing duplicate orders."
+        },
+        "automation": {
+          "description": "The Automation tab defines what happens when the retry system finishes contacting a customer. It controls which status the order moves to after exhausting retries, which order statuses trigger automatic retries, and which statuses count as successful outcomes that stop the retry cycle.",
+          "example": "Example: Set retry statuses to 'Pending Confirmation' and 'New', set confirmation statuses to 'Confirmed' and 'Paid', and auto-move unresolved orders to 'No Response' after 3 attempts."
+        },
+        "shipping": {
+          "description": "The Shipping tab controls the order flow path (whether confirmed orders go to Warehouse first or directly to Shipping) and stock management settings (when inventory is deducted and whether reserved stock is enabled).",
+          "example": "Example: Choose 'Direct to Shipping' to skip the warehouse step, set stock deduction to 'On Confirmation', and enable reserved stock to prevent overselling."
+        },
+        "notifications": {
+          "description": "The Notifications tab controls whether the admin receives a notification when all retry attempts end with no customer response, helping management follow up on delayed or unresolved orders.",
+          "example": "Example: Enable 'Notify Admin' so the business owner gets alerted when an order has gone through all retry attempts without a customer response."
+        },
+        "sync": {
+          "description": "The Store Sync tab manages integration with connected e-commerce stores (Shopify, WooCommerce, EasyOrder). It controls automatic product synchronization per store and a SKU fallback option for matching incoming order items to local products when no direct sync link exists.",
+          "example": "Example: Enable 'Sync New Products' for your Shopify store so new products are automatically imported, and enable SKU fallback so orders from WooCommerce match local variants by SKU even without a sync mapping."
+        }
+      },
+      "fields": {
+        "duplicateWindow": {
+          "description": "The time window (in hours) the system looks back to detect duplicate orders. Any order with the same phone number and items placed within this window is flagged as a potential duplicate.",
+          "example": "Example: Set to 24 hours — if the same phone number places two orders with identical items within 24 hours, the second order is flagged as a duplicate."
+        },
+        "autoCancelDuplicates": {
+          "description": "When enabled, detected duplicate orders are automatically marked as 'DUPLICATE' status without manual review. When disabled, duplicates are flagged but still require manual action.",
+          "example": "Example: Enable this so the system automatically cancels duplicate orders, saving your team from manually reviewing and rejecting them."
+        },
+        "assignmentMode": {
+          "description": "Controls how new orders are assigned to employees. 'Disabled' means orders remain unassigned until manually distributed. 'Immediate' applies automation rules and assigns orders as soon as they arrive. 'Delayed' waits for a configurable period before assigning, giving time for automatic WhatsApp confirmation first.",
+          "example": "Example: Choose 'Delayed' with a 30-minute wait so orders can be confirmed via WhatsApp before being assigned to the call center."
+        },
+        "enableRetry": {
+          "description": "Enables or disables the automatic retry workflow. When enabled, if an employee contacts a customer but does not change the order to a successful status, the system will schedule another follow-up attempt according to the configured retry settings. When disabled, employees can still contact customers manually, but the system will not schedule automatic retries.",
+          "example": "Example: Enable this so if an employee calls a customer and the order remains in a retry status (such as 'Pending Confirmation'), the system automatically schedules another follow-up until the maximum number of attempts is reached."
+        },
+        "maxRetries": {
+          "description": "The maximum number of times the system will attempt to contact the customer before stopping and optionally moving the order to a different status. Higher values mean more contact attempts.",
+          "example": "Example: Set to 3 — the system will try to reach the customer 3 times. If all 3 attempts fail, the order moves to the auto-move status (e.g., 'No Response')."
+        },
+        "retryInterval": {
+          "description": "The number of minutes the system waits between each retry attempt. This gives the customer time to respond or call back before the next attempt is made.",
+          "example": "Example: Set to 30 minutes — if the first attempt fails at 10:00 AM, the second attempt happens at 10:30 AM, and the third at 11:00 AM."
+        },
+        "autoMoveStatus": {
+          "description": "The status that orders are automatically moved to after all retry attempts are exhausted without a customer response. This helps route unresolved orders to a queue for manual follow-up.",
+          "example": "Example: Choose 'No Response' — after 3 failed attempts, the order moves to 'No Response' status where your team can see it needs special attention."
+        },
+        "retryStatuses": {
+          "description": "Defines the order statuses that keep an order in the automatic retry workflow. If, after contacting the customer, the employee changes the order to one of these statuses, the system schedules another follow-up attempt. Orders moved to any other status are excluded from the retry workflow unless they return to one of these statuses.",
+          "example": "Example: Select 'New' and 'Pending Confirmation'. If an employee finishes a call and leaves the order as 'Pending Confirmation', the system schedules another retry. If the employee changes it to 'Confirmed', no retry is scheduled."
+        },
+        "confirmationStatuses": {
+          "description": "Defines the order statuses that are considered successful outcomes. When an employee changes the order to one of these statuses after contacting the customer, the order is treated as resolved and the automatic retry workflow stops immediately.",
+          "example": "Example: Select 'Confirmed' and 'Paid'. If an employee confirms the order with the customer and changes its status to 'Confirmed', the system cancels any remaining retry attempts."
+        },
+        "orderFlowPath": {
+          "description": "Determines where confirmed orders go next. 'Warehouse' routes orders to the Warehouse tab for packing and preparation before shipping. 'Shipping' bypasses the warehouse and sends orders directly to the shipping company for delivery.",
+          "example": "Example: Choose 'Warehouse' if your business needs to pick, pack, and prepare items before shipping. Choose 'Shipping' if items are ready to ship immediately after confirmation."
+        },
+        "stockDeductionStrategy": {
+          "description": "Controls when inventory is deducted from available stock. 'On Confirmation' deducts stock as soon as the order is confirmed. 'Upon Shipment' delays deduction until the order is actually shipped, keeping stock available for potential changes.",
+          "example": "Example: Choose 'On Confirmation' to reserve inventory immediately when a customer confirms, preventing overselling. Choose 'Upon Shipment' if orders frequently change before shipping."
+        },
+        "reservedEnabled": {
+          "description": "When enabled, items in new orders are virtually reserved and subtracted from 'Available Stock' to prevent over-selling. This is a virtual hold, not a physical deduction from 'Stock on Hand'. Reserved stock is automatically released if the order is canceled or returned.",
+          "example": "Example: Enable this so when an order with 5 units of Product A is placed, those 5 units are removed from available stock even before the order is confirmed or shipped."
+        },
+        "notifyAdmin": {
+          "description": "When enabled, the admin receives a notification when all retry attempts for an order end with no customer response. This helps management stay informed about unresolved orders that need follow-up.",
+          "example": "Example: Enable this so when an order goes through 3 retry attempts without a response, the admin gets a notification saying 'Order #12345 needs follow-up — all attempts failed'."
+        },
+        "skuFallback": {
+          "description": "When enabled, if an order arrives from a connected store and no direct product sync mapping exists, the system attempts to match the order item to a local product variant by SKU code before moving the order to pending.",
+          "example": "Example: A WooCommerce order arrives with SKU 'IPH-15-BLK'. No sync link exists for this product, but a local variant with SKU 'IPH-15-BLK' is found — the order item is matched automatically."
         }
       }
     }

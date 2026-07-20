@@ -187,15 +187,16 @@ function Field({ label, error, children, className, required }) {
 // ── Sub-tab bar ───────────────────────────────────────────────────────────────
 function SubTabBar({ tabs, active, setActive }) {
   return (
-    <div className="flex gap-1 border-b border-border/40 mb-6 overflow-y-hidden overflow-x-auto">
+    <div className="flex gap-1 border-b border-border/40 mb-6 overflow-y-hidden overflow-x-auto pointer-events-auto!" style={{pointerEvents: "auto"}}>
       {tabs.map(({ key, label, icon: Icon }) => {
         const isActive = active === key;
         return (
           <button
             key={key}
+            style={{pointerEvents: "auto"}}
             onClick={() => setActive(key)}
             className={cn(
-              "relative flex items-center gap-1.5 px-3.5 py-3 text-xs font-bold",
+              "pointer-events-auto! relative flex items-center gap-1.5 px-3.5 py-3 text-xs font-bold",
               "whitespace-nowrap border-b-2 -mb-px transition-colors duration-150 border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
@@ -1474,7 +1475,7 @@ function SettingsTab() {
   const [activeTab, setActiveTab] = useState("general");
   const [statuses, setStatuses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const tTutorial = useTranslations("tutorial.orderSettings");
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
@@ -1533,7 +1534,7 @@ function SettingsTab() {
             className="min-h-[280px]"
           >
             {activeTab === "general" && (
-              <GeneralTab settings={tempSettings} patch={patch} t={tOrders} />
+              <GeneralTab settings={tempSettings} patch={patch} t={tOrders} tTutorial={tTutorial}/>
             )}
             {activeTab === "automation" && (
               <AutomationTab
@@ -1542,6 +1543,7 @@ function SettingsTab() {
                 patch={patch}
                 toggleCode={toggleCode}
                 t={tOrders}
+              tTutorial={tTutorial}
               />
             )}
             {activeTab === "shipping" && (
@@ -1552,16 +1554,17 @@ function SettingsTab() {
                 patchShipping={patchShipping}
                 patch={patch}
                 t={tOrders}
+                tTutorial={tTutorial}
               />
             )}
             {activeTab === "warehouse" && (
-              <WarehouseTab settings={tempSettings} patch={patch} t={tOrders} />
+              <WarehouseTab settings={tempSettings} patch={patch} t={tOrders} tTutorial={tTutorial}/>
             )}
             {activeTab === "notifications" && (
-              <NotificationsSettingsTab settings={tempSettings} patch={patch} t={tOrders} />
+              <NotificationsSettingsTab settings={tempSettings} patch={patch} t={tOrders} tTutorial={tTutorial} />
             )}
             {activeTab === "sync" && (
-              <SyncSettingsTab settings={tempSettings} patch={patch} t={tOrders} />
+              <SyncSettingsTab settings={tempSettings} patch={patch} t={tOrders} tTutorial={tTutorial} />
             )}
           </motion.div>
           <SaveFooter

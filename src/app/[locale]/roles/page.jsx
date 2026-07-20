@@ -666,8 +666,8 @@ function DeleteDialog({ t, open, onOpenChange, roleName, onConfirm, loading }) {
 	 MAIN PAGE
 ═══════════════════════════════════════════════════════════════ */
 export default function RolesPermissionsPage() {
-	const t = useTranslations("roles-client");
 	const tTutorial = useTranslations("tutorial.roles");
+	const t = useTranslations("roles-client");
 	const { user } = useAuth();
 
 	const [search, setSearch] = useState("");

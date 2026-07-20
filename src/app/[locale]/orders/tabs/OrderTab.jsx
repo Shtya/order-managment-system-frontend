@@ -2066,6 +2066,7 @@ export default function OrdersTab({
                   size="sm"
                   label={t("actions.settings")}
                   variant="outline"
+                  className="pointer-events-auto!"
                   onClick={() => setRetrySettingsOpen(true)}
                   icon={<Settings size={18} />}
                   permission="order.updateSettings"

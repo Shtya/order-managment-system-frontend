@@ -1435,8 +1435,8 @@ const IntegrationProgressModal = ({ isOpen, onClose, steps }) => {
 
 export default function WhatsAppAccountsPage() {
   const tCommon = useTranslations("common");
-  const t = useTranslations("whatsApp.accounts");
   const tTutorial = useTranslations("tutorial.whatsapp.accounts");
+  const t = useTranslations("whatsApp.accounts");
   const { settings, isSettingsLoading } = usePlatformSettings();
   const { patch, saveSetting, refreshOrdersSettings } = useOrdersSettings();
   const [guideModalOpen, setGuideModalOpen] = useState(false);

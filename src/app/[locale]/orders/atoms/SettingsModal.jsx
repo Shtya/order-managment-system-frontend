@@ -50,6 +50,7 @@ import { FieldTooltip } from "@/components/ui/field-tooltip";
 import { P_08, P_04, P_12, P_20, P_25 } from "../../settings/page";
 import { MdNotificationAdd } from "react-icons/md";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
@@ -89,6 +90,7 @@ export default function GlobalRetrySettingsModal({
   onClose,
   statuses = [],
 }) {
+  const tTutorial = useTranslations("tutorial.orderSettings");
   const t = useTranslations("orders");
   const [activeTab, setActiveTab] = useState("general");
   const {
@@ -162,34 +164,42 @@ export default function GlobalRetrySettingsModal({
           </div>
           {/* Tab bar */}
           <div className="relative w-full overflow-x-auto overflow-y-hidden">
-            <div className="flex gap-1 px-3 sm:px-5">
+            <div className="flex gap-1 px-3 sm:px-5" >
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.key;
 
                 return (
-                  <button
+                  <TutorialSpotlight
+                    overview={true}
+                    card="sm"
                     key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={cn(
-                      "relative flex items-center gap-1.5 px-3 py-2.5 rounded-t-xl text-xs font-bold transition-all duration-200 whitespace-nowrap shrink-0",
-                      isActive
-                        ? "text-[var(--primary)] dark:text-[#8b7cff] bg-background"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                    )}
+                    title={t(tab.labelKey)}
+                    description={tTutorial(`tabs.${tab.key}.description`)}
+                    example={tTutorial(`tabs.${tab.key}.example`)}
                   >
-                    <Icon size={13} />
-                    {t(tab.labelKey)}
+                    <button
+                      onClick={() => setActiveTab(tab.key)}
+                      className={cn(
+                        "pointer-events-auto! relative flex items-center gap-1.5 px-3 py-2.5 rounded-t-xl text-xs font-bold transition-all duration-200 whitespace-nowrap shrink-0",
+                        isActive
+                          ? "text-[var(--primary)] dark:text-[#8b7cff] bg-background"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                      )}
+                    >
+                      <Icon size={13} />
+                      {t(tab.labelKey)}
 
-                    {isActive && (
-                      <motion.div
-                        layoutId="tab-indicator"
-                        className="absolute inset-x-2 -bottom-px h-[2px] rounded-full
-              bg-gradient-to-r from-[var(--primary)] to-[var(--third,var(--secondary))]
-              dark:from-[#5b4bff] dark:to-[#3be7ff]"
-                      />
-                    )}
-                  </button>
+                      {isActive && (
+                        <motion.div
+                          layoutId="tab-indicator"
+                          className="absolute inset-x-2 -bottom-px h-[2px] rounded-full
+                bg-gradient-to-r from-[var(--primary)] to-[var(--third,var(--secondary))]
+                dark:from-[#5b4bff] dark:to-[#3be7ff]"
+                        />
+                      )}
+                    </button>
+                  </TutorialSpotlight>
                 );
               })}
             </div>
@@ -223,7 +233,7 @@ export default function GlobalRetrySettingsModal({
                 className="p-6 space-y-5"
               >
                 {activeTab === "general" && (
-                  <GeneralTab settings={tempSettings} patch={patch} t={t} />
+                  <GeneralTab settings={tempSettings} patch={patch} t={t} tTutorial={tTutorial} />
                 )}
 
                 {activeTab === "automation" && (
@@ -233,6 +243,7 @@ export default function GlobalRetrySettingsModal({
                     patch={patch}
                     toggleCode={toggleCode}
                     t={t}
+                    tTutorial={tTutorial}
                   />
                 )}
 
@@ -243,19 +254,20 @@ export default function GlobalRetrySettingsModal({
                     patchShipping={patchShipping}
                     patch={patch}
                     t={t}
+                    tTutorial={tTutorial}
                   />
                 )}
 
                 {activeTab === "warehouse" && (
-                  <WarehouseTab settings={tempSettings} patch={patch} t={t} /> 
+                  <WarehouseTab settings={tempSettings} patch={patch} t={t} />
                 )}
 
                 {activeTab === "notifications" && (
-                  <NotificationsSettingsTab settings={tempSettings} patch={patch} t={t} />
+                  <NotificationsSettingsTab settings={tempSettings} patch={patch} t={t} tTutorial={tTutorial} />
                 )}
 
                 {activeTab === "sync" && (
-                  <SyncSettingsTab settings={tempSettings} patch={patch} t={t} />
+                  <SyncSettingsTab settings={tempSettings} patch={patch} t={t} tTutorial={tTutorial} />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -306,14 +318,13 @@ export default function GlobalRetrySettingsModal({
 
 /* ══════════════════════════════════════════════════════════════
    STATUS MULTI-SELECT DROPDOWN
-   Lifted directly from DistributionModal — same pattern, same UX.
-   Used for "retry statuses" and "confirmation statuses".
+   Single unified color (--primary) for all statuses.
 ══════════════════════════════════════════════════════════════ */
 function StatusMultiSelect({
   statuses,
-  selected, // string[] of codes
-  onToggle, // (code: string) => void
-  onClear, // () => void
+  selected,
+  onToggle,
+  onClear,
   placeholder,
   t,
 }) {
@@ -321,7 +332,6 @@ function StatusMultiSelect({
   const triggerRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  /* close on outside click */
   useEffect(() => {
     const handler = (e) => {
       if (
@@ -342,6 +352,7 @@ function StatusMultiSelect({
   }, [statuses, selected]);
 
   const count = selected.length;
+  const pc = "var(--primary)";
 
   return (
     <div className="space-y-2">
@@ -352,8 +363,8 @@ function StatusMultiSelect({
           type="button"
           onClick={() => setOpen((v) => !v)}
           className={cn(
-            "w-full flex items-center justify-between gap-2 h-11 px-4 rounded-xl",
-            "border border-border bg-background text-sm transition-all duration-200",
+            "w-full flex items-center justify-between gap-2 h-11 px-4 rounded-lg",
+            "border border-border/60 bg-background text-sm transition-all duration-200",
             "hover:border-[var(--primary)] hover:shadow-[0_0_0_3px_rgba(255,139,0,0.08)]",
             open &&
             "border-[var(--primary)] shadow-[0_0_0_3px_rgba(255,139,0,0.1)]",
@@ -362,13 +373,12 @@ function StatusMultiSelect({
           <span className="flex items-center gap-2 min-w-0 flex-1">
             {count > 0 ? (
               <>
-                {/* color dot preview */}
                 <span className="flex -space-x-1 shrink-0">
                   {selectedObjects.slice(0, 4).map((s) => (
                     <span
                       key={s.id ?? s.code}
                       className="w-3 h-3 rounded-full border-2 border-background shrink-0"
-                      style={{ backgroundColor: s.color || "#888" }}
+                      style={{ backgroundColor: pc }}
                     />
                   ))}
                 </span>
@@ -401,14 +411,10 @@ function StatusMultiSelect({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
               transition={{ duration: 0.15 }}
-              className="absolute z-50 mt-1.5 w-full bg-popover border border-border rounded-xl
+              className="absolute z-50 mt-1.5 w-full bg-popover border border-border/60 rounded-lg
                 shadow-[0_8px_32px_rgba(0,0,0,0.12)] max-h-[232px] overflow-hidden"
             >
-              {/* gradient strip */}
-              <div
-                className="h-[2px] w-full rounded-t-2xl bg-gradient-to-r
-                from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))] opacity-70"
-              />
+              <div className="h-[2px] w-full rounded-t-lg bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))] opacity-70" />
 
               <div className="overflow-y-auto max-h-[230px] p-1.5 space-y-0.5">
                 {statuses.length === 0 ? (
@@ -420,7 +426,6 @@ function StatusMultiSelect({
                   statuses.map((s) => {
                     const code = s.code || String(s.id);
                     const isChecked = selected.includes(code);
-                    const c = s.color || "#6366f1";
                     const label = s.system
                       ? t(`statuses.${s.code}`)
                       : s.name || s.code;
@@ -430,29 +435,22 @@ function StatusMultiSelect({
                         key={code}
                         type="button"
                         onClick={() => onToggle(code)}
-                        style={{
-                          backgroundColor: isChecked ? rgba(c, 0.1) : undefined,
-                        }}
                         className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-start transition-all duration-150",
-                          !isChecked && "hover:bg-muted/60",
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-start transition-all duration-150",
+                          isChecked
+                            ? "bg-[var(--primary)]/5"
+                            : "hover:bg-muted/60",
                         )}
                       >
-                        {/* custom checkbox */}
                         <span
-                          className="shrink-0 w-[18px] h-[18px] rounded-xl flex items-center justify-center transition-all duration-150"
+                          className="shrink-0 w-[18px] h-[18px] rounded-md flex items-center justify-center transition-all duration-150"
                           style={{
-                            border: `2px solid ${isChecked ? c : "var(--border)"}`,
-                            backgroundColor: isChecked ? c : "transparent",
+                            border: `2px solid ${isChecked ? pc : "var(--border)"}`,
+                            backgroundColor: isChecked ? pc : "transparent",
                           }}
                         >
                           {isChecked && (
-                            <svg
-                              width="10"
-                              height="8"
-                              viewBox="0 0 10 8"
-                              fill="none"
-                            >
+                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
                               <path
                                 d="M1 4L3.8 7L9 1"
                                 stroke="white"
@@ -463,20 +461,11 @@ function StatusMultiSelect({
                             </svg>
                           )}
                         </span>
-                        {/* color dot */}
                         <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{
-                            backgroundColor: c,
-                            boxShadow: `0 0 0 2px ${rgba(c, 0.2)}`,
-                          }}
-                        />
-                        <span
-                          className="flex-1 truncate font-medium transition-colors"
-                          style={{
-                            color: isChecked ? c : undefined,
-                            fontWeight: isChecked ? 600 : 400,
-                          }}
+                          className={cn(
+                            "flex-1 truncate font-medium transition-colors",
+                            isChecked ? "text-foreground font-semibold" : "text-muted-foreground"
+                          )}
                         >
                           {label}
                         </span>
@@ -484,8 +473,7 @@ function StatusMultiSelect({
                           <motion.span
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="text-[10px] font-bold shrink-0"
-                            style={{ color: rgba(c, 0.7) }}
+                            className="text-[10px] font-bold shrink-0 text-[var(--primary)]"
                           >
                             ✓
                           </motion.span>
@@ -511,7 +499,6 @@ function StatusMultiSelect({
           >
             {selectedObjects.map((s) => {
               const code = s.code || String(s.id);
-              const c = s.color || "#6366f1";
               const label = s.system
                 ? t(`statuses.${s.code}`)
                 : s.name || s.code;
@@ -522,23 +509,15 @@ function StatusMultiSelect({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="inline-flex items-center gap-1.5 ps-2.5 pe-1.5 py-1 rounded-xl text-xs font-bold border"
-                  style={{
-                    backgroundColor: rgba(c, 0.1),
-                    borderColor: rgba(c, 0.3),
-                    color: c,
-                  }}
+                  className="inline-flex items-center gap-1.5 ps-2.5 pe-1.5 py-1 rounded-lg text-xs font-bold
+                    bg-[var(--primary)]/10 border border-[var(--primary)]/25 text-[var(--primary)]"
                 >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ backgroundColor: c }}
-                  />
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-[var(--primary)]" />
                   {label}
                   <button
                     type="button"
                     onClick={() => onToggle(code)}
-                    className="ms-0.5 w-4 h-4 rounded-xl flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
-                    style={{ color: c }}
+                    className="ms-0.5 w-4 h-4 rounded-md flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity text-[var(--primary)]"
                   >
                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
                       <path
@@ -558,7 +537,7 @@ function StatusMultiSelect({
                 animate={{ opacity: 1, scale: 1 }}
                 type="button"
                 onClick={onClear}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold
                   border border-dashed border-border text-muted-foreground
                   hover:border-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20
                   transition-all duration-150"
@@ -591,12 +570,11 @@ function ToggleRow({ label, description, checked, onCheckedChange }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-4 p-4 rounded-xl border transition-all duration-200",
+        "flex items-center gap-4 px-4 py-3.5 rounded-lg border transition-all duration-200",
         checked
           ? "border-[var(--primary)]/30 dark:border-[#5b4bff]/30"
           : "border-border bg-muted/20",
       )}
-      style={checked ? { background: rgba("var(--primary)", 0.04) } : {}}
     >
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold text-foreground">{label}</p>
@@ -623,7 +601,7 @@ function InlineToggle({ label, description, checked, onCheckedChange }) {
   return (
     <div className="flex items-center gap-3 py-0.5">
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-foreground">{label}</p>
+        <p className="text-sm font-semibold text-foreground">{label}</p>
         {description && (
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
             {description}
@@ -653,14 +631,14 @@ function NumberField({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground/80">
+      <Label className="text-xs font-bold text-muted-foreground">
         {label}
       </Label>
       <div className="flex items-center gap-2 relative">
         <Input
           endIcon={
             suffix && (
-              <span className=" text-sm text-muted-foreground shrink-0">
+              <span className="text-xs text-muted-foreground shrink-0">
                 {suffix}
               </span>
             )
@@ -670,12 +648,12 @@ function NumberField({
           max={max}
           value={value}
           onChange={onChange}
-          className="rounded-xl h-10 flex-1"
+          className="rounded-lg h-10 flex-1"
         />
       </div>
       {
         description && (
-          <p className="text-[11px] text-muted-foreground">{description}</p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">{description}</p>
         )
       }
     </div >
@@ -694,29 +672,29 @@ function SectionCard({
   children,
 }) {
   return (
-    <div className="rounded-xl border border-border main-card !p-0 ">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/30">
+    <div className="rounded-xl border border-border/60 bg-card">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border/40 bg-muted/20">
         <div
-          className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{
-            backgroundColor: rgba(iconColor, 0.12),
-            border: `1px solid ${rgba(iconColor, 0.25)}`,
+            backgroundColor: rgba(iconColor, 0.1),
+            border: `1px solid ${rgba(iconColor, 0.2)}`,
           }}
         >
-          <Icon size={13} style={{ color: iconColor }} />
+          <Icon size={14} style={{ color: iconColor }} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-black text-foreground">{title}</p>
+          <p className="text-sm font-bold text-foreground">{title}</p>
           {subtitle && (
-            <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+            <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
               {subtitle}
             </p>
           )}
         </div>
         {badge != null && badge > 0 && (
           <span
-            className="shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: rgba(iconColor, 0.12), color: iconColor }}
+            className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md"
+            style={{ backgroundColor: rgba(iconColor, 0.1), color: iconColor }}
           >
             {badge}
           </span>
@@ -729,16 +707,76 @@ function SectionCard({
 
 function FieldSubLabel({ children }) {
   return (
-    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/80">
+    <p className="text-xs font-bold text-muted-foreground">
       {children}
     </p>
   );
 }
 
-export function GeneralTab({ settings, patch, t }) {
+export function GeneralTab({ settings, patch, t, tTutorial }) {
+
   return (
     <div className="space-y-5">
-      {/* Duplicate detection settings */}
+      {/* ── Master on/off — prominent top-level switch ── */}
+      <TutorialSpotlight
+        overview={true}
+        card="sm"
+        title={t("retrySettings.enableRetry")}
+        description={tTutorial("fields.enableRetry.description")}
+        example={tTutorial("fields.enableRetry.example")}
+      >
+        <div
+          className={cn(
+            "relative overflow-hidden rounded-xl border-2 transition-all duration-200",
+            settings.enabled
+              ? "border-[var(--primary)]/40 dark:border-[#5b4bff]/40"
+              : "border-border"
+          )}
+        >
+          {settings.enabled && (
+            <div
+              className="absolute inset-x-0 top-0 h-[2px]
+                bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))]
+                dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff] opacity-60"
+            />
+          )}
+          <div className="flex items-center gap-4 px-5 py-4">
+            <div
+              className={cn(
+                "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                settings.enabled
+                  ? "bg-[var(--primary)]/10 dark:bg-[#5b4bff]/10"
+                  : "bg-muted"
+              )}
+            >
+              <Zap
+                size={18}
+                className={cn(
+                  "transition-colors",
+                  settings.enabled
+                    ? "text-[var(--primary)] dark:text-[#5b4bff]"
+                    : "text-muted-foreground"
+                )}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-foreground">
+                {t("retrySettings.enableRetry")}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                {t("retrySettings.enableRetryDesc")}
+              </p>
+            </div>
+            <Switch
+              checked={settings.enabled}
+              onCheckedChange={(v) => patch({ enabled: v })}
+              className="shrink-0 ms-auto"
+            />
+          </div>
+        </div>
+      </TutorialSpotlight>
+
+      {/* ── Duplicate Detection ── */}
       <SectionCard
         icon={Copy}
         iconColor="#3b82f6"
@@ -746,7 +784,13 @@ export function GeneralTab({ settings, patch, t }) {
         subtitle={t("retrySettings.duplicates.subtitle")}
       >
         <div className="space-y-4">
-          <div className="grid sm:grid-cols-2 gap-4">
+          <TutorialSpotlight
+            overview={true}
+            card="sm"
+            title={t("retrySettings.duplicates.window")}
+            description={tTutorial("fields.duplicateWindow.description")}
+            example={tTutorial("fields.duplicateWindow.example")}
+          >
             <NumberField
               label={t("retrySettings.duplicates.window")}
               description={t("retrySettings.duplicates.windowDesc")}
@@ -758,121 +802,127 @@ export function GeneralTab({ settings, patch, t }) {
               max={168}
               suffix={t("retrySettings.hours")}
             />
-          </div>
+          </TutorialSpotlight>
+
           <div className="pt-2 border-t border-border/50">
-            <ToggleRow
-              label={t("retrySettings.duplicates.autoCancel")}
-              description={t("retrySettings.duplicates.autoCancelDesc")}
-              checked={settings.autoCancelDuplicates}
-              onCheckedChange={(v) => patch({ autoCancelDuplicates: v })}
-            />
+            <TutorialSpotlight
+              overview={true}
+              card="sm"
+              title={t("retrySettings.duplicates.autoCancel")}
+              description={tTutorial("fields.autoCancelDuplicates.description")}
+              example={tTutorial("fields.autoCancelDuplicates.example")}
+            >
+              <ToggleRow
+                label={t("retrySettings.duplicates.autoCancel")}
+                description={t("retrySettings.duplicates.autoCancelDesc")}
+                checked={settings.autoCancelDuplicates}
+                onCheckedChange={(v) => patch({ autoCancelDuplicates: v })}
+              />
+            </TutorialSpotlight>
           </div>
         </div>
       </SectionCard>
 
-      {/* Auto Assignment section */}
+      {/* ── Auto Assignment ── */}
       <SectionCard
         icon={Users}
         iconColor="#f59e0b"
         title={t("retrySettings.autoAssignment.title")}
         subtitle={t("retrySettings.autoAssignment.subtitle")}
       >
-        <div className="space-y-3">
-          <div
-            className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "disabled" 
-                ? "border-primary bg-primary/5" 
-                : "border-slate-200 dark:border-slate-700"
-            }`}
-            onClick={() => patch({ assignmentMode: "disabled" })}
-          >
-            <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "disabled" ? "#6366f1" : "#d1d5db" }}>
-              {settings.assignmentMode === "disabled" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
-            </div>
-            <div className="flex-1">
-              <div className="font-medium flex items-center gap-2">
-                {t("retrySettings.autoAssignment.disabled")}
-                <FieldTooltip description={t("retrySettings.autoAssignment.disabledDescription")} stopPropagation />
-              </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.disabledDesc")}</div>
-            </div>
+        <TutorialSpotlight
+          overview={true}
+          card="sm"
+          title={t("retrySettings.autoAssignment.title")}
+          description={tTutorial("fields.assignmentMode.description")}
+          example={tTutorial("fields.assignmentMode.example")}
+        >
+          <div className="space-y-2.5">
+            {[
+              { mode: "disabled", tooltip: t("retrySettings.autoAssignment.disabledDescription") },
+              { mode: "immediate", tooltip: t("retrySettings.autoAssignment.immediateDescription") },
+              { mode: "delayed", tooltip: t("retrySettings.autoAssignment.delayedDescription") },
+            ].map(({ mode, tooltip }) => {
+              const isActive = settings.assignmentMode === mode;
+              return (
+                <div
+                  key={mode}
+                  className={cn(
+                    "flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all duration-200",
+                    isActive
+                      ? "border-[var(--primary)]/40 dark:border-[#5b4bff]/40 bg-[var(--primary)]/5 dark:bg-[#5b4bff]/5"
+                      : "border-border/60 hover:border-border hover:bg-muted/30"
+                  )}
+                  onClick={() => patch({ assignmentMode: mode })}
+                >
+                  <div
+                    className={cn(
+                      "flex items-center justify-center w-[18px] h-[18px] rounded-full border-2 shrink-0 transition-all duration-200",
+                      isActive
+                        ? "border-[var(--primary)] dark:border-[#5b4bff]"
+                        : "border-slate-300 dark:border-slate-600"
+                    )}
+                  >
+                    {isActive && (
+                      <div className="w-2 h-2 rounded-full bg-[var(--primary)] dark:bg-[#5b4bff]" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-sm text-foreground flex items-center gap-1.5">
+                      {t(`retrySettings.autoAssignment.${mode}`)}
+                      <FieldTooltip description={tooltip} stopPropagation />
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {t(`retrySettings.autoAssignment.${mode}Desc`)}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          
-          <div
-            className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "immediate" 
-                ? "border-primary bg-primary/5" 
-                : "border-slate-200 dark:border-slate-700"
-            }`}
-            onClick={() => patch({ assignmentMode: "immediate" })}
-          >
-            <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "immediate" ? "#6366f1" : "#d1d5db" }}>
-              {settings.assignmentMode === "immediate" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
-            </div>
-            <div className="flex-1">
-              <div className="font-medium flex items-center gap-2">
-                {t("retrySettings.autoAssignment.immediate")}
-                <FieldTooltip description={t("retrySettings.autoAssignment.immediateDescription")} stopPropagation />
+        </TutorialSpotlight>
+
+        {/* Delay config — revealed when "delayed" is selected */}
+        <AnimatePresence>
+          {settings.assignmentMode === "delayed" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-4 p-4 rounded-lg bg-muted/30 border border-border/50 space-y-3">
+                <label className="text-xs font-bold text-muted-foreground">
+                  {t("retrySettings.autoAssignment.delayTime")}
+                </label>
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    min="1"
+                    value={settings.assignmentDelay}
+                    onChange={(e) => patch({ assignmentDelay: Math.max(1, parseInt(e.target.value) || 1) })}
+                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all"
+                  />
+                  <select
+                    value={settings.assignmentDelayUnit}
+                    onChange={(e) => patch({ assignmentDelayUnit: e.target.value })}
+                    className="px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all"
+                  >
+                    <option value="minutes">{t("retrySettings.autoAssignment.minutes")}</option>
+                    <option value="hours">{t("retrySettings.autoAssignment.hours")}</option>
+                    <option value="days">{t("retrySettings.autoAssignment.days")}</option>
+                  </select>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  {t("retrySettings.autoAssignment.delayTimeDesc")}
+                </p>
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.immediateDesc")}</div>
-            </div>
-          </div>
-          
-          <div
-            className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${settings.assignmentMode === "delayed" 
-                ? "border-primary bg-primary/5" 
-                : "border-slate-200 dark:border-slate-700"
-            }`}
-            onClick={() => patch({ assignmentMode: "delayed" })}
-          >
-            <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: settings.assignmentMode === "delayed" ? "#6366f1" : "#d1d5db" }}>
-              {settings.assignmentMode === "delayed" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
-            </div>
-            <div className="flex-1">
-              <div className="font-medium flex items-center gap-2">
-                {t("retrySettings.autoAssignment.delayed")}
-                <FieldTooltip description={t("retrySettings.autoAssignment.delayedDescription")} stopPropagation />
-              </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.delayedDesc")}</div>
-            </div>
-          </div>
-        </div>
-        
-        {settings.assignmentMode === "delayed" && (
-          <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 space-y-3">
-            <label className="text-sm font-medium">{t("retrySettings.autoAssignment.delayTime")}</label>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <input
-                  type="number"
-                  min="1"
-                  value={settings.assignmentDelay}
-                  onChange={(e) => patch({ assignmentDelay: Math.max(1, parseInt(e.target.value) || 1) })}
-                  className="w-full px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
-                />
-              </div>
-              <select
-                value={settings.assignmentDelayUnit}
-                onChange={(e) => patch({ assignmentDelayUnit: e.target.value })}
-                className="px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
-              >
-                <option value="minutes">{t("retrySettings.autoAssignment.minutes")}</option>
-                <option value="hours">{t("retrySettings.autoAssignment.hours")}</option>
-                <option value="days">{t("retrySettings.autoAssignment.days")}</option>
-              </select>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{t("retrySettings.autoAssignment.delayTimeDesc")}</p>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </SectionCard>
 
-      {/* Master on/off */}
-      <ToggleRow
-        label={t("retrySettings.enableRetry")}
-        description={t("retrySettings.enableRetryDesc")}
-        checked={settings.enabled}
-        onCheckedChange={(v) => patch({ enabled: v })}
-      />
-
-      {/* Retry limits card */}
+      {/* ── Retry Limits ── */}
       <SectionCard
         icon={RotateCcw}
         iconColor="var(--primary)"
@@ -880,27 +930,43 @@ export function GeneralTab({ settings, patch, t }) {
         subtitle={t("retrySettings.retryLimitsSubtitle")}
       >
         <div className="grid sm:grid-cols-2 gap-4">
-          <NumberField
-            label={t("retrySettings.maxRetries")}
-            description={t("retrySettings.maxRetriesDesc")}
-            value={settings.maxRetries}
-            onChange={(e) =>
-              patch({ maxRetries: parseInt(e.target.value) || 1 })
-            }
-            min={1}
-            max={10}
-          />
-          <NumberField
-            label={t("retrySettings.retryInterval")}
-            description={t("retrySettings.retryIntervalDesc")}
-            value={settings.retryInterval}
-            onChange={(e) =>
-              patch({ retryInterval: parseInt(e.target.value) || 5 })
-            }
-            min={5}
-            max={1440}
-            suffix={t("retrySettings.minutes")}
-          />
+          <TutorialSpotlight
+            overview={true}
+            card="sm"
+            title={t("retrySettings.maxRetries")}
+            description={tTutorial("fields.maxRetries.description")}
+            example={tTutorial("fields.maxRetries.example")}
+          >
+            <NumberField
+              label={t("retrySettings.maxRetries")}
+              description={t("retrySettings.maxRetriesDesc")}
+              value={settings.maxRetries}
+              onChange={(e) =>
+                patch({ maxRetries: parseInt(e.target.value) || 1 })
+              }
+              min={1}
+              max={10}
+            />
+          </TutorialSpotlight>
+          <TutorialSpotlight
+            overview={true}
+            card="sm"
+            title={t("retrySettings.retryInterval")}
+            description={tTutorial("fields.retryInterval.description")}
+            example={tTutorial("fields.retryInterval.example")}
+          >
+            <NumberField
+              label={t("retrySettings.retryInterval")}
+              description={t("retrySettings.retryIntervalDesc")}
+              value={settings.retryInterval}
+              onChange={(e) =>
+                patch({ retryInterval: parseInt(e.target.value) || 5 })
+              }
+              min={5}
+              max={1440}
+              suffix={t("retrySettings.minutes")}
+            />
+          </TutorialSpotlight>
         </div>
       </SectionCard>
 
@@ -955,7 +1021,8 @@ export function GeneralTab({ settings, patch, t }) {
 // ────────────────────────────────────────────────────────────────────────────
 // AUTOMATION TAB
 // ────────────────────────────────────────────────────────────────────────────
-export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
+export function AutomationTab({ settings, statuses, patch, toggleCode, t, tTutorial }) {
+
   return (
     <div className="space-y-5">
       {/* 1 — Auto-move status */}
@@ -965,31 +1032,39 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
         title={t("retrySettings.autoMoveTitle")}
         subtitle={t("retrySettings.autoMoveSubtitle")}
       >
-        <FieldSubLabel>{t("retrySettings.autoMoveStatus")}</FieldSubLabel>
-        <Select
-          value={settings.autoMoveStatus}
-          onValueChange={(v) => patch({ autoMoveStatus: v })}
+        <TutorialSpotlight
+          overview={true}
+          card="sm"
+          title={t("retrySettings.autoMoveTitle")}
+          description={tTutorial("fields.autoMoveStatus.description")}
+          example={tTutorial("fields.autoMoveStatus.example")}
         >
-          <SelectTrigger className="h-10 rounded-xl text-sm">
-            <SelectValue placeholder={t("retrySettings.selectStatus")} />
-          </SelectTrigger>
-          <SelectContent>
-            {statuses.map((s) => (
-              <SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
-                <span className="flex items-center gap-2">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: s.color || "#6366f1" }}
-                  />
-                  {s.system ? t(`statuses.${s.code}`) : s.name}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-[11px] text-muted-foreground pt-0.5">
-          {t("retrySettings.autoMoveHint")}
-        </p>
+          <FieldSubLabel>{t("retrySettings.autoMoveStatus")}</FieldSubLabel>
+          <Select
+            value={settings.autoMoveStatus}
+            onValueChange={(v) => patch({ autoMoveStatus: v })}
+          >
+            <SelectTrigger className="h-10 rounded-xl text-sm">
+              <SelectValue placeholder={t("retrySettings.selectStatus")} />
+            </SelectTrigger>
+            <SelectContent>
+              {statuses.map((s) => (
+                <SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
+                  <span className="flex items-center gap-2">
+                    {/* <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: s.color || "#6366f1" }}
+                    /> */}
+                    {s.system ? t(`statuses.${s.code}`) : s.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-[11px] text-muted-foreground pt-0.5">
+            {t("retrySettings.autoMoveHint")}
+          </p>
+        </TutorialSpotlight>
       </SectionCard>
 
       {/* 2 — Retry statuses */}
@@ -1000,17 +1075,25 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
         subtitle={t("retrySettings.retryStatusesSubtitle")}
         badge={settings.retryStatuses.length}
       >
-        <StatusMultiSelect
-          statuses={statuses}
-          selected={settings.retryStatuses}
-          onToggle={(code) => toggleCode("retryStatuses", code)}
-          onClear={() => patch({ retryStatuses: [] })}
-          placeholder={t("retrySettings.selectStatusesPlaceholder")}
-          t={t}
-        />
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
-          {t("retrySettings.retryStatusesHint")}
-        </p>
+        <TutorialSpotlight
+          overview={true}
+          card="sm"
+          title={t("retrySettings.retryStatusesTitle")}
+          description={tTutorial("fields.retryStatuses.description")}
+          example={tTutorial("fields.retryStatuses.example")}
+        >
+          <StatusMultiSelect
+            statuses={statuses}
+            selected={settings.retryStatuses}
+            onToggle={(code) => toggleCode("retryStatuses", code)}
+            onClear={() => patch({ retryStatuses: [] })}
+            placeholder={t("retrySettings.selectStatusesPlaceholder")}
+            t={t}
+          />
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {t("retrySettings.retryStatusesHint")}
+          </p>
+        </TutorialSpotlight>
       </SectionCard>
 
       {/* 3 — Confirmation statuses */}
@@ -1021,17 +1104,25 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
         subtitle={t("retrySettings.confirmationStatusesSubtitle")}
         badge={settings.confirmationStatuses.length}
       >
-        <StatusMultiSelect
-          statuses={statuses}
-          selected={settings.confirmationStatuses}
-          onToggle={(code) => toggleCode("confirmationStatuses", code)}
-          onClear={() => patch({ confirmationStatuses: [] })}
-          placeholder={t("retrySettings.selectStatusesPlaceholder")}
-          t={t}
-        />
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
-          {t("retrySettings.confirmationStatusesHint")}
-        </p>
+        <TutorialSpotlight
+          overview={true}
+          card="sm"
+          title={t("retrySettings.confirmationStatusesTitle")}
+          description={tTutorial("fields.confirmationStatuses.description")}
+          example={tTutorial("fields.confirmationStatuses.example")}
+        >
+          <StatusMultiSelect
+            statuses={statuses}
+            selected={settings.confirmationStatuses}
+            onToggle={(code) => toggleCode("confirmationStatuses", code)}
+            onClear={() => patch({ confirmationStatuses: [] })}
+            placeholder={t("retrySettings.selectStatusesPlaceholder")}
+            t={t}
+          />
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {t("retrySettings.confirmationStatusesHint")}
+          </p>
+        </TutorialSpotlight>
       </SectionCard>
     </div>
   );
@@ -1040,7 +1131,7 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
 // ────────────────────────────────────────────────────────────────────────────
 // SHIPPING TAB
 // ────────────────────────────────────────────────────────────────────────────
-export function ShippingTab({ settings, patch, t }) {
+export function ShippingTab({ settings, patch, t, tTutorial }) {
   const { shippingCompanies } = usePlatformSettings();
   const hasMoreCompanies = shippingCompanies.length > 0;
   const isShipment = settings?.orderFlowPath === "shipping";
@@ -1069,39 +1160,47 @@ export function ShippingTab({ settings, patch, t }) {
           title={t("retrySettings.warehouse.flowTitle")}
           subtitle={t("retrySettings.warehouse.flowSubtitle")}
         >
-          <div className="space-y-3">
-            <FieldSubLabel>
-              {t("retrySettings.warehouse.flowLabel")}
-            </FieldSubLabel>
+          <TutorialSpotlight
+            overview={true}
+            card="sm"
+            title={t("retrySettings.warehouse.flowTitle")}
+            description={tTutorial("fields.orderFlowPath.description")}
+            example={tTutorial("fields.orderFlowPath.example")}
+          >
+            <div className="space-y-3">
+              <FieldSubLabel>
+                {t("retrySettings.warehouse.flowLabel")}
+              </FieldSubLabel>
 
-            <Select
-              value={settings.orderFlowPath}
-              onValueChange={(v) => patch({ orderFlowPath: v })}
-            >
-              <SelectTrigger className="h-12 rounded-xl text-sm border-2">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="warehouse">
-                  <div className="flex flex-col py-1">
-                    <span>{t("retrySettings.warehouse.afterConfirmation")}</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="shipping">
-                  <div className="flex flex-col py-1">
-                    <span>{t("retrySettings.warehouse.directToShipping")}</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              <Select
+                value={settings.orderFlowPath}
+                onValueChange={(v) => patch({ orderFlowPath: v })}
+              >
+                <SelectTrigger className="h-12 rounded-xl text-sm border-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="warehouse">
+                    <div className="flex flex-col py-1">
+                      <span>{t("retrySettings.warehouse.afterConfirmation")}</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="shipping">
+                    <div className="flex flex-col py-1">
+                      <span>{t("retrySettings.warehouse.directToShipping")}</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
 
-            <div className="flex gap-2 items-start mt-2 bg-muted/30 p-3 rounded-lg">
-              <Info size={14} className="mt-0.5 text-muted-foreground shrink-0" />
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                {t("retrySettings.warehouse.flowHint")}
-              </p>
+              <div className="flex gap-2 items-start mt-2 bg-muted/30 p-3 rounded-lg">
+                <Info size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  {t("retrySettings.warehouse.flowHint")}
+                </p>
+              </div>
             </div>
-          </div>
+          </TutorialSpotlight>
         </SectionCard>
 
       </div>
@@ -1113,40 +1212,56 @@ export function ShippingTab({ settings, patch, t }) {
         title={t("retrySettings.stock.title")}
         subtitle={t("retrySettings.stock.subtitle")}
       >
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1">
-            <p className="text-sm font-bold text-foreground">
-              {t("retrySettings.stock.deductionStrategy")}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              {t("retrySettings.stock.deductionStrategyDesc")}
-            </p>
+        <TutorialSpotlight
+          overview={true}
+          card="sm"
+          title={t("retrySettings.stock.deductionStrategy")}
+          description={tTutorial("fields.stockDeductionStrategy.description")}
+          example={tTutorial("fields.stockDeductionStrategy.example")}
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-bold text-foreground">
+                {t("retrySettings.stock.deductionStrategy")}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {t("retrySettings.stock.deductionStrategyDesc")}
+              </p>
+            </div>
+            <Select
+              value={settings.stockDeductionStrategy}
+              onValueChange={(v) => patch({ stockDeductionStrategy: v })}
+            >
+              <SelectTrigger className="w-44 h-10 rounded-xl text-xs border-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="on_confirmation">
+                  {t("retrySettings.stock.onConfirmation")}
+                </SelectItem>
+                <SelectItem value="on_shipment">
+                  {t("retrySettings.stock.onShipment")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select
-            value={settings.stockDeductionStrategy}
-            onValueChange={(v) => patch({ stockDeductionStrategy: v })}
-          >
-            <SelectTrigger className="w-44 h-10 rounded-xl text-xs border-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="on_confirmation">
-                {t("retrySettings.stock.onConfirmation")}
-              </SelectItem>
-              <SelectItem value="on_shipment">
-                {t("retrySettings.stock.onShipment")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        </TutorialSpotlight>
 
         <div className="mt-5 pt-5 border-t border-border/60">
-          <ToggleRow
-            label={t("retrySettings.stock.reservedEnabled")}
-            description={t("retrySettings.stock.reservedEnabledDesc")}
-            checked={settings.reservedEnabled !== false}
-            onCheckedChange={(v) => patch({ reservedEnabled: v })}
-          />
+          <TutorialSpotlight
+            overview={true}
+            card="sm"
+            title={t("retrySettings.stock.reservedEnabled")}
+            description={tTutorial("fields.reservedEnabled.description")}
+            example={tTutorial("fields.reservedEnabled.example")}
+          >
+            <ToggleRow
+              label={t("retrySettings.stock.reservedEnabled")}
+              description={t("retrySettings.stock.reservedEnabledDesc")}
+              checked={settings.reservedEnabled !== false}
+              onCheckedChange={(v) => patch({ reservedEnabled: v })}
+            />
+          </TutorialSpotlight>
         </div>
       </SectionCard>
       {/* Disabled hint */}
@@ -1159,6 +1274,7 @@ export function ShippingTab({ settings, patch, t }) {
 // WAREHOUSE TAB
 // ────────────────────────────────────────────────────────────────────────────
 export function WarehouseTab({ settings, patch, t }) {
+  const tTutorial = useTranslations("tutorial");
   return (
     <div className="space-y-5">
       <SectionCard
@@ -1209,15 +1325,24 @@ export function WarehouseTab({ settings, patch, t }) {
 // NOTIFICATIONS TAB
 // ────────────────────────────────────────────────────────────────────────────
 
-export function NotificationsSettingsTab({ settings, patch, t }) {
+export function NotificationsSettingsTab({ settings, patch, t, tTutorial }) {
+
   return (
     <>
-      <ToggleRow
-        label={t("retrySettings.notifyAdmin")}
-        description={t("retrySettings.notifyAdminDesc")}
-        checked={settings.notifyAdmin}
-        onCheckedChange={(v) => patch({ notifyAdmin: v })}
-      />
+      <TutorialSpotlight
+        overview={true}
+        card="sm"
+        title={t("retrySettings.notifyAdmin")}
+        description={tTutorial("fields.notifyAdmin.description")}
+        example={tTutorial("fields.notifyAdmin.example")}
+      >
+        <ToggleRow
+          label={t("retrySettings.notifyAdmin")}
+          description={t("retrySettings.notifyAdminDesc")}
+          checked={settings.notifyAdmin}
+          onCheckedChange={(v) => patch({ notifyAdmin: v })}
+        />
+      </TutorialSpotlight>
 
       {/* Preview card */}
       <div className="relative overflow-hidden rounded-xl border border-[var(--primary)]/20 dark:border-[#5b4bff]/25 p-5 mt-4">
@@ -1267,13 +1392,13 @@ const STORE_PROVIDER_LABELS = {
   woocommerce: "WooCommerce",
 };
 
-export function SyncSettingsTab({ settings, patch }) {
+export function SyncSettingsTab({ settings, patch, tTutorial }) {
   const tStores = useTranslations("storeIntegrations");
+
   const t = useTranslations("orders.retrySettings");
   const [stores, setStores] = useState([]);
   const [storesLoading, setStoresLoading] = useState(true);
   const [storeSavingId, setStoreSavingId] = useState(null);
-
   const fetchStores = useCallback(async () => {
     try {
       setStoresLoading(true);
@@ -1321,26 +1446,34 @@ export function SyncSettingsTab({ settings, patch }) {
     >
 
       <div className="space-y-3">
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3"
+        <TutorialSpotlight
+          overview={true}
+          card="sm"
+          title={t("sync.storesTitle")}
+          description={tTutorial("tabs.sync.description")}
+          example={tTutorial("tabs.sync.example")}
         >
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: P_12, border: `1px solid ${P_20}` }}
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3"
           >
-            <Layers size={16} style={{ color: "var(--primary)" }} />
-          </div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <p className="text-sm font-bold text-foreground">
-              {t("sync.storesTitle")}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {t("sync.storesSubtitle")}
-            </p>
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: P_12, border: `1px solid ${P_20}` }}
+            >
+              <Layers size={16} style={{ color: "var(--primary)" }} />
+            </div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <p className="text-sm font-bold text-foreground">
+                {t("sync.storesTitle")}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t("sync.storesSubtitle")}
+              </p>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </TutorialSpotlight>
 
         {storesLoading ? (
           <motion.div
@@ -1439,12 +1572,20 @@ export function SyncSettingsTab({ settings, patch }) {
         )}
       </div>
       <div className="mt-5 pt-5 border-t border-border/60">
-        <ToggleRow
-          label={t("sync.skuFallbackTitle")}
-          description={t("sync.skuFallbackDesc")}
-          checked={settings.storeOrderSkuFallback !== false}
-          onCheckedChange={(v) => patch({ storeOrderSkuFallback: v })}
-        />
+        <TutorialSpotlight
+          overview={true}
+          card="sm"
+          title={t("sync.skuFallbackTitle")}
+          description={tTutorial("fields.skuFallback.description")}
+          example={tTutorial("fields.skuFallback.example")}
+        >
+          <ToggleRow
+            label={t("sync.skuFallbackTitle")}
+            description={t("sync.skuFallbackDesc")}
+            checked={settings.storeOrderSkuFallback !== false}
+            onCheckedChange={(v) => patch({ storeOrderSkuFallback: v })}
+          />
+        </TutorialSpotlight>
       </div>
 
     </motion.div>

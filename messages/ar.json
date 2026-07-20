@@ -4179,6 +4179,8 @@
     "receiptNumberRequired": "رقم الإيصال مطلوب",
     "safeRequired": "الخزنة مطلوبة",
     "mustBePositive": "يجب أن يكون الرقم موجباً",
+    "mustBeNumber": "يجب أن يكون رقم",
+    "shouldAddValue": "يجب أن تضيف قيمة",
     "itemsRequired": "يجب إضافة عنصر واحد على الأقل",
     "unitCostPositive": "يجب أن تكون تكلفة القطعة موجبة",
     "unitCostRequired": "تكلفة القطعة مطلوبة",

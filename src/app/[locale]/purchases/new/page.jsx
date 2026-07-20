@@ -57,10 +57,11 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 					.number()
 					.transform((value, originalValue) => {
 						// يحول string لرقم
-						if (originalValue === "" || originalValue === null || originalValue === undefined) return 0;
+						if (originalValue === "" || originalValue === null || originalValue === undefined) return "";
 						const n = Number(originalValue);
-						return Number.isFinite(n) ? n : 0;
+						return Number.isFinite(n) ? n : "";
 					})
+					.typeError(tValidation("shouldAddValue"))
 					.min(0, tValidation("mustBePositive"))
 					.optional(),
 
@@ -105,7 +106,7 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 			receiptNumber: "",
 			safeId: "",
 			notes: "",
-			paidAmount: 0,
+			paidAmount: "",
 			items: [],
 			receiptAsset: null,
 		}
@@ -130,7 +131,7 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 				receiptNumber: editedPurchase.receiptNumber || "",
 				safeId: editedPurchase.safeId || "",
 				notes: editedPurchase.notes || "",
-				paidAmount: editedPurchase.paidAmount || 0,
+				paidAmount: editedPurchase.paidAmount || "",
 				items: initialSkus || [],
 				receiptAsset: editedPurchase.receiptAsset || null,
 			});
@@ -327,7 +328,7 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 	}, [watchedItems]);
 
 	const total = summary.subtotal;
-	const paidAmount = parseFloat(watchedPaidAmount) || 0;
+	const paidAmount = parseFloat(watchedPaidAmount) || "";
 	const remainingAmount = total - paidAmount;
 
 	return (
@@ -790,7 +791,7 @@ export function InvoiceSummary({ errors, summary, total, paidAmount, remainingAm
 							<Input
 								{...field}
 								type="number"
-								placeholder="0"
+								placeholder="0.00"
 								className="rounded-xl h-[45px] border-gray-200 dark:border-slate-700"
 								min="0"
 
@@ -808,7 +809,7 @@ export function InvoiceSummary({ errors, summary, total, paidAmount, remainingAm
 					<div className="flex items-center justify-between p-3 rounded-xl bg-red-50 dark:bg-red-950/20">
 						<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.paidAmount")}</span>
 						<span className="text-base font-semibold text-red-600 dark:text-red-400">
-							{formatCurrency(Number(paidAmount || 0))}
+							{formatCurrency(Number(paidAmount || ""))}
 						</span>
 					</div>
 				)}

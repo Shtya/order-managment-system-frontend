@@ -59,10 +59,11 @@ export function PurchaseReturnForm({ editedReturn }) {
 					.number()
 					.transform((value, originalValue) => {
 						// يحول string لرقم
-						if (originalValue === "" || originalValue === null || originalValue === undefined) return 0;
+						if (originalValue === "" || originalValue === null || originalValue === undefined) return "";
 						const n = Number(originalValue);
-						return Number.isFinite(n) ? n : 0;
+						return Number.isFinite(n) ? n : "";
 					})
+					.typeError(tValidation("shouldAddValue"))
 					.min(0, tValidation("mustBePositive"))
 					.optional(),
 				items: yup
@@ -116,7 +117,7 @@ export function PurchaseReturnForm({ editedReturn }) {
 			safeId: "",
 			returnType: null,
 			notes: "",
-			paidAmount: 0,
+			paidAmount: "",
 			items: [],
 			receiptAsset: null,
 		},
@@ -134,7 +135,7 @@ export function PurchaseReturnForm({ editedReturn }) {
 				safeId: editedReturn.safeId || "",
 				returnType: editedReturn.returnType || null,
 				notes: editedReturn.notes || "",
-				paidAmount: editedReturn.paidAmount || 0,
+				paidAmount: editedReturn.paidAmount || "",
 				items: editedReturn.items || [],
 				receiptAsset: editedReturn.receiptAsset || null,
 			});
@@ -366,7 +367,7 @@ export function PurchaseReturnForm({ editedReturn }) {
 
 	const watchedPaidAmount = watch("paidAmount");
 
-	const paidAmount = parseFloat(watchedPaidAmount) || 0;
+	const paidAmount = parseFloat(watchedPaidAmount) || "";
 	const totalReturn = (summary.subtotal + summary.taxTotal) - paidAmount;
 
 	return (

@@ -4183,6 +4183,8 @@
     "receiptNumberRequired": "Receipt number is required",
     "safeRequired": "Safe is required",
     "mustBePositive": "Number must be positive",
+    "mustBeNumber": "Must be number",
+    "shouldAddValue": "Must add value",
     "itemsRequired": "At least one item must be added",
     "unitCostPositive": "Unit cost must be positive",
     "unitCostRequired": "Unit cost is required",

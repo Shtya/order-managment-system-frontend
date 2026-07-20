@@ -64,6 +64,7 @@ export default async function RootLayout({ children, params }) {
   const dir = locale === 'en' ? 'ltr' : 'rtl';
   const messages = await getMessages();
 
+  console.log(process.env.NEXT_PUBLIC_FB_API_VERSION)
   return (
     <html lang={locale} dir={dir} translate="no" suppressHydrationWarning>
       <head>
@@ -74,7 +75,6 @@ export default async function RootLayout({ children, params }) {
       <body
         className={`${sora.variable} ${openSans.variable} ${robotoMono.variable} ${inter.variable} ${arabicFont.variable}`}
       >
-
         <Script id="facebook-init" strategy="beforeInteractive">
           {`
             window.fbAsyncInit = function () {

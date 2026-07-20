@@ -22,6 +22,7 @@ import {
   Package,
   Phone,
   MapPin,
+  Mail,
   Calendar,
   User,
   ArrowLeftRight,
@@ -176,6 +177,7 @@ function OrderSearchSection({
   const [focused, setFocused] = useState(false);
   const debounceRef = useRef(null);
   const wrapperRef = useRef(null);
+  const justSelectedRef = useRef(false);
 
   useEffect(() => {
     if (isEditMode && selectedOrder?.orderNumber) {
@@ -190,6 +192,10 @@ function OrderSearchSection({
       setShowResults(false);
       return;
     }
+    if (justSelectedRef.current) {
+      justSelectedRef.current = false;
+      return;
+    }
     debounceRef.current = setTimeout(async () => {
       try {
         setSearching(true);
@@ -197,6 +203,7 @@ function OrderSearchSection({
           params: {
             search: query.trim(),
             hasReplacement: false,
+            status: "delivered",
             limit: 8,
             page: 1,
           },
@@ -211,18 +218,19 @@ function OrderSearchSection({
     }, 350);
   }, [query]);
 
-  useEffect(() => {
-    const handler = (e) => {
-      if (!wrapperRef.current?.contains(e.target)) {
-        setShowResults(false);
-        setFocused(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  // useEffect(() => {
+  //   const handler = (e) => {
+  //     if (!wrapperRef.current?.contains(e.target)) {
+  //       setShowResults(false);
+  //       setFocused(false);
+  //     }
+  //   };
+  //   document.addEventListener("mousedown", handler);
+  //   return () => document.removeEventListener("mousedown", handler);
+  // }, []);
 
   const handleSelect = (order) => {
+    justSelectedRef.current = true;
     onSelect(order);
     setQuery(order.orderNumber);
     setShowResults(false);
@@ -233,7 +241,7 @@ function OrderSearchSection({
       title={t("sections.searchOrder")}
       icon={Search}
       delay={0}
-      className="relative z-20"
+      className="relative"
     >
       <div ref={wrapperRef} className="relative">
         {/* Search Field */}
@@ -287,6 +295,7 @@ function OrderSearchSection({
             </div>
 
             <input
+              autoFocus
               value={query}
               onChange={(e) => {
                 if (isEditMode) return;
@@ -297,6 +306,7 @@ function OrderSearchSection({
                 setFocused(true);
                 if (!isEditMode && results.length) setShowResults(true);
               }}
+              onBlur={() => setFocused(false)}
               placeholder={t("placeholders.orderNumber")}
               readOnly={isEditMode}
               style={{
@@ -310,6 +320,22 @@ function OrderSearchSection({
                 letterSpacing: "0.03em",
               }}
             />
+
+            {searching && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Loader2
+                  size={18}
+                  className="animate-spin"
+                  style={{ color: "var(--primary)" }}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -610,34 +636,30 @@ function OrderSearchSection({
 // Selected order details panel
 // ─────────────────────────────────────────────
 function SelectedOrderDetails({ order, formatCurrency }) {
-  const tOrder = useTranslations("orders");
   const t = useTranslations("CreateReplacement");
-  const status = order.status;
 
   const pills = [
     { icon: User, label: t("details.customerName"), value: order.customerName },
     { icon: Phone, label: t("details.phone"), value: order.phoneNumber },
-    {
-      icon: MapPin,
-      label: t("details.address"),
-      value: `${order.city}، ${order.address}`,
-    },
-    {
-      icon: BarChart3,
-      label: t("details.total"),
-      value: formatCurrency(order.finalTotal ?? order.total),
-    },
-    {
-      icon: Calendar,
-      label: t("details.createdAt"),
-      value: formatDate(order.created_at),
-    },
+    { icon: Mail, label: t("details.email"), value: order.email },
+    { icon: MapPin, label: t("details.city"), value: order.city },
+    { icon: MapPin, label: t("details.area"), value: order.area },
+    { icon: Truck, label: t("details.shippingCompany"), value: order.shippingCompany?.name },
+    { icon: BarChart3, label: t("details.total"), value: formatCurrency(order.finalTotal ?? order.total) },
+    { icon: Calendar, label: t("details.createdAt"), value: formatDate(order.created_at) },
   ];
+
+  const addressPill = {
+    icon: MapPin,
+    label: t("details.address"),
+    value: order.address,
+  };
+
 
   return (
     <div className="space-y-4">
       {/* ── Info pills ─────────────────────────────────────────── */}
-      <div className="grid md:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-2">
         {pills.map(({ icon: Icon, label, value }) => (
           <div
             key={label}
@@ -652,7 +674,7 @@ function SelectedOrderDetails({ order, formatCurrency }) {
               </p>
               <p
                 title={value || "-"}
-                className="text-sm font-bold text-foreground truncate leading-tight"
+                className="text-sm font-bold text-foreground leading-tight"
               >
                 {value || "—"}
               </p>
@@ -661,33 +683,21 @@ function SelectedOrderDetails({ order, formatCurrency }) {
         ))}
 
         {/* Status pill */}
-        {status && (
-          <div className="group flex items-start gap-2.5 rounded-xl main-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200"
-              style={{ background: `${status.color}18` }}
-            >
-              <CheckCircle2 size={25} style={{ color: status.color }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[12px] font-medium text-muted-foreground mb-1">
-                {t("details.status")}
-              </p>
-              <Badge
-                className="rounded-xl px-3 py-0.5 text-sm font-bold border"
-                style={{
-                  backgroundColor: `${status.color}18`,
-                  color: status.color,
-                  borderColor: `${status.color}33`,
-                }}
-              >
-                {status.system
-                  ? tOrder(`statuses.${status.code}`)
-                  : status.name || status.code}
-              </Badge>
-            </div>
-          </div>
-        )}
+      </div>
+
+      {/* ── Address (full width) ─────────────────────────────────── */}
+      <div className="group flex items-start gap-2.5 rounded-xl main-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200">
+        <div className="w-10 h-10 rounded-xl bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-[color-mix(in_oklab,var(--primary)_20%,transparent)] transition-colors duration-200">
+          <MapPin size={25} className="text-primary" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[12px] font-medium text-muted-foreground mb-0.5">
+            {addressPill.label}
+          </p>
+          <p className="text-sm font-bold text-foreground leading-tight">
+            {addressPill.value || "—"}
+          </p>
+        </div>
       </div>
 
       {/* ── Items table ─────────────────────────────────────────── */}
@@ -827,56 +837,167 @@ export const getReasons = (t) => [
   { value: "other", label: t("reasons.other") },
 ];
 
-function ReplacementInfoSection({ form, setForm, errors }) {
+function ReplacementInfoSection({ form, setForm, errors, priceAdjustments, formatCurrency }) {
   const t = useTranslations("CreateReplacement");
+  const tOrder = useTranslations("createOrder");
 
   return (
     <Section title={t("sections.replacementInfo")} icon={FileText} delay={0.05}>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* reason */}
-        <FieldInput
-          label={t("fields.reasonOfReplacement")}
-          error={errors.reason}
-        >
-          <StyledInput
-            value={form.reason}
-            onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))}
-            placeholder={t("placeholders.reasonOfReplacement")}
-            className={cn(
-              "rounded-[8px] border-[1.5px] main-card transition-all duration-200",
-              "focus:border-primary focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]",
-              errors.reason ? "border-destructive" : "border-border",
-            )}
-          />
-        </FieldInput>
+      <div className="space-y-6">
+        {/* ── Row 1: reason + another reason + shipping company ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* reason */}
+          <FieldInput
+            label={t("fields.reasonOfReplacement")}
+            error={errors.reason}
+          >
+            <StyledInput
+              value={form.reason}
+              onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))}
+              placeholder={t("placeholders.reasonOfReplacement")}
+              className={cn(
+                "rounded-[8px] border-[1.5px] main-card transition-all duration-200",
+                "focus:border-primary focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]",
+                errors.reason ? "border-destructive" : "border-border",
+              )}
+            />
+          </FieldInput>
 
-        {/* Another reason */}
-        <FieldInput
-          label={t("fields.anotherReason")}
-          error={errors.anotherReason}
-        >
-          <StyledInput
-            value={form.anotherReason}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, anotherReason: e.target.value }))
-            }
-            placeholder={t("placeholders.anotherReason")}
-            className={cn(
-              "rounded-[8px] border-[1.5px] main-card transition-all duration-200",
-              "focus:border-primary focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]",
-              errors.anotherReason ? "border-destructive" : "border-border",
-            )}
-          />
-        </FieldInput>
+          {/* Another reason */}
+          <FieldInput
+            label={t("fields.anotherReason")}
+            error={errors.anotherReason}
+          >
+            <StyledInput
+              value={form.anotherReason}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, anotherReason: e.target.value }))
+              }
+              placeholder={t("placeholders.anotherReason")}
+              className={cn(
+                "rounded-[8px] border-[1.5px] main-card transition-all duration-200",
+                "focus:border-primary focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]",
+                errors.anotherReason ? "border-destructive" : "border-border",
+              )}
+            />
+          </FieldInput>
 
-        {/* Shipping company */}
-        <FieldInput label={t("fields.shippingCompany")}>
-          <ShippingCompanyFilter
-            value={form.shippingCompanyId}
-            onChange={(v) => setForm((p) => ({ ...p, shippingCompanyId: v }))}
-            hideLabel
-          />
-        </FieldInput>
+          {/* Shipping company */}
+          <FieldInput label={t("fields.shippingCompany")}>
+            <ShippingCompanyFilter
+              showAll={false}
+              value={form.shippingCompanyId}
+              onChange={(v) => setForm((p) => ({ ...p, shippingCompanyId: v }))}
+              hideLabel
+            />
+          </FieldInput>
+        </div>
+
+        {/* ── Row 2: payment + shipping cost + discount + item diff ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Payment Method */}
+          <FieldInput
+            label={tOrder("fields.paymentMethod")}
+            error={errors.paymentMethod}
+          >
+            <StyledSelect
+              value={form.paymentMethod || "cod"}
+              onValueChange={(v) => setForm((p) => ({ ...p, paymentMethod: v }))}
+              placeholder={tOrder("placeholders.selectPayment")}
+            >
+              <SelectItem value="cash">{tOrder("paymentMethods.cash")}</SelectItem>
+              <SelectItem value="card">{tOrder("paymentMethods.card")}</SelectItem>
+              <SelectItem value="bank_transfer">{tOrder("paymentMethods.bankTransfer")}</SelectItem>
+              <SelectItem value="cod">{tOrder("paymentMethods.cod")}</SelectItem>
+              <SelectItem value="other">{tOrder("paymentMethods.other")}</SelectItem>
+              <SelectItem value="unknown">{tOrder("paymentMethods.unknown")}</SelectItem>
+              <SelectItem value="wallet">{tOrder("paymentMethods.wallet")}</SelectItem>
+            </StyledSelect>
+          </FieldInput>
+
+          {/* Shipping Cost */}
+          <FieldInput label={tOrder("fields.shippingCost")}>
+            <StyledInput
+              type="number"
+              min="0"
+              value={form.shippingCost}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, shippingCost: e.target.value }))
+              }
+              placeholder="0.00"
+              className="font-mono"
+            />
+          </FieldInput>
+
+          {/* Discount */}
+          <FieldInput label={tOrder("fields.discount")}>
+            <StyledInput
+              type="number"
+              min="0"
+              value={form.discount}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, discount: e.target.value }))
+              }
+              placeholder="0.00"
+              className="font-mono"
+            />
+          </FieldInput>
+
+          {/* Additional Discount (client pays extra) */}
+          {/* <FieldInput label={t("fields.additionalDiscount")}>
+            <div
+              className={cn(
+                "h-[45px] px-3 rounded-xl border flex items-center justify-center gap-1.5 text-sm font-bold font-mono",
+                priceAdjustments.discount > 0
+                  ? "border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400"
+                  : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500",
+              )}
+            >
+              {priceAdjustments.discount > 0 ? `+ ${formatCurrency(priceAdjustments.discount)}` : "—"}
+            </div>
+          </FieldInput>*/}
+
+          {/* Refund / Deposit */}
+          {/* <FieldInput label={t("fields.refundDeposit")}>
+            <div
+              className={cn(
+                "h-[45px] px-3 rounded-xl border flex items-center justify-center gap-1.5 text-sm font-bold font-mono",
+                priceAdjustments.refund > 0
+                  ? "border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400"
+                  : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500",
+              )}
+            >
+              {priceAdjustments.refund > 0 ? formatCurrency(priceAdjustments.refund) : "—"}
+            </div>
+          </FieldInput> */}
+        </div> 
+
+        {/* ── Row 3: notes ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Internal Notes */}
+          <FieldInput label={tOrder("fields.notes")}>
+            <Textarea
+              value={form.internalNotes}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, internalNotes: e.target.value }))
+              }
+              placeholder={tOrder("placeholders.notes")}
+              className="min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
+            />
+          </FieldInput>
+
+          {/* Customer Notes */}
+          <FieldInput label={tOrder("fields.customerNotes")}>
+            <Textarea
+              value={form.customerNotes}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, customerNotes: e.target.value }))
+              }
+              placeholder={tOrder("placeholders.customerNotes")}
+              className="min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
+            />
+          </FieldInput>
+        </div>
       </div>
     </Section>
   );
@@ -1121,27 +1242,33 @@ function ItemMultiSelect({ orderItems, replacementItems, onAdd, onRemove, t }) {
 function ReplacementItemCard({
   cardIndex,
   originalItem,
+  initialReturnQty = 0,
   onUpdate,
   onRemove,
-  t,
   formatCurrency,
 }) {
   const [newSku, setNewSku] = useState(null);
+  const [availableQuantity, setAvailableQuantity] = useState(0);
   const [quantity, setQuantity] = useState(originalItem.quantity || 1);
+  const [returnQty, setReturnQty] = useState(originalItem.quantity ?? 0);
   const [newPrice, setNewPrice] = useState(0);
+  const t = useTranslations("CreateReplacement");
 
   const oldPrice = Number(originalItem.unitPrice || 0);
+  const oldQuantity = Number(originalItem.quantity || 0);
   const diff = (Number(newPrice) || 0) - oldPrice;
-
+  
   useEffect(() => {
     onUpdate(cardIndex, {
       originalOrderItemId: originalItem.id,
       quantityToReplace: quantity,
+      returnQuantity: returnQty,
+      oldQuantity: originalItem.quantity,
       newVariantId: newSku?.id ?? null,
       newUnitPrice: Number(newPrice) || 0,
       oldUnitPrice: oldPrice,
     });
-  }, [newSku, quantity, newPrice]);
+  }, [newSku, quantity, returnQty, newPrice]);
 
   const product = originalItem.variant?.product;
   const variant = originalItem.variant;
@@ -1270,12 +1397,19 @@ function ReplacementItemCard({
                 <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                   {newSku.sku}
                 </p>
+                {availableQuantity > 0 && (
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                    <CheckCircle2 size={10} />
+                    {availableQuantity} {t("itemCard.available")}
+                  </p>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => {
                   setNewSku(null);
                   setNewPrice(0);
+                  setAvailableQuantity(0);
                 }}
                 className="w-6 h-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500
 									hover:border-red-300 dark:hover:border-red-700 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30
@@ -1296,9 +1430,12 @@ function ReplacementItemCard({
               <ProductSkuSearchPopover
                 closeOnSelect
                 handleSelectSku={(sku) => {
-                  console.log(sku);
+
                   setNewSku(sku);
                   setNewPrice(sku.price || 0);
+                  const avail = sku.available || 0;
+                  setAvailableQuantity(avail);
+                  setQuantity((q) => (avail > 0 ? Math.min(q, avail) : q));
                 }}
                 selectedSkus={newSku ? [newSku] : []}
               />
@@ -1308,11 +1445,58 @@ function ReplacementItemCard({
       </div>
 
       {/* ── Bottom: qty + pricing ── */}
-      <div className="px-4 pb-4 grid grid-cols-2 xl:grid-cols-4 gap-3">
-        {/* Quantity */}
-        <FieldInput label={t("itemCard.quantity")}>
+      <div className="px-4 pb-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+         {/* Return Quantity */}
+        <FieldInput label={t("itemCard.returnQuantity")}>
           <div className="relative flex items-center">
-            <button
+            {/* <button
+              type="button"
+              onClick={() => setReturnQty((q) => Math.max(0, q - 1))}
+              className="absolute start-1 z-10 w-7 h-7 rounded-xl
+			flex items-center justify-center transition-all duration-150
+			text-gray-400 dark:text-gray-500
+			hover:text-gray-700 dark:hover:text-gray-200
+			hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <Minus size={11} />
+            </button> */}
+
+            <Input
+              type="number"
+              min="0"
+              max={oldQuantity || undefined}
+              value={returnQty}
+              onChange={(e) => {
+                let val = parseInt(e.target.value) || 0;
+                val = Math.max(1, val);
+                val = Math.min(val, oldQuantity);
+                setReturnQty(val);
+              }}
+              classN="!text-center font-bold !px-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+
+            {/* <button
+              type="button"
+              onClick={() => setReturnQty((q) => {
+                const next = q + 1;
+                if (next > oldQuantity) return oldQuantity;
+                return next;
+              })}
+              className="absolute end-1 z-10 w-7 h-7 rounded-xl
+			flex items-center justify-center transition-all duration-150
+			text-gray-400 dark:text-gray-500
+			hover:text-gray-700 dark:hover:text-gray-200
+			hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <Plus size={11} />
+            </button> */}
+          </div>
+        </FieldInput>
+
+        {/* Quantity to Replace */}
+        <FieldInput label={t("itemCard.newQuantity")}>
+          <div className="relative flex items-center">
+            {/* <button
               type="button"
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
               className="absolute start-1 z-10 w-7 h-7 rounded-xl
@@ -1322,21 +1506,29 @@ function ReplacementItemCard({
 			hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <Minus size={11} />
-            </button>
+            </button> */}
 
             <Input
               type="number"
               min="1"
+              max={availableQuantity || undefined}
               value={quantity}
-              onChange={(e) =>
-                setQuantity(Math.max(1, parseInt(e.target.value) || 1))
-              }
+              onChange={(e) => {
+                let val = parseInt(e.target.value) || 1;
+                val = Math.max(1, val);
+                if (availableQuantity > 0) val = Math.min(val, availableQuantity);
+                setQuantity(val);
+              }}
               classN="!text-center font-bold !px-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
 
-            <button
+            {/* <button
               type="button"
-              onClick={() => setQuantity((q) => q + 1)}
+              onClick={() => setQuantity((q) => {
+                const next = q + 1;
+                if (availableQuantity > 0 && next > availableQuantity) return availableQuantity;
+                return next;
+              })}
               className="absolute end-1 z-10 w-7 h-7 rounded-xl
 			flex items-center justify-center transition-all duration-150
 			text-gray-400 dark:text-gray-500
@@ -1344,10 +1536,11 @@ function ReplacementItemCard({
 			hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <Plus size={11} />
-            </button>
+            </button> */}
           </div>
         </FieldInput>
 
+       
         {/* Old price */}
         <FieldInput label={t("itemCard.oldPrice")}>
           <StyledInput
@@ -1373,9 +1566,9 @@ function ReplacementItemCard({
           <div
             className={cn(
               "h-[45px] px-3 rounded-xl border flex items-center justify-center gap-1.5 text-sm font-bold font-mono",
-              diff > 0
+              diff < 0
                 ? "border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400"
-                : diff < 0
+                : diff > 0
                   ? "border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400"
                   : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500",
             )}
@@ -1413,7 +1606,14 @@ function ReplacementItemsSection({
     }
     setReplacementItems((prev) => [
       ...prev,
-      { _originalItemId: orderItem.id, _originalItem: orderItem, data: null },
+      {
+        _originalItemId: orderItem.id,
+        _originalItem: orderItem,
+        data: null,
+        oldQuantity: orderItem.quantity,
+        returnQuantity: orderItem.quantity,
+        newVariantId: null,
+      },
     ]);
   };
 
@@ -1428,7 +1628,18 @@ function ReplacementItemsSection({
   const updateItem = (idx, data) => {
     setReplacementItems((prev) => {
       const next = [...prev];
-      next[idx] = { ...next[idx], data };
+      if (!next[idx]) return prev;
+
+      const mergedData = {
+        ...(next[idx]?.data ?? {}),
+        ...(data ?? {}),
+      };
+
+      next[idx] = {
+        ...next[idx],
+        data: mergedData,
+        newVariantId: data?.newVariantId ?? next[idx]?.newVariantId ?? null,
+      };
       return next;
     });
   };
@@ -1504,12 +1715,12 @@ function ReplacementItemsSection({
                 <ReplacementItemCard
                   key={`${ri._originalItemId}-${idx}`}
                   originalItem={ri._originalItem}
+                  initialReturnQty={ri.data?.returnQuantity ?? 0}
                   cardIndex={idx}
                   onUpdate={updateItem}
                   onRemove={(i) =>
                     removeItem({ id: replacementItems[i]._originalItemId })
                   }
-                  t={t}
                   formatCurrency={formatCurrency}
                 />
               ))}
@@ -1564,23 +1775,25 @@ function ReplacementItemsSection({
 // ─────────────────────────────────────────────
 // Price summary card
 // ─────────────────────────────────────────────
-function PriceSummaryCard({ replacementItems, form, selectedOrder, formatCurrency }) {
+function PriceSummaryCard({ replacementItems, form, selectedOrder, formatCurrency, priceAdjustments = { discount: 0, refund: 0 } }) {
   const t = useTranslations("CreateReplacement");
   const summary = useMemo(() => {
     const oldTotal = replacementItems.reduce((sum, ri) => {
       const d = ri.data;
       if (!d) return sum;
-      return sum + (d.oldUnitPrice || 0) * (d.quantityToReplace || 0);
+      
+      return sum + (d.oldUnitPrice || 0) * (d.returnQuantity || 0);
     }, 0);
     const newTotal = replacementItems.reduce((sum, ri) => {
       const d = ri.data;
       if (!d) return sum;
+      
       return sum + (d.newUnitPrice || 0) * (d.quantityToReplace || 0);
     }, 0);
     const shipping = Number(form.shippingCost) || 0;
     const discount = Number(form.discount) || 0;
     const diff = newTotal - oldTotal;
-    const finalNew = newTotal + shipping - discount;
+    const finalNew = newTotal + shipping - discount + priceAdjustments.discount - priceAdjustments.refund;
 
     return {
       oldTotal,
@@ -1591,7 +1804,7 @@ function PriceSummaryCard({ replacementItems, form, selectedOrder, formatCurrenc
       finalNew,
       itemCount: replacementItems.length,
     };
-  }, [replacementItems, form]);
+  }, [replacementItems, form, priceAdjustments]);
 
   const rows = [
     {
@@ -1609,6 +1822,16 @@ function PriceSummaryCard({ replacementItems, form, selectedOrder, formatCurrenc
       value: formatCurrency(summary.newTotal),
       color: "text-foreground font-bold",
     },
+    // {
+    //   label: t("summary.priceDiff"),
+    //   value: `${summary.diff >= 0 ? "+" : ""}${formatCurrency(summary.diff)}`,
+    //   color:
+    //     summary.diff < 0
+    //       ? "text-red-500 font-bold"
+    //       : summary.diff > 0
+    //         ? "text-emerald-600 font-bold"
+    //         : "text-muted-foreground",
+    // },
     {
       label: t("summary.shipping"),
       value: formatCurrency(summary.shipping),
@@ -1619,51 +1842,59 @@ function PriceSummaryCard({ replacementItems, form, selectedOrder, formatCurrenc
       value: `- ${formatCurrency(summary.discount)}`,
       color: "text-red-500",
     },
-    {
-      label: t("summary.priceDiff"),
-      value: `${summary.diff >= 0 ? "+" : ""}${formatCurrency(summary.diff)}`,
-      color:
-        summary.diff > 0
-          ? "text-red-500 font-bold"
-          : summary.diff < 0
-            ? "text-emerald-600 font-bold"
-            : "text-muted-foreground",
-    },
+    ...(priceAdjustments.discount > 0 ? [{
+      label: t("summary.additionalDiscount"),
+      value: `+ ${formatCurrency(priceAdjustments.discount)}`,
+      color: "text-amber-600 font-bold",
+    }] : []),
+    ...(priceAdjustments.refund > 0 ? [{
+      label: t("summary.refundDeposit"),
+      value: `- ${formatCurrency(priceAdjustments.refund)}`,
+      color: "text-emerald-600 font-bold",
+    }] : []),
   ];
 
   return (
-    <div className="main-card rounded-xl border border-border/60 shadow-sm overflow-hidden h-fit">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border/40">
-        <div className="w-13 h-13 rounded-xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center">
-          <BarChart3 size={25} className="text-[var(--primary)]" />
-        </div>
-        <p className="text-sm font-bold text-foreground">
-          {t("sections.priceSummary")}
-        </p>
-      </div>
-
-      <div className="p-4 space-y-2">
-        {rows.map(({ label, value, color }) => (
-          <div
-            key={label}
-            className="flex items-center justify-between py-1.5 border-b border-border/25 last:border-0"
-          >
-            <span className="text-xs text-muted-foreground">{label}</span>
-            <span className={cn("text-xs", color)}>{value}</span>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+      style={{ marginTop: 16 }}
+    >
+      <div className="main-card rounded-xl border border-border/60 shadow-sm overflow-hidden h-fit">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border/40">
+          <div className="w-13 h-13 rounded-xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center">
+            <BarChart3 size={25} className="text-[var(--primary)]" />
           </div>
-        ))}
+          <p className="text-sm font-bold text-foreground">
+            {t("sections.priceSummary")}
+          </p>
+        </div>
 
-        {/* Final total highlight */}
-        <div className="mt-3 flex items-center justify-between p-3 rounded-xl bg-[color-mix(in_oklab,var(--primary)_8%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)]">
-          <span className="text-xs font-bold text-foreground">
-            {t("summary.finalTotal")}
-          </span>
-          <span className="text-base font-bold text-[var(--primary)]">
-            {formatCurrency(summary.finalNew)}
-          </span>
+        <div className="p-4 space-y-2">
+          {rows.map(({ label, value, color }) => (
+            <div
+              key={label}
+              className="flex items-center justify-between py-1.5 border-b border-border/25 last:border-0"
+            >
+              <span className="text-xs text-muted-foreground">{label}</span>
+              <span className={cn("text-xs", color)}>{value}</span>
+            </div>
+          ))}
+
+          {/* Final total highlight */}
+          <div className="mt-3 flex items-center justify-between p-3 rounded-xl bg-[color-mix(in_oklab,var(--primary)_8%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)]">
+            <span className="text-xs font-bold text-foreground">
+              {t("summary.finalTotal")}
+            </span>
+            <span className="text-base font-bold text-[var(--primary)]">
+              {formatCurrency(summary.finalNew)}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -1700,6 +1931,30 @@ export default function CreateReplacementPage({
     customerNotes: "",
   });
 
+  // ── Auto-calculate price adjustments (read-only) ──
+  // discount: extra amount client pays when new items cost more
+  // refund: money returned to client when old items cost more (shown as deposit)
+  const priceAdjustments = useMemo(() => {
+    let oldTotal = 0;
+    let newTotal = 0;
+
+    for (const ri of replacementItems) {
+      const d = ri.data;
+      if (!d) continue;
+
+      oldTotal += (d.oldUnitPrice ?? 0) * (d.returnQuantity ?? 0);
+      newTotal += (d.newUnitPrice ?? 0) * (d.quantityToReplace ?? 0);
+    }
+
+    
+    return {
+      oldTotal,
+      newTotal,
+      discount: 0,
+      refund: oldTotal,
+    };
+  }, [replacementItems]);
+
   // ── Load existing data in edit mode ──
   useEffect(() => {
     if (!isEditMode) return;
@@ -1727,19 +1982,19 @@ export default function CreateReplacementPage({
 
         if (data.originalOrder) setSelectedOrder(data.originalOrder);
 
-        // Seed existing return images as { isExisting: true, url }
-        if (Array.isArray(data.returnImages) && data.returnImages.length > 0) {
-          setImageFiles(
-            data.returnImages.map((url) => ({
-              id: makeId(),
-              isExisting: true,
-              isFromLibrary: false,
-              url,
-              file: undefined,
-              previewUrl: undefined,
-            })),
-          );
-        }
+        // // Seed existing return images as { isExisting: true, url }
+        // if (Array.isArray(data.returnImages) && data.returnImages.length > 0) {
+        //   setImageFiles(
+        //     data.returnImages.map((url) => ({
+        //       id: makeId(),
+        //       isExisting: true,
+        //       isFromLibrary: false,
+        //       url,
+        //       file: undefined,
+        //       previewUrl: undefined,
+        //     })),
+        //   );
+        // }
 
         // Seed replacement items from existing record
         if (Array.isArray(data.items) && data.originalOrder?.items) {
@@ -1749,10 +2004,13 @@ export default function CreateReplacementPage({
               _originalItem: data.originalOrder.items.find(
                 (oi) => oi.id === ri.originalOrderItemId,
               ) ?? { id: ri.originalOrderItemId },
+              newVariantId: ri.newVariantId ?? null,
               data: {
                 originalOrderItemId: ri.originalOrderItemId,
+                oldQuantity: ri.oldQuantity,
                 quantityToReplace: ri.quantityToReplace,
-                newVariantId: ri.newVariantId,
+                returnQuantity: ri.returnQuantity,
+                newVariantId: ri.newVariantId ?? null,
                 newUnitPrice: ri.newUnitPrice,
                 oldUnitPrice: ri.oldUnitPrice,
               },
@@ -1775,7 +2033,7 @@ export default function CreateReplacementPage({
     }
   };
 
-  console.log("errors", errors);
+  // console.log("errors", errors);
 
   // ── Validate ──
   const validate = () => {
@@ -1785,11 +2043,15 @@ export default function CreateReplacementPage({
     // if (!form.anotherReason) e.anotherReason = t("validation.anotherReasonRequired");
     if (!form.paymentMethod)
       e.paymentMethod = t("validation.paymentMethodRequired");
-    if (replacementItems.length === 0) e.items = t("validation.itemsRequired");
-    // else {
-    //     const invalid = replacementItems.some((ri) => !ri.data?.newVariantId);
-    //     if (invalid) e.items = t("validation.newVariantRequired");
-    // }
+    if (replacementItems.length === 0) {
+      e.items = t("validation.itemsRequired");
+    } else {
+      const invalid = replacementItems.some((ri) => {
+        const newVariantId = ri?.newVariantId ?? ri?.data?.newVariantId;
+        return !newVariantId;
+      });
+      if (invalid) e.items = t("validation.newVariantRequired");
+    }
     setErrors(e);
     console.log(e);
     return Object.keys(e).length === 0;
@@ -1800,7 +2062,7 @@ export default function CreateReplacementPage({
     e.preventDefault();
 
     if (!validate()) {
-      toast.error(t("validation.fixErrors"));
+      // toast.error(t("validation.fixErrors"));
       return;
     }
 
@@ -1818,6 +2080,7 @@ export default function CreateReplacementPage({
       }
       fd.append("shippingCost", Number(form.shippingCost) || 0);
       fd.append("discount", Number(form.discount) || 0);
+      fd.append("deposit", priceAdjustments.refund);
       if (form.internalNotes) fd.append("internalNotes", form.internalNotes);
       if (form.customerNotes) fd.append("customerNotes", form.customerNotes);
 
@@ -1826,10 +2089,11 @@ export default function CreateReplacementPage({
         "items",
         JSON.stringify(
           replacementItems.map((ri) => ({
-            originalOrderItemId: ri.data.originalOrderItemId,
-            quantityToReplace: ri.data.quantityToReplace,
-            newVariantId: ri.data.newVariantId,
-            newUnitPrice: ri.data.newUnitPrice,
+            originalOrderItemId: ri.data?.originalOrderItemId,
+            quantityToReplace: ri.data?.quantityToReplace,
+            returnQuantity: ri.data?.returnQuantity,
+            newVariantId: ri.newVariantId ?? ri.data?.newVariantId ?? null,
+            newUnitPrice: ri.data?.newUnitPrice,
           })),
         ),
       );
@@ -1869,7 +2133,7 @@ export default function CreateReplacementPage({
         });
         toast.success(t("messages.createSuccess"));
       }
-      router.push("/orders");
+      router.push("/orders?tab=replacement");
     } catch (err) {
       const msg = err?.response?.data?.message;
       toast.error(
@@ -1902,47 +2166,53 @@ export default function CreateReplacementPage({
 
   return (
     <div className="min-h-screen p-5">
-      <form onSubmit={handleSubmit}>
-        <PageHeader
-          breadcrumbs={[
-            { name: t("breadcrumb.home"), href: "/dashboard" },
-            { name: t(`breadcrumb.orders`), href: "/orders?tab=replacement" },
-            { name: isEditMode ? t("titleEdit") : t("title") },
-          ]}
-          buttons={
-            <>
-              <Button_
-                onClick={() => router.back()}
-                size="sm"
-                label={t("actions.cancel")}
-                variant="ghost"
-              />
 
-              <Button_
-                size="sm"
-                type="submit"
-                label={
-                  submitting
-                    ? t("actions.saving")
-                    : isEditMode
-                      ? t("actions.update")
-                      : t("actions.submit")
-                }
-                disabled={submitting}
-                variant="solid"
-              />
-            </>
-          }
-        ></PageHeader>
+      <PageHeader
+        stacky
+        breadcrumbs={[
+          { name: t("breadcrumb.home"), href: "/dashboard" },
+          { name: t(`breadcrumb.orders`), href: "/orders?tab=replacement" },
+          { name: isEditMode ? t("titleEdit") : t("title") },
+        ]}
+        buttons={
+          <>
+            <Button_
+              onClick={() => router.back()}
+              size="sm"
+              label={t("actions.cancel")}
+              variant="ghost"
+            />
 
+            <Button_
+              size="sm"
+              label={
+                submitting
+                  ? t("actions.saving")
+                  : isEditMode
+                    ? t("actions.update")
+                    : t("actions.submit")
+              }
+              disabled={submitting}
+              onClick={handleSubmit}
+              variant="solid"
+            />
+          </>
+        }
+      ></PageHeader>
+      <form >
         {/* ── SECTION 3: Items + sidebar ── */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4">
-          <div className="flex gap-6 w-full flex-col">
+          <div className="space-y-6">
             <OrderSearchSection
               selectedOrder={selectedOrder}
               onSelect={(order) => {
                 setSelectedOrder(order);
-                if (!isEditMode) setReplacementItems([]);
+                if (!isEditMode) {
+                  setReplacementItems([]);
+                  if (order?.shippingCompany?.id) {
+                    setForm((p) => ({ ...p, shippingCompanyId: String(order.shippingCompany.id) }));
+                  }
+                }
               }}
               isEditMode={isEditMode}
               errors={errors}
@@ -1953,6 +2223,8 @@ export default function CreateReplacementPage({
               form={form}
               setForm={setForm}
               errors={errors}
+              priceAdjustments={priceAdjustments}
+              formatCurrency={formatCurrency}
             />
             <ReplacementItemsSection
               selectedOrder={selectedOrder}
@@ -1963,18 +2235,19 @@ export default function CreateReplacementPage({
             />
           </div>
 
-          <div className="space-y-4">
-            <ImageUploadBox
+          <div className="space-y-4 lg:sticky lg:top-12 lg:self-start">
+            {/* <ImageUploadBox
               title={t("sections.images")}
               files={imageFiles}
               onFilesChange={setImageFiles}
               onRemove={handleImageRemove}
-            />
+            /> */}
             <PriceSummaryCard
               replacementItems={replacementItems}
               form={form}
               selectedOrder={selectedOrder}
               formatCurrency={formatCurrency}
+              priceAdjustments={priceAdjustments}
             />
           </div>
         </div>

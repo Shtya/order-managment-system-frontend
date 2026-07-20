@@ -671,7 +671,7 @@ export function OrderDetailsPage({ order, loading }) {
           </motion.div>
 
           {/* Replacement card */}
-          {/* {order.replacementResult && (
+          {order.replacementResult && (
             <ReplacementInfoCard
               replacement={order.replacementResult}
               replacementOrder={order}
@@ -679,7 +679,7 @@ export function OrderDetailsPage({ order, loading }) {
               formatDate={formatDate}
               router={router}
             />
-          )} */}
+          )}
 
           {/* WhatsApp Response Location */}
           {order.latitude && order.longitude && (
@@ -1160,7 +1160,7 @@ function ReplacementInfoCard({
                   label: t("replacement.orderNumber"),
                   content: (
                     <button
-                      onClick={() => router.push(`/orders/${originalOrder.id}`)}
+                      onClick={() => router.push(`/orders/details/${originalOrder.id}`)}
                       className="text-xs font-bold hover:underline flex items-center gap-1 mt-0.5"
                       style={{ color: P, fontFamily: "var(--mono, monospace)" }}
                     >
@@ -1205,7 +1205,7 @@ function ReplacementInfoCard({
             </div>
 
             {/* Price diff pills */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
+            {/* <div className="flex flex-wrap items-center gap-2 pt-1">
               <div
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
                 style={{
@@ -1239,12 +1239,12 @@ function ReplacementInfoCard({
                 <div
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
                   style={{
-                    background:
-                      totalDiff > 0
+                    background: 
+                      totalDiff < 0
                         ? "rgba(239,68,68,0.06)"
                         : "rgba(16,185,129,0.06)",
                     borderColor:
-                      totalDiff > 0
+                      totalDiff < 0
                         ? "rgba(239,68,68,0.2)"
                         : "rgba(16,185,129,0.2)",
                   }}
@@ -1266,7 +1266,7 @@ function ReplacementInfoCard({
                   </span>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
         )}
 
@@ -1297,7 +1297,8 @@ function ReplacementInfoCard({
                       {[
                         t("replacement.table.originalProduct"),
                         t("replacement.table.newProduct"),
-                        t("replacement.table.qty"),
+                        t("replacement.table.returnQuantity"),
+                        t("replacement.table.newQty"),
                         t("replacement.table.oldPrice"),
                         t("replacement.table.newPrice"),
                         t("replacement.table.diff"),
@@ -1352,7 +1353,7 @@ function ReplacementInfoCard({
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <p className="text-[10px] font-bold text-foreground line-clamp-1">
+                                <p className="text-[10px] font-bold text-foreground line-clamp-1 line-through">
                                   {origProduct?.name || "—"}
                                 </p>
                                 {origItem?.variant?.sku && (
@@ -1393,6 +1394,14 @@ function ReplacementInfoCard({
                                 )}
                               </div>
                             </div>
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            <span
+                              className="inline-flex items-center justify-center w-6 h-6 rounded-lg text-[10px] font-black line-through"
+                              style={{ background: P_10, color: P }}
+                            >
+                              ×{item.returnQuantity}
+                            </span>
                           </td>
                           <td className="px-3 py-3 text-right">
                             <span
@@ -1439,7 +1448,7 @@ function ReplacementInfoCard({
         )}
 
         {/* Return images */}
-        {returnImages.length > 0 && (
+        {/* {returnImages.length > 0 && (
           <div className="space-y-3">
             <p
               className="text-[9px] font-black uppercase tracking-[2px] flex items-center gap-1.5"
@@ -1466,7 +1475,7 @@ function ReplacementInfoCard({
               ))}
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </motion.div >
   );

@@ -525,11 +525,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         //   labelKey: "ordersUnderReview",
         //   href: "/orders?tab=ordersUnderReview",
         // },
-        // {
-        //   icon: Undo2,
-        //   labelKey: "orderReplacement",
-        //   href: "/orders?tab=replacement",
-        // },
+        {
+          icon: Undo2,
+          labelKey: "orderReplacement",
+          href: "/orders?tab=replacement",
+        },
         {
           icon: XCircle,
           labelKey: "warehouseRejected",

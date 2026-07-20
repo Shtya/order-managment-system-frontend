@@ -474,7 +474,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label className="text-sm font-semibold" >{t("form.name")}</Label>
-                            <Input {...register("name")} placeholder={t("form.name")}  className="rounded-xl h-[50px]" />
+                            <Input {...register("name")} placeholder={t("form.name")} className="rounded-xl h-[50px]" />
                             {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
                         </div>
                         <div className="space-y-2">
@@ -1193,6 +1193,7 @@ export default function CallCenterPage() {
     const buildParams = useCallback(
         (page = pager.current_page, per_page = pager.per_page) => {
 
+            console.log("Building params with:", { page, per_page, viewMode, filters });
             const params = {
                 page,
                 limit: per_page,
@@ -1297,6 +1298,7 @@ export default function CallCenterPage() {
     const fetchAutoAssignRules = useCallback(
         async (page = pager.current_page, per_page = pager.per_page) => {
             try {
+
                 const params = buildParams(page, per_page);
                 setLoading(true);
                 const res = await api.get("/order-assignment/rules", { params });
@@ -1362,48 +1364,62 @@ export default function CallCenterPage() {
         }
     };
     const [deleteLoading, setDeleteLoading] = useState(false);
-    const handleDeleteRule = async () => {
+    const handleDeleteRule = useCallback(async () => {
         try {
             setDeleteLoading(true);
+
             await api.delete(`/order-assignment/rules/${selectedRule.id}`);
+
             toast.success(t("callCenter.autoAssign.delete.success"));
             setDeleteOpen(false);
-            fetchAutoAssignRules(pager.current_page, pager.per_page);
-            fetchAutoRulesStats();
+
+            await Promise.all([
+                fetchAutoAssignRules(pager.current_page, pager.per_page),
+                fetchAutoRulesStats(),
+            ]);
         } catch (e) {
             console.error(e);
             toast.error(t("callCenter.autoAssign.delete.error"));
         } finally {
             setDeleteLoading(false);
         }
-    };
+    }, [
+        selectedRule?.id,
+        pager.current_page,
+        pager.per_page,
+        fetchAutoAssignRules,
+        fetchAutoRulesStats,
+        t,
+    ]);
 
-    const openEdit = (rule) => {
+    const openEdit = useCallback((rule) => {
         setSelectedRule(rule);
         setFormOpen(true);
-    };
+    }, []);
 
-    const openView = (rule) => {
+    const openView = useCallback((rule) => {
         setSelectedRule(rule);
         setViewViewOpen(true);
-    };
+    }, []);
 
-    const openDelete = (rule) => {
+    const openDelete = useCallback((rule) => {
         setSelectedRule(rule);
         setDeleteOpen(true);
-    };
+    }, []);
 
-    const toggleRuleStatus = async (rule) => {
+    const toggleRuleStatus = useCallback(async (rule) => {
         try {
             await api.post(`/order-assignment/rules/${rule.id}/toggle`);
             toast.success(t("common.api.success"));
-            fetchAutoAssignRules(pager.current_page, pager.per_page);
+
+            // Let the default parameters handle the pager state
+            fetchAutoAssignRules();
             fetchAutoRulesStats();
         } catch (e) {
             console.error(e);
             toast.error(t("common.api.error"));
         }
-    };
+    }, [fetchAutoAssignRules, fetchAutoRulesStats, t]);
 
     /* ── Columns ── */
     const employeeColumns = useMemo(
@@ -1485,7 +1501,7 @@ export default function CallCenterPage() {
                 ),
             },
         ],
-        [t, tTutorial]
+        [t, tTutorial, fetchAutoRulesStats]
     );
 
     const ruleColumns = useMemo(
@@ -1612,7 +1628,7 @@ export default function CallCenterPage() {
                 ),
             },
         ],
-        [t, tTutorial]
+        [t, toggleRuleStatus, openView, openEdit, openDelete, tTutorial, fetchAutoRulesStats]
     );
 
     const headerStats = useMemo(() => {

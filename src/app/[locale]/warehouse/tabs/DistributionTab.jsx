@@ -31,9 +31,11 @@ import {
   Layers,
   Send,
   Loader2,
+  ArrowLeftRight,
 } from "lucide-react";
 
 import { cn } from "@/utils/cn";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
@@ -270,12 +272,42 @@ export default function DistributionTab({ subtab, setSubtab }) {
 // ─────────────────────────────────────────────
 // ORDER DETAIL MODA
 // ─────────────────────────────────────────────
-export function OrderDetailModal({ open, onClose, order, hideNotes }) {
-  
+export function OrderDetailModal({ open, onClose, order: initialOrder, hideNotes }) {
+  const [fullOrder, setFullOrder] = useState(null);
+  const [loadingFull, setLoadingFull] = useState(false);
+
   const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.distribution");
-  const { formatCurrency } = usePlatformSettings()
+  const tR = useTranslations("orders.replacement");
+  const tCR = useTranslations("CreateReplacement");
+  const { formatCurrency } = usePlatformSettings();
+
+  useEffect(() => {
+    if (open && initialOrder?.id) {
+      let cancelled = false;
+      setLoadingFull(true);
+      api.get(`/orders/${initialOrder.id}`)
+        .then(({ data }) => {
+          if (!cancelled) setFullOrder(data);
+        })
+        .catch(() => {
+          if (!cancelled) setFullOrder(null);
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingFull(false);
+        });
+      return () => { cancelled = true; };
+    }
+    if (!open) setFullOrder(null);
+  }, [open, initialOrder?.id]);
+
+  const order = fullOrder || initialOrder;
   if (!order) return null;
+
+  const replacement = order.replacementResult;
+  const bridgeItems = replacement?.items ?? [];
+  const originalOrder = replacement?.originalOrder;
+
   const infoRows = [
     {
       label: t("field.customerName"),
@@ -369,8 +401,7 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
-
+        className="!max-w-2xl sm:w-full bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 border-0 shadow-2xl"
       >
         {/* Header with gradient */}
         <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden bg-primary ">
@@ -426,7 +457,7 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
           </div>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 w-full min-w-0">
           {/* Info grid */}
           <div className="grid grid-cols-2 gap-2.5">
             {infoRows.map(({ label, value, icon: Icon, accent }) => (
@@ -508,6 +539,211 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
               ))}
             </div>
           </div>
+
+          {/* Replacement Info Section */}
+          {replacement && (
+            <div className="max-w-full rounded-xl w-full overflow-hidden" style={{ borderColor: "var(--primary, #6763af)" + "40" }}> <div
+              className="px-4 py-2.5 flex items-center gap-2"
+              style={{
+                background: "linear-gradient(90deg, #6763af15 0%, transparent 100%)",
+              }} >
+              <ArrowLeftRight size={14} style={{ color: "#6763af" }} />
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                {tR("cardTitle")}
+              </span>
+              {replacement.reason && (
+                <span
+                  className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-lg"
+                  style={{ backgroundColor: "#6763af12", color: "#6763af" }}
+                >
+                  {replacement.reason}
+                </span>
+              )}
+            </div>
+
+              {/* Original order info */}
+              {originalOrder && (
+                <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-700/60">
+                  <p className="text-[9px] font-black uppercase tracking-[2px] text-slate-400 mb-2">
+                    {tR("originalOrder")}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <Hash size={11} className="text-slate-400" />
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200 font-mono">
+                        {originalOrder.orderNumber}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <User size={11} className="text-slate-400" />
+                      <span className="text-xs text-slate-600 dark:text-slate-300">
+                        {originalOrder.customerName}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <TrendingUp size={11} className="text-slate-400" />
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                        {formatCurrency(originalOrder.finalTotal)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Replaced items table */}
+              {bridgeItems.length > 0 && (
+                <div className="w-full ">
+                  <div className=" overflow-hidden w-full px-4 py-3 border-t border-slate-100 dark:border-slate-700/60">
+                    <p className="text-[9px] font-black uppercase tracking-[2px] text-slate-400 mb-2">
+                      {tR("replacedItems")} ({bridgeItems.length})
+                    </p>
+
+                    {/* FIX 3: Simplified the scroll wrapper to just `w-full overflow-x-auto` */}
+                    <div className="w-full overflow-x-auto max-w-full rounded-lg border border-slate-100 dark:border-slate-800">
+                  <table className="w-full min-w-max border-collapse">
+                      <thead>
+                          <tr className="bg-slate-50 dark:bg-slate-800/80">
+                            {[
+                              tR("table.originalProduct"),
+                              tR("table.newProduct"),
+                              tR("table.returnQuantity"),
+                              tR("table.newQty"),
+                              tR("table.oldPrice"),
+                              tR("table.newPrice"),
+                              tR("table.diff"),
+                            ].map((h) => (
+                              <th
+                                key={h}
+                                className="text-right px-3 py-2 text-[9px] font-black uppercase tracking-wider text-slate-400 whitespace-nowrap"
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                          {bridgeItems.map((item, idx) => {
+                            const origItem = item.originalOrderItem;
+                            const origProduct = origItem?.variant?.product;
+                            const newProduct = item.newVariant?.product;
+                            const newVariant = item.newVariant;
+                            const oldPrice = origItem?.unitPrice ?? 0;
+                            const matchedNewOrderItem = order?.items?.find(
+                              (roi) => roi.variantId === item.newVariantId,
+                            );
+                            const newPrice = matchedNewOrderItem?.unitPrice ?? 0;
+                            const lineDiff = newPrice - oldPrice;
+
+                            return (
+                              <tr
+                                key={item.id ?? idx}
+                                className={cn(
+                                  "transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50",
+                                  idx % 2 !== 0 && "bg-slate-50/50 dark:bg-slate-800/20",
+                                )}
+                              >
+                                <td className="px-3 py-2.5">
+                                  <div className="flex items-center gap-2">
+                                    {origProduct?.mainImage ? (
+                                      <img
+                                        src={avatarSrc(origProduct.mainImage)}
+                                        className="w-6 h-6 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                                      />
+                                    ) : (
+                                      <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 bg-slate-100 dark:bg-slate-800">
+                                        <Package size={10} className="text-slate-400" />
+                                      </div>
+                                    )}
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-bold text-slate-700 dark:text-slate-200 line-clamp-1 line-through text-nowrap">
+                                        {origProduct?.name || "—"}
+                                      </p>
+                                      {origItem?.variant?.sku && (
+                                        <p className="text-[9px] text-slate-400 font-mono  text-nowrap">
+                                          {origItem.variant.sku}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <div className="flex items-center gap-2">
+                                    {newProduct?.mainImage ? (
+                                      <img
+                                        src={avatarSrc(newProduct.mainImage)}
+                                        className="w-6 h-6 rounded-lg object-cover shrink-0"
+                                        style={{ border: "1px solid #6763af40" }}
+                                      />
+                                    ) : (
+                                      <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "#6763af12" }}>
+                                        <Package size={10} style={{ color: "#6763af" }} />
+                                      </div>
+                                    )}
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-bold text-slate-700 dark:text-slate-200 line-clamp-1 text-nowrap">
+                                        {newProduct?.name || newVariant?.name || "—"}
+                                      </p>
+                                      {newVariant?.sku && (
+                                        <p className="text-[9px] text-slate-400 font-mono text-nowrap">
+                                          {newVariant.sku}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5 text-right">
+                                  <span
+                                    className="inline-flex items-center justify-center w-5 h-5 rounded-md text-[9px] font-black line-through text-nowrap"
+                                    style={{ backgroundColor: "#6763af12", color: "#6763af" }}
+                                  >
+                                    ×{item.returnQuantity}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 text-right">
+                                  <span
+                                    className="inline-flex items-center justify-center w-5 h-5 rounded-md text-[9px] font-black text-nowrap"
+                                    style={{ backgroundColor: "#6763af12", color: "#6763af" }}
+                                  >
+                                    ×{item.quantityToReplace}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 text-right">
+                                  <span className="text-[10px] text-slate-400 font-mono">
+                                    {formatCurrency(oldPrice)}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 text-right">
+                                  <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 font-mono text-nowrap">
+                                    {formatCurrency(newPrice)}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 text-right">
+                                  <span
+                                    className="text-[10px] font-black font-mono text-nowrap"
+                                    style={{
+                                      color:
+                                        lineDiff < 0
+                                          ? "#ef4444"
+                                          : lineDiff > 0
+                                            ? "#10b981"
+                                            : "var(--muted-foreground)",
+                                    }}
+                                  >
+                                    {lineDiff > 0 ? "+" : ""}
+                                    {formatCurrency(lineDiff)}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Notes */}
           {!!order.notes && !hideNotes && (

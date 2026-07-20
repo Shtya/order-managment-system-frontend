@@ -1268,6 +1268,7 @@ export function ScanReturnsSubtab({
           page,
           limit: per_page,
           search: debouncedSearch,
+          includeReplaced: true,
           shippingCompanyId: carrierId === "all" ? undefined : carrierId,
           status: 'shipped,delivered',
         }

@@ -5,13 +5,8 @@ import { motion as m, AnimatePresence } from "framer-motion";
 
 import {
 	Download, Eye, Phone, ArrowLeftRight, Loader2, Filter,
-	RefreshCcw,
-	Clock,
 	CheckCircle,
 	Package,
-	Truck,
-	XCircle,
-	RotateCcw,
 	Plus,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -78,11 +73,11 @@ function ReplacedProductsList({ items }) {
 				return (
 					<div key={i} className="flex items-center gap-1.5 text-xs">
 						<span className="text-muted-foreground line-through">{oldName}</span>
+						<span className="text-muted-foreground line-through">(×{item.returnQuantity})</span>
 						<ArrowLeftRight size={10} className="text-[var(--primary)] shrink-0" />
 						<span className="text-foreground font-medium">{newName}</span>
-						{item.quantityToReplace > 1 && (
-							<span className="text-muted-foreground">(×{item.quantityToReplace})</span>
-						)}
+						<span className="text-muted-foreground">(×{item.quantityToReplace})</span>
+
 					</div>
 				);
 			})}
@@ -110,8 +105,8 @@ function CostDiffCell({ row, t, formatCurrency }) {
 				className={cn(
 					"text-[10px] font-bold px-1.5 py-0.5 rounded uppercase flex items-center gap-1",
 					isCustomerPaying
-						? "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400"
-						: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400",
+						? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
+						: "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400",
 				)}
 			>
 				{!isCustomerPaying && "−"}
@@ -126,53 +121,31 @@ function CostDiffCell({ row, t, formatCurrency }) {
 const REPLACEMENT_STATS = [
 	{
 		id: 1,
-		code: "total",
-		title: "replacement.stats.total",
-		color: "var(--primary)",        // --primary light
-		darkColor: "#5b4bff",    // --primary dark
-		icon: RefreshCcw,
-		value: 142
+		code: "totalDelivered",
+		nameKey: "replacement.stats.totalDelivered",
+		color: "var(--primary)",
+		darkColor: "#5b4bff",
+		icon: Package,
+		sortOrder: 1,
 	},
 	{
 		id: 2,
-		code: "pending",
-		nameKey: "replacement.stats.pending",
-		color: "#f59e0b",
-		darkColor: "#f59e0b",
-		icon: Clock,
-		count: 38,
+		code: "replaced",
+		nameKey: "replacement.stats.replaced",
+		color: "#10b981",
+		darkColor: "#10b981",
+		icon: ArrowLeftRight,
 		sortOrder: 2,
 	},
 	{
 		id: 3,
-		code: "confirmed",
-		nameKey: "replacement.stats.confirmed",
-		color: "#3b82f6",
-		darkColor: "#3b82f6",
+		code: "notReplaced",
+		nameKey: "replacement.stats.notReplaced",
+		color: "#f59e0b",
+		darkColor: "#f59e0b",
 		icon: CheckCircle,
-		count: 54,
 		sortOrder: 3,
 	},
-	{
-		id: 6,
-		code: "delivered",
-		nameKey: "replacement.stats.delivered",
-		color: "#10b981",
-		darkColor: "#10b981",
-		icon: CheckCircle,
-		count: 67,
-		sortOrder: 6,
-	},
-	{
-		id: 7,
-		code: "cancelled",
-		nameKey: "replacement.stats.cancelled",
-		color: "#ef4444",
-		darkColor: "#ef4444",
-		icon: XCircle,
-		count: 11,
-		sortOrder: 7,
-	}
 ];
 
 
@@ -184,6 +157,7 @@ export function ReplacementTab({ statuses }) {
 
 	const [loading, setLoading] = useState(false);
 	const [stats, setStats] = useState(null);
+	const [statsLoading, setStatsLoading] = useState(false);
 	const [exportLoading, setExportLoading] = useState(false);
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -210,6 +184,23 @@ export function ReplacementTab({ statuses }) {
 		fetchReplacements(1, pager.per_page);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedSearch]);
+
+	/* fetch stats */
+	const fetchStats = useCallback(async () => {
+		try {
+			setStatsLoading(true);
+			const res = await api.get("/order-replacements/stats");
+			setStats(res.data);
+		} catch (e) {
+			console.error("Error fetching replacement stats", e);
+		} finally {
+			setStatsLoading(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchStats();
+	}, [fetchStats]);
 
 	/* build API params */
 	const buildParams = useCallback(
@@ -357,23 +348,23 @@ export function ReplacementTab({ statuses }) {
 				</div>
 			),
 		},
-		{
-			key: "costDiff",
-			header: t("replacement.columns.costDiff"),
-			cell: (row) => <CostDiffCell row={row} t={t} formatCurrency={formatCurrency} />,
-		},
-		{
-			key: "updated_at",
-			header: t("table.lastUpdate"),
-			cell: (row) => (
-				<span className="text-xs text-muted-foreground">
-					{formatDate(row.replacementOrder?.updated_at)}
-				</span>
-			),
-		},
+		// {
+		// 	key: "costDiff",
+		// 	header: t("replacement.columns.costDiff"),
+		// 	cell: (row) => <CostDiffCell row={row} t={t} formatCurrency={formatCurrency} />,
+		// },
+		// {
+		// 	key: "updated_at",
+		// 	header: t("table.lastUpdate"),
+		// 	cell: (row) => (
+		// 		<span className="text-xs text-muted-foreground">
+		// 			{formatDate(row.replacementOrder?.updated_at)}
+		// 		</span>
+		// 	),
+		// },
 		{
 			key: "createdAt",
-			header: t("table.createdat"),
+			header: t("table.replaceDete"),
 			cell: (row) => (
 				<span className="text-xs text-muted-foreground">
 					{formatDate(row.createdAt)}
@@ -389,7 +380,7 @@ export function ReplacementTab({ statuses }) {
 					actions={[
 						{
 							icon: <Eye />,
-							tooltip: t("actions.view"),
+							tooltip: t("actions.viewReplace"),
 							onClick: (r) => router.push(`/orders/details/${r.replacementOrderId}`),
 							variant: "primary",
 							permission: "orders.readReplace",
@@ -417,15 +408,15 @@ export function ReplacementTab({ statuses }) {
 				icon={<Plus size={18} />}
 				permission="orders.replace"
 			/>}
-			statsCount={6}
 			stats={REPLACEMENT_STATS.map((s) => ({
 				id: s.id,
 				name: t(s.nameKey ?? s.title),
-				value: s.count ?? s.value ?? 0,
+				value: stats?.[s.code] ?? 0,
 				icon: s.icon,
 				color: s.color,
 				sortOrder: s.sortOrder ?? s.id,
 			}))}
+			statsLoading={statsLoading}
 		/>
 
 		<Table
@@ -485,7 +476,7 @@ export function ReplacementTab({ statuses }) {
 					</FilterField>
 
 					{/* Reason */}
-					<FilterField label={t("replacement.filters.reason")}>
+					{/* <FilterField label={t("replacement.filters.reason")}>
 						<Select
 							value={filters.reason}
 							onValueChange={(v) => setFilters(f => ({ ...f, reason: v }))}
@@ -501,10 +492,10 @@ export function ReplacementTab({ statuses }) {
 								<SelectItem value="other">{t("replacement.filters.other")}</SelectItem>
 							</SelectContent>
 						</Select>
-					</FilterField>
+					</FilterField> */}
 
 					{/* Date range */}
-					<FilterField label={t("filters.date")}>
+					<FilterField label={t("filters.replaceDate")}>
 						<DateRangePicker
 							value={{
 								startDate: filters.startDate,

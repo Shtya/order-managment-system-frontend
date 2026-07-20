@@ -4818,7 +4818,8 @@
       "viewUpsellHistory": "Upsells Sent",
       "cancelAssignment": "Cancel Assignment",
       "bulkCancelAssignments": "Cancel Selected Assignments",
-      "bulkCancelAssignmentsCount": "Cancel Selected Assignments({count})"
+      "bulkCancelAssignmentsCount": "Cancel Selected Assignments({count})",
+      "viewReplace": "View new order"
     },
     "shipmentLogs": {
       "title": "Shipment Logs",
@@ -4959,7 +4960,7 @@
       "orderNumber": "Order Number",
       "customer": "Customer",
       "originalTotal": "Original Total",
-      "originalDate": "Original Date",
+      "originalDate": "Original creation date",
       "oldTotal": "Old Total",
       "newTotal": "New Total",
       "priceDiff": "Difference",
@@ -4986,7 +4987,10 @@
         "inShipping": "In Shipping",
         "waitingStock": "Waiting for Stock",
         "noAnswerShipping": "No Response from Shipping",
-        "cancelled": "Cancelled"
+        "cancelled": "Cancelled",
+        "totalDelivered": "Delivered Orders",
+        "replaced": "Replaced",
+        "notReplaced": "Not Replaced"
       },
       "empty": {
         "title": "No replacement requests found",
@@ -5003,7 +5007,7 @@
         "customerName": "Customer Name",
         "phoneNumber": "Phone Number",
         "replacedProducts": "Replaced Products",
-        "status": "Order Status",
+        "status": "New replacement request status",
         "reason": "Replacement Reason",
         "costDiff": "Cost Difference"
       },
@@ -5014,7 +5018,8 @@
         "damaged": "Damaged Product",
         "wrongItem": "Wrong Item",
         "other": "Other Reason",
-        "reason": "Replacement Reason"
+        "reason": "Replacement Reason",
+        "reasonPlaceholder": "Explain the reason for replacing the order"
       },
       "table": {
         "originalProduct": "Original Product",
@@ -5022,7 +5027,9 @@
         "qty": "Quantity",
         "oldPrice": "Original Price",
         "newPrice": "New Price",
-        "diff": "Difference"
+        "diff": "Difference",
+        "newQty": "New quantity",
+        "returnQuantity": "Returned quantity"
       }
     },
     "search": {
@@ -5503,7 +5510,7 @@
     "filters": {
       "all": "All",
       "none": "None",
-      "status": "Order Status",
+      "status": "New order status",
       "statusPlaceholder": "Select status",
       "paymentStatus": "Payment Status",
       "paymentStatusPlaceholder": "Select payment status",
@@ -5534,7 +5541,8 @@
       "stores": {
         "main": "Main Warehouse",
         "branch": "Branch"
-      }
+      },
+      "replaceDate": "Replacement date"
     },
     "automationTitle": "Automation Runs",
     "noRecords": "No data found for this order.",
@@ -5568,14 +5576,16 @@
       "deposit": "Deposit",
       "amountReceived": "Amount Received",
       "lastUpdate": "Last Update",
-      "createdat": "Creation date",
+      "replacementOrder": "Replacement order",
       "actions": "Actions",
       "finalTotal": "Final Total",
       "shipmentStatus": "Shipment status",
       "shippingDays": "Shipping Days",
       "postponedDate": "Postponed Date",
       "store": "Store",
-      "shippingCompanyStatus": "Shipping company status"
+      "shippingCompanyStatus": "Shipping company status",
+      "replaceDete": "Replace Date",
+      "createdat": "Creation date"
     },
     "bulkUpload": {
       "clickToChangeFile": "Click to change file",
@@ -5988,16 +5998,16 @@
         "saveError": "Failed to save rule"
       },
       "stats": {
-    "total": "Total Automation Rules",
-    "active": "Active Rules",
-    "manual": "General Rules",
-    "product": "Product-Based Rules",
-    "city": "Region-Based Rules",
-    "store": "Store-Based Rules",
-    "amountRange": "Order Value Rules",
-    "paymentStatus": "Payment Status Rules",
-    "shippingCompany": "Shipping Company Rules"
-  },
+        "total": "Total Automation Rules",
+        "active": "Active Rules",
+        "manual": "General Rules",
+        "product": "Product-Based Rules",
+        "city": "Region-Based Rules",
+        "store": "Store-Based Rules",
+        "amountRange": "Order Value Rules",
+        "paymentStatus": "Payment Status Rules",
+        "shippingCompany": "Shipping Company Rules"
+      },
       "columns": {
         "name": "Automation name",
         "type": "Automation Rule Condition",
@@ -6233,7 +6243,7 @@
     "titleEdit": "Edit Replacement",
     "breadcrumb": {
       "home": "Home",
-      "orders": "Orders"
+      "orders": "Replacement requests"
     },
     "actions": {
       "cancel": "Cancel",
@@ -6261,6 +6271,10 @@
     "details": {
       "customerName": "Customer Name",
       "phone": "Phone Number",
+      "city": "City",
+      "area": "Area",
+      "email": "Email",
+      "shippingCompany": "Shipping Company",
       "address": "Address",
       "total": "Total",
       "createdAt": "Created At",
@@ -6276,7 +6290,10 @@
     "fields": {
       "reasonOfReplacement": "Reason for Replacement",
       "anotherReason": "Additional Reason",
-      "shippingCompany": "Shipping Company"
+      "shippingCompany": "Shipping Company",
+      "itemDifference": "Client Credit (Items)",
+      "additionalDiscount": "Additional Discount",
+      "refundDeposit": "Refund (Deposit)"
     },
     "noShipping": "No Shipping Company",
     "noOrdersFound": "No matching orders found",
@@ -6296,9 +6313,12 @@
       "originalItem": "Original Item",
       "newItem": "New Item",
       "quantity": "Quantity",
+      "returnQuantity": "Return Qty",
       "oldPrice": "Old Price",
       "newPrice": "New Price",
-      "priceDiff": "Price Difference"
+      "priceDiff": "Price Difference",
+      "available": "available",
+      "newQuantity": "New quantity"
     },
     "summary": {
       "items": "Items Count",
@@ -6306,6 +6326,9 @@
       "newTotal": "New Total",
       "shipping": "Shipping",
       "discount": "Discount",
+      "itemDifference": "Client Credit (Items)",
+      "additionalDiscount": "Additional Discount",
+      "refundDeposit": "Refund (Deposit)",
       "priceDiff": "Total Difference",
       "finalTotal": "Final Total"
     },
@@ -6331,6 +6354,7 @@
       "reasonRequired": "Reason is required",
       "paymentMethodRequired": "Payment method is required",
       "itemsRequired": "At least one item must be selected",
+      "newVariantRequired": "Please choose a replacement variant for each selected item",
       "fixErrors": "Please fix the errors first"
     },
     "messages": {

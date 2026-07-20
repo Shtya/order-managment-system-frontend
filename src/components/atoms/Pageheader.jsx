@@ -877,7 +877,7 @@ export function PageHeader({
 	const hasStats = statsLoading || (Array.isArray(stats) ? stats.length > 0 : !!stats);
 	const hasTabs = items?.length >= 1;
 	const hasButtons = !!buttons;
-
+	
 	const shouldElevateTabs = React.useMemo(() => {
 		if (!isTutorialMode) return false;
 		// Returns true only if any item has both label and description

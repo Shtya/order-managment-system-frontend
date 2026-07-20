@@ -730,8 +730,8 @@ export default function OrdersTab({
   onOrdersFetched
 }) {
 
-  const t = useTranslations("orders");
   const tTutorial = useTranslations("tutorial.orders");
+  const t = useTranslations("orders");
   const { formatCurrency } = usePlatformSettings();
   const { user, isSuperAdmin } = useAuth();
   const restrictedSet = useMemo(() => {
@@ -1795,6 +1795,22 @@ export default function OrdersTab({
                 )}
               </div>
             </div>
+          );
+        },
+      },
+      {
+        key: "replacementOrder",
+        header: t("table.replacementOrder"),
+        cell: (row) => {
+          const repNum = row.replacementRequest?.replacementOrder?.orderNumber;
+          if (!repNum) return <span className="text-xs text-gray-400">—</span>;
+          return (
+            <button
+              onClick={() => router.push(`/orders/details/${row.replacementRequest.replacementOrder.id}`)}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--primary)] hover:underline font-mono"
+            >
+              {repNum}
+            </button>
           );
         },
       },

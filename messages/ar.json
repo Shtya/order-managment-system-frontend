@@ -4813,7 +4813,8 @@
       "viewUpsellHistory": "العروض المرسلة",
       "cancelAssignment": "إلغاء الإسناد",
       "bulkCancelAssignments": "إلغاء الإسنادات",
-      "bulkCancelAssignmentsCount": "إلغاء الإسنادات ({count})"
+      "bulkCancelAssignmentsCount": "إلغاء الإسنادات ({count})",
+      "viewReplace": "عرض الطلب الجديد"
     },
     "shipmentLogs": {
       "title": "سجلات الشحنة",
@@ -4944,7 +4945,7 @@
       "orderNumber": "كود الطلب",
       "customer": "العميل",
       "originalTotal": "إجمالي الأصلي",
-      "originalDate": "تاريخ الأصلي",
+      "originalDate": "تاريخ إنشاء الأصلي",
       "oldTotal": "إجمالي قديم",
       "newTotal": "إجمالي جديد",
       "priceDiff": "الفرق",
@@ -4971,7 +4972,10 @@
         "inShipping": "قيد الشحن",
         "waitingStock": "بانتظار المخزون",
         "noAnswerShipping": "لا رد من الشحن",
-        "cancelled": "ملغي "
+        "cancelled": "ملغي ",
+        "totalDelivered": "طلبات مُوصلة",
+        "replaced": "تم الاستبدال",
+        "notReplaced": "غير مستبدلة"
       },
       "empty": {
         "title": "لا توجد طلبات استبدال",
@@ -4988,7 +4992,7 @@
         "customerName": "اسم العميل",
         "phoneNumber": "رقم الهاتف",
         "replacedProducts": "المنتجات المستبدلة",
-        "status": "حالة الطلب",
+        "status": "حالة طلب الاستبدال الجديد",
         "reason": "سبب الاستبدال",
         "costDiff": "فرق التكلفة"
       },
@@ -4999,7 +5003,8 @@
         "damaged": "منتج تالف",
         "wrongItem": "منتج خاطئ",
         "other": "سبب آخر",
-        "reason": "سبب الاستبدال"
+        "reason": "سبب الاستبدال",
+        "reasonPlaceholder": "وضح سبب إستبدال الطلب"
       },
       "table": {
         "originalProduct": "المنتج الأصلي",
@@ -5007,7 +5012,9 @@
         "qty": "الكمية",
         "oldPrice": "السعر الأصلي",
         "newPrice": "السعر الجديد",
-        "diff": "الفرق"
+        "diff": "الفرق",
+        "newQty": "الكمية الجديده",
+        "returnQuantity": "الكمية المرجعة"
       }
     },
     "search": {
@@ -5488,7 +5495,7 @@
     "filters": {
       "all": "الكل",
       "none": "بدون",
-      "status": "حالة الطلب",
+      "status": "حالة الطلب الجديد",
       "statusPlaceholder": "اختر الحالة",
       "paymentStatus": "حالة الدفع",
       "paymentStatusPlaceholder": "اختر حالة الدفع",
@@ -5519,7 +5526,8 @@
       "stores": {
         "main": "المخزن الرئيسي",
         "branch": "الفرع"
-      }
+      },
+      "replaceDate": "تاريخ الاستبدال"
     },
     "automationTitle": "سجلات تشغيل الأتمتة",
     "noRecords": "لم يتم العثور على بيانات لهذا الطلب.",
@@ -5551,7 +5559,7 @@
       "deposit": "العربون",
       "amountReceived": "المبلغ المستلم",
       "lastUpdate": "آخر تحديث",
-      "createdat": "تاريخ الانشاء",
+      "replacementOrder": "طلب الاستبدال",
       "actions": "الإجراءات",
       "finalTotal": "المبلغ الإجمالي",
       "shipmentStatus": "حالة الشحنه",
@@ -5560,7 +5568,9 @@
       "store": "المتجر",
       "shippingCompanyStatus": "حالة شركة الشحن",
       "automationRuns": "سجل التشغيل التلقائي",
-      "upsellHistory": "العروض المرسلة"
+      "upsellHistory": "العروض المرسلة",
+      "replaceDete": "تاريخ الاستبدال",
+      "createdat": "تاريخ الانشاء"
     },
     "bulkUpload": {
       "clickToChangeFile": "اضغط لتغيير الملف",
@@ -6218,7 +6228,7 @@
     "titleEdit": "تعديل الاستبدال",
     "breadcrumb": {
       "home": "الرئيسية",
-      "orders": "الطلبات"
+      "orders": "طلبات الاستبدال"
     },
     "actions": {
       "cancel": "إلغاء",
@@ -6246,6 +6256,10 @@
     "details": {
       "customerName": "اسم العميل",
       "phone": "رقم الهاتف",
+      "city": "المدينة",
+      "area": "المنطقة",
+      "email": "البريد الإلكتروني",
+      "shippingCompany": "شركة الشحن",
       "address": "العنوان",
       "total": "الإجمالي",
       "createdAt": "تاريخ الإنشاء",
@@ -6261,7 +6275,10 @@
     "fields": {
       "reasonOfReplacement": "سبب الاستبدال",
       "anotherReason": "سبب إضافي",
-      "shippingCompany": "شركة الشحن"
+      "shippingCompany": "شركة الشحن",
+      "itemDifference": "رصيد العميل (العناصر)",
+      "additionalDiscount": "خصم إضافي",
+      "refundDeposit": "استرداد (عربون)"
     },
     "noShipping": "بدون شركة شحن",
     "noOrdersFound": "لا توجد طلبات مطابقة",
@@ -6281,9 +6298,12 @@
       "originalItem": "العنصر الأصلي",
       "newItem": "العنصر الجديد",
       "quantity": "الكمية",
+      "returnQuantity": "كمية الإرجاع",
       "oldPrice": "السعر القديم",
       "newPrice": "السعر الجديد",
-      "priceDiff": "فرق السعر"
+      "priceDiff": "فرق السعر",
+      "available": "متاح",
+      "newQuantity": "الكمية الجديده"
     },
     "summary": {
       "items": "عدد العناصر",
@@ -6291,6 +6311,9 @@
       "newTotal": "إجمالي الجديد",
       "shipping": "الشحن",
       "discount": "الخصم",
+      "itemDifference": "رصيد العميل (العناصر)",
+      "additionalDiscount": "خصم إضافي",
+      "refundDeposit": "استرداد (عربون)",
       "priceDiff": "فرق الإجمالي",
       "finalTotal": "الإجمالي النهائي"
     },
@@ -6316,6 +6339,7 @@
       "reasonRequired": "السبب مطلوب",
       "paymentMethodRequired": "طريقة الدفع مطلوبة",
       "itemsRequired": "يجب اختيار عنصر واحد على الأقل",
+      "newVariantRequired": "يرجى اختيار متغير الاستبدال لكل عنصر محدد",
       "fixErrors": "من فضلك أصلح الأخطاء أولاً"
     },
     "messages": {

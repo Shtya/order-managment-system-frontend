@@ -37,6 +37,7 @@ import OrdersTab, { OrderStatus } from "./tabs/OrderTab";
 import FailedOrdersTab from "./tabs/Failedorderstab";
 import RejectedTab from "./tabs/RejectedTab";
 import ShippedOrders from "./tabs/ShippedOrders";
+import ReplacementTab from "./tabs/ReplacementTab";
 // import ReturnsTab from "./ReturnsTab";
 
 
@@ -187,7 +188,7 @@ export default function Orders() {
 
 					{/* {activeTab === "returns" && <ReturnsTab />} */}
 
-					{/* {activeTab === "replacement" && <ReplacementTab statuses={stats} />} */}
+					{activeTab === "replacement" && <ReplacementTab statuses={stats} />}
 					{activeTab === "failedOrders" && <FailedOrdersTab statuses={stats} />}
 					{activeTab === "shippedOrders" && <ShippedOrders statuses={stats} />}
 					{activeTab === "rejected" && <RejectedTab />}

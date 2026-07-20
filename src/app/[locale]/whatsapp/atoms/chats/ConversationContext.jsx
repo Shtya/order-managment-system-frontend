@@ -345,9 +345,18 @@ export const ConversationProvider = ({ children }) => {
                 setMessages(prevMsgs => {
                     // Handle Reactions
                     
-                    if (isReaction && msg.reactionToId) {
-                        return prevMsgs.map(m => {
-                            if (m.id === msg.reactionToId) {
+                    if (isReaction) {
+                        // Check either reactionToId (existing) OR content.reaction.message_id (incoming)
+                        const targetMessageId = msg.reactionToId;
+                        const targetWamid = msg.content?.reaction?.message_id;
+                        
+                        let reactionApplied = false;
+                        
+                        const newMsgs = prevMsgs.map(m => {
+                            const isMatch = (targetMessageId && m.id === targetMessageId) || 
+                                           (targetWamid && m.messageId === targetWamid);
+                            if (isMatch) {
+                                reactionApplied = true;
                                 const reactions = m.reactions || [];
                                 const filtered = reactions.filter(r =>
                                     r.direction !== msg.direction &&
@@ -358,6 +367,8 @@ export const ConversationProvider = ({ children }) => {
                             }
                             return m;
                         });
+                        
+                        return newMsgs;
                     }
 
                     // Handle Normal Messages

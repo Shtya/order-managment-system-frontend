@@ -65,7 +65,7 @@ const makeSchema = (t) =>
 			.min(1, t('validation.priceMin', { min: 1 })), // Native min check
 		description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 		storeId: yup.string().nullable(),
-		variantId: yup.string().required(t('validation.mainVariantRequired')),
+		// variantId: yup.string().required(t('validation.mainVariantRequired')),
 		variant: yup.mixed().nullable(),
 		bundleItems: yup
 			.array()
@@ -82,11 +82,11 @@ const makeSchema = (t) =>
 				const ids = items.map((it) => it.variantId).filter(Boolean);
 				return new Set(ids).size === ids.length;
 			})
-			.test('no-main-variant', t('validation.mainVariantInItems'), function (items) {
-				const mainVariantId = this.parent.variantId;
-				if (!items || !mainVariantId) return true;
-				return !items.some((it) => it.variantId === mainVariantId);
-			})
+			// .test('no-main-variant', t('validation.mainVariantInItems'), function (items) {
+			// 	const mainVariantId = this.parent.variantId;
+			// 	if (!items || !mainVariantId) return true;
+			// 	return !items.some((it) => it.variantId === mainVariantId);
+			// })
 			.default([]),
 	});
 
@@ -97,7 +97,7 @@ function defaultValues() {
 		wholesalePrice: '',
 		description: '',
 		storeId: 'none',
-		variantId: '',
+		// variantId: '',
 		variant: null,
 		bundleItems: [],
 	};
@@ -201,7 +201,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 			wholesalePrice: existingBundle.price || 0,
 			description: existingBundle.description || '',
 			storeId: existingBundle.storeId ? String(existingBundle.storeId) : 'none',
-			variantId: existingBundle.variantId || '',
+			// variantId: existingBundle.variantId || '',
 			variant: existingBundle.variant || null,
 			bundleItems:
 				existingBundle.items?.map((item) => ({
@@ -221,7 +221,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 				price: data.wholesalePrice,
 				description: data.description,
 			...(isEditMode ? { } : { sku: data.sku.trim().toUpperCase() }),
-				variantId: data.variantId,
+				// variantId: data.variantId,
 				storeId: data.storeId === 'none' ? null : data.storeId,
 				items: data.bundleItems.map((item) => ({
 					variantId: item.variantId,
@@ -293,7 +293,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 						{t('sections.bundleInfo')}
 					</h3>
 
-					<div className="space-y-5 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 						<Field label={t('fields.bundleName')} error={errors?.name?.message}>
 							<Input
 								{...register('name')}
@@ -346,7 +346,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 							/>
 						</Field>
 
-						<Field label={t('fields.mainVariant')} error={errors?.variantId?.message}>
+						{/* <Field label={t('fields.mainVariant')} error={errors?.variantId?.message}>
 							<Controller
 								control={control}
 								name="variantId"
@@ -369,7 +369,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 									);
 								}}
 							/>
-						</Field>
+						</Field> */}
 
 						<Field label={t('fields.description')} className="col-span-full">
 							<Textarea

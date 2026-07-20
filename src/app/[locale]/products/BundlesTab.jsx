@@ -122,35 +122,35 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
           </div>
         )
       },
-      {
-        key: "mainVariant",
-        header: t("common.variant"),
-        className: "min-w-[200px]",
-        cell: (row) => {
-          const v = row.variant;
-          if (!v) return <span className="text-slate-400">{na}</span>;
-          return (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-border/50 shrink-0">
-                {v.mainImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={avatarSrc(v.mainImage)} alt={v.sku} className="w-full h-full object-cover" />
-                ) : (
-                  <ImageIcon size={16} className="text-slate-400" />
-                )}
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
-                  {v.product?.name || na}
-                </span>
-                <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
-                  {v.sku}
-                </span>
-              </div>
-            </div>
-          );
-        }
-      },
+      // {
+      //   key: "mainVariant",
+      //   header: t("common.variant"),
+      //   className: "min-w-[200px]",
+      //   cell: (row) => {
+      //     const v = row.variant;
+      //     if (!v) return <span className="text-slate-400">{na}</span>;
+      //     return (
+      //       <div className="flex items-center gap-3">
+      //         <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-border/50 shrink-0">
+      //           {v.mainImage ? (
+      //             // eslint-disable-next-line @next/next/no-img-element
+      //             <img src={avatarSrc(v.mainImage)} alt={v.sku} className="w-full h-full object-cover" />
+      //           ) : (
+      //             <ImageIcon size={16} className="text-slate-400" />
+      //           )}
+      //         </div>
+      //         <div className="flex flex-col min-w-0">
+      //           <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+      //             {v.product?.name || na}
+      //           </span>
+      //           <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+      //             {v.sku}
+      //           </span>
+      //         </div>
+      //       </div>
+      //     );
+      //   }
+      // },
       {
         key: "store",
         header: t("common.store"),
@@ -333,7 +333,7 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                       )}
                     </div>
 
-                    {bundle.variant && (
+                    {/* {bundle.variant && (
                       <div className="w-full mt-4 flex items-center gap-4 p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/20">
                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-white dark:bg-slate-800 flex items-center justify-center border border-primary/20 dark:border-border shrink-0 shadow-sm">
                           {bundle.variant.mainImage ? (
@@ -360,7 +360,7 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                           </div>
                         </div>
                       </div>
-                    )}
+                    )} */}
                   </div>
 
                   <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">

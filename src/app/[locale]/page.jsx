@@ -98,7 +98,7 @@ export default function TalbatiLanding({ heroImage }) {
         <HowItWorksSection />
       </div>
       <ShippingSection />
-      <TestimonialsSection />
+      {/* <TestimonialsSection /> */}
       {/* <div id="pricing">
         <PricingSection />
       </div> */}
@@ -244,12 +244,6 @@ function Hero({ t, heroImage, locale, switchLocale, user }) {
             className="font-[600] text-[#25456F] text-[1.3rem] leading-relaxed my-8 block"
           >
             {t("hero.subtitle")}
-          </motion.p>
-          <motion.p
-            {...fadeUp(0.22)}
-            className="font-[600] text-[#25456F] text-[1.3rem] leading-relaxed my-8 block"
-          >
-            {t("hero.subtitle2")}
           </motion.p>
 
           <CTAInput t={t} />

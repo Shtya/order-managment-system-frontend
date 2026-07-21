@@ -208,7 +208,7 @@ export default function PainPointsSection() {
       <div className="container mx-auto px-5">
 
         {/* ── Section heading (from Howitworkssection) ── */}
-        <div className="text-center mb-14" dir={isRtl ? "rtl" : "ltr"}>
+        {/* <div className="text-center mb-14" dir={isRtl ? "rtl" : "ltr"}>
           <motion.h2
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -238,7 +238,7 @@ export default function PainPointsSection() {
             {t("header.subtitle")}
           </motion.p>
          
-        </div>
+        </div> */}
 
         {/* ── Pain point cards (grid layout inspired by image) ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-[1300px] mx-auto">

@@ -7425,8 +7425,8 @@
       "badge": "#1 E-Commerce Platform",
       "title1": "Everything you need to manage your orders…",
       "title2": "in one platform.",
-      "subtitle": "We provide full control from the moment an order is created, through the call center, order management, and sending to the shipping company.",
-      "trialNote": "30-day free trial, no card or commitment",
+      "subtitle": "One unified system that gives you complete control over the entire order journey—from the moment it's created, through call center operations and fulfillment management, to shipping and cash collection.",
+      "trialNote": "30-day free trial. No credit card required. No commitment.",
       "subtitle2": "One system that provides you with control over orders, shipping, the call center, and collections."
     },
     "cta": {
@@ -7534,21 +7534,21 @@
       "cards": [
         {
           "img": "landing/service-1.png",
-          "title": "We manage your business completely from <span style='color:#6763AF'>start to finish</span>",
-          "desc": "A complete system to manage orders from receipt to delivery, with precise tracking at every step. We ensure your orders arrive quickly and safely while preserving your products better than any other system.",
-          "cta": "Start Your Trial Now"
+          "title": "Manage your business from <span style='color:#6763AF'>start to finish</span>",
+          "desc": "A complete order management system that handles every order from creation to delivery, with real-time tracking at every stage. Streamline your operations and ensure every order is fulfilled efficiently and reliably.",
+          "cta": "Start your free trial"
         },
         {
           "img": "landing/service-2.png",
-          "title": "Every product in its right place… and reaches <span style='color:#f59e0b'>your customer safely</span>",
-          "desc": "The inventory system ensures organized products, with real-time updates and alerts. Accurate, it delivers every order quickly and safely and ensures successful fulfillment.",
-          "cta": "Start Your Trial Now"
+          "title": "Every product in the right place… delivered <span style='color:#f59e0b'>safely to your customers</span>",
+          "desc": "Keep your inventory organized with real-time stock updates and instant alerts, ensuring every order is fulfilled on time and delivered securely to your customers.",
+          "cta": "Start your free trial"
         },
         {
           "img": "landing/service-3.png",
-          "title": "Manage All Your <span style='color:#10b981'>Business Funds</span> in One Place",
-          "desc": "Track balances across bank accounts and digital wallets, transfer funds between them, and automatically record every purchase, collection, profit, and expense. Stay in control with a complete financial history and real-time visibility.",
-          "cta": "Start for Free"
+          "title": "Take control of <span style='color:#10b981'>every financial transaction</span>",
+          "desc": "Create unlimited wallets, including bank accounts and digital wallets. Every purchase, payment collection, profit, and transfer is recorded automatically, while allowing you to move funds between wallets and track every financial transaction with complete accuracy.",
+          "cta": "Get Started"
         }
       ]
     },
@@ -7560,15 +7560,15 @@
       },
       "subtitle": "Track your store performance moment by moment and control everything from one place.",
       "chips": [
-        "See all products and quantities in real time",
-        "Get accurate reports to make faster decisions",
-        "Track orders from confirmation to delivery"
+        "Track orders from confirmation to delivery",
+        "Get accurate reports to make faster, data-driven decisions",
+        "Track all products and inventory levels in real time"
       ]
     },
     "badges": [
+      "Track all products and inventory levels in real time",
       "Track orders from confirmation to delivery",
-      "See all products and quantities in real time",
-      "Get accurate reports to make faster decisions"
+      "Get accurate reports to make faster, data-driven decisions"
     ]
   },
   "marquee": {
@@ -7615,26 +7615,26 @@
   },
   "howItWorks": {
     "header": {
-      "title": "One Madar managing the entire order journey.",
+      "title": "Madar manages your entire order journey",
       "highlight": "from start to finish.",
-      "subtitle": "Comprehensive order management… from placement to payment collection.",
-      "subtitle2": "Every order flows in its own dedicated orbit from placement to delivery, without friction."
+      "subtitle": "Complete order management—from creation to payment collection.",
+      "subtitle2": "Every order moves seamlessly through Madar, from creation to delivery, without the complexity."
     },
     "steps": [
       {
         "stepLabel": "Step 1",
-        "title": "Log in and Connect Your Store",
-        "desc": "Log into your account seamlessly, and link your online store in minutes to start syncing orders automatically."
+        "title": "Sign up and connect your store",
+        "desc": "Create your account in minutes and connect your online store to start syncing orders automatically."
       },
       {
-        "stepLabel": "Step Two",
-        "title": "Connect shipping carriers and activate your store",
-        "desc": "Connect the shipping companies you work with, define coverage areas, shipping rates, and delivery statuses."
+        "stepLabel": "Step 2",
+        "title": "Connect your shipping carriers",
+        "desc": "Integrate the shipping providers you work with, then configure delivery zones, shipping rates, and delivery statuses."
       },
       {
-        "stepLabel": "Step Three",
-        "title": "Track your products, orders, and reports accurately",
-        "desc": "Monitor every product, every order, and get smart reports that help you manage your business quickly and intelligently."
+        "stepLabel": "Step 3",
+        "title": "Track your products, orders, and reports",
+        "desc": "Monitor every product and every order while accessing powerful reports that help you manage and grow your business with confidence."
       }
     ],
     "fields": {
@@ -7656,39 +7656,39 @@
     "cards": [
       {
         "tag": "Order Management",
-        "title": "Stop managing orders across multiple systems",
-        "pain": "Switching between different platforms to track orders wastes your team's time and makes daily operations harder to manage.",
-        "solution": "With Madar, all your orders appear in one place in real time, so you can manage them easily, fulfill them faster, and always stay on top of your business."
+        "title": "From Multiple Systems to One Unified Dashboard",
+        "pain": "Your team switches between multiple platforms to manage orders, wasting valuable time and making day-to-day operations harder to track.",
+        "solution": "Madar brings all your orders into one place with real-time updates, allowing you to manage and fulfill them from a single screen while maintaining complete visibility into every order."
       },
       {
         "tag": "Shipping & Delivery",
-        "title": "Track every shipment from one place",
-        "pain": "Monitoring shipments across multiple carriers and answering customers' delivery status questions takes up a significant amount of your team's time every day.",
-        "solution": "With Madar, you can track every shipment in real time from a single dashboard, while customers receive automatic order updates, reducing support inquiries and giving you full visibility into every delivery."
+        "title": "From Scattered Shipping Providers to Unified Tracking",
+        "pain": "Tracking shipments across multiple carriers and responding to customers asking about their order status consumes a significant amount of your team's time every day.",
+        "solution": "Monitor every shipment in real time from a single dashboard, while customers automatically receive order updates without manual intervention—reducing support inquiries and giving you complete visibility into every shipment."
       },
       {
         "tag": "Cash on Delivery",
-        "title": "Cash-on-delivery returns cost more than you think",
-        "pain": "Every returned order means extra shipping costs, more operational work, and less profit, especially as your order volume grows.",
-        "solution": "With Madar, you can manage cash-on-delivery orders more effectively through pre-verification and order tracking, helping reduce return rates and protect your profits."
+        "title": "From Costly Returns to Proactive Control",
+        "pain": "Every returned order means additional shipping costs, increased operational effort, and reduced profits—especially as your order volume grows.",
+        "solution": "Manage Cash on Delivery orders with pre-shipment verification and detailed tracking, helping reduce return rates and protect your profit margins."
       },
       {
         "tag": "Analytics",
-        "title": "High sales don't always mean high profits",
-        "pain": "A product may sell well, but returns or shipping costs can eat into its margins. Likewise, a shipping carrier could be costing you customers without you realizing it.",
-        "solution": "With Madar, all your business metrics and reports are in one place, so you can clearly see what's driving growth and what needs your attention."
+        "title": "From Scattered Numbers to Data-Driven Decisions",
+        "pain": "A product may generate strong sales while returns or shipping costs quietly consume a large portion of its profits without you realizing it.",
+        "solution": "Bring all your reports and metrics into one place to accurately measure the performance of every product and shipping provider, enabling faster decisions based on real data—not guesswork."
       },
       {
         "tag": "Inventory",
-        "title": "Is your inventory always out of sync with your sales?",
-        "pain": "Delayed inventory updates lead to incorrect orders, cancellations, and unhappy customers.",
-        "solution": "With Madar, inventory is automatically synchronized across all your sales channels in real time."
+        "title": "From Unsynchronized Inventory to Real-Time Updates",
+        "pain": "Delayed inventory updates lead to incorrect orders, cancellations, and dissatisfied customers.",
+        "solution": "Inventory updates automatically across all sales channels whenever a sale occurs, ensuring your stock levels always stay synchronized with actual sales."
       },
       {
         "tag": "Team & Growth",
-        "title": "Growth shouldn't require more manual work",
-        "pain": "Every new order adds more manual steps, more follow-up, and more opportunities for mistakes.",
-        "solution": "With Madar, your daily operations are automated, allowing you to grow your sales without growing your operational complexity."
+        "title": "From Growing Manual Work to Effortless Scaling",
+        "pain": "Every new order adds more manual steps, more follow-up, and a higher chance of mistakes.",
+        "solution": "Automate your daily operations to eliminate repetitive manual work, allowing your business to grow without increasing operational complexity."
       }
     ],
     "cta": {
@@ -7718,10 +7718,10 @@
   },
   "testimonials": {
     "heading": {
-      "prefix": "What our customers say about their experience",
-      "highlight": "with our platform"
+      "prefix": "What Our Customers Say About Their Experience",
+      "highlight": "with Our Platform"
     },
-    "subheading": "See the success stories of customers who used our platform",
+    "subheading": "Discover the success stories of businesses that use our platform.",
     "logos": {
       "zain": "ZAiN",
       "alize": "ALiZE",
@@ -7838,8 +7838,8 @@
   },
   "faq": {
     "heading": {
-      "prefix": "Everything you need to know... before",
-      "highlight": "you start"
+      "prefix": "Everything You Need to Know",
+      "highlight": "Before You Get Started"
     },
     "subheading": "Questions and answers about everything related to managing your orders.",
     "items": {
@@ -7867,10 +7867,10 @@
   },
   "heroBanner": {
     "heading": {
-      "prefix": "Full control over your business from.....",
+      "prefix": "Take complete control of your business from",
       "highlight": "one place"
     },
-    "subheading": "Organize your orders, inventory, shipping, and collections in one smart platform designed to simplify your daily work and support your business growth.",
+    "subheading": "Manage your orders, inventory, shipping, and payments in one smart platform designed to simplify your daily operations and support your business growth.",
     "ctaPrimary": "Start Your Trial Now",
     "ctaSecondary": "Contact us",
     "dashboardAlt": "Platform Dashboard"

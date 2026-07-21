@@ -26,7 +26,7 @@ import { useConversation } from "./ConversationContext";
 import toast from "react-hot-toast";
 import { alarmToast } from "@/utils/healpers";
 
-function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted, onMediaLoad,scrollToMessage }) {
+function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted, onMediaLoad, scrollToMessage }) {
     const {
         accounts
     } = useConversation();
@@ -114,17 +114,17 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
 
     const handleScrollToMsg = (messageId) => {
         let element = null;
-        if(id){
+        if (id) {
             element = document.getElementById(`msg-${id}`);
         }
-        if(element){
+        if (element) {
             scrollToMessage(messageId);
         } else {
             alarmToast(t("messageNotFoundError"));
         }
-        
+
     }
-    
+
 
     useEffect(() => {
         const handleGlobalPlay = (e) => {
@@ -819,9 +819,9 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                     </div>
                 );
         }
-    };  
+    };
     const formattedPreview = useMemo(() => {
-        if(!message?.replyTo) return "";
+        if (!message?.replyTo) return "";
         return formatMessagePreview(message?.replyTo, t);
     }, [message?.replyTo, t]);
     return (
@@ -936,40 +936,48 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                         <span className="text-[10px]">{time}</span>
                     </div>
 
-                    {/* Reactions Display */}
-                    {message.reactions && message.reactions.length > 0 && (
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <button className={cn(
-                                    "absolute -bottom-3 flex items-center gap-1 bg-card border border-border rounded-full shadow-sm px-1.5 py-0.5 z-10 hover:bg-muted transition-colors cursor-pointer",
-                                    isOutbound ? "start-2" : "end-2"
-                                )}>
-                                    {message.reactions.map((r, idx) => (
-                                        <span key={r.id || idx} className="text-xs">
-                                            {r.content?.reaction?.emoji || r.reaction}
-                                        </span>
-                                    ))}
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent side="top" align="center" className="w-auto p-2 bg-card/95 backdrop-blur shadow-lg border border-border rounded-xl animate-in zoom-in-95 duration-200">
-                                <div className="space-y-1.5">
-                                    {message.reactions.map((r, idx) => (
-                                        <div key={r.id || idx} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-muted transition-colors">
-                                            <span className="text-lg">{r.content?.reaction?.emoji || r.reaction}</span>
-                                            <div className="flex flex-col">
-                                                <span className="text-xs font-bold text-foreground dark:text-[#9EB5AC]">
-                                                    {r.direction === "outbound" ? "You" : "Customer"}
-                                                </span>
-                                                <span className="text-[10px] text-muted-foreground">
-                                                    {r.createdAt ? format(new Date(r.createdAt), "hh:mm a") : "Just now"}
-                                                </span>
+                    {/* Helper to safely extract emoji across different payload formats */}
+                    {(() => {
+                        const getEmoji = (r) => r?.emoji || r?.content?.reaction?.emoji || r?.reaction || "";
+                        const activeReactions = (message.reactions || []).filter(r => getEmoji(r) !== "");
+
+                        if (activeReactions.length === 0) return null;
+
+                        return (
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <button className={cn(
+                                        "absolute -bottom-3 flex items-center gap-1 bg-card border border-border rounded-full shadow-sm px-1.5 py-0.5 z-10 hover:bg-muted transition-colors cursor-pointer",
+                                        isOutbound ? "start-2" : "end-2"
+                                    )}>
+                                        {activeReactions.map((r, idx) => (
+                                            <span key={r.id || idx} className="text-xs">
+                                                {getEmoji(r)}
+                                            </span>
+                                        ))}
+                                    </button>
+                                </PopoverTrigger>
+
+                                <PopoverContent side="top" align="center" className="w-auto p-2 bg-card/95 backdrop-blur shadow-lg border border-border rounded-xl animate-in zoom-in-95 duration-200">
+                                    <div className="space-y-1.5">
+                                        {activeReactions.map((r, idx) => (
+                                            <div key={r.id || idx} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-muted transition-colors">
+                                                <span className="text-lg">{getEmoji(r)}</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-foreground dark:text-[#9EB5AC]">
+                                                        {r.direction === "outbound" ? "You" : "Customer"}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {r.createdAt ? format(new Date(r.createdAt), "hh:mm a") : "Just now"}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    )}
+                                        ))}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        );
+                    })()}
 
                     {/* Account Badge - Less prominent, inside bubble */}
                     {account && (
@@ -1003,7 +1011,11 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
 
 
 export default memo(MessageBubble, (prevProps, nextProps) => {
-
+    console.log("MessageBubble memo check:", 
+        prevProps.message.reactions,
+        nextProps.message.reactions,
+        prevProps.message.reactions === nextProps.message.reactions
+    );
     return (
         // Check if it's the exact same message
         prevProps.id === nextProps.id &&
@@ -1019,6 +1031,8 @@ export default memo(MessageBubble, (prevProps, nextProps) => {
         prevProps.isHighlighted === nextProps.isHighlighted &&
 
         // Safety check for outbound status
-        prevProps.isOutbound === nextProps.isOutbound
+        prevProps.isOutbound === nextProps.isOutbound && 
+
+        prevProps.message.reactions === nextProps.message.reactions
     );
 });

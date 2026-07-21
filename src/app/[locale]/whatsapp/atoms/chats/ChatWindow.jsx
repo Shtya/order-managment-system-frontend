@@ -286,7 +286,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             day: 'numeric'
         });
     }, [locale, t]);
-
+    
     // Group messages by date
     const groupedMessages = useMemo(() => {
         const groups = [];

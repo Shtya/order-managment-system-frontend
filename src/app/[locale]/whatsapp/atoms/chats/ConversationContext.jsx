@@ -281,7 +281,7 @@ export const ConversationProvider = ({ children }) => {
         });
 
         const unsubMessage = subscribe("WHATSAPP_MESSAGE_NEW", (payload) => {
-            
+
             if (!payload?.message) return;
 
             const msg = payload.message;
@@ -297,7 +297,7 @@ export const ConversationProvider = ({ children }) => {
             let shouldMarkAsRead = false;
             let shouldIncrementUnread = false;
             let shouldScrollToBottom = false;
-            
+
             if (msg.direction === "inbound") {
                 if (!isConversationOpen) {
                     shouldIncrementUnread = true;
@@ -312,7 +312,7 @@ export const ConversationProvider = ({ children }) => {
             // FIRE API CALL HERE, outside of state setters
             if (shouldMarkAsRead) {
                 try {
-                    
+
                     markAsRead(msg.conversationId, true);
                 } catch (error) {
                     console.error("Failed to mark as read:", error);
@@ -322,7 +322,7 @@ export const ConversationProvider = ({ children }) => {
             // UPDATE 1: PURE STATE UPDATE FOR CONVERSATIONS
             setConversations(prev => {
                 const existing = prev.find(c => c.id === msg.conversationId);
-                
+
                 if (!existing) return prev;
 
                 const updated = {
@@ -339,22 +339,22 @@ export const ConversationProvider = ({ children }) => {
 
                 return [updated, ...prev.filter(c => c.id !== msg.conversationId)];
             });
-            
+
             // UPDATE 2: UPDATE MESSAGES ONLY IF THIS CONVERSATION IS OPEN
             if (isConversationOpen) {
                 setMessages(prevMsgs => {
                     // Handle Reactions
-                    
+
                     if (isReaction) {
                         // Check either reactionToId (existing) OR content.reaction.message_id (incoming)
                         const targetMessageId = msg.reactionToId;
                         const targetWamid = msg.content?.reaction?.message_id;
-                        
+
                         let reactionApplied = false;
-                        
+
                         const newMsgs = prevMsgs.map(m => {
-                            const isMatch = (targetMessageId && m.id === targetMessageId) || 
-                                           (targetWamid && m.messageId === targetWamid);
+                            const isMatch = (targetMessageId && m.id === targetMessageId) ||
+                                (targetWamid && m.messageId === targetWamid);
                             if (isMatch) {
                                 reactionApplied = true;
                                 const reactions = m.reactions || [];
@@ -367,7 +367,7 @@ export const ConversationProvider = ({ children }) => {
                             }
                             return m;
                         });
-                        
+
                         return newMsgs;
                     }
 
@@ -375,7 +375,7 @@ export const ConversationProvider = ({ children }) => {
                     const existsIndex = prevMsgs.findIndex(m =>
                         m.id === msg.id || (localId && m.metadata?.localId === localId)
                     );
-                    
+
                     if (existsIndex > -1) {
                         // DON'T just return prevMsgs! 
                         // Replace the existing message to capture status updates (like sent -> delivered)
@@ -397,7 +397,7 @@ export const ConversationProvider = ({ children }) => {
             }
         });
         const unsubMessageUpdate = subscribe("WHATSAPP_MESSAGE_UPDATED", (payload) => {
-            
+
             if (!payload?.message) return;
 
             const msg = payload.message;
@@ -409,7 +409,7 @@ export const ConversationProvider = ({ children }) => {
                 const isTargetConv = c.id === msg.conversationId;
                 const isLatestMessage = c.lastMessage?.id === msg.id ||
                     (localId && c.lastMessage?.metadata?.localId === localId);
-                
+
                 if (isTargetConv && isLatestMessage) {
                     return {
                         ...c,
@@ -421,12 +421,12 @@ export const ConversationProvider = ({ children }) => {
 
             // 2. ONLY UPDATE MESSAGES ARRAY IF THIS CONVERSATION IS CURRENTLY OPEN
             const isConversationOpen = activeConvIdRef.current === msg.conversationId;
-            
+
             if (isConversationOpen) {
                 setMessages(prevMsgs => prevMsgs.map(m => {
                     // Match on real ID *OR* localId! This guarantees optimistic messages get updated.
                     const isMatch = m.id === msg.id || (localId && m.metadata?.localId === localId);
-                    
+
                     return isMatch ? { ...m, ...msg } : m;
                 }));
             }
@@ -635,35 +635,54 @@ export const ConversationProvider = ({ children }) => {
         messagesRef.current = messages;
     }, [messages]);
     const handleReaction = useCallback(async (messageId, emoji) => {
-        if (!selectedConversation) return;
+        if (!selectedConversation) {
+            return;
+        }
 
         const targetMsg = messagesRef.current.find(m => m.id === messageId);
-        if (!targetMsg || !targetMsg.messageId) return;
+        if (!targetMsg || !targetMsg.messageId) {
+            return;
+        }
 
-        const previousReactions = targetMsg.reactions || [];
         const localId = `react-local-${Date.now()}`;
+        const isRemoving = !emoji; // WhatsApp sends empty string "" or null to remove a reaction
 
-        // Optimistic UI: Keep existing inbound, but replace outbound with new one
-        const optimisticReaction = {
-            id: localId,
-            messageType: "reaction",
-            direction: "outbound",
-            content: { reaction: { emoji, message_id: targetMsg.messageId } },
-            reactionToId: targetMsg.id,
-            createdAt: new Date().toISOString()
-        };
+            messageId,
+            targetMsgWhatsAppId: targetMsg.messageId,
+            emoji
+        });
 
-        setMessages(prev => prev.map(m =>
-            m.id === messageId
-                ? {
-                    ...m,
-                    reactions: [
-                        ...previousReactions.filter(r => r.direction !== "outbound"),
-                        optimisticReaction
-                    ]
-                }
-                : m
-        ));
+        let rollbackReactions = [];
+
+        // Optimistic UI Update
+        setMessages(prev => prev.map(m => {
+            if (m.id !== messageId) return m;
+            // Capture previous reactions safely inside state updater
+            rollbackReactions = m.reactions || [];
+
+            // Always remove existing outbound ("You") reactions first
+            const remainingReactions = rollbackReactions.filter(r => r.direction !== "outbound");
+            // If removing emoji, just return array without any outbound reaction
+            if (isRemoving) {
+                return { ...m, reactions: remainingReactions };
+            }
+
+            // Standardized optimistic reaction object (adds top-level `emoji` property for clean UI access)
+            const optimisticReaction = {
+                id: localId,
+                messageType: "reaction",
+                direction: "outbound",
+                emoji: emoji,
+                reaction: emoji,
+                content: { reaction: { emoji, message_id: targetMsg.messageId } },
+                reactionToId: targetMsg.id,
+                createdAt: new Date().toISOString()
+            };
+            return {
+                ...m,
+                reactions: [...remainingReactions, optimisticReaction]
+            };
+        }));
 
         try {
             const payload = {
@@ -673,24 +692,30 @@ export const ConversationProvider = ({ children }) => {
                 type: "reaction",
                 reaction: {
                     message_id: targetMsg.messageId,
-                    emoji: emoji
+                    emoji: emoji || "" // Send empty string to remove reaction on WhatsApp
                 }
             };
 
-            await api.post("/whatsapp/messages/send", payload, {
+            console.log("[Reaction] Sending payload to API:", payload);
+
+            const res = await api.post("/whatsapp/messages/send", payload, {
                 params: {
                     accountId: targetMsg.accountId || selectedAccount?.id,
                     localId: localId
                 }
             });
+
+            console.log("[Reaction] API Success:", res.data);
         } catch (error) {
-            console.error("Failed to send reaction:", error);
-            // Rollback on failure: restore previous reactions (or empty)
+            console.error("[Reaction] API Failure - Rolling back:", error);
+
+            // Rollback on failure using captured reactions
             setMessages(prev => prev.map(m =>
                 m.id === messageId
-                    ? { ...m, reactions: previousReactions }
+                    ? { ...m, reactions: rollbackReactions }
                     : m
             ));
+
             toast.error("Failed to send reaction");
         }
     }, [selectedConversation, selectedAccount]);

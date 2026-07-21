@@ -634,6 +634,8 @@ export const ConversationProvider = ({ children }) => {
     useEffect(() => {
         messagesRef.current = messages;
     }, [messages]);
+
+
     const handleReaction = useCallback(async (messageId, emoji) => {
         if (!selectedConversation) {
             return;
@@ -646,11 +648,6 @@ export const ConversationProvider = ({ children }) => {
 
         const localId = `react-local-${Date.now()}`;
         const isRemoving = !emoji; // WhatsApp sends empty string "" or null to remove a reaction
-
-            messageId,
-            targetMsgWhatsAppId: targetMsg.messageId,
-            emoji
-        });
 
         let rollbackReactions = [];
 

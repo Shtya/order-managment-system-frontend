@@ -409,7 +409,7 @@ export const checkIfMediaUploadNeeded = (msg) => {
         }
     } else if (msg.type === "interactive" && msg.interactive?.header) {
         const header = msg.interactive.header;
-        const mediaType = header.type;
+        const mediaType = header?.type;
         if (["image", "video", "document"].includes(mediaType)) {
             const mediaObj = header[mediaType];
             if (mediaObj?.id) {
@@ -526,7 +526,7 @@ export const checkIfAssetUploadNeeded = (msg) => {
         }
     } else if (msg.type === "interactive" && msg.interactive?.header) {
         const header = msg.interactive.header;
-        const mediaType = header.type;
+        const mediaType = header?.type;
 
         if (["image", "video", "document"].includes(mediaType)) {
             const mediaObj = header[mediaType];

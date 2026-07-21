@@ -258,7 +258,7 @@ export default function FooterSection() {
             justifyContent: "space-between",
             padding: "28px 48px",
             flexWrap: "wrap",
-            gap: 20,
+            gap: 20,  
             opacity: visible ? 1 : 0,
             animation: visible ? "footerFadeIn 0.6s ease forwards" : "none",
           }}

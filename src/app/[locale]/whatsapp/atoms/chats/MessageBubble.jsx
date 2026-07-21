@@ -755,7 +755,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                 return (
                     <div className="space-y-3">
                         {content.interactive?.header && (
-                            renderMedia(content.interactive.header.type, content.interactive.header, true)
+                            renderMedia(content.interactive.header?.type, content.interactive.header, true)
                         )}
                         <p className="text-sm text-foreground">{content.interactive?.body?.text}</p>
                         {content.interactive?.action?.buttons && (

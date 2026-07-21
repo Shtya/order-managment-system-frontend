@@ -119,11 +119,11 @@ export const ListMessageForm = forwardRef(({
     const restore = (payload) => {
         if (payload?.interactive) {
             const interactive = payload.interactive;
-            const header = interactive.header[interactive.header.type];
+            const header = interactive.header[interactive.header?.type];
             const mediaLink = header?.id ?? header?.link;
             if (interactive.header) {
-                setValue("headerType", interactive.header.type.toUpperCase());
-                if (interactive.header.type === "text") {
+                setValue("headerType", interactive.header?.type.toUpperCase());
+                if (interactive.header?.type === "text") {
                     setValue("headerText", interactive.header.text);
                 } else {
                     setValue("headerUrl", mediaLink);

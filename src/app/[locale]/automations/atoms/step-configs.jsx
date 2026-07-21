@@ -212,10 +212,10 @@ export function ShipmentCreatedConfig({ value, onChange, errors, setDisabled, on
             onChange({ ...value, shippingCompany: "all", shippingCompanyId: undefined });
         } else {
             const selectedCompany = shippingCompanies.find(c => String(c.providerId) === v);
-            onChange({ 
-                ...value, 
-                shippingCompany: selectedCompany?.name, 
-                shippingCompanyId: v 
+            onChange({
+                ...value,
+                shippingCompany: selectedCompany?.name,
+                shippingCompanyId: v
             });
         }
     };
@@ -972,9 +972,30 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     const [headerMediaFile, setHeaderMediaFile] = useState(null);
     const formRef = useRef(null);
     const initialValueRef = useRef(null);
-    const [addClientResponseToOrder, setAddClientResponseToOrder] = useState(false);
-    const handleAccountChange = useCallback((accountId, account) => {
 
+    // Permanent state
+    const [addClientResponseToOrder, setAddClientResponseToOrder] = useState({
+        location_request: true,
+    });
+
+    // Temporary state for form interaction
+    const [tempAddClientResponseToOrder, setTempAddClientResponseToOrder] = useState({
+        location_request: true,
+    });
+
+   const messageTypes = [
+        { icon: MessageSquare, label: tChats("messageTypes.text"), description: tChats("messageTypes.descriptions.text"), color: "text-emerald-500", type: "text" },
+        { icon: ImageIcon, label: tChats("messageTypes.image"), description: tChats("messageTypes.descriptions.image"), color: "text-purple-500", type: "image" },
+        { icon: FileText, label: tChats("messageTypes.document"), description: tChats("messageTypes.descriptions.document"), color: "text-orange-500", type: "document" },
+        { icon: Video, label: tChats("messageTypes.video"), description: tChats("messageTypes.descriptions.video"), color: "text-red-500", type: "video" },
+        { icon: MapPin, label: tChats("messageTypes.location"), description: tChats("messageTypes.descriptions.location"), color: "text-green-500", type: "location" },
+        { icon: UserCircle, label: tChats("messageTypes.contact"), description: tChats("messageTypes.descriptions.contact"), color: "text-amber-500", type: "contact" },
+        { icon: List, label: tChats("messageTypes.list"), description: tChats("messageTypes.descriptions.list"), color: "text-teal-500", type: "list" },
+        { icon: LayoutGrid, label: tChats("messageTypes.interactive"), description: tChats("messageTypes.descriptions.interactive"), color: "text-blue-600", type: "interactive" },
+        { icon: MapIcon, label: tChats("messageTypes.location_request"), description: tChats("messageTypes.descriptions.location_request"), color: "text-emerald-600", type: "location_request", actionIntent: "location_request" },
+    ];
+
+    const handleAccountChange = useCallback((accountId, account) => {
         setTempValue((prev) => ({
             ...prev,
             accountId,
@@ -998,10 +1019,18 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             initialValueRef.current = initialValue;
             setTempValue(initialValue);
             setSelectedType(initialValue.messageType || null);
-            setAddClientResponseToOrder(!!initialValue.actionIntent);
+            
+            setAddClientResponseToOrder((prev) => {
+                const newState = {
+                    ...prev,
+                    [initialValue.messageType]: !!initialValue?.actionIntent,
+                };
+                // Sync temp state with permanent state when opening
+                setTempAddClientResponseToOrder(newState);
+                return newState;
+            });
 
             if (initialValue.messageType) {
-
                 if (initialValue.messageData) {
                     restoreFormData(initialValue.messageData);
                 }
@@ -1019,24 +1048,12 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             }
         } else if (messageType === 'interactive' && messageData?.interactive?.header) {
             const header = messageData.interactive.header;
-            return header[header.type]?.link;
+            return header[header?.type]?.link;
         } else if (['image', 'video', 'document'].includes(messageType)) {
             return messageData[messageType]?.link;
         }
         return null;
     };
-
-    const messageTypes = [
-        { icon: MessageSquare, label: tChats("messageTypes.text"), description: tChats("messageTypes.descriptions.text"), color: "text-emerald-500", type: "text" },
-        { icon: ImageIcon, label: tChats("messageTypes.image"), description: tChats("messageTypes.descriptions.image"), color: "text-purple-500", type: "image" },
-        { icon: FileText, label: tChats("messageTypes.document"), description: tChats("messageTypes.descriptions.document"), color: "text-orange-500", type: "document" },
-        { icon: Video, label: tChats("messageTypes.video"), description: tChats("messageTypes.descriptions.video"), color: "text-red-500", type: "video" },
-        { icon: MapPin, label: tChats("messageTypes.location"), description: tChats("messageTypes.descriptions.location"), color: "text-green-500", type: "location" },
-        { icon: UserCircle, label: tChats("messageTypes.contact"), description: tChats("messageTypes.descriptions.contact"), color: "text-amber-500", type: "contact" },
-        { icon: List, label: tChats("messageTypes.list"), description: tChats("messageTypes.descriptions.list"), color: "text-teal-500", type: "list" },
-        { icon: LayoutGrid, label: tChats("messageTypes.interactive"), description: tChats("messageTypes.descriptions.interactive"), color: "text-blue-600", type: "interactive" },
-        { icon: MapIcon, label: tChats("messageTypes.location_request"), description: tChats("messageTypes.descriptions.location_request"), color: "text-emerald-600", type: "location_request", actionIntent: "location_request" },
-    ];
 
     const restoreFormData = (dataToRestore, restoreType) => {
         if (!dataToRestore) return;
@@ -1051,6 +1068,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             }
         }, 20);
     };
+
     const handleTypeSelect = (type) => {
         setSelectedType(type);
         setStep('form');
@@ -1058,7 +1076,6 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
         if (type === tempValue.messageType && tempValue.messageData) {
             restoreFormData(tempValue.messageData, tempValue.messageType);
         }
-
     };
 
     const handleSubmitClick = async () => {
@@ -1072,8 +1089,16 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                 accountId: tempValue.accountId,
                 accountName: tempValue.accountName,
             });
+            // Move data from temp state to permanent state upon saving form
+            setAddClientResponseToOrder(tempAddClientResponseToOrder);
             setStep('select');
         }
+    };
+
+    const handleCloseDialog = (data = null) => {
+        // Reset temp to match permanent when closing without saving
+        setTempAddClientResponseToOrder(addClientResponseToOrder);
+        onClose(data);
     };
 
     const handleSave = useCallback(() => {
@@ -1086,9 +1111,10 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             }
         }
         const typeDate = messageTypes.find(t => t.type === tempValue.messageType);
-        const hasActionIntent = typeDate && !!typeDate.actionIntent && addClientResponseToOrder;
-       
-        onClose({
+        // Using the permanent state that has been saved
+        const hasActionIntent = typeDate && !!typeDate.actionIntent && addClientResponseToOrder[tempValue.messageType];
+
+        handleCloseDialog({
             ...tempValue,
             actionIntent: hasActionIntent ? typeDate.actionIntent : null,
             messageType: tempValue.messageType,
@@ -1098,11 +1124,13 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             accountName: tempValue.accountName,
             deletedOldUrls,
         });
-    }, [tempValue,addClientResponseToOrder]);
+    }, [tempValue, addClientResponseToOrder]);
 
     const handleBack = () => {
         setStep('select');
         setSelectedType(null);
+        // Reset temp state back to permanent state if user hits back instead of save
+        setTempAddClientResponseToOrder(addClientResponseToOrder);
     };
 
     const renderMessageForm = () => {
@@ -1134,8 +1162,13 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                         <div className="mt-4 flex items-center gap-2">
                             <Checkbox
                                 id="addClientResponseToOrder"
-                                checked={addClientResponseToOrder}
-                                onCheckedChange={(checked) => setAddClientResponseToOrder(checked)}
+                                checked={tempAddClientResponseToOrder?.location_request}
+                                onCheckedChange={(checked) => {
+                                    setTempAddClientResponseToOrder((prev) => ({
+                                        ...prev,
+                                        location_request: checked,
+                                    }));
+                                }}
                             />
                             <label
                                 htmlFor="addClientResponseToOrder"
@@ -1192,7 +1225,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     }, [step, selectedType]);
 
     return (
-        <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
+        <Dialog open={isOpen} onOpenChange={() => handleCloseDialog(null)}>
             <DialogContent className="sm:max-w-[950px] w-full h-[95vh] md:h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
                 <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
                     <div className="flex items-center justify-between">
@@ -1298,7 +1331,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                             <Button_
                                 type="button"
                                 variant="outline"
-                                onClick={() => onClose(null)}
+                                onClick={() => handleCloseDialog(null)}
                                 label={tCommon('cancel')}
                                 className="w-full sm:w-auto"
                             />

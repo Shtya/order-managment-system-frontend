@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import BrandLogo from "@/components/atoms/BrandLogo";
 
 /* ─── Social icons (inline SVG) ─── */
 const SOCIAL_ICONS = [
@@ -82,46 +83,6 @@ const SOCIAL_ICONS = [
   },
 ];
 
-/* ─── Logo ─── */
-function Logo({ t }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        direction: "rtl",
-      }}
-    >
-      {/* Box icon */}
-      <div
-        style={{
-          width: 34,
-          height: 34,
-          borderRadius: 8,
-          background: "linear-gradient(135deg, #6763AF, #6763AF)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 2px 12px #6763AF",
-          fontSize: 16,
-        }}
-      >
-        📦
-      </div>
-      <span
-        style={{
-          fontWeight: 800,
-          fontSize: 18,
-          color: "#1e1b4b",
-          letterSpacing: "-0.3px",
-        }}
-      >
-        {t("logo")}
-      </span>
-    </div>
-  );
-}
 
 /* ─── Nav link ─── */
 function NavLink({ label, index, id }) {
@@ -311,7 +272,7 @@ export default function FooterSection() {
                 : "none",
             }}
           >
-            <Logo t={t} />
+            <BrandLogo/>
           </div>
 
           {/* Nav links */}

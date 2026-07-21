@@ -367,7 +367,7 @@ function SignupCard({ inView, ref, step, t }) {
       <div style={{ width: "100%", maxWidth: 340 }}>
         <img
           src={"landing/step-1.png"}
-          className="absolute left-1/2 -translate-1/2 top-[-60px] w-[120px]"
+          className="absolute left-1/2 max-lg:hidden -translate-1/2 top-[-60px] w-[120px]"
         />
 
         {/* ── card ── */}
@@ -525,7 +525,7 @@ function AnalyticsCard({ ref, inView, step }) {
       <div style={{ width: "100%", maxWidth: 340 }}>
         <img
           src={"landing/step-2.png"}
-          className="absolute left-1/2 -translate-1/2 top-[-60px] w-[120px]"
+          className="absolute left-1/2 max-lg:hidden -translate-1/2 top-[-60px] w-[120px]"
         />
 
         <motion.div
@@ -590,7 +590,7 @@ function ShippingCard({ ref, inView, step }) {
     >
       <img
         src={"landing/step-3.png"}
-        className="absolute left-1/2 -translate-1/2 bottom-[-140px] w-[120px]"
+        className="absolute left-1/2 max-lg:hidden -translate-1/2 bottom-[-140px] w-[120px]"
       />
 
       <div style={{ width: "100%", maxWidth: 340 }}>

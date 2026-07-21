@@ -9,9 +9,10 @@ import {
     DialogFooter,
     DialogDescription
 } from "@/components/ui/dialog";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useConversation } from "./ConversationContext";
 import { MapPin } from "lucide-react";
+import { reverseGeocode } from "@/utils/geo";
 import Button_ from "@/components/atoms/Button";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -31,6 +32,7 @@ export const LocationForm = forwardRef(({
     variableProps = {},
 }, ref) => {
     const t = useTranslations("chats");
+    const locale = useLocale();
 
     const schema = useMemo(() => createSchema(t), [t]);
 
@@ -97,15 +99,9 @@ export const LocationForm = forwardRef(({
         setValue("latitude", newLat);
         setValue("longitude", newLng);
 
-        // Auto-fill address using reverse geocoding
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${newLat}&lon=${newLng}&accept-language=ar`);
-            const data = await res.json();
-            setValue("address", data.display_name);
-            setValue("name", data.name || data.display_name.split(',')[0]);
-        } catch (error) {
-            console.error("Geocoding error:", error);
-        }
+        const { name, address } = await reverseGeocode(newLat, newLng, locale);
+        if (address) setValue("address", address);
+        if (name) setValue("name", name);
     };
 
     return (

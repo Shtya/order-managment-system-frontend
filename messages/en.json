@@ -943,10 +943,11 @@
       "basic": "Basic",
       "status": "Status",
       "admin": "Admin",
-      "role": "Role contains",
+      "role": "Role",
       "active": "Active",
       "adminId": "Phone Number",
-      "rolePlaceholder": "ADMIN / USER / SUPER_ADMIN",
+      "rolePlaceholder": "Select role",
+      "allRoles": "All Roles",
       "activePlaceholder": "all / true / false",
       "adminIdPlaceholder": "Phone number (optional)",
       "apply": "Apply"
@@ -5355,6 +5356,7 @@
     "empty": "No data to display",
     "details": {
       "whatsappResponseLocation": "WhatsApp Response Location",
+      "autoRetrieved": "Auto-retrieved",
       "statusUpdated": "Status updated successfully",
       "customerInfo": "Customer Information",
       "orderItems": "Order Products",

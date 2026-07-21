@@ -218,7 +218,7 @@ export default function SuperAdminUsersPage() {
 	const [activeTab, setActiveTab] = useState("all"); // all|active|inactive
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
-	const [filters, setFilters] = useState({ role: "", active: "all", adminId: "" });
+	const [filters, setFilters] = useState({ roleId: "", active: "all", adminId: "" });
 
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -276,13 +276,13 @@ export default function SuperAdminUsersPage() {
 		setLoading(true);
 		setError("");
 		setApiMsg("");
-
+ 
 		const params = {
 			page: page ?? pagination.current_page,
 			limit: per_page ?? pagination.per_page,
 			tab: activeTab,
 			search,
-			role: filters.role,
+			roleId: filters.roleId,
 			active: filters.active,
 			adminId: filters.adminId,
 		};
@@ -416,7 +416,7 @@ export default function SuperAdminUsersPage() {
 				params: {
 					tab: activeTab,
 					search,
-					role: filters.role,
+					roleId: filters.roleId,
 					active: filters.active,
 					adminId: filters.adminId,
 				},
@@ -769,14 +769,24 @@ export default function SuperAdminUsersPage() {
 				// filters UI (this replaces your FiltersPanel)
 				filters={
 					<>
-						<FilterField label={t("filters.role")}>
-							<Input
-								value={filters.role || ""}
-								onChange={(e) => setFilters((p) => ({ ...p, role: e.target.value }))}
-								className="!h-[42px]"
-								placeholder={t("filters.rolePlaceholder")}
-							/>
-						</FilterField>
+					<FilterField label={t("filters.role")}>
+						<Select
+							value={filters.roleId || "all"}
+							onValueChange={(val) => setFilters((p) => ({ ...p, roleId: val === "all" ? "" : val }))}
+						>
+							<SelectTrigger className="!h-[42px]">
+								<SelectValue placeholder={t("filters.rolePlaceholder")} />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">{t("filters.allRoles")}</SelectItem>
+								{roles.map((r) => (
+									<SelectItem key={String(r.id)} value={String(r.id)}>
+										{r.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</FilterField>
 
 						<FilterField label={t("filters.status")}>
 							<Input
@@ -797,9 +807,9 @@ export default function SuperAdminUsersPage() {
 						</FilterField>
 					</>
 				}
-				hasActiveFilters={
-					!!filters.role || (filters.active && filters.active !== "all") || !!filters.adminId
-				}
+			hasActiveFilters={
+				!!filters.roleId || (filters.active && filters.active !== "all") || !!filters.adminId
+			}
 				onApplyFilters={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
 
 				// table

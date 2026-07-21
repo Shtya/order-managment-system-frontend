@@ -943,10 +943,11 @@
       "basic": "أساسي",
       "status": "الحالة",
       "admin": "إدارة",
-      "role": "الدور يحتوي على",
+      "role": "الدور",
       "active": "نشط",
       "adminId": "رقم الهاتف",
-      "rolePlaceholder": "ADMIN / USER / SUPER_ADMIN",
+      "rolePlaceholder": "اختر الدور",
+      "allRoles": "جميع الأدوار",
       "activePlaceholder": "all / true / false",
       "adminIdPlaceholder": "رقم الهاتف (اختياري)",
       "apply": "تطبيق"
@@ -5373,7 +5374,8 @@
       "quantity": "الكمية",
       "unitPrice": "سعر الوحدة",
       "lineTotal": "الإجمالي",
-      "whatsappResponseLocation": "موقع استجابة الواتساب"
+      "whatsappResponseLocation": "موقع استجابة الواتساب",
+      "autoRetrieved": "تم الاسترداد تلقائياً"
     },
     "workPage": {
       "changeStatus": "تغيير حالة الطلب",

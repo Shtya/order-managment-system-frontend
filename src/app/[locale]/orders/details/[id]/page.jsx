@@ -34,6 +34,7 @@ import {
   ArrowRight,
   Fingerprint,
   MapPin as MapPinIcon,
+  Loader2,
 } from "lucide-react";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import {
@@ -49,7 +50,7 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +58,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import api from "@/utils/api";
 import { cn } from "@/utils/cn";
+import { reverseGeocode } from "@/utils/geo";
 import { useParams } from "next/navigation";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import Button_ from "@/components/atoms/Button";
@@ -261,6 +263,30 @@ export function OrderDetailsPage({ order, loading }) {
   const { isSuperAdmin } = useAuth();
   const t = useTranslations("orders");
   const router = useRouter();
+  const locale = useLocale();
+
+  const [fetchedLocation, setFetchedLocation] = useState(null);
+  const [fetchingLocation, setFetchingLocation] = useState(false);
+
+  useEffect(() => {
+    if (!order?.latitude || !order?.longitude) return;
+    if (order?.locationName && order?.locationAddress) return;
+
+    let cancelled = false;
+    (async () => {
+      setFetchingLocation(true);
+      const result = await reverseGeocode(order?.latitude, order?.longitude, locale);
+      if (!cancelled) {
+        setFetchedLocation(result);
+        setFetchingLocation(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [order?.latitude, order?.longitude, order?.locationName, order?.locationAddress, locale]);
+
+  const displayLocationName = order?.locationName || fetchedLocation?.name;
+  const displayLocationAddress = order?.locationAddress || fetchedLocation?.address;
+  const isAutoFetched = !order?.locationName && fetchedLocation?.name;
 
   const formatDate = (date) => {
     if (!date) return "—";
@@ -714,24 +740,52 @@ export function OrderDetailsPage({ order, loading }) {
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {order.locationName && (
+                  {(displayLocationName || fetchingLocation) && (
                     <div className="rounded-xl border border-border/35 bg-muted/30 p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                        {t("fields.locationName")}
-                      </p>
-                      <p className="text-sm font-semibold text-foreground">
-                        {order.locationName}
-                      </p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                          {t("fields.locationName")}
+                        </p>
+                        {isAutoFetched && (
+                          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                            {t("details.autoRetrieved") || "Auto-retrieved"}
+                          </span>
+                        )}
+                      </div>
+                      {displayLocationName ? (
+                        <p className="text-sm font-semibold text-foreground">
+                          {displayLocationName}
+                        </p>
+                      ) : (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 size={12} className="animate-spin" />
+                          <span className="text-xs">{t("common.loading")}</span>
+                        </div>
+                      )}
                     </div>
                   )}
-                  {order.locationAddress && (
+                  {(displayLocationAddress || fetchingLocation) && (
                     <div className="rounded-xl border border-border/35 bg-muted/30 p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                        {t("fields.locationAddress")}
-                      </p>
-                      <p className="text-sm font-semibold text-foreground">
-                        {order.locationAddress}
-                      </p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                          {t("fields.locationAddress")}
+                        </p>
+                        {isAutoFetched && (
+                          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                            {t("details.autoRetrieved") || "Auto-retrieved"}
+                          </span>
+                        )}
+                      </div>
+                      {displayLocationAddress ? (
+                        <p className="text-sm font-semibold text-foreground">
+                          {displayLocationAddress}
+                        </p>
+                      ) : (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 size={12} className="animate-spin" />
+                          <span className="text-xs">{t("common.loading")}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                   <div className="rounded-xl border border-border/35 bg-muted/30 p-4">

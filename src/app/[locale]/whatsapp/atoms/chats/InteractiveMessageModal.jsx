@@ -97,24 +97,42 @@ export const InteractiveMessageForm = forwardRef(({
     }};
 
     const restore = (payload) => {
-        if (payload?.interactive) {
-            const interactive = payload.interactive;
-            const header = interactive.header[interactive.header?.type];
-            const mediaLink = header?.id ?? header?.link;
-            if (interactive.header) {
-                setValue("headerType", interactive.header?.type.toUpperCase());
-                if (interactive.header?.type === "text") {
-                    setValue("headerText", interactive.header.text);
-                } else {
-                    setValue("headerUrl", mediaLink);
-                    // Note: Can't restore file automatically without user re-selecting
-                }
+    const interactive = payload?.interactive;
+    if (!interactive) return;
+
+    const header = interactive.header;
+
+    if (header) {
+        const headerType = header.type;
+
+        if (headerType) {
+            setValue("headerType", headerType.toUpperCase());
+
+            if (headerType === "text") {
+                setValue("headerText", header.text ?? "");
+            } else {
+                const media = header[headerType];
+
+                setValue(
+                    "headerUrl",
+                    media?.id ?? media?.link ?? ""
+                );
             }
-            if (interactive.body?.text) setValue("bodyText", interactive.body.text);
-            if (interactive.footer?.text) setValue("footerText", interactive.footer.text);
-            if (interactive.action?.buttons) setValue("buttons", interactive.action.buttons.map(b => ({ text: b.reply.title })));
         }
-    };
+    }
+
+    setValue("bodyText", interactive.body?.text ?? "");
+    setValue("footerText", interactive.footer?.text ?? "");
+
+    if (Array.isArray(interactive.action?.buttons)) {
+        setValue(
+            "buttons",
+            interactive.action.buttons.map(btn => ({
+                text: btn.reply?.title ?? "",
+            }))
+        );
+    }
+};
 
     useImperativeHandle(ref, () => ({
         setValue,

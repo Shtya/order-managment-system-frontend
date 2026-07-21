@@ -84,56 +84,70 @@ export const ListMessageForm = forwardRef(({
     const preparePayload = (data) => {
         const mediaId = data?.id ? data?.id : isMediaId(data.headerUrl) ? data.headerUrl : undefined;
         return {
-        type: "interactive",
-        interactive: {
-            type: "list",
-            header: data.headerType !== "NONE" ? {
-                type: data.headerType.toLowerCase(),
-                [data.headerType.toLowerCase()]: data.headerType === "TEXT"
-                    ? data.headerText
-                    : mediaId
-                        ? {
-                            id: mediaId,
-                        }
-                        : {
-                            link: data.headerUrl,
-                            file: localHeaderMediaFile || undefined,
-                        },
-            } : undefined,
-            body: { text: data.bodyText },
-            footer: data.footerText ? { text: data.footerText } : undefined,
-            action: {
-                button: data.menuLabel,
-                sections: data.sections.map((s) => ({
-                    title: s.title,
-                    rows: s.rows.map((r) => ({
-                        id: r.id,
-                        title: r.title,
-                        description: r.description || undefined
+            type: "interactive",
+            interactive: {
+                type: "list",
+                header: data.headerType !== "NONE" ? {
+                    type: data.headerType.toLowerCase(),
+                    [data.headerType.toLowerCase()]: data.headerType === "TEXT"
+                        ? data.headerText
+                        : mediaId
+                            ? {
+                                id: mediaId,
+                            }
+                            : {
+                                link: data.headerUrl,
+                                file: localHeaderMediaFile || undefined,
+                            },
+                } : undefined,
+                body: { text: data.bodyText },
+                footer: data.footerText ? { text: data.footerText } : undefined,
+                action: {
+                    button: data.menuLabel,
+                    sections: data.sections.map((s) => ({
+                        title: s.title,
+                        rows: s.rows.map((r) => ({
+                            id: r.id,
+                            title: r.title,
+                            description: r.description || undefined
+                        }))
                     }))
-                }))
+                }
             }
         }
-    }};
+    };
 
     const restore = (payload) => {
-        if (payload?.interactive) {
-            const interactive = payload.interactive;
-            const header = interactive.header[interactive.header?.type];
-            const mediaLink = header?.id ?? header?.link;
-            if (interactive.header) {
-                setValue("headerType", interactive.header?.type.toUpperCase());
-                if (interactive.header?.type === "text") {
-                    setValue("headerText", interactive.header.text);
+        const interactive = payload?.interactive;
+        if (!interactive) return;
+
+        const header = interactive.header;
+
+        if (header) {
+            const headerType = header.type;
+
+            if (headerType) {
+                setValue("headerType", headerType.toUpperCase());
+
+                if (headerType === "text") {
+                    setValue("headerText", header.text ?? "");
                 } else {
-                    setValue("headerUrl", mediaLink);
+                    const media = header[headerType];
+                    setValue("headerUrl", media?.id ?? media?.link ?? "");
                     // Note: Can't restore file automatically without user re-selecting
                 }
             }
-            if (interactive.body?.text) setValue("bodyText", interactive.body.text);
-            if (interactive.footer?.text) setValue("footerText", interactive.footer.text);
-            if (interactive.action?.button) setValue("menuLabel", interactive.action.button);
-            if (interactive.action?.sections) setValue("sections", interactive.action.sections);
+        }
+
+        setValue("bodyText", interactive.body?.text ?? "");
+        setValue("footerText", interactive.footer?.text ?? "");
+
+        if (interactive.action?.button) {
+            setValue("menuLabel", interactive.action.button);
+        }
+
+        if (Array.isArray(interactive.action?.sections)) {
+            setValue("sections", interactive.action.sections);
         }
     };
 

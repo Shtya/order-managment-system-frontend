@@ -495,7 +495,7 @@ export default function CollectOrderPage() {
         const orderData = orderRes.data;
         setOrder(orderData);
 
-        const collectibleAmount = (orderData.finalTotal || 0) - (orderData.shippingCost || 0);
+        const collectibleAmount = (orderData.finalTotal || 0);
         const remaining = collectibleAmount - (orderData.collectedAmount || 0);
         if (remaining > 0) {
           setValue("amount", remaining);
@@ -594,27 +594,27 @@ export default function CollectOrderPage() {
       </div>
     );
 
-  const collectibleAmount = (order.finalTotal || 0) - (order.shippingCost || 0);
+  const collectibleAmount = (order.finalTotal || 0);
   const remaining = collectibleAmount - (order.collectedAmount || 0);
 
   // ── Stats for PageHeader ──────────────────────────────────────────────────
   const pageStats = [
     {
       id: 1,
-      name: t("fields.shippingCost"),
+      name: t("fields.clientShippingCost"),
       value: formatCurrency(order.shippingCost),
       icon: Truck,
       color: "var(--secondary)",
       sortOrder: 1,
     },
-    {
-      id: 2,
-      name: t("fields.orderTotal"),
-      value: formatCurrency(order.finalTotal),
-      icon: Wallet,
-      color: "var(--primary)",
-      sortOrder: 2,
-    },
+    // {
+    //   id: 2,
+    //   name: t("fields.orderTotal"),
+    //   value: formatCurrency(order.finalTotal),
+    //   icon: Wallet,
+    //   color: "var(--primary)",
+    //   sortOrder: 2,
+    // },
     {
       id: 3,
       name: tCollect("columns.collectibleAmount"),

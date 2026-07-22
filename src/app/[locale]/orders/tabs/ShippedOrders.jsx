@@ -925,7 +925,7 @@ export default function ShippedOrders({ statuses = [] }) {
       return {
         id: item.companyId || `none-${index}`,
         name: item.companyName || ts("stats.noCompany"),
-        value: `${item.count} ${ts("stats.orders")} · ${formatCurrency(item.totalFinalTotal)}`,
+          
         icon: Truck,
         color,
       };

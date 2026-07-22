@@ -20,8 +20,8 @@ import SupplierPaymentsTab from "./tabs/SupplierPaymentsTab";
 import toast from "react-hot-toast";
 
 export default function Accounts() {
-    const t = useTranslations("accounts");
     const tTutorial = useTranslations("tutorial");
+    const t = useTranslations("accounts");
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -162,7 +162,7 @@ export default function Accounts() {
                 ...categories.map(cat => ({
                     id: cat.id,
                     name: cat.name,
-                    value: cat.expensesCount || 0, // Could fetch summary if needed
+                    value: `${cat.expensesCount || 0} ${t("stats.manualExpensesStat")} · ${Number(cat.totalCost || 0).toLocaleString()}`,
                     icon: Plus,
                     // color: "#a855f7",
                     editable: true,

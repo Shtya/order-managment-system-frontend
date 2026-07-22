@@ -6740,7 +6740,8 @@
       "delayDays": "Number of delay days",
       "lastCollectionDate": "Last Collection Date",
       "totalAmount": "Total Amount",
-      "collectibleAmount": "Collectible Amount"
+      "collectibleAmount": "Collectible Amount",
+      "clientShippingCost": "Shipping amount from the customer"
     },
     "collectionStatus": {
       "pending": "Pending",
@@ -6827,7 +6828,8 @@
       "currency": "Currency",
       "amount": "Amount",
       "notes": "Notes",
-      "safe": "Safe"
+      "safe": "Safe",
+      "clientShippingCost": "Shipping amount from the customer"
     },
     "placeholders": {
       "shippingCompany": "Select shipping company",
@@ -9436,9 +9438,9 @@
       "finalBalance": "The final balance to be paid to suppliers",
       "lastMonthProfit": "Net profit from the last closed month (revenue - product cost - operating expenses - returns cost)",
       "currentRevenue": "Current month's total revenue from delivered orders (final total - shipping cost)",
-      "productCost": "Total cost of products from delivered orders during the selected period. Product Cost = Σ(Unit Cost × Quantity for delivered order items) − Σ(Unit Cost × Quantity for approved returned items).",
+      "productCost": "The total cost of products for the current month, calculated as the sum of (Unit Cost × Quantity) for all products in delivered orders during the current month, minus the sum of (Unit Cost × Quantity) for all products in orders returned to the warehouse during the current month.",
       "operationalExpenses": "Current month's total operating expenses",
-      "returnsCost": "Current month's total returns cost (sum of unit cost * quantity for all approved return items)",
+      "returnsCost": "The total cost of goods returned to the warehouse during the current month, calculated as the sum of (Unit Cost × Quantity) for all products in orders that were returned to the warehouse.",
       "currentNetProfit": "Current month's net profit (current revenue - product cost - operating expenses - returns cost)",
       "totalBalance": "Total current balance across all active accounts",
       "totalIn": "Total completed inflow transactions across all accounts",
@@ -9722,7 +9724,8 @@
       "currentNetProfit": "Current Net Profit",
       "operationalExpenses": "Operational Expenses",
       "productCost": "Product Cost",
-      "returnsCost": "Returns Cost"
+      "returnsCost": "Returns Cost",
+      "manualExpensesStat": "Expense"
     },
     "export": "Export",
     "common": {
@@ -11888,9 +11891,9 @@
         "supplierAccounts_finalBalance": "If you purchased $8000, paid $6000, returned $700, and received $300, final balance will be $8000 - $6000 - $700 + $300 = 1600.",
         "monthClosing_lastMonthProfit": "If last month's revenue was $10000, product cost was $6000, returns cost was $500, and operational expenses were $1500, last month profit will be $10000 - $6000 - $500 - $1500 = $2000.",
         "monthClosing_currentRevenue": "If you delivered 5 orders with final totals (minus shipping) of $1000, $500, $800, $1200, and $600, current revenue will display 4100.",
-        "monthClosing_productCost": "If delivered order items cost $200, $100, $150, $300, and $180 respectively, product cost will display 930.",
+        "monthClosing_productCost": "If the total cost of products in delivered orders is $930, and products returned to the warehouse have a total cost of $130, the Product Cost will be displayed as $800 ($930 − $130).",
         "monthClosing_operationalExpenses": "If you recorded $500 for rent and $200 for utilities this month, operational expenses will display 700.",
-        "monthClosing_returnsCost": "If returned items from delivered orders cost $100, returns cost will display 100.",
+        "monthClosing_returnsCost": "If products returned to the warehouse have a total cost of $100 (calculated as Unit Cost × Quantity for each returned product), the Returns Cost will be displayed as $100.",
         "monthClosing_currentNetProfit": "If revenue is 4100, product cost is 930, returns cost is 100, and operational expenses are 700, current net profit will be 4100 - 930 - 100 - 700 = 2370.",
         "safes_totalBalance": "If Account A has $5000 and Account B has $3000, total balance will display 8000.",
         "safes_totalIn": "If you received $2000 in Account A and $1500 in Account B, total inflow will display 3500.",

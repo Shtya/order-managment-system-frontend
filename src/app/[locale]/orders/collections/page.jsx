@@ -491,23 +491,16 @@ export default function OrderCollectionPage() {
 
 			{
 				key: "shippingCost",
-				header: t("columns.shippingCost"),
+				header: t("columns.clientShippingCost"),
 				cell: (row) => (
 					<span className="font-medium tabular-nums">{formatCurrency(row.shippingCost)}</span>
 				),
 			},
 			{
 				key: "finalTotal",
-				header: t("columns.totalAmount"),
-				cell: (row) => (
-					<span className="font-bold text-foreground tabular-nums">{formatCurrency(row.finalTotal)}</span>
-				),
-			},
-			{
-				key: "collectibleAmount",
 				header: t("columns.collectibleAmount"),
 				cell: (row) => (
-					<span className="font-bold text-foreground tabular-nums">{formatCurrency(row.collectibleAmount)}</span>
+					<span className="font-bold text-foreground tabular-nums">{formatCurrency(row.finalTotal)}</span>
 				),
 			},
 			{

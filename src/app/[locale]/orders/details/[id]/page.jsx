@@ -338,6 +338,7 @@ export function OrderDetailsPage({ order, loading }) {
           !isSuperAdmin && <Button_
             onClick={() => router.push(`/orders/edit/${order.id}`)}
             size="sm"
+            disabled={order.status.code === "delivered" || !!order.monthlyClosingId }
             icon={<Edit size={18} />}
             label={t("actions.edit")}
           />

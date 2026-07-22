@@ -730,8 +730,8 @@ export default function OrdersTab({
 }) {
 
   const tTutorial = useTranslations("tutorial.orders");
-  const t = useTranslations("orders");
   const { formatCurrency } = usePlatformSettings();
+  const t = useTranslations("orders");
   const { user, isSuperAdmin } = useAuth();
   const restrictedSet = useMemo(() => {
     return new Set(restrictedStatuses || []);
@@ -1208,7 +1208,8 @@ export default function OrdersTab({
     const allIds = pager.records.map(r => r.id);
     const areAllSelected = allIds.length > 0 && allIds.every(id => selectedOrderIds.includes(id));
     return [
-      ...(isAssign ? [{
+      // ...(isAssign ? [
+        {
         key: "select",
         header: (
           <div className="flex items-center justify-center">
@@ -1227,7 +1228,9 @@ export default function OrdersTab({
             />
           </div>
         ),
-      }] : []),
+      }
+    // ] : [])
+      ,
       {
         key: "created_at",
         header: t("table.createdat"),
@@ -1240,11 +1243,37 @@ export default function OrdersTab({
       {
         key: "orderNumber",
         header: t("table.orderNumber"),
-        cell: (row) => (
-          <span className="text-primary font-bold font-mono">
-            {row.orderNumber}
-          </span>
-        ),
+        cell: (row) => {
+          const isOriginal = !!row.replacementRequest;
+          const isReplacement = !!row.replacementResult;
+          
+          const replacedByNum = isOriginal
+            ? row.replacementRequest?.replacementOrder?.orderNumber
+            : null;
+          const replacesNum = isReplacement
+            ? row.replacementResult?.originalOrder?.orderNumber
+            : null;
+
+          return (
+            <div className="flex flex-col gap-0.5">
+              <span className="text-primary font-bold font-mono">
+                {row.orderNumber}
+              </span>
+              {replacedByNum && (
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap">
+                  {t("table.replacedBy")}{' '}
+                  <span className="font-bold font-mono">{replacedByNum}</span>
+                </span>
+              )}
+              {replacesNum && (
+                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium whitespace-nowrap">
+                  {t("table.replaces")}{' '}
+                  <span className="font-bold font-mono">{replacesNum}</span>
+                </span>
+              )}
+            </div>
+          );
+        },
       },
       {
         key: "customerName",
@@ -1618,14 +1647,18 @@ export default function OrdersTab({
         key: "shippingDays",
         header: t("table.shippingDays"),
         cell: (row) => {
-          if (row.status?.code !== OrderStatus.SHIPPED || !row.shippedAt) {
+          const isShipped = row.status?.code === OrderStatus.SHIPPED;
+          const isDelivered = row.status?.code === OrderStatus.DELIVERED;
+
+          if ((!isShipped && !isDelivered) || !row.shippedAt) {
             return <span className="text-muted-foreground text-sm">—</span>;
           }
 
           const cityConfig = row.cityDetails?.tenantConfigs?.[0];
           const minDays = cityConfig?.minShippingDays ?? null;
           const maxDays = cityConfig?.maxShippingDays ?? null;
-          const days = calcShippingDaysElapsed(row.shippedAt);
+          const refDate = isDelivered ? row.deliveredAt : undefined;
+          const days = calcShippingDaysElapsed(row.shippedAt, refDate);
           const rangeStatus = getShippingDaysRangeStatus(days, minDays, maxDays);
           const { className } = getShippingDaysBadgeStyles(rangeStatus);
           const statusLabel = t(`shippingDays.${rangeStatus}`);
@@ -1797,22 +1830,22 @@ export default function OrdersTab({
           );
         },
       },
-      {
-        key: "replacementOrder",
-        header: t("table.replacementOrder"),
-        cell: (row) => {
-          const repNum = row.replacementRequest?.replacementOrder?.orderNumber;
-          if (!repNum) return <span className="text-xs text-gray-400">—</span>;
-          return (
-            <button
-              onClick={() => router.push(`/orders/details/${row.replacementRequest.replacementOrder.id}`)}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--primary)] hover:underline font-mono"
-            >
-              {repNum}
-            </button>
-          );
-        },
-      },
+      // {
+      //   key: "replacementOrder",
+      //   header: t("table.replacementOrder"),
+      //   cell: (row) => {
+      //     const repNum = row.replacementRequest?.replacementOrder?.orderNumber;
+      //     if (!repNum) return <span className="text-xs text-gray-400">—</span>;
+      //     return (
+      //       <button
+      //         onClick={() => router.push(`/orders/details/${row.replacementRequest.replacementOrder.id}`)}
+      //         className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--primary)] hover:underline font-mono"
+      //       >
+      //         {repNum}
+      //       </button>
+      //     );
+      //   },
+      // },
       {
         key: "updated_at",
         header: t("table.lastUpdate"),

@@ -5593,7 +5593,9 @@
       "store": "Store",
       "shippingCompanyStatus": "Shipping company status",
       "replaceDete": "Replace Date",
-      "createdat": "Creation date"
+      "createdat": "Creation date",
+      "replacedBy": "Replaced by order ",
+      "replaces": "Replacement order for order "
     },
     "bulkUpload": {
       "clickToChangeFile": "Click to change file",
@@ -6324,7 +6326,8 @@
       "returnQuantity": "Return Qty",
       "oldPrice": "Old Price",
       "newPrice": "New Price",
-      "priceDiff": "Price Difference",
+      "priceDiff": "Price difference per piece",
+      "totalPriceDiff": "Total price difference",
       "available": "available",
       "newQuantity": "New quantity"
     },

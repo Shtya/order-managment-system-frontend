@@ -55,14 +55,14 @@ export const ShippingDaysRangeStatus = {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
   
-  export function calcShippingDaysElapsed(shippedAt, referenceDate = new Date()) {
+  export function calcShippingDaysElapsed(shippedAt, referenceDate) {
     if (!shippedAt) return null;
   
     const shipped = new Date(shippedAt);
     if (Number.isNaN(shipped.getTime())) return null;
   
     const shippedDay = startOfLocalDay(shipped);
-    const today = startOfLocalDay(referenceDate);
+    const today = startOfLocalDay(referenceDate ? new Date(referenceDate) : new Date());
     const diffDays = Math.floor((today.getTime() - shippedDay.getTime()) / (24 * 60 * 60 * 1000));
   
     return diffDays + 1;

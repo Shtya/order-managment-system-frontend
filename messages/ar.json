@@ -3962,7 +3962,7 @@
     },
     "tabs": {
       "products": "المنتجات",
-      "bundles": "الباقات",
+      "bundles": "المنتجات الباندل",
       "mine": "منتجاتي",
       "idle": "المنتجات الراكدة",
       "idleDate": "بداية التراكم",
@@ -5578,7 +5578,9 @@
       "automationRuns": "سجل التشغيل التلقائي",
       "upsellHistory": "العروض المرسلة",
       "replaceDete": "تاريخ الاستبدال",
-      "createdat": "تاريخ الانشاء"
+      "createdat": "تاريخ الانشاء",
+      "replacedBy": "تم الاستبدال بطلب رقم",
+      "replaces": "طلب استبدال للطلب رقم"
     },
     "bulkUpload": {
       "clickToChangeFile": "اضغط لتغيير الملف",
@@ -6309,7 +6311,8 @@
       "returnQuantity": "كمية الإرجاع",
       "oldPrice": "السعر القديم",
       "newPrice": "السعر الجديد",
-      "priceDiff": "فرق السعر",
+      "priceDiff": "فرق السعر للقطعة",
+      "totalPriceDiff": "فرق السعر الإجمالي",
       "available": "متاح",
       "newQuantity": "الكمية الجديده"
     },

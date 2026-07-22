@@ -775,7 +775,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         },
         { icon: PackagePlus, labelKey: "newPurchase", permission: "purchases.read", href: "/purchases/new" },
         { icon: Undo2, labelKey: "purchasesReturn", permission: "purchase_returns.read", href: "/purchases/return" },
-        { icon: PackagePlus, labelKey: "newPurchaseReturn", permission: "purchase_returns.read", href: "/purchases/return/new" },
+        // { icon: PackagePlus, labelKey: "newPurchaseReturn", permission: "purchase_returns.read", href: "/purchases/return/new" },
       ],
     },
     {

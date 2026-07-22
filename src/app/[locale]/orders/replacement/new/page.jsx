@@ -124,9 +124,9 @@ function Section({ title, icon: Icon, children, className, delay = 0 }) {
 // ─────────────────────────────────────────────
 // Field label + input style
 // ─────────────────────────────────────────────
-function FieldInput({ label, error, children }) {
+function FieldInput({ label, error, children, className }) {
   return (
-    <div className="space-y-1.5">
+    <div className={cn("space-y-1.5", className)}>
       {label && (
         <Label className="text-xs font-semibold text-muted-foreground">
           {label}
@@ -1445,7 +1445,7 @@ function ReplacementItemCard({
       </div>
 
       {/* ── Bottom: qty + pricing ── */}
-      <div className="px-4 pb-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+      <div className="px-4 pb-4 grid md:grid-cols-2 xl:grid-cols-4 gap-3">
          {/* Return Quantity */}
         <FieldInput label={t("itemCard.returnQuantity")}>
           <div className="relative flex items-center">
@@ -1561,8 +1561,8 @@ function ReplacementItemCard({
           />
         </FieldInput>
 
-        {/* Price diff */}
-        <FieldInput label={t("itemCard.priceDiff")}>
+        {/* Price diff per unit */}
+        <FieldInput label={t("itemCard.priceDiff")} className="col-span-1 md:col-span-1 xl:col-span-2">
           <div
             className={cn(
               "h-[45px] px-3 rounded-xl border flex items-center justify-center gap-1.5 text-sm font-bold font-mono",
@@ -1583,6 +1583,35 @@ function ReplacementItemCard({
             {diff > 0 ? "+" : ""}
             {formatCurrency(diff)}
           </div>
+        </FieldInput>
+
+        {/* Price diff total */}
+        <FieldInput label={t("itemCard.totalPriceDiff")} className="col-span-1 md:col-span-1 xl:col-span-2">
+          {(() => {
+            const totalDiff = diff * (Number(quantity) || 0);
+            return (
+              <div
+                className={cn(
+                  "h-[45px] px-3 rounded-xl border flex items-center justify-center gap-1.5 text-sm font-bold font-mono",
+                  totalDiff < 0
+                    ? "border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400"
+                    : totalDiff > 0
+                      ? "border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400"
+                      : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500",
+                )}
+              >
+                {totalDiff > 0 ? (
+                  <TrendingUp size={12} />
+                ) : totalDiff < 0 ? (
+                  <TrendingDown size={12} />
+                ) : (
+                  <Minus size={12} />
+                )}
+                {totalDiff > 0 ? "+" : ""}
+                {formatCurrency(totalDiff)}
+              </div>
+            );
+          })()}
         </FieldInput>
       </div>
     </motion.div>

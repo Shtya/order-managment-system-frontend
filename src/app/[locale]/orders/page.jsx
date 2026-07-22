@@ -93,7 +93,7 @@ export default function Orders() {
 		OrderStatus.PRINTED, // Action to direct to scan page
 		OrderStatus.PREPARING, // action to direct to scan page
 		OrderStatus.READY, // action to direct to outging to scan page
-		OrderStatus.PACKED, // action to direct to create manifest popup
+
 		OrderStatus.SHIPPED, // action to see shippment detials
 		OrderStatus.RETURN_PREPARING, // action to direct to create return manifest popup
 	]

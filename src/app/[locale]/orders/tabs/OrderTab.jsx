@@ -114,7 +114,7 @@ import { FaChartPie, FaListAlt } from "react-icons/fa";
 
 //order status flow
 // New => Confirmed => Distrebuted (Assed to shipment company) =>  Printed (Waybills printed) =>  preparing (scanign its items for preparation)
-// =>  Ready (completly scaned) => packed (scaned again for outgoing and packed) => shipped (The relaetd manifast printed and order not gived to Delivary boy) => 
+// =>  Ready (completly scaned) =>  => shipped (The relaetd manifast printed and order not gived to Delivary boy) => 
 // Delivered or failed deliver (for faield can be reassign to shipping compnay (Distrebuted) )
 
 // ✅ Order Status Constants (Mirroring your Enum)
@@ -135,7 +135,6 @@ export const OrderStatus = {
   PREPARING: "preparing",
   PRINTED: "printed",
   READY: "ready",
-  PACKED: "packed",
   REJECTED: "rejected",
   SHIPPED: "shipped",
   DELIVERED: "delivered",
@@ -511,9 +510,9 @@ const tutorialData = [
 //     phoneNumber: "01288889999",
 //     status: {
 //       id: "6e38513d-0af6-44a3-9973-f2cf9e322835",
-//       code: OrderStatus.PACKED,
+//       code: OrderStatus.READY,
 //       system: true,
-//       name: "Packed",
+//       name: "Ready",
 //       color: "#795548",
 //     },
 //     postponedDate: null,
@@ -1897,22 +1896,12 @@ export default function OrdersTab({
                 example: tTutorial("actions.continuePreparing.example"),
               },
               {
-                icon: <Send size={18} />,
-                tooltip: t("actions.scanOutgoing"),
-                onClick: (r) => router.push(`/warehouse?tab=outgoing&subtab=scan&order=${r.orderNumber}`),
-                variant: "primary",
-                permission: "orders.update",
-                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.READY,
-                description: tTutorial("actions.scanOutgoing.description"),
-                example: tTutorial("actions.scanOutgoing.example"),
-              },
-              {
                 icon: <ClipboardList size={18} />,
                 tooltip: t("actions.createManifest"),
                 onClick: () => router.push(`/warehouse?tab=outgoing&subtab=scan&manifest=open`),
                 variant: "primary",
                 permission: "orders.update",
-                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.PACKED,
+                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.READY,
                 description: tTutorial("actions.createManifest.description"),
                 example: tTutorial("actions.createManifest.example"),
               },

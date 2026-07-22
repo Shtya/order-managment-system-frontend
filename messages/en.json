@@ -5460,14 +5460,14 @@
       "wrongNumber": "Wrong Number",
       "under_review": "Under Review",
       "preparing": "Preparing",
-      "ready": "Ready",
+      "ready": "Ready to shipping",
       "shipped": "Shipped",
       "returned": "Returned",
       "no_answer": "No Answer",
       "out_of_area": "Out of Delivery Area",
       "distributed": "Distributed",
       "printed": "Printed",
-      "packed": "Packed",
+    
       "rejected": "Rejected",
       "return_preparing": "Return Preparing",
       "returnPreparing": "Return Preparing"
@@ -6613,7 +6613,7 @@
       "collectedAmount": "Total amount collected from customers",
       "canceledAndUnderReview": "Total number of cancelled orders under follow-up. Orders are moved to this status automatically when an employee is assigned to a cancelled order.",
       "pendingOrders": "The number of orders received from connected stores that could not be imported into the system. Common reasons include missing products, missing product variants (SKU), insufficient stock, invalid order data, or other import errors.",
-      "inWarehouseOrders": "Total number of orders in warehouse statuses (Distributed, Printed, Preparing, Ready, Packed, Shipped)",
+      "inWarehouseOrders": "Total number of orders in warehouse statuses (Distributed, Printed, Preparing, Ready, Shipped)",
       "postponed": "Total number of postponed orders",
       "outOfDelivery": "Total number of orders out of delivery area",
       "wrongNumber": "Total number of orders with wrong phone number",
@@ -8676,7 +8676,7 @@
       "wrongNumber": "Wrong Number",
       "under_review": "Under Review",
       "preparing": "Preparing",
-      "ready": "Ready",
+      "ready": "Ready to shipping",
       "shipped": "Shipped",
       "returned": "Returned",
       "no_answer": "No Answer",
@@ -12115,10 +12115,6 @@
           "description": "Redirects to the warehouse scanning page to continue scanning items for an order that was partially scanned.",
           "example": "You scanned 2 of 5 items in order #1234 before leaving. Click continue preparing to scan the remaining 3 items."
         },
-        "scanOutgoing": {
-          "description": "Redirects to the outgoing scan page to scan this ready order into a shipping manifest for dispatch.",
-          "example": "Order #1234 is packed and ready. Click scan outgoing to add it to a manifest before the shipping truck departs."
-        },
         "createManifest": {
           "description": "Redirects to the outgoing manifest page to create a shipping manifest for a group of scanned orders.",
           "example": "5 orders are scanned outgoing. Click create manifest to generate a manifest document that the shipping company signs."
@@ -12576,8 +12572,8 @@
           "example": "8 orders failed to sync from Shopify due to webhook errors. They appear here until you resolve them or they auto-retry successfully."
         },
         "inWarehouseOrders": {
-          "description": "Number of orders currently in warehouse processing stages. Includes orders with statuses: DISTRIBUTED, PRINTED, PREPARING, READY, PACKED, or SHIPPED. These orders are being prepared for shipment.",
-          "example": "25 orders are currently in the warehouse — 10 being prepared, 8 packed, and 7 shipped but not yet delivered."
+          "description": "Number of orders currently in warehouse processing stages. Includes orders with statuses: DISTRIBUTED, PRINTED, PREPARING, READY, or SHIPPED. These orders are being prepared for shipment.",
+          "example": "25 orders are currently in the warehouse — 10 being prepared, and 7 shipped but not yet delivered."
         },
         "new": {
           "description": "Number of orders with the NEW status. These are freshly received orders that haven't been processed or confirmed yet.",

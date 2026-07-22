@@ -126,8 +126,8 @@ function JsonBlock({ value }) {
 
 
 export default function PurchasesReturnPage() {
-	const t = useTranslations("purchasesReturn");
 	const tTutorial = useTranslations("tutorial.purchasesReturn");
+	const t = useTranslations("purchasesReturn");
 	const { formatCurrency,currency } = usePlatformSettings();
 	const router = useRouter();
 	const pathname = usePathname();
@@ -1126,12 +1126,12 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="sm:max-w-5xl w-[96vw] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 sm:p-6">
-				<DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b-2 border-primary/20">
+				<DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b-2 border-gray-200 dark:border-slate-700">
 					<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
 						<div>
-							<DialogTitle className="text-xl sm:text-2xl font-bold text-primary flex items-center gap-2 sm:gap-3">
-								<div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-									<Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+							<DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
+								<div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+									<Package className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
 								</div>
 								<span className="truncate">{t("acceptPreview.title")}</span>
 							</DialogTitle>
@@ -1141,8 +1141,8 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 						</div>
 						{preview && !loading && (
 							<span className={cn(
-								"self-start sm:self-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold border-2 flex items-center gap-2",
-								preview.currentStatus === "pending" && "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300"
+								"self-start sm:self-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold flex items-center gap-2",
+								preview.currentStatus === "pending" && "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
 							)}>
 								<Clock className="w-3.5 h-3.5 sm:w-4 h-4" />
 								{preview.currentStatus}
@@ -1168,15 +1168,15 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 								<motion.div
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
-									className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-3 sm:p-4 border-2 border-primary/20"
+									className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-slate-700"
 								>
 									<div className="flex items-center gap-3">
-										<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-											<Package className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+										<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+											<Package className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
 										</div>
 										<div>
-											<div className="text-2xl sm:text-3xl font-bold text-primary">{rows.length}</div>
-											<div className="text-[10px] sm:text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.totalItems")}</div>
+											<div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{rows.length}</div>
+											<div className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 font-semibold">{t("acceptPreview.totalItems")}</div>
 										</div>
 									</div>
 								</motion.div>
@@ -1185,17 +1185,17 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: 0.1 }}
-									className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 rounded-xl p-3 sm:p-4 border-2 border-red-200 dark:border-red-800"
+									className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-slate-700"
 								>
 									<div className="flex items-center gap-3">
-										<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0">
-											<TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
+										<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+											<TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
 										</div>
 										<div>
-											<div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400">
+											<div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
 												-{rows.reduce((sum, r) => sum + (r.returnedQuantity || 0), 0)}
 											</div>
-											<div className="text-[10px] sm:text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.totalQuantityToRemove")}</div>
+											<div className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 font-semibold">{t("acceptPreview.totalQuantityToRemove")}</div>
 										</div>
 									</div>
 								</motion.div>
@@ -1205,17 +1205,17 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 										initial={{ opacity: 0, y: 20 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ delay: 0.2 }}
-										className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 rounded-xl p-3 sm:p-4 border-2 border-emerald-200 dark:border-emerald-800"
+										className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-slate-700"
 									>
 										<div className="flex items-center gap-3">
-											<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-200 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
-												<Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
+											<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+												<Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
 											</div>
 											<div>
-												<div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+												<div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
 													+{formatCurrency(paidAmount)}
 												</div>
-												<div className="text-[10px] sm:text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("deposit") || "Depositing"} ({safe.name})</div>
+												<div className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 font-semibold">{t("deposit") || "Depositing"} ({safe.name})</div>
 											</div>
 										</div>
 									</motion.div>
@@ -1225,34 +1225,34 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 							<motion.div
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
-								className="border-2 border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-md"
+								className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden"
 							>
 								<div className="overflow-x-auto">
 									<table className="w-full min-w-[800px] sm:min-w-full">
 										<thead>
-											<tr className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800">
-												<th className="text-right p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+											<tr className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800">
+												<th className="text-right p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b border-gray-200 dark:border-slate-700">
 													{t("table.sku")}
 												</th>
-												<th className="text-right p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-right p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b border-gray-200 dark:border-slate-700">
 													{t("table.name")}
 												</th>
-												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.stockBefore")}
 												</th>
-												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.removeQty")}
 												</th>
-												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.stockAfter")}
 												</th>
-												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b border-gray-200 dark:border-slate-700">
 													{t("table.unitCost")}
 												</th>
-												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b border-gray-200 dark:border-slate-700">
 													{t("table.lineTax")}
 												</th>
-												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b border-gray-200 dark:border-slate-700">
 													{t("table.totalReturn")}
 												</th>
 											</tr>
@@ -1291,7 +1291,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 														</span>
 													</td>
 													<td className="p-3 sm:p-4 text-center">
-														<span className="inline-flex items-center px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold">
+														<span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 font-bold">
 															-{r.removeQty || 0}
 														</span>
 													</td>
@@ -1325,9 +1325,9 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 								<motion.div
 									initial={{ opacity: 0, scale: 0.95 }}
 									animate={{ opacity: 1, scale: 1 }}
-									className="bg-red-50 dark:bg-red-950/30 border-2 border-red-300 dark:border-red-800 rounded-xl p-4 sm:p-5 flex items-start gap-3 sm:gap-4"
+									className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 sm:p-5 flex items-start gap-3 sm:gap-4"
 								>
-									<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0">
+									<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
 										<XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
 									</div>
 									<div>
@@ -1344,7 +1344,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 					)}
 				</div>
 
-				<DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
+				<DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-slate-700">
 					<div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 sm:gap-0">
 						<div className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 order-2 sm:order-1">
 							{!loading && preview && !hasErrors && (
@@ -1358,7 +1358,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 							<Button
 								variant="outline"
 								onClick={onClose}
-								className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold border-2"
+								className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold"
 							>
 								{t("actions.cancel")}
 							</Button>
@@ -1366,8 +1366,8 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 								onClick={() => onApply?.()}
 								disabled={loading || !preview || hasErrors || !preview?.canApply}
 								className={cn(
-									"flex-1 sm:flex-none px-4 sm:px-10 py-2 sm:py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm font-bold shadow-lg shadow-primary/30 transition-all transform hover:scale-105 active:scale-95",
-									(loading || !preview || hasErrors || !preview?.canApply) && "opacity-50 cursor-not-allowed hover:scale-100"
+									"flex-1 sm:flex-none px-4 sm:px-10 py-2 sm:py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm font-bold transition-all",
+									(loading || !preview || hasErrors || !preview?.canApply) && "opacity-50 cursor-not-allowed"
 								)}
 							>
 								<Check className="w-4 h-4 sm:w-5 sm:h-5 ltr:mr-1.5 sm:ltr:mr-2 rtl:ml-1.5 sm:rtl:ml-2" />

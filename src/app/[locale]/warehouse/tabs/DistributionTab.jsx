@@ -1364,7 +1364,7 @@ function AssignedOrdersSubtab({
     const params = {
       page,
       limit: per_page,
-      status: "distributed,printed,preparing,ready,packed",
+      status: "distributed,printed,preparing,ready",
       isDistributionStatus: true,
     };
 

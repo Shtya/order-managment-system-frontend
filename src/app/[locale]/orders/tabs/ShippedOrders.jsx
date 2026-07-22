@@ -683,8 +683,8 @@ function formatShipmentDate(dateStr) {
 export default function ShippedOrders({ statuses = [] }) {
   const ts = useTranslations("orders.shippedOrders");
   const router = useRouter();
-  const t = useTranslations("orders");
   const tTutorial = useTranslations("tutorial.orders");
+  const t = useTranslations("orders");
   const { formatCurrency } = usePlatformSettings();
   const [viewMode, setViewMode] = useState("normal");
   const [search, setSearch] = useState("");
@@ -907,7 +907,18 @@ export default function ShippedOrders({ statuses = [] }) {
       ];
     }
 
-    return companyStats.map((item, index) => {
+    const totalCount = companyStats.reduce((sum, s) => sum + (s.count || 0), 0);
+    const totalFinal = companyStats.reduce((sum, s) => sum + (s.totalFinalTotal || 0), 0);
+
+    const totalCard = {
+      id: "total",
+      name: t("tabs.shippedOrders"),
+      value: `${totalCount} ${ts("stats.orders")} · ${formatCurrency(totalFinal)}`,
+      icon: Package,
+      color: "var(--primary)",
+    };
+
+    const companyCards = companyStats.map((item, index) => {
       const palette = ["#6366f1", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
       const color = palette[index % palette.length];
 
@@ -919,6 +930,8 @@ export default function ShippedOrders({ statuses = [] }) {
         color,
       };
     });
+
+    return [totalCard, ...companyCards];
   }, [companyStats, t, ts, formatCurrency]);
   
   const columns = useMemo(

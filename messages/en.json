@@ -5055,7 +5055,7 @@
       "comingSoonDesc": "This section is under development and will be available soon.",
       "rejected": "Rejected Orders",
       "pendingOrders": "Pending Orders",
-      "shippedOrders": "Shipped Orders"
+      "shippedOrders": "Total orders with shipping companies"
     },
     "shippedOrders": {
       "breadcrumb": "Shipped Orders",
@@ -5467,7 +5467,6 @@
       "out_of_area": "Out of Delivery Area",
       "distributed": "Distributed",
       "printed": "Printed",
-    
       "rejected": "Rejected",
       "return_preparing": "Return Preparing",
       "returnPreparing": "Return Preparing"

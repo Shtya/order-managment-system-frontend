@@ -5040,7 +5040,7 @@
       "comingSoonDesc": "هذا القسم قيد التطوير، سيكون متاحاً قريباً.",
       "rejected": "الطلبات المرفوضة",
       "pendingOrders": "طلبات معلقة",
-      "shippedOrders": "طلبات مع شركات الشحن"
+      "shippedOrders": "اجمالي الطلبات مع شركات الشحن"
     },
     "shippedOrders": {
       "breadcrumb": "طلبات مع شركات الشحن",

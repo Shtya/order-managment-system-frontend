@@ -51,6 +51,7 @@ import { Card } from "@/components/ui/card";
 import AccountIcon from "@/components/atoms/AccountIcon";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import SafeAmountPreviewCard from "@/components/molecules/SafeAmountPreviewCard";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 
 const TX_REFERENCE_TYPES = [
@@ -1230,6 +1231,7 @@ const createAccountSchema = (t) =>
     });
 
 export function AccountModal({ open, onOpenChange, editingAccount, onSave }) {
+    const {currency} = usePlatformSettings();
     const t = useTranslations("accounts");
     const [loading, setLoading] = useState(false);
     const [employees, setEmployees] = useState([]);

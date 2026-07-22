@@ -91,7 +91,7 @@ const hasUserReadPermission = hasPermission("users.read");
 
   const formatCurrency = useCallback((amount, defaultCurrency, sign) => {
     if (amount === undefined || amount === null) return "—";
-
+    console.log(amount, Number(amount))
     const formatted = Number(amount).toLocaleString("en-US", {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,

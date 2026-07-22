@@ -18,10 +18,12 @@ import MonthClosingTab from "./tabs/MonthClosingTab";
 import SafesTab from "./tabs/SafesTab";
 import SupplierPaymentsTab from "./tabs/SupplierPaymentsTab";
 import toast from "react-hot-toast";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 export default function Accounts() {
     const tTutorial = useTranslations("tutorial");
     const t = useTranslations("accounts");
+    const { formatCurrency } = usePlatformSettings();
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -150,10 +152,10 @@ export default function Accounts() {
     const statsData = useMemo(() => {
         if (activeTab === "overview" || activeTab === "monthlyExpenses") {
             return [
-                { name: t("stats.productPurchases"), description: t("statsDescription.productPurchases"), value: stats?.productCost?.toLocaleString() || "0", icon: BarChart2, color: "#8b5cf6", example: tTutorial("accounts.stats_example.overview_productPurchases") },
-                { name: t("stats.manualExpenses"), description: t("statsDescription.manualExpenses"), value: stats?.manualExpenses?.toLocaleString() || "0", icon: BarChart2, color: "#a855f7", example: tTutorial("accounts.stats_example.overview_manualExpenses") },
-                { name: t("stats.totalExpenses"), description: t("statsDescription.totalExpenses"), value: stats ? (Number(stats?.manualExpenses) + Number(stats?.productCost)).toLocaleString() || "0" : "0", icon: DollarSign, color: "#f97316", example: tTutorial("accounts.stats_example.overview_totalExpenses") },
-                { name: t("stats.returns"), description: t("statsDescription.returns"), value: stats?.returnsCost?.toLocaleString() || "0", icon: BarChart2, color: "#ef4444", example: tTutorial("accounts.stats_example.overview_returns") },
+                { name: t("stats.productPurchases"), description: t("statsDescription.productPurchases"), value: formatCurrency(stats?.productCost || "0"), icon: BarChart2, color: "#8b5cf6", example: tTutorial("accounts.stats_example.overview_productPurchases") },
+                { name: t("stats.manualExpenses"), description: t("statsDescription.manualExpenses"), value: formatCurrency(stats?.manualExpenses || "0"), icon: BarChart2, color: "#a855f7", example: tTutorial("accounts.stats_example.overview_manualExpenses") },
+                { name: t("stats.totalExpenses"), description: t("statsDescription.totalExpenses"), value: formatCurrency(stats ? (Number(stats?.manualExpenses) + Number(stats?.productCost)) || "0" : "0"), icon: DollarSign, color: "#f97316", example: tTutorial("accounts.stats_example.overview_totalExpenses") },
+                { name: t("stats.returns"), description: t("statsDescription.returns"), value: formatCurrency(stats?.returnsCost || "0"), icon: BarChart2, color: "#ef4444", example: tTutorial("accounts.stats_example.overview_returns") },
             ];
         }
 
@@ -162,7 +164,7 @@ export default function Accounts() {
                 ...categories.map(cat => ({
                     id: cat.id,
                     name: cat.name,
-                    value: `${cat.expensesCount || 0} ${t("stats.manualExpensesStat")} · ${Number(cat.totalCost || 0).toLocaleString()}`,
+                    value: `${cat.expensesCount || 0} ${t("stats.manualExpensesStat")} · ${formatCurrency(Number(cat.totalCost || 0))}`,
                     icon: Plus,
                     // color: "#a855f7",
                     editable: true,
@@ -192,11 +194,11 @@ export default function Accounts() {
 
         if (activeTab === "supplierAccounts") {
             return [
-                { name: t("stats.productPurchases"), description: t("statsDescription.totalPurchases"), value: stats?.totalPurchases?.toLocaleString() || "0", icon: Building2, color: "#3b82f6", example: tTutorial("accounts.stats_example.supplierAccounts_totalPurchases") },
-                { name: t("stats.totalPaid"), description: t("statsDescription.totalPaid"), value: stats?.totalPaid?.toLocaleString() || "0", icon: Wallet, color: "#10b981", example: tTutorial("accounts.stats_example.supplierAccounts_totalPaid") },
-                { name: t("stats.returns"), description: t("statsDescription.returns"), value: stats?.totalReturns?.toLocaleString() || "0", icon: BarChart2, color: "#ef4444", example: tTutorial("accounts.stats_example.supplierAccounts_returns") },
-                { name: t("stats.totalReceived"), description: t("statsDescription.totalPaid"), value: stats?.totalTaken?.toLocaleString() || "0", icon: Wallet, color: "#10b981", example: tTutorial("accounts.stats_example.supplierAccounts_totalReceived") },
-                { name: t("stats.finalBalance"), description: t("statsDescription.finalBalance"), value: stats?.finalBalance?.toLocaleString() || "0", icon: DollarSign, color: "#f97316", example: tTutorial("accounts.stats_example.supplierAccounts_finalBalance") },
+                { name: t("stats.productPurchases"), description: t("statsDescription.totalPurchases"), value: formatCurrency(stats?.totalPurchases || "0"), icon: Building2, color: "#3b82f6", example: tTutorial("accounts.stats_example.supplierAccounts_totalPurchases") },
+                { name: t("stats.totalPaid"), description: t("statsDescription.totalPaid"), value: formatCurrency(stats?.totalPaid || "0"), icon: Wallet, color: "#10b981", example: tTutorial("accounts.stats_example.supplierAccounts_totalPaid") },
+                { name: t("stats.returns"), description: t("statsDescription.returns"), value: formatCurrency(stats?.totalReturns || "0"), icon: BarChart2, color: "#ef4444", example: tTutorial("accounts.stats_example.supplierAccounts_returns") },
+                { name: t("stats.totalReceived"), description: t("statsDescription.totalPaid"), value: formatCurrency(stats?.totalTaken || "0"), icon: Wallet, color: "#10b981", example: tTutorial("accounts.stats_example.supplierAccounts_totalReceived") },
+                { name: t("stats.finalBalance"), description: t("statsDescription.finalBalance"), value: formatCurrency(stats?.finalBalance || "0"), icon: DollarSign, color: "#f97316", example: tTutorial("accounts.stats_example.supplierAccounts_finalBalance") },
             ];
         }
 
@@ -205,20 +207,20 @@ export default function Accounts() {
             const last = stats?.lastMonthProfit;
 
             return [
-                { name: t("stats.lastMonthProfit") + (last?.month ? ` (${last.month}/${last.year})` : ""), description: t("statsDescription.lastMonthProfit"), value: last?.netProfit?.toLocaleString() || "0", icon: CheckCircle, color: "#10b981", example: tTutorial("accounts.stats_example.monthClosing_lastMonthProfit") },
-                { name: t("stats.currentRevenue"), description: t("statsDescription.currentRevenue"), value: current?.revenue?.toLocaleString() || "0", icon: TrendingUp, color: "#8b5cf6", example: tTutorial("accounts.stats_example.monthClosing_currentRevenue") },
-                { name: t("stats.productCost"), description: t("statsDescription.productCost"), value: current?.productCost?.toLocaleString() || "0", icon: Package, color: "#f97316", example: tTutorial("accounts.stats_example.monthClosing_productCost") },
-                { name: t("stats.operationalExpenses"), description: t("statsDescription.operationalExpenses"), value: current?.operationalExpenses?.toLocaleString() || "0", icon: Settings, color: "#f59e0b", example: tTutorial("accounts.stats_example.monthClosing_operationalExpenses") },
-                { name: t("stats.returnsCost"), description: t("statsDescription.returnsCost"), value: current?.returnsCost?.toLocaleString() || "0", icon: RefreshCw, color: "#ef4444", example: tTutorial("accounts.stats_example.monthClosing_returnsCost") },
-                { name: t("stats.currentNetProfit"), description: t("statsDescription.currentNetProfit"), value: current?.netProfit?.toLocaleString() || "0", icon: DollarSign, color: "#059669", isFinal: true, example: tTutorial("accounts.stats_example.monthClosing_currentNetProfit") },
+                { name: t("stats.lastMonthProfit") + (last?.month ? ` (${last.month}/${last.year})` : ""), description: t("statsDescription.lastMonthProfit"), value: formatCurrency(last?.netProfit || "0"), icon: CheckCircle, color: "#10b981", example: tTutorial("accounts.stats_example.monthClosing_lastMonthProfit") },
+                { name: t("stats.currentRevenue"), description: t("statsDescription.currentRevenue"), value: formatCurrency(current?.revenue || "0"), icon: TrendingUp, color: "#8b5cf6", example: tTutorial("accounts.stats_example.monthClosing_currentRevenue") },
+                { name: t("stats.productCost"), description: t("statsDescription.productCost"), value: formatCurrency(current?.productCost || "0"), icon: Package, color: "#f97316", example: tTutorial("accounts.stats_example.monthClosing_productCost") },
+                { name: t("stats.operationalExpenses"), description: t("statsDescription.operationalExpenses"), value: formatCurrency(current?.operationalExpenses || "0"), icon: Settings, color: "#f59e0b", example: tTutorial("accounts.stats_example.monthClosing_operationalExpenses") },
+                { name: t("stats.returnsCost"), description: t("statsDescription.returnsCost"), value: formatCurrency(current?.returnsCost || "0"), icon: RefreshCw, color: "#ef4444", example: tTutorial("accounts.stats_example.monthClosing_returnsCost") },
+                { name: t("stats.currentNetProfit"), description: t("statsDescription.currentNetProfit"), value: formatCurrency(current?.netProfit || "0"), icon: DollarSign, color: "#059669", isFinal: true, example: tTutorial("accounts.stats_example.monthClosing_currentNetProfit") },
             ];
         }
 
         if (activeTab === "safes") {
             return [
-                { name: t("safes.stats.totalBalance"), description: t("statsDescription.totalBalance"), value: stats?.totalBalance?.toLocaleString() || "0", icon: Wallet, color: "#8b5cf6", example: tTutorial("accounts.stats_example.safes_totalBalance") },
-                { name: t("safes.stats.totalIn"), description: t("statsDescription.totalIn"), value: stats?.totalIn?.toLocaleString() || "0", icon: ArrowUpRight, color: "#10b981", example: tTutorial("accounts.stats_example.safes_totalIn") },
-                { name: t("safes.stats.totalOut"), description: t("statsDescription.totalOut"), value: stats?.totalOut?.toLocaleString() || "0", icon: ArrowDownLeft, color: "#ef4444", example: tTutorial("accounts.stats_example.safes_totalOut") },
+                { name: t("safes.stats.totalBalance"), description: t("statsDescription.totalBalance"), value: stats?.totalBalance || "0", icon: Wallet, color: "#8b5cf6", example: tTutorial("accounts.stats_example.safes_totalBalance") },
+                { name: t("safes.stats.totalIn"), description: t("statsDescription.totalIn"), value: stats?.totalIn || "0", icon: ArrowUpRight, color: "#10b981", example: tTutorial("accounts.stats_example.safes_totalIn") },
+                { name: t("safes.stats.totalOut"), description: t("statsDescription.totalOut"), value: stats?.totalOut || "0", icon: ArrowDownLeft, color: "#ef4444", example: tTutorial("accounts.stats_example.safes_totalOut") },
                 { name: t("safes.stats.accountsCount"), description: t("statsDescription.accountsCount"), value: stats?.accountsCount || "0", icon: Building2, color: "#3b82f6", example: tTutorial("accounts.stats_example.safes_accountsCount") },
             ];
         }
@@ -226,8 +228,8 @@ export default function Accounts() {
         if (activeTab === "supplierPayments") {
             return [
                 { name: t("supplierPayments.stats.totalSuppliers"), description: t("statsDescription.accountsCount"), value: stats?.totalSuppliers || "0", icon: Building2, color: "#3b82f6", example: tTutorial("accounts.stats_example.supplierPayments_totalSuppliers") },
-                { name: t("supplierPayments.stats.totalShouldPay"), description: t("statsDescription.finalBalance"), value: stats?.totalShouldPay?.toLocaleString() || "0", icon: ArrowUpRight, color: "#ef4444", example: tTutorial("accounts.stats_example.supplierPayments_totalShouldPay") },
-                { name: t("supplierPayments.stats.totalShouldCollect"), description: t("statsDescription.totalShouldCollect"), value: stats?.totalShouldCollect?.toLocaleString() || "0", icon: ArrowDownLeft, color: "#10b981", example: tTutorial("accounts.stats_example.supplierPayments_totalShouldCollect") },
+                { name: t("supplierPayments.stats.totalShouldPay"), description: t("statsDescription.finalBalance"), value: formatCurrency(stats?.totalShouldPay || "0"), icon: ArrowUpRight, color: "#ef4444", example: tTutorial("accounts.stats_example.supplierPayments_totalShouldPay") },
+                { name: t("supplierPayments.stats.totalShouldCollect"), description: t("statsDescription.totalShouldCollect"), value: formatCurrency(stats?.totalShouldCollect || "0"), icon: ArrowDownLeft, color: "#10b981", example: tTutorial("accounts.stats_example.supplierPayments_totalShouldCollect") },
             ];
         }
 
@@ -235,7 +237,7 @@ export default function Accounts() {
             default:
                 return [];
         }
-    }, [activeTab, stats, t, categories, tTutorial]);
+    }, [activeTab, stats, t, categories, tTutorial,formatCurrency]);
 
     useEffect(() => {
         setFilters({

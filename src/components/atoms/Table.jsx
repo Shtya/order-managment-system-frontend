@@ -130,6 +130,7 @@ export const TableToolbar = memo(function TableToolbar({
   const { isTutorialMode } = useTutorial();
   const filteredActions = useMemo(() => {
     return actions.filter((action) => {
+      if(action.hidden) return false;
       if (!action.permission) return true;
       return hasPermission(action.permission);
     });

@@ -18,16 +18,19 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 import ActionButtons from "@/components/atoms/Actions";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
+import SafeHtmlRenderer from "@/components/atoms/SafeHtmlRenderer";
+import { baseImg } from "@/utils/axios";
+import { Checkbox } from "@/components/ui/checkbox";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
   return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
-export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete, onOpenView, onExportRequest, activetab }) {
+export default function useBundlesTab({  searchDebounced, filters, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
   const router = useRouter();
   const requestIdRef = useRef(0);
-
+  const t = useTranslations("products");
 
   const [loading, setLoading] = useState(false);
   const [pager, setPager] = useState({
@@ -36,6 +39,24 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
     per_page: 6,
     records: []
   });
+
+  const toggleProduct = (id) => {
+    if (!setSelectedProducts) return;
+    setSelectedProducts(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const selectAll = () => {
+    if (!setSelectedProducts) return;
+    const allIds = pager.records.map(r => r.id);
+    const areAllSelected = allIds.length > 0 && allIds.every(id => selectedProducts.includes(id));
+    if (areAllSelected) {
+      setSelectedProducts(prev => prev.filter(id => !allIds.includes(id)));
+    } else {
+      setSelectedProducts(prev => [...new Set([...prev, ...allIds])]);
+    }
+  };
 
   function buildQueryParams({ page, per_page }) {
     const params = new URLSearchParams();
@@ -95,7 +116,30 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
 
   const columns = useMemo(() => {
     const na = t("common.na");
+    const allIds = pager.records.map(r => r.id);
+    const areAllSelected = allIds.length > 0 && allIds.every(id => selectedProducts.includes(id));
+
     return [
+      {
+        key: "select",
+        header: (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={areAllSelected}
+              onCheckedChange={selectAll}
+            />
+          </div>
+        ),
+        className: "w-[48px]",
+        cell: (row) => (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={selectedProducts.includes(row.id)}
+              onCheckedChange={() => toggleProduct(row.id)}
+            />
+          </div>
+        ),
+      },
       // { key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
       {
         key: "name",
@@ -122,35 +166,18 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
           </div>
         )
       },
-      // {
-      //   key: "mainVariant",
-      //   header: t("common.variant"),
-      //   className: "min-w-[200px]",
-      //   cell: (row) => {
-      //     const v = row.variant;
-      //     if (!v) return <span className="text-slate-400">{na}</span>;
-      //     return (
-      //       <div className="flex items-center gap-3">
-      //         <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-border/50 shrink-0">
-      //           {v.mainImage ? (
-      //             // eslint-disable-next-line @next/next/no-img-element
-      //             <img src={avatarSrc(v.mainImage)} alt={v.sku} className="w-full h-full object-cover" />
-      //           ) : (
-      //             <ImageIcon size={16} className="text-slate-400" />
-      //           )}
-      //         </div>
-      //         <div className="flex flex-col min-w-0">
-      //           <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
-      //             {v.product?.name || na}
-      //           </span>
-      //           <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
-      //             {v.sku}
-      //           </span>
-      //         </div>
-      //       </div>
-      //     );
-      //   }
-      // },
+      { key: "mainImage", header: t("table.mainImage"), className: "w-[100px]", type: "img" },
+      { key: "images", header: t("table.imagesCount"), className: "w-[100px]", type: "imgs" },
+      {
+        key: "category",
+        header: t("table.category"),
+        className: "min-w-[120px]",
+        cell: (row) => (
+          <Badge variant="secondary" className="rounded-full">
+            {row?.category?.name ?? na}
+          </Badge>
+        )
+      },
       {
         key: "store",
         header: t("common.store"),
@@ -256,7 +283,7 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
         )
       }
     ];
-  }, [router, t, onAskDelete, onOpenView]);
+  }, [router, t, onAskDelete, onOpenView, selectedProducts]);
 
   function removeRowFromPager(id) {
     setPager((p) => ({
@@ -279,6 +306,12 @@ function formatDate(d, na) {
 }
 
 
+
+function toAbsUrl(url) {
+  if (!url) return null;
+  if (String(url).startsWith("http")) return url;
+  return url;
+}
 
 export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
   const t = useTranslations("products");
@@ -307,60 +340,49 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
               {/* Top Info Card */}
               <div className="rounded-xl border bg-white dark:bg-slate-900 p-4 shadow-sm">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <div className="text-xl font-semibold text-slate-900 dark:text-slate-50">{bundle.name ?? na}</div>
-
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                      <Badge className="rounded-full bg-primary/10 text-primary border border-primary/20">
-                        <Hash size={14} className="mr-1" />
-                        {t("common.id")}: {bundle.id}
-                      </Badge>
-
-                      <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                        <Tag size={14} className="mr-1" />
-                        {bundle.sku ?? na}
-                      </Badge>
-
-                      <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
-                        {t("common.price")}: {formatCurrency(bundle.price, na)}
-                      </Badge>
-
-                      {bundle.store && (
-                        <Badge className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-200">
-                          <Store size={14} className="mr-1" />
-                          {t("bundleModal.store")}: {bundle.store.name}
-                        </Badge>
+                  <div className="flex gap-4 max-md:flex-col">
+                    <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
+                      {bundle.mainImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={avatarSrc(toAbsUrl(bundle.mainImage))} alt={bundle.name || "bundle"} className="w-full h-full object-cover" />
+                      ) : (
+                        <ImageIcon className="text-slate-400" />
                       )}
                     </div>
 
-                    {/* {bundle.variant && (
-                      <div className="w-full mt-4 flex items-center gap-4 p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/20">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-white dark:bg-slate-800 flex items-center justify-center border border-primary/20 dark:border-border shrink-0 shadow-sm">
-                          {bundle.variant.mainImage ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={avatarSrc(bundle.variant.mainImage)} alt={bundle.variant.sku} className="w-full h-full object-cover" />
-                          ) : (
-                            <ImageIcon size={24} className="text-primary/50" />
-                          )}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <div className="text-xs font-bold text-primary dark:text-primary/90 uppercase tracking-wider mb-1">
-                            {t("bundleModal.variant")}
-                          </div>
-                          <div className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate">
-                            {bundle.variant.product?.name || na}
-                          </div>
-                          <div className="flex items-center flex-wrap   gap-2 mt-1">
-                            <Badge variant="outline" className="font-mono text-[10px] py-0 h-5 border-primary/30 text-primary dark:text-primary/90">
-                              {bundle.variant.sku}
-                            </Badge>
-                            <span className="text-[10px] text-slate-400">
-                              ID: {bundle.variant.id}
-                            </span>
-                          </div>
-                        </div>
+                    <div>
+                      <div className="text-xl font-semibold text-slate-900 dark:text-slate-50">{bundle.name ?? na}</div>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <Badge className="rounded-full bg-primary/10 text-primary border border-primary/20">
+                          <Hash size={14} className="mr-1" />
+                          {t("common.id")}: {bundle.id}
+                        </Badge>
+
+                        <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                          <Tag size={14} className="mr-1" />
+                          {bundle.sku ?? na}
+                        </Badge>
+
+                        <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
+                          {t("common.price")}: {formatCurrency(bundle.price, na)}
+                        </Badge>
+
+                        {bundle.store && (
+                          <Badge className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-200">
+                            <Store size={14} className="mr-1" />
+                            {t("bundleModal.store")}: {bundle.store.name}
+                          </Badge>
+                        )}
+
+                        {bundle.category && (
+                          <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                            <Tag size={14} className="mr-1" />
+                            {t("bundleModal.category")}: {bundle.category.name}
+                          </Badge>
+                        )}
                       </div>
-                    )} */}
+                    </div>
                   </div>
 
                   <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
@@ -375,14 +397,36 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                       <AlignLeft size={12} />
                       {t("common.description")}
                     </div>
-                    <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                      {bundle.description}
-                    </div>
+                    <SafeHtmlRenderer html={bundle.description} />
                   </div>
                 )}
               </div>
 
               <Separator />
+
+              {/* Images Section */}
+              {Array.isArray(bundle.images) && bundle.images.length > 0 && (
+                <>
+                  <div className="space-y-3">
+                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                      <ImageIcon size={16} />
+                      {t("common.images")} ({bundle.images.length})
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {bundle.images.slice(0, 8).map((im, idx) => {
+                        const src = toAbsUrl(im?.url);
+                        return (
+                          <div key={idx} className="rounded-xl overflow-hidden border bg-slate-50 dark:bg-slate-800">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={baseImg + (src || "")} alt={`img-${idx}`} className="w-full h-28 object-cover" />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
 
               {/* Contents Section */}
               <div className="space-y-3">

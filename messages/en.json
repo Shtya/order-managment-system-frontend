@@ -3587,7 +3587,20 @@
     "lowStock": "Low Stock",
     "inStock": "In Stock",
     "loadMore": "Load More",
-    "noMoreResults": "No more results"
+    "noMoreResults": "No more results",
+    "toggleProducts": "Products",
+    "toggleBundles": "Bundles",
+    "bundlePrice": "Price",
+    "bundleItems": "items",
+    "bundleItem": "item",
+    "detailSku": "SKU",
+    "detailQty": "Qty",
+    "detailAvailable": "Available",
+    "detailUnitPrice": "Unit Price",
+    "detailTotalPrice": "Total",
+    "bundleNotAllowed": "Insufficient stock",
+    "insufficientStock": "Short",
+    "inputBundlePlaceholder": "Enter bundle name or SKU code..."
   },
   "editProduct": {
     "loading": {
@@ -3620,7 +3633,8 @@
       "addProduct": "Add Product",
       "editProduct": "Edit Product",
       "addBundle": "Add Bundle",
-      "editBundle": "Edit Bundle"
+      "editBundle": "Edit Bundle",
+      "bundles": "Bundles"
     },
     "loading": {
       "message": "Loading product data...",
@@ -3930,7 +3944,8 @@
       "contents": "Bundle Contents",
       "noItems": "No items found.",
       "store": "Store",
-      "variant": "Variant"
+      "variant": "Variant",
+      "category": "Category"
     },
     "productModal": {
       "title": "Product Details",
@@ -13148,5 +13163,6 @@
         }
       }
     }
-  }
+  },
+  "selected": "Selected"
 }

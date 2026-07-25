@@ -132,6 +132,22 @@ export default function ProductsPage() {
 		[t]
 	);
 
+	const allowedTabs = useMemo(() => new Set(items.map((x) => x.id)), [items]);
+
+	useEffect(() => {
+		const tabFromUrl = searchParams.get("tab") || "products";
+		const safeTab = allowedTabs.has(tabFromUrl) ? tabFromUrl : "products";
+		if (safeTab !== active) setActive(safeTab);
+	}, [searchParams, allowedTabs]);
+
+	const handleTabChange = useCallback((tab) => {
+		setActive(tab);
+		const params = new URLSearchParams(searchParams.toString());
+		params.set("tab", tab);
+		router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+		setSelectedProducts([]);
+	}, [searchParams, pathname, router]);
+
 	useEffect(() => {
 		const handleUrlState = async () => {
 			if (!viewId) return;
@@ -413,7 +429,9 @@ export default function ProductsPage() {
 		onAskDelete,
 		onOpenView: openView,
 		onExportRequest: (fn) => (exportBuilderRef.current = fn),
-		activetab: active
+		activetab: active,
+		selectedProducts,
+		setSelectedProducts
 	});
 
 	const idleLogic = useIdleTab({
@@ -470,7 +488,7 @@ export default function ProductsPage() {
 				statsLoading={loadingSummary}
 				items={items}
 				active={active}
-				setActive={setActive}
+				setActive={handleTabChange}
 			/>
 
 			<Table
@@ -493,10 +511,10 @@ export default function ProductsPage() {
 						label: selectedProducts.length > 0 ? t("toolbar.exportToStoreCount", { count: selectedProducts.length }) : t("toolbar.exportToStore"),
 						icon: <StoreIcon size={14} />,
 						color: "primary",
-						disabled: selectedProducts.length === 0,
+						disabled: selectedProducts.length === 0 || active === "bundles",
 						onClick: () => setExportToStoreModal(true),
 						permission: "products.update",
-						hidden: active !== "products"
+						hidden: active === "idle"
 					},
 					{
 						key: "export",

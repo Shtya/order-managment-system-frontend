@@ -3582,7 +3582,20 @@
     "lowStock": "قليل",
     "inStock": "متاح",
     "loadMore": "تحميل المزيد",
-    "noMoreResults": "لا توجد نتائج أخرى"
+    "noMoreResults": "لا توجد نتائج أخرى",
+    "toggleProducts": "المنتجات",
+    "toggleBundles": "البندل",
+    "bundlePrice": "السعر",
+    "bundleItems": "عناصر",
+    "bundleItem": "عنصر",
+    "detailSku": "SKU",
+    "detailQty": "الكمية",
+    "detailAvailable": "متاح",
+    "detailUnitPrice": "سعر الوحدة",
+    "detailTotalPrice": "الإجمالي",
+    "bundleNotAllowed": "مخزون غير كافٍ",
+    "insufficientStock": "غير كافٍ",
+    "inputBundlePlaceholder": "أدخل اسم البندل أو رمز SKU..."
   },
   "editProduct": {
     "loading": {
@@ -3615,7 +3628,8 @@
       "addProduct": "إضافة منتج",
       "editProduct": "تعديل منتج",
       "addBundle": "إضافة بندل منتجات",
-      "editBundle": "تعديل باقة"
+      "editBundle": "تعديل باقة",
+      "bundles": "المنتجات الباندل"
     },
     "loading": {
       "message": "جاري تحميل بيانات المنتج...",
@@ -3694,7 +3708,7 @@
       "nameRequired": "اسم المنتج مطلوب",
       "slugRequired": "الرابط مطلوب",
       "categoryRequired": "يجب اختيار فئة",
-      "slugInvalid": "يجب أن يحتوي الرابط على أحرف إنجليزية صغيرة، أرقام، شرطات، وشرطات سفلية فقط (مثل: product_name-101)",
+      "slugInvalid": "يجب أن يحتوي الرابط على أحرف إنجليزية صغيرة، أرقام، شرطات، وشرطات سفلية فقط (مثل: name-101)",
       "slugAvailable": "هذا الرابط متاح للاستخدام",
       "slugTakenStore": "هذا الرابط مستخدم بالفعل",
       "slugTaken": "هذا الرابط مستخدم بالفعل",
@@ -3925,7 +3939,8 @@
       "contents": "محتويات الباندل",
       "noItems": "لا يوجد عناصر.",
       "store": "المتجر",
-      "variant": "المتغير"
+      "variant": "المتغير",
+      "category": "الفئة"
     },
     "productModal": {
       "title": "تفاصيل المنتج",
@@ -13175,5 +13190,6 @@
         }
       }
     }
-  }
+  },
+  "selected": "محدد"
 }

@@ -598,25 +598,25 @@ export function AddressSection({
 				{/* Address — full width */}
 				<div className="md:col-span-2">
 					{/* <TutorialSpotlight description="test" title={t("fields.address")} example={t("placeholders.address")} card="default"> */}
-						<div className="space-y-2">
-							<Label className="text-sm text-gray-600 dark:text-slate-300">
-								{t("fields.address")} *
-							</Label>
-							<Controller
-								name="address"
-								control={control}
-								render={({ field }) => (
-									<Textarea
-										{...field}
-										placeholder={t("placeholders.address")}
-										className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
-									/>
-								)}
-							/>
-							{errors.address && (
-								<p className="text-xs text-red-500">{errors.address.message}</p>
+					<div className="space-y-2">
+						<Label className="text-sm text-gray-600 dark:text-slate-300">
+							{t("fields.address")} *
+						</Label>
+						<Controller
+							name="address"
+							control={control}
+							render={({ field }) => (
+								<Textarea
+									{...field}
+									placeholder={t("placeholders.address")}
+									className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
+								/>
 							)}
-						</div>
+						/>
+						{errors.address && (
+							<p className="text-xs text-red-500">{errors.address.message}</p>
+						)}
+					</div>
 					{/* </TutorialSpotlight> */}
 				</div>
 
@@ -903,25 +903,55 @@ export default function CreateOrderPageComplete({
 
 	// ── Product handlers ─────────────────────────────────────────────────────
 	const handleSelectSku = useCallback(
-		(sku) => {
-			if (!sku?.available) return;
-			if (selectedSkus.some((s) => s.id === sku.id)) return;
-			setSelectedSkus((prev) => [...prev, sku]);
+		(skus) => {
+			const items = Array.isArray(skus) ? skus : [skus];
+
+			const newItems = [];
+			const updates = [];
+
+			for (const sku of items) {
+				if (!sku?.available) continue;
+				const existingIdx = watchedItems.findIndex((item) => item.variantId === sku.id);
+				if (existingIdx !== -1) {
+					updates.push({ index: existingIdx, sku });
+				} else {
+					newItems.push(sku);
+				}
+			}
+
+			if (!newItems.length && !updates.length) return;
+
+			const updatedItems = [...watchedItems];
+			for (const { index, sku } of updates) {
+				updatedItems[index] = {
+					...updatedItems[index],
+					quantity: sku.quantity || updatedItems[index].quantity,
+					unitPrice: sku.price || updatedItems[index].unitPrice,
+					availableQuantity: sku.available || updatedItems[index].availableQuantity,
+					...(sku.bundleId != null && { bundleId: sku.bundleId, bundleName: sku.bundleName, bundlePrice: sku.bundlePrice }),
+				};
+			}	
+
 			setValue("items", [
-				...watchedItems,
-				{
+				...updatedItems,
+				...newItems.map((sku) => ({
 					variantId: sku.id,
 					productName: sku.label || sku.productName,
 					sku: sku.sku || sku.key,
 					availableQuantity: sku.available || 0,
 					attributes: sku.attributes || {},
-					quantity: 1,
+					quantity: sku.quantity || 1,
 					unitPrice: sku.price || 0,
 					unitCost: sku.cost || sku.price || 0,
-				},
+					...(sku.bundleId != null && { bundleId: sku.bundleId, bundleName: sku.bundleName, bundlePrice: sku.bundlePrice }),
+				})),
 			]);
+
+			if (newItems.length) {
+				setSelectedSkus((prev) => [...prev, ...newItems]);
+			}
 		},
-		[selectedSkus, watchedItems, setValue]
+		[watchedItems, setValue]
 	);
 
 	// const handleDeleteProduct = useCallback(
@@ -1492,6 +1522,7 @@ export default function CreateOrderPageComplete({
 								{t("sections.addProducts")}
 							</h3>
 							<ProductSkuSearchPopover
+								mode="both" 
 								closeOnSelect={false}
 								handleSelectSku={handleSelectSku}
 								selectedSkus={selectedSkus}

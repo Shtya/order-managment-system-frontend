@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState,useCallback } from "react";
 import api from "@/utils/api";
 
 import { useTranslations } from "next-intl";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,27 +15,83 @@ import {
   Loader2,
   Search,
   Package,
-  Box,
-  Tag,
   CheckCircle2,
   AlertCircle,
   XCircle,
   Sparkles,
   ScanBarcode,
+  Layers,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useDebounce } from "@/hook/useDebounce";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Utilities
 ───────────────────────────────────────────────────────────────────────── */
-function useDebouncedValue(value, delay = 350) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
+
+export function useAllocateBundlePrices() {
+  const {calculateAvailableStock} = useOrdersSettings();
+	const allocateBundlePrices = useCallback((bundle, bundleQty = 1) => {
+		const items = bundle.items ?? [];
+		const bundlePrice = Number(bundle.price ?? 0);
+		const multiplier = Math.max(1, Number(bundleQty) || 1);
+
+		const totalRegularValue = items.reduce(
+			(sum, item) => sum + Number(item.variant?.price ?? 0) * Number(item.qty ?? 1),
+			0
+		);
+
+		let isAllowed = true;
+
+		const allocations = items.map((item) => {
+			const variant = item.variant ?? {};
+			const qty = Number(item.qty ?? 1);
+			const totalQty = qty * multiplier;
+			const variantPrice = Number(variant.price ?? 0);
+			const allocatedTotal =
+				totalRegularValue > 0
+					? bundlePrice * ((variantPrice * qty) / totalRegularValue) * multiplier
+					: 0;
+			const allocatedUnitPrice = qty > 0 ? (bundlePrice * ((variantPrice * qty) / totalRegularValue)) : 0;
+
+			const stockOnHand = Number(variant.stockOnHand ?? 0);
+			const reserved = Number(variant.reserved ?? 0);
+			const available = calculateAvailableStock(stockOnHand, reserved);
+			const insufficientStock = totalQty > available;
+			if (insufficientStock) isAllowed = false;
+
+			return {
+				id: variant.id,
+        bundleId: bundle.id,
+        bundleName: bundle.name,
+				productId: variant.productId,
+				label: variant.sku ? variant.sku : `#${variant.id}`,
+				sku: variant.sku ?? null,
+				key: variant.key ?? null,
+				stockOnHand,
+				reserved,
+				price: Math.round(allocatedUnitPrice * 100) / 100,
+				wholesalePrice: Number(variant.wholesalePrice ?? 0),
+				unitCost: Number(variant.unitCost ?? 0),
+				available,
+				name: variant.productName ?? null,
+				quantity: totalQty || 1,
+				originalPrice: variantPrice,
+				allocatedTotal: Math.round(allocatedTotal * 100) / 100,
+				insufficientStock,
+			};
+		});
+
+		return { allocations, isAllowed };
+	}, [calculateAvailableStock]);
+
+	return allocateBundlePrices;
 }
+
 
 function highlight(text, q) {
   if (!text) return text;
@@ -181,11 +235,11 @@ function SkuRow({ sku, idx, isSelected, debounced, onSelect, t }) {
         {/* Middle: label */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground truncate leading-tight">
-            {highlight(sku?.label || sku?.sku || "—", debounced)}
+            {highlight(sku?.sku || "—", debounced)}
           </p>
-          {sku?.sku && sku?.label && (
-            <p className="text-[11px] text-muted-foreground/80truncate mt-0.5 font-mono">
-              {sku.sku}
+          {sku?.sku && sku?.name && (
+            <p className="text-[11px] text-muted-foreground/80 truncate mt-0.5 font-mono">
+              {sku?.name || sku?.sku}
             </p>
           )}
         </div>
@@ -252,6 +306,264 @@ function SkuRow({ sku, idx, isSelected, debounced, onSelect, t }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   Bundle row
+───────────────────────────────────────────────────────────────────────── */
+function BundleRow({ bundle, idx, isSelected, debounced, onSelect, t, formatCurrency, expanded, onToggleExpand }) {
+  const itemCount = bundle.items?.length ?? 0;
+  const [bundleQty, setBundleQty] = useState(1);
+  const allocateBundlePrices = useAllocateBundlePrices();
+  const { allocations, isAllowed } = useMemo(() => {
+    return allocateBundlePrices(bundle, bundleQty);
+  }, [bundle, bundleQty, allocateBundlePrices]);
+
+  return (
+    <motion.div
+      key={bundle.id}
+      initial={{ opacity: 0, x: -6 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: idx * 0.04, duration: 0.18 }}
+      className={cn(
+        "rounded-md border bg-background/60 overflow-hidden",
+        isAllowed ? "border-border/60" : "border-red-200 dark:border-red-800/50"
+      )}
+    >
+      {/* Main row */}
+      <div
+        onClick={() => !isSelected && isAllowed && onSelect(bundle)}
+        className={cn(
+          "group relative flex items-center gap-3 px-3.5 py-3 cursor-pointer select-none transition-all duration-200",
+          isSelected
+            ? "bg-emerald-50/60 dark:bg-emerald-950/15 cursor-not-allowed"
+            : !isAllowed
+              ? "bg-red-50/30 dark:bg-red-950/10 cursor-not-allowed"
+              : [
+                  "hover:bg-[var(--primary)]/[0.03]",
+                  "hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]",
+                ]
+        )}
+      >
+        {/* Left: icon */}
+        <motion.div
+          whileHover={!isSelected && isAllowed ? { rotate: 8, scale: 1.05 } : {}}
+          transition={{ type: "spring", stiffness: 400 }}
+          className={cn(
+            "shrink-0 w-9 h-9 rounded-md border flex items-center justify-center transition-colors duration-200",
+            isSelected
+              ? "bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400"
+              : !isAllowed
+                ? "bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-600 dark:text-red-400"
+                : "bg-[var(--primary)]/8 border-[var(--primary)]/20 text-[var(--primary)] group-hover:bg-[var(--primary)]/15"
+          )}
+        >
+          {isSelected ? (
+            <CheckCircle2 className="w-4 h-4" />
+          ) : !isAllowed ? (
+            <AlertCircle className="w-4 h-4" />
+          ) : (
+            <Layers className="w-4 h-4" />
+          )}
+        </motion.div>
+
+        {/* Middle: label */}
+        <div className="flex-1 min-w-0">
+          <p className={cn(
+            "text-sm font-semibold truncate leading-tight",
+            !isAllowed ? "text-red-600 dark:text-red-400" : "text-foreground"
+          )}>
+            {highlight(bundle?.name || "—", debounced)}
+          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            {bundle?.sku && (
+              <p className="text-[11px] text-muted-foreground/80 truncate font-mono">
+                {bundle.sku}
+              </p>
+            )}
+            <span className="text-[10px] text-muted-foreground/60">
+              {itemCount} {itemCount === 1 ? t("bundleItem") : t("bundleItems")}
+            </span>
+            {!isAllowed && (
+              <span className="text-[10px] font-semibold text-red-500 dark:text-red-400">
+                {t("bundleNotAllowed")}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Right: price + actions */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className={cn(
+            "text-xs font-bold tabular-nums",
+            !isAllowed ? "text-red-500 dark:text-red-400" : "text-[var(--primary)]"
+          )}>
+            {formatCurrency ? formatCurrency(bundle.price) : bundle.price}
+          </span>
+
+          {/* Expand toggle */}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand(bundle.id);
+            }}
+            className={cn(
+              "h-7 w-7 p-0 rounded-md",
+              expanded
+                ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                : "text-muted-foreground/60 hover:text-[var(--primary)] hover:bg-[var(--primary)]/10"
+            )}
+          >
+            {expanded ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          </Button>
+
+          {/* Bundle quantity */}
+          {!isSelected && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-0.5 border border-border/60 rounded-md overflow-hidden"
+            >
+              <button
+                type="button"
+                disabled={bundleQty <= 1}
+                onClick={() => setBundleQty((q) => Math.max(1, q - 1))}
+                className="w-6 h-7 flex items-center justify-center text-[11px] font-bold text-muted-foreground/70 hover:bg-muted/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min={1}
+                value={bundleQty}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!isNaN(v) && v >= 1) setBundleQty(v);
+                }}
+                className="w-7 h-7 text-center text-[11px] font-semibold tabular-nums bg-transparent border-x border-border/40 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <button
+                type="button"
+                onClick={() => setBundleQty((q) => q + 1)}
+                className="w-6 h-7 flex items-center justify-center text-[11px] font-bold text-muted-foreground/70 hover:bg-muted/50 transition-colors"
+              >
+                +
+              </button>
+            </div>
+          )}
+
+          <AnimatePresence mode="wait">
+            {isSelected ? (
+              <motion.span
+                key="selected"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800/60 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold"
+              >
+                <CheckCircle2 className="w-3 h-3" />
+                {t("selected")}
+              </motion.span>
+            ) : (
+              <motion.div
+                key="cta"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                whileHover={isAllowed ? { scale: 1.04 } : {}}
+                whileTap={isAllowed ? { scale: 0.96 } : {}}
+              >
+                <Button
+                  size="sm"
+                  disabled={!isAllowed}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(bundle, bundleQty);
+                  }}
+                  className={cn(
+                    "h-7 px-3 text-[11px] font-semibold rounded-md gap-1.5 transition-all duration-150",
+                    isAllowed
+                      ? "bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white shadow-[0_1px_6px_rgba(0,0,0,0.12)] hover:shadow-[0_2px_10px_rgba(0,0,0,0.18)]"
+                      : "bg-red-100 dark:bg-red-900/30 text-red-400 dark:text-red-500 cursor-not-allowed"
+                  )}
+                >
+                  {t("select")}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Hover left-edge accent */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute start-0 top-3 bottom-3 w-[2.5px] rounded-full
+            bg-gradient-to-b from-[var(--primary)] to-[var(--third,var(--secondary))]
+            opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        />
+      </div>
+
+      {/* Expanded details */}
+      <AnimatePresence>
+        {expanded && allocations.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-border/40 bg-muted/20 px-3.5 py-2.5">
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="text-muted-foreground/70 font-semibold uppercase tracking-wider">
+                    <th className="text-start py-1.5 pe-2">{t("detailSku")}</th>
+                    <th className="text-center py-1.5 px-2">{t("detailQty")}</th>
+                    <th className="text-center py-1.5 px-2">{t("detailAvailable")}</th>
+                    <th className="text-end py-1.5 px-2">{t("detailUnitPrice")}</th>
+                    <th className="text-end py-1.5 ps-2">{t("detailTotalPrice")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/30">
+                  {allocations.map((a) => (
+                    <tr key={a.id} className={cn(
+                      "transition-colors",
+                      a.insufficientStock
+                        ? "text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20"
+                        : "text-foreground/80"
+                    )}>
+                      <td className="py-1.5 pe-2 font-mono font-medium truncate max-w-[120px]">
+                        {a.sku || "—"}
+                        {a.name && (
+                          <span className="text-muted-foreground/60 ms-1 font-sans font-normal">{a.name}</span>
+                        )}
+                      </td>
+                      <td className="py-1.5 px-2 text-center tabular-nums">{a.quantity}</td>
+                      <td className="py-1.5 px-2 text-center tabular-nums">
+                        {a.available}
+                        {a.insufficientStock && (
+                          <span className="ms-1 text-[9px] font-bold text-red-500">
+                            {t("insufficientStock")}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-1.5 px-2 text-end tabular-nums font-medium">
+                        {formatCurrency ? formatCurrency(a.price) : a.price}
+                      </td>
+                      <td className="py-1.5 ps-2 text-end tabular-nums font-semibold">
+                        {formatCurrency ? formatCurrency(a.allocatedTotal) : a.allocatedTotal}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    Main component
 ───────────────────────────────────────────────────────────────────────── */
 export function ProductSkuSearchPopover({
@@ -263,6 +575,7 @@ export function ProductSkuSearchPopover({
   initialSearch,
   trigger,
   width,
+  mode = "products",
   className = "",
 }) {
   const t = useTranslations("productSearch");
@@ -270,14 +583,17 @@ export function ProductSkuSearchPopover({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { formatCurrency } = usePlatformSettings();
 
   const [open, setOpen] = useState(false);
+  const [searchType, setSearchType] = useState(mode === "bundles" ? "bundles" : "products");
+  const [expandedBundleId, setExpandedBundleId] = useState(null);
   const triggerRef = useRef(null);
   const inputRef = useRef(null);
   const [triggerWidth, setTriggerWidth] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState(initialSearch ?? "");
-  const debounced = useDebouncedValue(searchQuery, 350);
+  const { debouncedValue: debounced } = useDebounce({ value: searchQuery, delay: 350 });
 
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -346,11 +662,19 @@ export function ProductSkuSearchPopover({
     }
     setIsSearching(true);
     try {
-      const res = await api.get(`/lookups/skus`, { params: { q: term, productId, limit: 20 } });
-      const { data, hasMore: more, nextCursor: cursor } = res.data;
-      setSearchResults(Array.isArray(data) ? data : []);
-      setHasMore(more);
-      setNextCursor(cursor);
+      if (searchType === "bundles") {
+        const res = await api.get(`/bundles`, { params: { search: term, limit: 20 } });
+        const records = res.data?.records ?? [];
+        setSearchResults(Array.isArray(records) ? records : []);
+        setHasMore(false);
+        setNextCursor(null);
+      } else {
+        const res = await api.get(`/lookups/skus`, { params: { q: term, productId, limit: 20 } });
+        const { data, hasMore: more, nextCursor: cursor } = res.data;
+        setSearchResults(Array.isArray(data) ? data : []);
+        setHasMore(more);
+        setNextCursor(cursor);
+      }
     } catch (e) {
       console.error("Search error:", e);
       setSearchResults([]);
@@ -362,7 +686,7 @@ export function ProductSkuSearchPopover({
   }
 
   async function loadMore() {
-    if (isLoadingMore || !hasMore || !nextCursor) return;
+    if (searchType === "bundles" || isLoadingMore || !hasMore || !nextCursor) return;
 
     setIsLoadingMore(true);
     try {
@@ -393,18 +717,36 @@ export function ProductSkuSearchPopover({
   useEffect(() => {
     if (!open) return;
     runSearch(debounced);
-  }, [debounced, open]);
+  }, [debounced, open, searchType]);
 
   useEffect(() => {
     if (!open) resetSearch();
   }, [open]);
 
   function selectSku(sku) {
-    handleSelectSku(sku);
+    handleSelectSku(sku); 
     if (closeOnSelect) {
       setOpen(false);
       resetSearch();
     }
+  } 
+    const allocateBundlePrices = useAllocateBundlePrices();
+
+  function selectBundle(bundle, bundleQty = 1) {
+    const { allocations, isAllowed } = allocateBundlePrices(bundle, bundleQty);
+    if (!isAllowed) return;
+
+    const normalizedSkus = allocations.map((sku) => ({
+      ...sku,
+      bundleId: bundle.id,
+      bundleName: bundle.name,
+      bundlePrice: Number(bundle.price ?? 0),
+    }));
+
+    handleSelectSku(normalizedSkus);
+    setOpen(false);
+    resetSearch();
+    setExpandedBundleId(null);
   }
 
   /* ── Derived UI state ─────────────────────────────────────────────── */
@@ -475,63 +817,96 @@ export function ProductSkuSearchPopover({
           />
 
           {/* ── Search header ──────────────────────────────────────────── */}
-          <div className="px-4 pt-5 pb-3.5 flex items-center gap-3">
-            {/* Icon block */}
-            <div className="shrink-0 w-9 h-9 rounded-md bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)]">
-              <Package className="w-4 h-4" />
-            </div>
-
-            {/* Input */}
-            <div className="relative flex-1">
-              <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/80pointer-events-none" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t("inputPlaceholder")}
-                className={cn(
-                  "w-full h-10 ps-10 pe-4 rounded-md text-sm",
-                  "border border-border/70 bg-background/60",
-                  "placeholder:text-muted-foreground/80",
-                  "hover:border-[var(--primary)]/40 hover:bg-background",
-                  "focus:border-[var(--primary)] focus:bg-background",
-                  "focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
-                  "outline-none transition-all duration-200"
-                )}
-              />
-            </div>
-
-            {/* Counter badge */}
-            <AnimatePresence>
-              {(isSearching || searchResults.length > 0) && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.75 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.75 }}
-                  className="shrink-0"
-                >
-                  <span
+          <div className="px-4 pt-5 pb-3.5 flex flex-col gap-3">
+            {/* Toggle */}
+            {mode === "both" && (
+              <div className="flex items-center justify-center gap-1 p-1 rounded-lg bg-border/30">
+                {[
+                  { key: "products", label: t("toggleProducts"), icon: Package },
+                  { key: "bundles", label: t("toggleBundles"), icon: Layers },
+                ].map(({ key, label, icon: Icon }) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      if (searchType === key) return;
+                      setSearchType(key);
+                      setSearchResults([]);
+                      // setSearchQuery("");
+                      setHasMore(false);
+                      setNextCursor(null);
+                    }}
                     className={cn(
-                      "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold",
-                      "border border-border/60 bg-background text-muted-foreground"
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200",
+                      searchType === key
+                        ? "bg-background text-foreground shadow-sm border border-border/60"
+                        : "text-muted-foreground/70 hover:text-foreground"
                     )}
                   >
-                    {isSearching ? (
-                      <>
-                        <Loader2 className="w-3 h-3 animate-spin text-[var(--primary)]" />
-                        {t("searching")}
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-3 h-3 text-[var(--primary)]" />
-                        {searchResults.length}
-                      </>
-                    )}
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    <Icon className="w-3.5 h-3.5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              {/* Icon block */}
+              <div className="shrink-0 w-9 h-9 rounded-md bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)]">
+                {searchType === "bundles" ? <Layers className="w-4 h-4" /> : <Package className="w-4 h-4" />}
+              </div>
+
+              {/* Input */}
+              <div className="relative flex-1">
+                <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/80pointer-events-none" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={searchType === "bundles" ? t("inputBundlePlaceholder") : t("inputPlaceholder")}
+                  className={cn(
+                    "w-full h-10 ps-10 pe-4 rounded-md text-sm",
+                    "border border-border/70 bg-background/60",
+                    "placeholder:text-muted-foreground/80",
+                    "hover:border-[var(--primary)]/40 hover:bg-background",
+                    "focus:border-[var(--primary)] focus:bg-background",
+                    "focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
+                    "outline-none transition-all duration-200"
+                  )}
+                />
+              </div>
+
+              {/* Counter badge */}
+              <AnimatePresence>
+                {(isSearching || searchResults.length > 0) && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.75 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.75 }}
+                    className="shrink-0"
+                  >
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold",
+                        "border border-border/60 bg-background text-muted-foreground"
+                      )}
+                    >
+                      {isSearching ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin text-[var(--primary)]" />
+                          {t("searching")}
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3 h-3 text-[var(--primary)]" />
+                          {searchResults.length}
+                        </>
+                      )}
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Thin divider */}
@@ -569,16 +944,31 @@ export function ProductSkuSearchPopover({
                   exit={{ opacity: 0 }}
                   className="p-3 space-y-1.5"
                 >
-                  {searchResults.map((sku, idx) => (
-                    <SkuRow
-                      key={sku.id}
-                      sku={sku}
-                      idx={idx}
-                      isSelected={selectedSkuIds.has(sku.id)}
-                      debounced={debounced}
-                      onSelect={selectSku}
-                      t={t}
-                    />
+                  {searchResults.map((item, idx) => (
+                    searchType === "bundles" ? (
+                      <BundleRow
+                        key={item.id}
+                        bundle={item}
+                        idx={idx}
+                        isSelected={false}
+                        debounced={debounced}
+                        onSelect={selectBundle}
+                        t={t}
+                        formatCurrency={formatCurrency}
+                        expanded={expandedBundleId === item.id}
+                        onToggleExpand={(id) => setExpandedBundleId((prev) => prev === id ? null : id)}
+                      />
+                    ) : (
+                      <SkuRow
+                        key={item.id}
+                        sku={item}
+                        idx={idx}
+                        isSelected={selectedSkuIds.has(item.id)}
+                        debounced={debounced}
+                        onSelect={selectSku}
+                        t={t}
+                      />
+                    )
                   ))}
 
                   {/* ── Load More ─────────────────────────────────────────── */}

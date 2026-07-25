@@ -575,24 +575,58 @@ export default function OrderConfirmationWorkPage() {
       })
     }));
 
-  const handleSelectSku = useCallback(sku => {
-    if (selectedSkus.some(s => s.id === sku.id)) return;
-    setSelectedSkus(p => [...p, sku]);
-    setEditedOrder(prev => recalc({
-      ...prev, items: [...prev.items, {
-        isAdditional: true, variantId: sku.id,
-        variant: {
-          id: sku.id, sku: sku.sku || sku.key, attributes: sku.attributes || {},
-          stockOnHand: sku.stockOnHand || 0, reserved: sku.reserved || 0,
-          product: { id: sku.productId, name: sku.label || sku.productName }
-        },
-        productName: sku.label || sku.productName, sku: sku.sku || sku.key,
-        attributes: sku.attributes || {}, quantity: 1, unitPrice: sku.price || 0,
-        unitCost: sku.cost || sku.price || 0
-      }]
-    }));
-    toast.success(t("productAdded"));
-  }, [selectedSkus, t]);
+  const handleSelectSku = useCallback(skus => {
+    const items = Array.isArray(skus) ? skus : [skus];
+
+    const newItems = [];
+    const updates = [];
+
+    for (const sku of items) {
+      if (!sku?.available) continue;
+      const existingIdx = editedOrder.items.findIndex(item => (item.variant?.id || item.variantId) === sku.id);
+      if (existingIdx !== -1) {
+        updates.push({ index: existingIdx, sku });
+      } else {
+        newItems.push(sku);
+      }
+    }
+
+    if (!newItems.length && !updates.length) return;
+
+    setEditedOrder(prev => {
+      const updatedItems = [...prev.items];
+      for (const { index, sku } of updates) {
+        updatedItems[index] = {
+          ...updatedItems[index],
+          quantity: sku.quantity || updatedItems[index].quantity,
+          unitPrice: sku.price || updatedItems[index].unitPrice,
+          ...(sku.bundleId != null && { bundleId: sku.bundleId, bundleName: sku.bundleName, bundlePrice: sku.bundlePrice }),
+        };
+      }
+      return recalc({
+        ...prev,
+        items: [
+          ...updatedItems,
+          ...newItems.map(sku => ({
+            isAdditional: true, variantId: sku.id,
+            variant: {
+              id: sku.id, sku: sku.sku || sku.key, attributes: sku.attributes || {},
+              stockOnHand: sku.stockOnHand || 0, reserved: sku.reserved || 0,
+              product: { id: sku.productId, name: sku.label || sku.productName }
+            },
+            productName: sku.label || sku.productName, sku: sku.sku || sku.key,
+            attributes: sku.attributes || {}, quantity: sku.quantity || 1, unitPrice: sku.price || 0,
+            unitCost: sku.cost || sku.price || 0,
+            ...(sku.bundleId != null && { bundleId: sku.bundleId, bundleName: sku.bundleName, bundlePrice: sku.bundlePrice }),
+          })),
+        ],
+      });
+    });
+
+    if (newItems.length) {
+      setSelectedSkus(prev => [...prev, ...newItems]);
+    }
+  }, [editedOrder?.items, t]);
 
   const handleRemove = item => {
     const vId = item.variant?.id || item.variantId;
@@ -702,7 +736,7 @@ export default function OrderConfirmationWorkPage() {
           {addlItems?.length > 0 && <ProdTable color={HEX.orange} icon={Package} title={t("additionalProducts")} eyebrow={t("items")}
             items={addlItems} onQty={handleQty} onRemove={handleRemove} isAdditional={true}
             handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} {...sh} />}
-          <UpsellSection order={originalOrder} items={editedOrder.items} onOpen={p => { setUpsellProd(p); setUpsellOpen(true); }} {...sh} />
+          <UpsellSection order={originalOrder} items={editedOrder?.items} onOpen={p => { setUpsellProd(p); setUpsellOpen(true); }} {...sh} />
           <NotesSection order={editedOrder} {...sh} />
           <HistSection order={editedOrder} {...sh} />
         </div>
@@ -934,6 +968,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
       <div className="main-card !p-0 overflow-hidden" ref={tableContainerRef}>
 
         <ProductSkuSearchPopover
+          mode="both"
           closeOnSelect={false}
           handleSelectSku={handleSelectSku}
           selectedSkus={selectedSkus}

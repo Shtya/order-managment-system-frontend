@@ -1333,14 +1333,14 @@ export function AccountModal({ open, onOpenChange, editingAccount, onSave }) {
                             <Field label={t("safes.accounts.accountOwnerName")} error={errors.accountOwnerName?.message} required><Input {...register("accountOwnerName")} /></Field>
                             <Field label={t("safes.accounts.accountNumber")} error={errors.accountNumber?.message} required><Input {...register("accountNumber")} /></Field>
                             <Field label={t("safes.accounts.iban")} error={errors.iban?.message}><Input {...register("iban")} /></Field>
-                            <Field label={t("safes.accounts.commissionRate")} error={errors.commissionRate?.message}><Input type="number" {...register("commissionRate")} /></Field>
+                            <Field label={t("safes.accounts.commissionRate")} error={errors.commissionRate?.message}><Input type="number" step="any" {...register("commissionRate")} /></Field>
                         </div>
                     )}
                     {accountType === 'WALLET' && (
                         <div className="grid grid-cols-2 gap-4">
                             <Field label={t("safes.accounts.accountOwnerName")} error={errors.accountOwnerName?.message} required><Input {...register("accountOwnerName")} /></Field>
                             <Field label={t("safes.accounts.accountNumber")} error={errors.accountNumber?.message} required><Input {...register("accountNumber")} /></Field>
-                            <Field label={t("safes.accounts.commissionRate")} error={errors.commissionRate?.message}><Input type="number" {...register("commissionRate")} /></Field>
+                            <Field label={t("safes.accounts.commissionRate")} error={errors.commissionRate?.message}><Input type="number" step="any" {...register("commissionRate")} /></Field>
                         </div>
                     )}
                     {accountType === 'EMPLOYEE_CUSTODY' && (

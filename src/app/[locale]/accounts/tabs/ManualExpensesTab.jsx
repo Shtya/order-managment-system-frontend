@@ -98,7 +98,7 @@ const createManualExpenseSchema = (t) =>
       .string()
       .notOneOf(["none"], t("manualExpenses.form.selectSafeError") || "Please select a safe")
       .required(t("manualExpenses.form.selectSafeError") || "Please select a safe"),
-    description: yup.string().required(t("manualExpenses.validation.descriptionRequired")),
+    description: yup.string().optional(),
     attachment: yup.mixed().nullable(),
   });
 

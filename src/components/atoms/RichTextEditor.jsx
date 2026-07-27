@@ -26,6 +26,7 @@ import {
   Copy,
   CheckCircle2,
   Image as ImageIcon,
+  Eraser,
 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import Button_ from './Button'
@@ -344,6 +345,8 @@ const EMPTY_VALUE = [
   },
 ]
 
+const RESET_HTML = '<p style></p>'
+
 
 const RichTextEditor = forwardRef(
   ({ value, onChange, placeholder, className, disabled = false }, ref) => {
@@ -406,6 +409,21 @@ const RichTextEditor = forwardRef(
     const renderElement = useCallback(props => <MySlateElement {...props} />, [])
     const renderLeaf = useCallback(props => <Leaf {...props} />, [])
 
+    const handleReset = useCallback(() => {
+      const slateValue = deserializeHtml(RESET_HTML)
+      setEditorValue(slateValue)
+      setHtml(RESET_HTML)
+      lastExternalValueRef.current = RESET_HTML
+      Transforms.delete(editor, {
+        at: {
+          anchor: Editor.start(editor, []),
+          focus: Editor.end(editor, []),
+        },
+      })
+      Transforms.insertFragment(editor, slateValue, { at: [0] })
+      onChange?.(RESET_HTML)
+    }, [editor])
+
 
     // This fires when Fake Filler crashes the DOM
     const handleError = (error, info) => {
@@ -432,6 +450,7 @@ const RichTextEditor = forwardRef(
               t={t}
               isHtmlView={isHtmlView}
               onToggleHtmlView={() => setIsHtmlView(!isHtmlView)}
+              onReset={handleReset}
             />
             {isHtmlView ? (
               <div className="relative">
@@ -526,7 +545,7 @@ const RichTextEditor = forwardRef(
 
 RichTextEditor.displayName = 'RichTextEditor'
 
-const Toolbar = ({ disabled = false, isAr, t, isHtmlView, onToggleHtmlView }) => {
+const Toolbar = ({ disabled = false, isAr, t, isHtmlView, onToggleHtmlView, onReset }) => {
   const editor = useSlate()
 
   const getCurrentBlockType = () => {
@@ -665,6 +684,23 @@ const Toolbar = ({ disabled = false, isAr, t, isHtmlView, onToggleHtmlView }) =>
           event.preventDefault()
           onToggleHtmlView()
         }}
+        className="w-8 h-8 p-0!"
+      />
+
+      <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-2" />
+
+      {/* Reset Editor Button */}
+      <Button_
+        variant="outline"
+        tone=""
+        icon={<Eraser size={16} />}
+        size="sm"
+        onMouseDown={event => {
+          event.preventDefault()
+          if (disabled) return
+          onReset?.()
+        }}
+        disabled={disabled}
         className="w-8 h-8 p-0!"
       />
     </div>

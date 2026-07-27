@@ -33,6 +33,7 @@ import { FaInfoCircle } from "react-icons/fa";
 import { GEO_CONFIG } from "@/utils/order-utils";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
+import { BundleBadge } from "@/components/atoms/BundleBadge";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -740,6 +741,7 @@ export default function CreateOrderPageComplete({
 						availableQuantity: calculateAvailableStock(item.variant?.stockOnHand, item.variant?.reserved),
 						unitPrice: item.unitPrice || 0,
 						unitCost: item.unitCost || item.unitPrice || 0,
+						...(item.bundleId != null && { bundleId: item.bundleId, bundleName: item.bundleName || item.bundle?.name || "", bundlePrice: item.bundlePrice || item?.bundle?.price || 0 }),
 					})) || [],
 			};
 		}
@@ -910,8 +912,17 @@ export default function CreateOrderPageComplete({
 			const updates = [];
 
 			for (const sku of items) {
+				const bundleId = sku.bundleId || null;
 				if (!sku?.available) continue;
-				const existingIdx = watchedItems.findIndex((item) => item.variantId === sku.id);
+				const existingIdx = watchedItems.findIndex((item) => {
+					if (sku.bundleId != null) {
+						// Bundle item: match both variant and bundle
+						return item.variantId === sku.id && item.bundleId === sku.bundleId;
+					}
+
+					// Normal item: match only standalone items
+					return item.variantId === sku.id && !item.bundleId;
+				});
 				if (existingIdx !== -1) {
 					updates.push({ index: existingIdx, sku });
 				} else {
@@ -930,7 +941,7 @@ export default function CreateOrderPageComplete({
 					availableQuantity: sku.available || updatedItems[index].availableQuantity,
 					...(sku.bundleId != null && { bundleId: sku.bundleId, bundleName: sku.bundleName, bundlePrice: sku.bundlePrice }),
 				};
-			}	
+			}
 
 			setValue("items", [
 				...updatedItems,
@@ -972,7 +983,13 @@ export default function CreateOrderPageComplete({
 
 			// Track removed items
 			if (deleted?.variantId) {
-				setRemovedItemsIds(prev => [...prev, { variantId: deleted.variantId }]);
+				setRemovedItemsIds(prev => [
+					...prev,
+					{
+						variantId: deleted.variantId,
+						...(!!deleted.bundleId && { bundleId: deleted.bundleId }),
+					},
+				]);
 			}
 
 			// Remove from form items
@@ -983,7 +1000,11 @@ export default function CreateOrderPageComplete({
 
 			// Remove from selected SKUs
 			setSelectedSkus(prev =>
-				prev.filter(s => s.id !== deleted.variantId)
+				prev.filter(s =>
+					!!deleted.bundleId
+						? !(s.id === deleted.variantId && s.bundleId === deleted.bundleId)
+						: !(s.id === deleted.variantId && !s.bundleId)
+				)
 			);
 		},
 		[watchedItems, setValue]
@@ -1116,6 +1137,7 @@ export default function CreateOrderPageComplete({
 					quantity: Number(item.quantity),
 					unitPrice: Number(item.unitPrice),
 					unitCost: Number(item.unitCost || item.unitPrice),
+					bundleId: item.bundleId || undefined,
 				})),
 			};
 
@@ -1522,7 +1544,7 @@ export default function CreateOrderPageComplete({
 								{t("sections.addProducts")}
 							</h3>
 							<ProductSkuSearchPopover
-								mode="both" 
+								mode="both"
 								closeOnSelect={false}
 								handleSelectSku={handleSelectSku}
 								selectedSkus={selectedSkus}
@@ -1570,17 +1592,21 @@ export default function CreateOrderPageComplete({
 											{watchedItems.map((product, index) => {
 												const unitPrice = parseFloat(product.unitPrice) || 0;
 												const quantity = parseFloat(product.quantity) || 0;
+												const isBundleRow = !!product.bundleId && !!product.bundleName;
 
 												return (
 													<tr
 														key={index}
-														className="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
+														className={`border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors ${isBundleRow ? "border-l-4 border-l-indigo-500/70 bg-indigo-50/30 dark:bg-indigo-950/20" : ""}`}
 													>
 														<td className="p-3 text-sm text-gray-600 dark:text-slate-300">
 															{product.sku}
 														</td>
 														<td className="p-3 text-sm font-semibold text-gray-700 dark:text-slate-200">
 															{product.productName}
+															{isBundleRow && (
+																<BundleBadge bundleName={product.bundleName} />
+															)}
 															{Object.keys(product.attributes || {}).length > 0 && (
 																<div className="text-xs text-gray-500 font-normal mt-1">
 																	{Object.entries(product.attributes).map(([k, v]) => (

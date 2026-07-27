@@ -25,23 +25,23 @@ export function useClipboard(timeout = 1400) {
         }
     };
 
-    const copy = useCallback(async (value) => {
+    const copy = useCallback(async (value, unique) => {
         const text = String(value);
-
+        
         try {
             if (typeof document !== "undefined" && !document.hasFocus()) {
                 window.focus();
             }
 
             await navigator.clipboard.writeText(text);
-            setCopied(value);
+            setCopied(value + unique);
             return true;
         } catch (err) {
             console.warn("Clipboard API failed, using fallback:", err);
 
             const success = fallbackCopy(text);
             if (success) {
-                setCopied(value);
+                setCopied(value + unique);
             }
 
             return success;

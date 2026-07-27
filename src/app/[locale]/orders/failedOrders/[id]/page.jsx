@@ -54,6 +54,7 @@ import { normalizeAxiosError } from "@/utils/axios";
 import Button_ from "@/components/atoms/Button";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import SafeHtmlRenderer from "@/components/atoms/SafeHtmlRenderer";
+import { BundleBadge } from "@/components/atoms/BundleBadge";
 
 function toAbsUrl(url) {
     if (!url) return null;
@@ -376,8 +377,8 @@ export default function FailedOrderDetailsPage() {
     const params = useParams();
     const id = params.id;
     const tCommon = useTranslations('common');
-    const t = useTranslations('orders.failedOrders');
     const tTutorial = useTranslations('tutorial.orders');
+    const t = useTranslations('orders.failedOrders');
     const router = useRouter();
     const { formatCurrency } = usePlatformSettings();
 
@@ -432,6 +433,7 @@ export default function FailedOrderDetailsPage() {
     }, [fetchData]);
 
     const failure = data?.failureLog;
+    const finalCartItems = data?.cartItems;
     const isSuccess = failure?.status === 'success';
     const problems = data?.problems || [];
     const payload = failure?.payload;
@@ -499,10 +501,10 @@ export default function FailedOrderDetailsPage() {
             // Clone payload to avoid direct mutation
             const newPayload = JSON.parse(JSON.stringify(payload));
             const item = newPayload.cartItems[cartItemIdx];
-
+            
             // Update item with new variant details
             item.variant = {
-                ...item.variant,
+                ...item?.variant,
                 key: variant.key,
                 sku: variant.sku,
                 variation_props: Object.entries(variant.attributes || {}).map(([name, value]) => ({
@@ -519,6 +521,7 @@ export default function FailedOrderDetailsPage() {
             fetchData();
         } catch (err) {
             toast.error(normalizeAxiosError(err) || t('messages.updatePayloadFailed'), { id: toastId });
+            console.erorr(err)
         } finally {
             setUpdatingPayload(false);
         }
@@ -531,7 +534,9 @@ export default function FailedOrderDetailsPage() {
             header: t('table.product'),
             cell: (row) => (
                 <div>
-                    <div className="font-bold text-slate-900 dark:text-white leading-tight">{row.name}</div>
+                    <div className="font-bold text-slate-900 dark:text-white leading-tight">{row.name}
+                        <BundleBadge bundleName={row?.bundleName} />
+                    </div>
                     <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider flex items-center gap-1">
                         <ExternalLink className="w-3 h-3" /> {t('labels.slug')}: {row.productSlug}
                     </div>
@@ -603,7 +608,16 @@ export default function FailedOrderDetailsPage() {
             description: tTutorial('failedOrders.problems.description'),
             example: tTutorial('failedOrders.problems.example'),
             cell: (row) => {
-                const problem = problems.find(p => p.slug === row.productSlug && p.key === row.variant.key);
+                const problem = problems.find(p => {
+                    if (row.bundleId) { 
+                        return p.bundleId === row.bundleId && p.productId === row.variant.localProductId && p.key === row.variant.key;
+                    }   
+                    
+                    return (    
+                        p.productId === row.variant.localProductId &&
+                        p.key === row.variant.key
+                    );
+                });
 
                 if (problem && !isSuccess) {
                     return (
@@ -628,7 +642,16 @@ export default function FailedOrderDetailsPage() {
             description: tTutorial('failedOrders.actions.description'),
             example: tTutorial('failedOrders.actions.example'),
             cell: (row, i) => {
-                const problem = problems.find(p => p.slug === row.productSlug && p.key === row.variant.key);
+                const problem = problems.find(p => {
+                    if (row.bundleId) { 
+                        return p.bundleId === row.bundleId && p.productId === row.variant.localProductId && p.key === row.variant.key;
+                    }
+
+                    return (    
+                        p.productId === row.variant.localProductId &&
+                        p.key === row.variant.key
+                    );
+                });
 
                 const remoteId = row?.remoteProductId || problem?.remoteId;
                 const provider = failure?.store?.provider;
@@ -655,7 +678,7 @@ export default function FailedOrderDetailsPage() {
                     });
                 }
                 const localProductId = row.variant?.localProductId || problem?.productId;
-                if (localProductId && !isSuccess) {
+                if (localProductId && !isSuccess && !row.bundleId) {
                     actions.push({
                         icon: <RefreshCw size={16} />,
                         tooltip: t('actions.chooseDifferentSku'),
@@ -665,7 +688,7 @@ export default function FailedOrderDetailsPage() {
                         onClick: () => handleOpenSkuSelector(localProductId, cartItemIdx, row.variant?.key)
                     });
                 }
-                if ((problem?.code === WebhookOrderProblem.SKU_NOT_FOUND || problem?.code === WebhookOrderProblem.SKU_INACTIVE)&& !isSuccess) {
+                if ((problem?.code === WebhookOrderProblem.SKU_NOT_FOUND || problem?.code === WebhookOrderProblem.SKU_INACTIVE) && !isSuccess) {
                     // Option to choose a different SKU from the same product
 
 
@@ -943,7 +966,7 @@ export default function FailedOrderDetailsPage() {
                 <div className="p-0">
                     <Table
                         columns={itemColumns}
-                        data={payload?.cartItems || []}
+                        data={finalCartItems || []}
                         isLoading={loading}
                         hasFilters={false}
                         flat={true}

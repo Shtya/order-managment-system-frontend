@@ -65,6 +65,7 @@ import Button_ from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
+import { BundleBadge } from "@/components/atoms/BundleBadge";
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const P = "var(--primary)";
@@ -380,13 +381,13 @@ export function OrderDetailsPage({ order, loading }) {
             <div className="border-t border-border/25">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
                 <MetaCell label={t("fields.city")} icon={<MapPin size={11} />}>
-                  <span className="text-sm font-bold text-foreground truncate block">
+                  <span className="text-sm font-bold text-foreground block">
                     {order.city || "—"}
                   </span>
                 </MetaCell>
 
                 <MetaCell label={t("fields.address")} icon={<Home size={11} />}>
-                  <span className="text-sm font-bold text-foreground truncate block">
+                  <span className="text-sm font-bold text-foreground block">
                     {order.address || "—"}
                   </span>
                 </MetaCell>
@@ -578,6 +579,7 @@ export function OrderDetailsPage({ order, loading }) {
                               {item.variant?.product?.name ||
                                 t("details.unknownProduct")}
                             </span>
+                            <BundleBadge bundleName={item?.bundle?.name} />
                           </div>
                         </td>
 

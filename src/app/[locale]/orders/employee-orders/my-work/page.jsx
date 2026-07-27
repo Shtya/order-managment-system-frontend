@@ -32,6 +32,7 @@ import { GEO_CONFIG } from "@/utils/order-utils";
 import { Input } from "@/components/ui/input";
 import { alarmToast } from "@/utils/healpers";
 import { Label } from "@/components/ui/label";
+import { BundleBadge } from "@/components/atoms/BundleBadge";
 
 
 
@@ -314,7 +315,7 @@ function Fld({ label, name, control, error, disabled = false, type = "text", sty
   return (
     <div className="space-y-2">
       <Label className="text-sm text-gray-600 dark:text-slate-300">
-          {label}
+        {label}
       </Label>
       <Controller name={name} control={control} render={({ field }) => (
         <Input {...field} value={field.value ?? ""} type={type} disabled={disabled}
@@ -430,9 +431,9 @@ function logOrderChanges(originalOrder, editedOrder) {
     normalize(getEditablePart(editedOrder))
   );
 
-  
+
   if (diffs.length === 0) {
-    
+
   } else {
     diffs.forEach((item) => {
       console.log(`${item.path}:`, {
@@ -513,14 +514,14 @@ export default function OrderConfirmationWorkPage() {
   useEffect(() => {
     if (!originalOrder || !editedOrder) return;
     logOrderChanges(originalOrder, editedOrder);
-    
-    
+
+
   }, [originalOrder, editedOrder]);
 
   const wItems = watch("items"), wShip = watch("shippingCost"), wDisc = watch("discount");
   useEffect(() => {
     console.log("wShip", wShip);
-    
+
     if (wItems) { const pt = wItems.reduce((s, i) => s + (i.unitPrice * i.quantity), 0); setValue("productsTotal", pt); setValue("finalTotal", pt + Number(wShip || 0) - Number(wDisc || 0)); }
   }, [wItems, wShip, wDisc, setValue]);
 
@@ -531,7 +532,7 @@ export default function OrderConfirmationWorkPage() {
       landmark: data.landmark || "",
       customerName: data.customerName || "", email: data.email || "", phoneNumber: data.phoneNumber || "",
       secondPhoneNumber: data.secondPhoneNumber || "", city: data.city || "", cityId: data.cityId || "", area: data.area || "",
-      address: data.address || "", deposit: data.deposit || 0, shippingCost: data.shippingCost || 0,finalTotal: data.finalTotal,
+      address: data.address || "", deposit: data.deposit || 0, shippingCost: data.shippingCost || 0, finalTotal: data.finalTotal,
       paymentMethod: data.paymentMethod || "cod", allowOpenPackage: data.allowOpenPackage ?? false, items: data.items || []
     });
     if (data.items?.length) setSelectedSkus(data.items.map(i => ({ id: i.variant?.id || i.variantId, label: i.variant?.product?.name || i.productName, productName: i.variant?.product?.name || i.productName, sku: i.variant?.sku || i.sku, attributes: i.variant?.attributes || i.attributes || {}, price: i.unitPrice || 0, cost: i.unitCost || i.unitPrice || 0 })));
@@ -541,7 +542,7 @@ export default function OrderConfirmationWorkPage() {
     else { setIsLocked(false); setLockedUntil(null); }
 
     if (data.shippingMetadata) {
-      
+
       setProviderMeta({
         cityId: data.shippingMetadata.cityId ?? "",
         zoneId: data.shippingMetadata.zoneId ?? "",
@@ -550,7 +551,7 @@ export default function OrderConfirmationWorkPage() {
         // orderSize: data.shippingMetadata.orderSize ?? "MEDIUM",
       });
     } else {
-      
+
       setProviderMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
     }
   };
@@ -583,7 +584,21 @@ export default function OrderConfirmationWorkPage() {
 
     for (const sku of items) {
       if (!sku?.available) continue;
-      const existingIdx = editedOrder.items.findIndex(item => (item.variant?.id || item.variantId) === sku.id);
+      const existingIdx = editedOrder.items.findIndex((item) => {
+        if (sku.bundleId != null) {
+          // Bundle item: match both variant and bundle
+          return (
+            (item.variant?.id || item.variantId) === sku.id &&
+            item.bundleId === sku.bundleId
+          );
+        }
+
+        // Standalone item: match only standalone items
+        return (
+          (item.variant?.id || item.variantId) === sku.id &&
+          !item.bundleId
+        );
+      });
       if (existingIdx !== -1) {
         updates.push({ index: existingIdx, sku });
       } else {
@@ -628,17 +643,69 @@ export default function OrderConfirmationWorkPage() {
     }
   }, [editedOrder?.items, t]);
 
-  const handleRemove = item => {
+  const handleRemove = (item) => {
     const vId = item.variant?.id || item.variantId;
-    setEditedOrder(prev => recalc({ ...prev, items: prev.items.filter(i => i.id ? i.id !== item.id : i.variantId !== item.variantId) }));
-    setRemovedIds(p => [...p, { variantId: vId }]); setSelectedSkus(p => p.filter(s => s.id !== vId));
+
+    setEditedOrder((prev) =>
+      recalc({
+        ...prev,
+        items: prev.items.filter((i) => {
+          // Persisted items
+          if (i.id) {
+            return i.id !== item.id;
+          }
+
+          const variantId = i.variant?.id || i.variantId;
+
+          if (!!item.bundleId) {
+            // Remove only the matching bundle item
+            return !(
+              variantId === vId &&
+              i.bundleId === item.bundleId
+            );
+          }
+
+          // Remove only the standalone item
+          return !(
+            variantId === vId &&
+            !i.bundleId
+          );
+        }),
+      })
+    );
+
+    setRemovedIds((p) => [
+      ...p,
+      {
+        variantId: vId,
+        ...(!!item.bundleId && { bundleId: item.bundleId }),
+      },
+    ]);
+
+    setSelectedSkus((p) =>
+      p.filter((s) =>
+        !!item.bundleId
+          ? !(s.id === vId && s.bundleId === item.bundleId)
+          : !(s.id === vId && !s.bundleId)
+      )
+    );
   };
 
   const onSave = async data => {
     try {
       setSaving(true);
       const { productsTotal, finalTotal, items: _, assignments, logs, ...rest } = data;
-      await api.patch(`/orders/${editedOrder?.id}`, { ...rest, removedItems: removedIds, items: editedOrder?.items.map(i => ({ variantId: i.variant?.id || i.variantId, quantity: Number(i.quantity), unitPrice: i.unitPrice, isAdditional: i.isAdditional })) });
+      await api.patch(`/orders/${editedOrder?.id}`, {
+        ...rest,
+        removedItems: removedIds,
+        items: editedOrder?.items.map(i => ({
+          variantId: i.variant?.id || i.variantId,
+          quantity: Number(i.quantity),
+          unitPrice: i.unitPrice,
+          isAdditional: i.isAdditional,
+          bundleId: i.bundleId || undefined,
+        }))
+      });
       toast.success(t("messages.updateSuccess"));
       const r = await api.get(`/order-assignment/employee/orders/next`);
       initOrder(r.data);
@@ -668,7 +735,7 @@ export default function OrderConfirmationWorkPage() {
     });
 
     if (originalOrder.shippingMetadata) {
-      
+
       setProviderMeta({
         cityId: originalOrder.shippingMetadata.cityId ?? "",
         zoneId: originalOrder.shippingMetadata.zoneId ?? "",
@@ -677,7 +744,7 @@ export default function OrderConfirmationWorkPage() {
         // orderSize: originalOrder.shippingMetadata.orderSize ?? "MEDIUM",
       });
     } else {
-      
+
       setProviderMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
     }
   };
@@ -1026,6 +1093,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                         const attrs = item.variant?.attributes || {};
                         const stock = calculateAvailableStock(item.variant?.stockOnHand, item.variant?.reserved);
                         const low = stock < 5;
+                        
                         return (
                           <motion.tr key={item.id || idx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * .035 }}>
                             {/* Thumb */}
@@ -1043,6 +1111,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                             {/* Name */}
                             <td style={{ minWidth: 140 }}>
                               <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--card-foreground)", lineHeight: 1.3, marginBottom: 2 }}>{prod?.name || item.productName || "—"}</p>
+                              <BundleBadge bundleName={item?.bundleName ?? item?.bundle?.name} />
                             </td>
 
                             {/* Description */}
@@ -1599,7 +1668,7 @@ function SaveBar({ onSave, onCancel, loading, t }) {
 function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLocked, decided, refetching, changeStatus, nextOrder, loading, t, isRtl }) {
   const canNext = decided && !loading && !changingStatus && !refetching;
   const tOrders = useTranslations("orders");
-  
+
   return (
     <motion.div initial={{ y: 90, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: .25, duration: .42 }}
       style={{ position: "fixed", zIndex: 50, pointerEvents: "none" }} className=" max-w-[1000px] w-full left-1/2 -translate-x-1/2 bottom-[10px] " >

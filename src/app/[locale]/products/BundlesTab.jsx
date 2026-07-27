@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, Edit2, Eye, QrCode, Trash2, Package, Tag, Hash, Store, AlignLeft, Image as ImageIcon, RotateCcw } from "lucide-react";
+import { CalendarDays, Edit2, Eye, QrCode, Trash2, Package, Tag, Hash, Store, AlignLeft, Image as ImageIcon, RotateCcw, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
@@ -27,11 +27,11 @@ function normalizeAxiosError(err) {
   return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
-export default function useBundlesTab({  searchDebounced, filters, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
+export default function useBundlesTab({ setExternalModal, searchDebounced, filters, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
   const router = useRouter();
   const requestIdRef = useRef(0);
   const t = useTranslations("products");
-
+  const tTutorial = useTranslations("tutorial");
   const [loading, setLoading] = useState(false);
   const [pager, setPager] = useState({
     total_records: 0,
@@ -234,6 +234,16 @@ export default function useBundlesTab({  searchDebounced, filters, onAskDelete, 
           <ActionButtons
             row={row}
             actions={[
+              {
+                icon: <Link size={16} />,
+                tooltip: t('actions.fetchExternalDetails'),
+                variant: "warning",
+                disabled: row?.syncStates?.[0]?.status !== 'synced' || !row.store?.isActive || !row.store.isIntegrated,
+                description: tTutorial("products.tableActions.fetchExternal.description"),
+                example: tTutorial("products.tableActions.fetchExternal.example"),
+                permission: "products.read",
+                onClick: () => setExternalModal({ isOpen: true, remoteId: row?.syncStates?.[0]?.remoteProductId, provider: row?.store?.provider })
+              },
               {
                 icon: <Edit2 />,
                 tooltip: t("actions.edit"),

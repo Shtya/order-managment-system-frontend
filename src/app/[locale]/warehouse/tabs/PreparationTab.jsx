@@ -35,6 +35,7 @@ import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { pdf } from "@react-pdf/renderer";
 import WrongScanLogPDF from "../atoms/WrongScanLogPDF";
+import { BundleBadge } from "@/components/atoms/BundleBadge";
 
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS — Single source of truth for the whole page
@@ -73,42 +74,42 @@ const DS = {
 };
 
 const handlePrintWrongScanLog = async (logs, row, wrongLogLabels, locale) => {
-  if (!logs || logs.length === 0) return;
+	if (!logs || logs.length === 0) return;
 
-  try {
-    // 1. Prepare data matching what was previously passed to buildWrongScanLogPDF
-    const carrier = row?.shippingCompany?.name || "-";
-    const now = new Date().toLocaleString();
-    const orderInfo = row; // Passing the whole row if it acts as orderInfo context
+	try {
+		// 1. Prepare data matching what was previously passed to buildWrongScanLogPDF
+		const carrier = row?.shippingCompany?.name || "-";
+		const now = new Date().toLocaleString();
+		const orderInfo = row; // Passing the whole row if it acts as orderInfo context
 
-    // 2. Generate Blob
-    const blob = await pdf(
-      <WrongScanLogPDF
-        logs={logs}
-        carrier={carrier}
-        now={now}
-        labels={wrongLogLabels}
-        orderInfo={orderInfo}
-        locale={locale}
-      />
-    ).toBlob();
+		// 2. Generate Blob
+		const blob = await pdf(
+			<WrongScanLogPDF
+				logs={logs}
+				carrier={carrier}
+				now={now}
+				labels={wrongLogLabels}
+				orderInfo={orderInfo}
+				locale={locale}
+			/>
+		).toBlob();
 
-    // 3. Initiate Download
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `wrong-scan-log-${new Date().getTime()}.pdf`;
-    
-    document.body.appendChild(a);
-    a.click();
-    
-    // 4. Cleanup
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-  } catch (error) {
-    console.error("Error generating Wrong Scan PDF:", error);
-  }
+		// 3. Initiate Download
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `wrong-scan-log-${new Date().getTime()}.pdf`;
+
+		document.body.appendChild(a);
+		a.click();
+
+		// 4. Cleanup
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+
+	} catch (error) {
+		console.error("Error generating Wrong Scan PDF:", error);
+	}
 };
 
 
@@ -748,12 +749,12 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 							const scanned = p.scannedQuantity || 0;
 							const total = p.quantity;
 							const done = scanned >= total;
-							const isJust = justScanned === p?.variant?.sku;
+							const isJust = justScanned === p?.variant?.id;
 							const pct2 = total === 0 ? 0 : Math.round((scanned / total) * 100);
-							const isCopied = copiedSku === p?.variant?.sku;
-
+							const isCopied = copiedSku === (p?.variant?.sku + i) ;
+							
 							return (
-								<motion.tr key={p?.variant?.sku}
+								<motion.tr key={p?.id}
 									initial={{ opacity: 0, x: 6 }}
 									animate={{ opacity: 1, x: 0 }}
 									transition={{ opacity: { delay: i * 0.04 }, x: { delay: i * 0.04 } }}
@@ -786,7 +787,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 														? <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
 														: <Package size={14} className={done ? "text-emerald-400" : isJust ? "text-primary" : "text-slate-300"} />
 													}
-												</div>
+												</div>	
 												<AnimatePresence>
 													{done && (
 														<motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -805,13 +806,15 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 											</div>
 											<span className={cn("font-semibold text-sm truncate max-w-[160px] transition-colors duration-300",
 												done ? "text-emerald-700 dark:text-emerald-300" : "text-slate-800 dark:text-slate-100"
-											)}>{p.name}</span>
+											)}>{p.name}
+											</span>
+											<BundleBadge bundleName={p?.bundleName} />
 										</div>
 									</td>
 
 									{/* SKU */}
 									<td className="px-4 py-3">
-										<motion.button type="button" onClick={() => handleCopy(p?.variant?.sku)}
+										<motion.button type="button" onClick={() => handleCopy(p?.variant?.sku, i)}
 											whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
 											className={cn("inline-flex items-center gap-1 font-mono text-[11px] px-2 py-1 font-bold cursor-pointer", DS.radiusSm)}
 											style={{ backgroundColor: DS.accent + "14", color: DS.accent }}>
@@ -1172,11 +1175,11 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 		setTimeout(() => { setFeedback(null); setScanState("idle"); }, 2200);
 	}, []);
 
-
+	
 	const { isAllDone } = useMemo(() => {
-		if(!localProducts || !localProducts?.length > 0 || !activeOrder){
-			return {isAllDone: false}
-		}  
+		if (!localProducts || !localProducts?.length > 0 || !activeOrder) {
+			return { isAllDone: false }
+		}
 		const totalScanned = localProducts.reduce(
 			(s, p) => s + (p.scannedQuantity || 0),
 			0
@@ -1212,7 +1215,8 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 					sku: p.variant?.sku || p?.variant?.sku,
 					name: p.variant?.product?.name || p.name,
 					scannedQuantity: p.scannedQuantity || 0,
-					quantity: p.quantity
+					quantity: p.quantity,
+					bundleName: p?.bundle?.name
 				})));
 				setScanStep("items");
 				setScanValue("");
@@ -1276,7 +1280,20 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 		setScanValue(val)
 		if (!val) return;
 
+		console.groupCollapsed(`%c[SCAN] "${val}" | step=${scanStep} | isAllDone=${isAllDone}`, "color:#f59e0b;font-weight:bold");
+		console.log("[SCAN] localProducts snapshot:", localProducts.map(p => ({
+			id: p.id,
+			name: p.name,
+			sku: p?.variant?.sku,
+			barcode: p.barcode,
+			qty: p.quantity,
+			scanned: p.scannedQuantity,
+			variantId: p?.variant?.id,
+		})));
+
 		if (scanStep === "order" || isAllDone) {
+			console.log("[SCAN] → Order scan mode, fetching order:", val);
+			console.groupEnd();
 			await fetchActiveOrder(val);
 			pendingScansRef.current = {};
 		} else {
@@ -1286,15 +1303,68 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 			if (orderNumberRegex.test(val)) {
 				setScanValue(""); // Clear the input field
 				toast.error(t("scan.scanItemNotOrder"));
-
+				console.log("[SCAN] → Rejected: looks like an order number, not a SKU");
+				console.groupEnd();
 				return; // Exit early! Do not run the rest of the function.
 			}
 
 			const sku = val;
-			const productIndex = localProducts.findIndex((p) => p?.variant?.sku === val || p.barcode === val);
-			const product = localProducts[productIndex];
+
+			// ── Find matching products ──
+			const productIndex = localProducts.findIndex(
+				(p) =>
+					(p?.variant?.sku === val || p.barcode === val) &&
+					(p.scannedQuantity ?? 0) < p.quantity
+			);
+			const anyProductIndex = localProducts.findIndex(
+				(p) => p?.variant?.sku === val || p.barcode === val
+			);
+
+			const duplicateSkuCount = localProducts.filter(p => p?.variant?.sku === val || p.barcode === val).length;
+
+			if (duplicateSkuCount > 1) {
+				console.warn(`%c[SCAN] ⚠ DUPLICATE SKU DETECTED: "${val}" matches ${duplicateSkuCount} items!`, "color:#ef4444;font-weight:bold");
+				console.log("[SCAN] All matching items:", localProducts
+					.filter(p => p?.variant?.sku === val || p.barcode === val)
+					.map((p, i) => ({
+						id: p.id,
+						name: p.name,
+						sku: p?.variant?.sku,
+						qty: p.quantity,
+						scanned: p.scannedQuantity,
+						fullyScanned: (p.scannedQuantity ?? 0) >= p.quantity,
+					}))
+				);
+			}
+
+			console.log(`[SCAN] productIndex=${productIndex} | anyProductIndex=${anyProductIndex}`);
+			console.log(`[SCAN] productIndex match (needs qty remaining):`, productIndex !== -1 ? {
+				id: localProducts[productIndex].id,
+				name: localProducts[productIndex].name,
+				sku: localProducts[productIndex]?.variant?.sku,
+				qty: localProducts[productIndex].quantity,
+				scanned: localProducts[productIndex].scannedQuantity,
+			} : "NONE");
+			console.log(`[SCAN] anyProductIndex match (any state):`, anyProductIndex !== -1 ? {
+				id: localProducts[anyProductIndex].id,
+				name: localProducts[anyProductIndex].name,
+				sku: localProducts[anyProductIndex]?.variant?.sku,
+				qty: localProducts[anyProductIndex].quantity,
+				scanned: localProducts[anyProductIndex].scannedQuantity,
+			} : "NONE");
+
+			const product = productIndex !== -1 ? localProducts[productIndex] : anyProductIndex !== -1 ? localProducts[anyProductIndex] : null;
 			let didOptimisticUpdate = false;
 			let localErrorCode = null;
+
+			console.log("[SCAN] resolved product:", product ? {
+				id: product.id,
+				name: product.name,
+				sku: product?.variant?.sku,
+				qty: product.quantity,
+				scanned: product.scannedQuantity,
+				fullyScanned: (product.scannedQuantity ?? 0) >= product.quantity,
+			} : "null (no match)");
 
 			// --- OPTIMISTIC HANDLING ---
 			let errorMessage = "";
@@ -1308,6 +1378,8 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 
 			if (localErrorCode) {
 				setScanValue("");
+				console.log(`[SCAN] → Error (localErrorCode=${localErrorCode}):`, errorMessage);
+				console.groupEnd();
 				handleErrorFeedback(errorMessage); // Instant Toast!
 
 				api.post(`/orders/${activeOrder.id}/log-failed-scan`, {
@@ -1318,29 +1390,49 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 				return;
 			}
 
+			console.log("[SCAN] pendingScansRef BEFORE:", JSON.parse(JSON.stringify(pendingScansRef.current)));
 
 			// Track concurrent scans for this SKU
-			if (!pendingScansRef.current[sku]) {
-				pendingScansRef.current[sku] = { pending: 0, serverScanned: product?.scannedQuantity || 0 };
+			if (!pendingScansRef.current[product.id]) {
+				pendingScansRef.current[product.id] = { pending: 0, serverScanned: product?.scannedQuantity || 0 };
 			}
-			pendingScansRef.current[sku].pending += 1;
+			pendingScansRef.current[product.id].pending += 1;
 
+			console.log(`[SCAN] pendingScansRef[${product.id}] AFTER increment:`, { ...pendingScansRef.current[product.id] });
 
 			didOptimisticUpdate = true;
+			const oldScanned = product.scannedQuantity;
+			const newScanned = (product.scannedQuantity || 0) + 1;
+			console.log(`%c[SCAN] → OPTIMISTIC UPDATE: "${product.name}" scannedQuantity ${oldScanned} → ${newScanned} (qty=${product.quantity})`, "color:#10b981;font-weight:bold");
 			const optimisticProducts = localProducts.map((p, i) =>
-				i === productIndex ? { ...p, scannedQuantity: p.scannedQuantity + 1 } : p
+				p.id === product.id ? { ...p, scannedQuantity: p.scannedQuantity + 1 } : p
 			);
 			setLocalProducts(optimisticProducts);
-			handleSuccessFeedback(product.name, product.sku || product.variant?.sku);
+			console.log("[SCAN] optimistic products state:", optimisticProducts.map(p => ({
+				id: p.id,
+				name: p.name,
+				sku: p?.variant?.sku,
+				scanned: p.scannedQuantity,
+				qty: p.quantity,
+			})));
+			handleSuccessFeedback(product.name, product.id || product.variant?.sku);
 
 
 			setScanValue("");
+			console.log("[SCAN] → Calling API: POST /orders/" + activeOrder.id + "/scan-preparation/" + val);
 
 			try {
-				const res = await api.post(`/orders/${activeOrder.id}/scan-preparation/${val}`);
+				const res = await api.post(`/orders/${activeOrder.id}/scan-preparation/${val}`, {
+					itemId: product.id
+				});
 				const { scanned, success, message, code, isOrderComplete } = res.data;
 
+				console.log(`%c[SCAN] ← API Response: success=${success} scanned=${scanned} code=${code} isOrderComplete=${isOrderComplete}`, "color:#3b82f6;font-weight:bold");
+				console.log("[SCAN] ← Full response data:", res.data);
+
 				if (isOrderComplete) {
+					console.log("[SCAN] → Order complete! Resetting.");
+					console.groupEnd();
 					showFeedback("success", t("scan.orderComplete", { code: activeOrder.orderNumber }));
 					resetCurrentOrder();
 					fetchStats?.();
@@ -1348,27 +1440,57 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 				}
 
 				// Update tracking state
-				pendingScansRef.current[sku].pending = Math.max(0, pendingScansRef.current[sku].pending - 1);
+				const prevPending = pendingScansRef.current[product.id].pending;
+				pendingScansRef.current[product.id].pending = Math.max(0, pendingScansRef.current[product.id].pending - 1);
 				if (success) {
-					pendingScansRef.current[sku].serverScanned = Math.max(pendingScansRef.current[sku].serverScanned, scanned);
+					pendingScansRef.current[product.id].serverScanned = Math.max(pendingScansRef.current[product.id].serverScanned, scanned);
 				}
+
+				console.log(`[SCAN] pendingScansRef[${product.id}] after API:`, {
+					...pendingScansRef.current[product.id],
+					prevPending,
+				});
 
 
 				// Final synchronization only when all pending scans for this SKU are finished
-				if (productIndex !== -1 && pendingScansRef.current[sku].pending === 0) {
-					const finalScanned = pendingScansRef.current[sku].serverScanned;
-					setLocalProducts(prev => prev.map((p, i) =>
-						i === productIndex ? { ...p, scannedQuantity: finalScanned } : p
-					));
+				const remainingPending = pendingScansRef.current[product.id].pending;
+				console.log(`[SCAN] remainingPending=${remainingPending} for product=${product.id}`);
+				if (!!product && remainingPending === 0) {
+					const finalScanned = pendingScansRef.current[product.id].serverScanned;
+					console.log(`%c[SCAN] → FINAL SYNC (pending=0): "${product.name}" scannedQuantity → ${finalScanned}`, "color:#8b5cf6;font-weight:bold");
+					setLocalProducts(prev => {
+						const updated = prev.map((p, i) =>
+							p.id === product.id ? { ...p, scannedQuantity: finalScanned } : p
+						);
+						console.log("[SCAN] finalSync products:", updated.map(p => ({
+							id: p.id,
+							name: p.name,
+							sku: p?.variant?.sku,
+							scanned: p.scannedQuantity,
+							qty: p.quantity,
+						})));
+						return updated;
+					});
 				}
 
 
 				if (!success) {
+					console.warn(`%c[SCAN] ← Server said NOT success: rolling back optimistic update`, "color:#ef4444;font-weight:bold");
 					// Rollback UI if we did an optimistic update
 					if (didOptimisticUpdate) {
-						setLocalProducts(prev => prev.map((p, i) =>
-							i === productIndex ? { ...p, scannedQuantity: Math.max(0, p.scannedQuantity - 1) } : p
-						));
+						setLocalProducts(prev => {
+							const rolledBack = prev.map((p, i) =>
+								p.id === product.id ? { ...p, scannedQuantity: Math.max(0, p.scannedQuantity - 1) } : p
+							);
+							console.log("[SCAN] rolledBack products:", rolledBack.map(p => ({
+								id: p.id,
+								name: p.name,
+								sku: p?.variant?.sku,
+								scanned: p.scannedQuantity,
+								qty: p.quantity,
+							})));
+							return rolledBack;
+						});
 						setSuccessCount((c) => Math.max(0, c - 1));
 					}
 
@@ -1377,15 +1499,17 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 					} else if (!code) {
 						toast.error(message)
 					}
+					console.groupEnd();
 					return;
 				}
 
 				if (!didOptimisticUpdate) {
-					handleSuccessFeedback(product.name, product.sku || product.variant?.sku);
+					handleSuccessFeedback(product.name, product.id || product.variant?.sku);
 				}
 
 				// Update stats if it was printed (first scan for this order)
 				if (activeOrder.status?.code === 'printed') {
+					console.log("[SCAN] → First scan for this order, updating status printed → preparing");
 					updateStatsAfterScanStart?.();
 					setActiveOrder(prev => ({
 						...prev,
@@ -1393,32 +1517,59 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 					}));
 				}
 
+				console.log("[SCAN] → Scan completed successfully");
+				console.groupEnd();
 
 			} catch (error) {
+				console.error(`%c[SCAN] ← API ERROR:`, "color:#ef4444;font-weight:bold", error);
+
 				// Update tracking state on error
-				pendingScansRef.current[sku].pending = Math.max(0, pendingScansRef.current[sku].pending - 1);
+				pendingScansRef.current[product.id].pending = Math.max(0, pendingScansRef.current[product.id].pending - 1);
+				console.log(`[SCAN] pendingScansRef[${product.id}] after error:`, { ...pendingScansRef.current[product.id] });
 
 				// Rollback if we did an optimistic update
 				if (didOptimisticUpdate) {
-					setLocalProducts(prev => prev.map((p, i) =>
-						i === productIndex ? { ...p, scannedQuantity: Math.max(0, p.scannedQuantity - 1) } : p
-					));
+					console.log(`%c[SCAN] → ROLLBACK (error): "${product.name}" scannedQuantity ${product.scannedQuantity} → ${Math.max(0, product.scannedQuantity - 1)}`, "color:#ef4444;font-weight:bold");
+					setLocalProducts(prev => {
+						const rolledBack = prev.map((p, i) =>
+							p.id === product.id ? { ...p, scannedQuantity: Math.max(0, p.scannedQuantity - 1) } : p
+						);
+						console.log("[SCAN] error rollback products:", rolledBack.map(p => ({
+							id: p.id,
+							name: p.name,
+							sku: p?.variant?.sku,
+							scanned: p.scannedQuantity,
+							qty: p.quantity,
+						})));
+						return rolledBack;
+					});
 					setSuccessCount((c) => Math.max(0, c - 1));
 				}
 
 				// Final sync on error if no more pending
-				if (pendingScansRef.current[sku].pending === 0 && productIndex !== -1) {
-					const finalScanned = pendingScansRef.current[sku].serverScanned;
-					setLocalProducts(prev => prev.map((p, i) =>
-						i === productIndex ? { ...p, scannedQuantity: finalScanned } : p
-					));
+				if (pendingScansRef.current[product.id].pending === 0 && productIndex !== -1) {
+					const finalScanned = pendingScansRef.current[product.id].serverScanned;
+					console.log(`[SCAN] → FINAL SYNC (error, pending=0): "${product.name}" scannedQuantity → ${finalScanned}`);
+					setLocalProducts(prev => {
+						const updated = prev.map((p, i) =>
+							p.id === product.id ? { ...p, scannedQuantity: finalScanned } : p
+						);
+						console.log("[SCAN] error finalSync products:", updated.map(p => ({
+							id: p.id,
+							name: p.name,
+							sku: p?.variant?.sku,
+							scanned: p.scannedQuantity,
+							qty: p.quantity,
+						})));
+						return updated;
+					});
 				}
 
-				console.error(error);
 				const serverCode = error.response?.data?.code;
 				if (serverCode !== localErrorCode) {
 					handleErrorFeedback(error.response?.data?.message || t("scan.errorScanning"));
 				}
+				console.groupEnd();
 			}
 		}
 	}, [scanValue, scanStep, localProducts, activeOrder, soundEnabled, fetchActiveOrder, updateStatsAfterScanStart, pushOp, showFeedback, resetCurrentOrder, fetchStats, t, handleSuccessFeedback, handleErrorFeedback]);
@@ -1432,7 +1583,7 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 				<PanelHeader
 					icon={ScanLine}
 					pretitle={!isItemsMode ? t("scan.step1of2") : `${t("scan.orderLabel")}: ${activeOrder?.orderNumber}`}
-					title={isItemsMode && !isAllDone ?  t("scan.scanItemsTitle") : t("scan.scanOrderTitle") }
+					title={isItemsMode && !isAllDone ? t("scan.scanItemsTitle") : t("scan.scanOrderTitle")}
 					right={
 						<>
 							<HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
@@ -1456,7 +1607,7 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 						<ScanInputBar
 							inputRef={scanInputRef} value={scanValue} onChange={(e) => setScanValue(e.target.value)}
 							onScan={handleScan} isSuccess={scanState === "success"} isError={scanState === "error"}
-							placeholder={isItemsMode && !isAllDone  ? t("scan.scanItemsPlaceholder", { code: activeOrder?.orderNumber }) : t("scan.scanOrderPlaceholder") }
+							placeholder={isItemsMode && !isAllDone ? t("scan.scanItemsPlaceholder", { code: activeOrder?.orderNumber }) : t("scan.scanOrderPlaceholder")}
 							disabled={isFetchingOrder}
 						/>
 						{isFetchingOrder && (
@@ -1510,7 +1661,7 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 	const tongoining = useTranslations("warehouse.outgoing");
 	const t = useTranslations("warehouse.preparation");
 	const locale = useLocale();
-		
+
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const searchTimer = useRef(null);
@@ -1582,8 +1733,8 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 				time: new Date(l.createdAt).toLocaleTimeString()
 			}));
 
-			 await handlePrintWrongScanLog(logs, row, wrongLogLabels, locale);
-			
+			await handlePrintWrongScanLog(logs, row, wrongLogLabels, locale);
+
 		} catch (error) {
 			console.error("Error downloading wrong log", error);
 			toast.error(t("messages.errorDownloadingLogs") || "Error downloading logs");
@@ -1597,9 +1748,9 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 			page,
 			limit: per_page,
 			status: 'preparing,printed',
-		};	
-		
-		
+		};
+
+
 		if (search) params.search = search;
 		if (filters.store !== "all") params.storeId = filters.store;
 		if (filters.carrier !== "all") params.shippingCompanyId = filters.carrier;
@@ -1633,7 +1784,7 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 	};
 
 	const applyFilters = () => {
-		  fetchOrders(1, pager.per_page);
+		fetchOrders(1, pager.per_page);
 	};
 
 	const onExport = async () => {
@@ -1704,7 +1855,7 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("inProgress.emptyTitle"), emptySubtitle: "" }}
 				actions={[{ key: "export", label: t("export"), icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" }]}
-				hasActiveFilters={hasActiveFilters} 
+				hasActiveFilters={hasActiveFilters}
 				onApplyFilters={applyFilters}
 				filters={
 					<>

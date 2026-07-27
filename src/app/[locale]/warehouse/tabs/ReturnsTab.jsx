@@ -63,6 +63,7 @@ import { Badge } from "@/components/ui/badge";
 import { OrderDetailModal } from "./DistributionTab";
 import { pdf } from "@react-pdf/renderer";
 import ReturnPDF from "../atoms/ReturnPDF";
+import { BundleBadge } from "@/components/atoms/BundleBadge";
 const RETURN_CONDITIONS_KEYS = [
   "intact",
   "opened",
@@ -751,7 +752,7 @@ function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChang
   const t = useTranslations("warehouse.returns");
   const { formatCurrency } = usePlatformSettings();
   const totalQty = localProducts.reduce((s, p) => s + (p.quantity || 0), 0);
-  const selectedQty = localProducts.reduce((s, p) => (selectedItems[p.sku] ? s + (selectedItems[p.sku].quantity || 0) : s), 0);
+  const selectedQty = localProducts.reduce((s, p) => (selectedItems[p.id] ? s + (selectedItems[p.id].quantity || 0) : s), 0);
   const pct = totalQty === 0 ? 0 : Math.round((selectedQty / totalQty) * 100);
 
   return (
@@ -896,11 +897,11 @@ function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChang
           </thead>
           <tbody>
             {localProducts.map((p, i) => {
-              const selection = selectedItems[p.sku];
+              const selection = selectedItems[p.id];
               const checked = !!selection;
               return (
                 <motion.tr
-                  key={p.sku}
+                  key={p.id}
                   initial={{ opacity: 0, x: 6 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ opacity: { delay: i * 0.04 }, x: { delay: i * 0.04 } }}
@@ -950,6 +951,9 @@ function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChang
                         </span>
                         {p.variantName && <p className="text-[10px] text-slate-400">{p.variantName}</p>}
                       </div>
+                        {p.bundleName && (
+                         <BundleBadge bundleName={p.bundleName}/>
+                        )}
                     </div>
                   </td>
 
@@ -970,7 +974,7 @@ function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChang
                           min="1"
                           max={p.quantity}
                           value={selection.quantity}
-                          onChange={(e) => onQuantityChange(p.sku, parseInt(e.target.value) || 0)}
+                          onChange={(e) => onQuantityChange(p.id, parseInt(e.target.value) || 0)}
                           className={cn("w-16 h-8 text-center text-sm font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary outline-none", DS.radiusSm)}
                         />
                         <span className="text-[10px] text-slate-400">/ {p.quantity}</span>
@@ -1223,7 +1227,7 @@ export function ScanReturnsSubtab({
   const [isSaving, setIsSaving] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [detailModal, setDetailModal] = useState(null);
-
+  
   // Popup for create manifest
   const [manifestPopupOpen, setManifestPopupOpen] = useState(false);
   const [currentCarrierForManifest, setCurrentCarrierForManifest] = useState(null);
@@ -1497,7 +1501,7 @@ export function ScanReturnsSubtab({
           }));
         }
       }
-
+      
       setActiveOrder(order);
       setLocalProducts((order.items || []).map((p) => ({
         id: p.id,
@@ -1506,7 +1510,8 @@ export function ScanReturnsSubtab({
         variantName: p.variant?.name,
         image: p.variant?.image || p.image,
         quantity: p.quantity,
-        price: p.price
+        price: p.variant?.price ?? p.unitPrice,
+        bundleName: p?.bundle?.name || "",
       })));
       setSelectedItems({});
       setReturnReason("");
@@ -1550,33 +1555,33 @@ export function ScanReturnsSubtab({
   const toggleItem = (p) => {
     setSelectedItems(prev => {
       const newItems = { ...prev };
-      if (newItems[p.sku]) {
-        delete newItems[p.sku];
+      if (newItems[p.id]) {
+        delete newItems[p.id];
       } else {
-        newItems[p.sku] = {
+        newItems[p.id] = {
           originalItemId: p.id,
           quantity: p.quantity,
-          sku: p.sku
+          id: p.id
         };
       }
       return newItems;
     });
   };
 
-  const changeQuantity = (sku, qty) => {
+  const changeQuantity = (id, qty) => {
     setSelectedItems(prev => ({
       ...prev,
-      [sku]: { ...prev[sku], quantity: qty }
+      [id]: { ...prev[id], quantity: qty }
     }));
   };
 
   const selectAll = () => {
     const all = {};
     localProducts.forEach(p => {
-      all[p.sku] = {
+      all[p.id] = {
         originalItemId: p.id,
         quantity: p.quantity,
-        sku: p.sku
+        id: p.id
       };
     });
     setSelectedItems(all);

@@ -3883,7 +3883,8 @@
       "title": "تصدير للمتجر",
       "description": "تصدير {count} من المنتجات المختارة لمتجرك المربوط",
       "selectedProducts": "المنتجات المختارة",
-      "selectStore": "اختر المتجر"
+      "selectStore": "اختر المتجر",
+      "selectedBundles": "منتجات البندل المختارة"
     },
     "common": {
       "allProducts": "كل المنتجات",

@@ -3888,7 +3888,8 @@
       "title": "Export to Store",
       "description": "Export {count} selected products to your integrated store",
       "selectedProducts": "Selected Products",
-      "selectStore": "Select Store"
+      "selectStore": "Select Store",
+      "selectedBundles": "Selected bundles"
     },
     "common": {
       "allProducts": "All Products",

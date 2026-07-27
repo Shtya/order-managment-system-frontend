@@ -111,6 +111,7 @@ import {
 } from "@/utils/order-utils";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { FaChartPie, FaListAlt } from "react-icons/fa";
+import { BundleBadge } from "@/components/atoms/BundleBadge";
 
 //order status flow
 // New => Confirmed => Distrebuted (Assed to shipment company) =>  Printed (Waybills printed) =>  preparing (scanign its items for preparation)
@@ -1294,6 +1295,7 @@ export default function OrdersTab({
                 <span>{p.variant.product.name}</span> -
                 <span>{p.variant.sku}</span> -
                 <span> (x{p.quantity})</span>
+                <BundleBadge bundleName={p?.bundle?.name} />
               </div>
             ))}
           </div>

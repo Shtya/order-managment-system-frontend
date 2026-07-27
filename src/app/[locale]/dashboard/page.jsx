@@ -73,7 +73,7 @@ export default function DashboardPage() {
   const tDates = useTranslations("orderAnalysis");
   const tTutorial = useTranslations("tutorial");
   const t = useTranslations("dashboard");
-
+  
   const [quickRange, setQuickRange] = useState("this_month");
   const [filters, setFilters] = useState({
     startDate: null,

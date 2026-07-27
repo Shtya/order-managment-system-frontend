@@ -229,7 +229,7 @@ function OrderCard({ state, order, isActive, index }) {
             <div className="px-4 pb-4 pt-2 space-y-1.5 border-t border-border/40">
               {state.products.length === 0
                 ? <p className="text-xs text-muted-foreground text-center py-4">لا توجد منتجات</p>
-                : state.products.map((p, i) => <ProductRow key={p.sku || i} p={p} index={i} />)
+                : state.products.map((p, i) => <ProductRow key={i} p={p} index={i} />)
               }
             </div>
           </motion.div>

@@ -431,7 +431,8 @@ export default function ProductsPage() {
 		onExportRequest: (fn) => (exportBuilderRef.current = fn),
 		activetab: active,
 		selectedProducts,
-		setSelectedProducts
+		setSelectedProducts,
+		setExternalModal
 	});
 
 	const idleLogic = useIdleTab({
@@ -511,7 +512,7 @@ export default function ProductsPage() {
 						label: selectedProducts.length > 0 ? t("toolbar.exportToStoreCount", { count: selectedProducts.length }) : t("toolbar.exportToStore"),
 						icon: <StoreIcon size={14} />,
 						color: "primary",
-						disabled: selectedProducts.length === 0 || active === "bundles",
+						disabled: selectedProducts.length === 0,
 						onClick: () => setExportToStoreModal(true),
 						permission: "products.update",
 						hidden: active === "idle"
@@ -741,7 +742,8 @@ export default function ProductsPage() {
 			<ExportToStoreModal
 				open={exportToStoreModal}
 				onOpenChange={setExportToStoreModal}
-				selectedProductIds={selectedProducts}
+				selectedIds={selectedProducts}
+				activeTab={active}
 				onSuccess={() => setSelectedProducts([])}
 			/>
 
@@ -758,14 +760,18 @@ export default function ProductsPage() {
 	);
 }
 
-function ExportToStoreModal({ open, onOpenChange, selectedProductIds, onSuccess }) {
+function ExportToStoreModal({ open, onOpenChange, selectedIds, activeTab = "products", onSuccess }) {
 	const t = useTranslations("products");
 	const [stores, setStores] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [exporting, setExporting] = useState(false);
-	const [products, setProducts] = useState([]);
+	const [items, setItems] = useState([]);
 	const [selectedStoreId, setSelectedStoreId] = useState(null);
 	const { subscribe } = useSocket();
+
+	const isBundlesTab = ["bundles", "deleted_bundles"].includes(activeTab);
+	const endpoint = isBundlesTab ? "/bundles" : "/products";
+	const syncEndpointType = isBundlesTab ? "bundle" : "product";
 
 	useEffect(() => {
 		if (open) {
@@ -789,12 +795,12 @@ function ExportToStoreModal({ open, onOpenChange, selectedProductIds, onSuccess 
 	const fetchData = async () => {
 		setLoading(true);
 		try {
-			const [storesRes, productsRes] = await Promise.all([
+			const [storesRes, itemsRes] = await Promise.all([
 				api.get("/lookups/stores", { params: { limit: 200, isActive: true } }),
-				api.get("/products", { params: { ids: selectedProductIds.join(","), limit: 100 } })
+				api.get(endpoint, { params: { ids: selectedIds.join(","), limit: 100 } })
 			]);
 			setStores(storesRes.data || []);
-			setProducts(productsRes.data?.records || []);
+			setItems(itemsRes.data?.records || []);
 		} catch (e) {
 			toast.error(normalizeAxiosError(e));
 		} finally {
@@ -806,9 +812,13 @@ function ExportToStoreModal({ open, onOpenChange, selectedProductIds, onSuccess 
 		setExporting(true);
 		const toastId = toast.loading(t("messages.exportingToStore"));
 		try {
-			await api.post(`/stores/${storeId}/sync-products`, { productIds: selectedProductIds });
+			const body = isBundlesTab
+				? { ids: selectedIds }
+				: { ids: selectedIds };
+			await api.post(`/stores/${storeId}/sync-store`, body, {
+				params: { type: syncEndpointType }
+			});
 			toast.success(t("messages.exportToStoreStarted"), { id: toastId });
-			// ✅ Update local state immediately
 			setStores((prev) =>
 				prev.map((s) =>
 					s.id === storeId ? { ...s, localSyncStatus: "syncing" } : s
@@ -822,6 +832,9 @@ function ExportToStoreModal({ open, onOpenChange, selectedProductIds, onSuccess 
 			setExporting(false);
 		}
 	};
+
+	const titleLabel = isBundlesTab ? t("exportModal.selectedBundles") || t("exportModal.selectedProducts") : t("exportModal.selectedProducts");
+	const priceLabel = isBundlesTab ? t("table.price") || t("table.wholesalePrice") : t("table.wholesalePrice");
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -841,16 +854,15 @@ function ExportToStoreModal({ open, onOpenChange, selectedProductIds, onSuccess 
 						</div>
 					) : (
 						<>
-							{/* Summary section like SkuSelectorModal */}
 							<div className="rounded-xl border p-4 shadow-sm bg-muted/10">
 								<div className="flex items-center gap-4">
 									<div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
 										<Package className="w-6 h-6 text-primary" />
 									</div>
 									<div>
-										<h4 className="text-lg font-bold">{t("exportModal.selectedProducts")}</h4>
+										<h4 className="text-lg font-bold">{titleLabel}</h4>
 										<p className="text-sm text-slate-500 mt-0.5">
-											{t("exportModal.description", { count: selectedProductIds.length })}
+											{t("exportModal.description", { count: selectedIds.length })}
 										</p>
 									</div>
 								</div>
@@ -859,7 +871,7 @@ function ExportToStoreModal({ open, onOpenChange, selectedProductIds, onSuccess 
 							<div className="space-y-3">
 								<h5 className="text-sm font-semibold flex items-center gap-2">
 									<Hash size={16} className="text-primary" />
-									{t("exportModal.selectedProducts")} ({products.length})
+									{titleLabel} ({items.length})
 								</h5>
 
 								<div className="border rounded-xl overflow-hidden shadow-sm">
@@ -869,15 +881,19 @@ function ExportToStoreModal({ open, onOpenChange, selectedProductIds, onSuccess 
 												<tr>
 													<th className="px-4 py-3 text-start font-bold">{t("table.name")}</th>
 													<th className="px-4 py-3 text-center font-bold">{t("table.sku")}</th>
-													<th className="px-4 py-3 text-end font-bold">{t("table.wholesalePrice")}</th>
+													<th className="px-4 py-3 text-end font-bold">{priceLabel}</th>
 												</tr>
 											</thead>
 											<tbody className="divide-y">
-												{products.map((p) => (
+												{items.map((p) => (
 													<tr key={p.id} className="hover:bg-muted/30 transition-colors">
 														<td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">{p.name}</td>
-														<td className="px-4 py-3 text-center font-mono text-xs text-slate-500">{p.skus?.[0]?.sku || "N/A"}</td>
-														<td className="px-4 py-3 text-end font-bold text-primary">{p.wholesalePrice}</td>
+														<td className="px-4 py-3 text-center font-mono text-xs text-slate-500">
+															{isBundlesTab ? (p.sku || "N/A") : (p.skus?.[0]?.sku || "N/A")}
+														</td>
+														<td className="px-4 py-3 text-end font-bold text-primary">
+															{isBundlesTab ? p.price : p.wholesalePrice}
+														</td>
 													</tr>
 												))}
 											</tbody>

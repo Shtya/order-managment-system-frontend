@@ -35,6 +35,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "@/i18n/navigation";
 import ActionButtons from "@/components/atoms/Actions";
+import { BundleBadge } from "@/components/atoms/BundleBadge";
 const DEFAULT_FILTERS = {
   shippingCompany: "all",
   shipmentStatus: "all",
@@ -972,6 +973,7 @@ export default function ShippedOrders({ statuses = [] }) {
                 <span>{p.variant.product.name}</span> -
                 <span>{p.variant.sku}</span> -
                 <span> (x{p.quantity})</span>
+                <BundleBadge bundleName={p?.bundle?.name} />
               </div>
             ))}
           </div>

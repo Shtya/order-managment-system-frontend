@@ -31,7 +31,7 @@ import {
   Layers,
   Send,
   Loader2,
-  ArrowLeftRight,
+  ArrowLeftRight
 } from "lucide-react";
 
 import { cn } from "@/utils/cn";
@@ -73,6 +73,7 @@ import { CARRIER_STYLES, CARRIERS, CARRIER_META } from "./data";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import AssignCarrierDialog from "../atoms/AssignCarrierDialog";
+import { BundleBadge } from "@/components/atoms/BundleBadge";
 
 // ─────────────────────────────────────────────
 // MAIN TAB
@@ -507,7 +508,7 @@ export function OrderDetailModal({ open, onClose, order: initialOrder, hideNotes
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
-                  className="flex items-center gap-3 px-4 py-3"
+                  className={`flex items-center gap-3 px-4 py-3 ${p?.bundle?.name ? "border-l-4 border-l-indigo-500/70 bg-indigo-50/30 dark:bg-indigo-950/20" : ""}`}
                 >
                   <div
                     className="w-7 h-7 rounded-lg flex items-center bg-primary/18 justify-center text-xs font-bold flex-shrink-0"
@@ -521,9 +522,16 @@ export function OrderDetailModal({ open, onClose, order: initialOrder, hideNotes
                   >
                     {p.variant?.sku}
                   </span>
-                  <span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">
-                    {p.variant?.product?.name}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-sm text-slate-700 dark:text-slate-200 font-medium">
+                        {p.variant?.product?.name}
+                      </span>
+                      {p?.bundle?.name && (
+                        <BundleBadge bundleName={p?.bundle?.name} />
+                      )}
+                    </div>
+                  </div>
                   <span className="text-xs text-slate-400 font-mono">
                     ×{p.quantity}
                   </span>
@@ -532,8 +540,6 @@ export function OrderDetailModal({ open, onClose, order: initialOrder, hideNotes
                     style={{ color: "var(--primary)" }}
                   >
                     {formatCurrency((Number(p.unitPrice) || 0) * (Number(p.quantity) || 0))}
-
-
                   </span>
                 </motion.div>
               ))}

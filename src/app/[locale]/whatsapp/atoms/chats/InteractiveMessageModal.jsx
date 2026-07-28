@@ -26,6 +26,7 @@ export const InteractiveMessageForm = forwardRef(({
     setHeaderMediaFile,
     headerMediaFile,
     accountId = null,
+    children,
 }, ref) => {
     const t = useTranslations("chats");
     const locale = useLocale();
@@ -176,6 +177,7 @@ export const InteractiveMessageForm = forwardRef(({
                     accountId={accountId}
                     variableProps={variableProps}
                 />
+                {children}
             </div>
 
             {/* Preview Section */}

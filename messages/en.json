@@ -11722,7 +11722,8 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "captionPlaceholder": "Type a caption...",
-    "pleaseUploadMedia": "Please upload a media file."
+    "pleaseUploadMedia": "Please upload a media file.",
+    "addBranchesIntoAutomation": "Add branches for options"
   },
   "failedToLoadImage": "Failed to load image",
   "failedToLoadVideo": "Failed to load video",

@@ -11745,7 +11745,8 @@
     "today": "اليوم",
     "yesterday": "أمس",
     "captionPlaceholder": "اكتب تعليقًا...",
-    "pleaseUploadMedia": "يرجى رفع ملف وسائط."
+    "pleaseUploadMedia": "يرجى رفع ملف وسائط.",
+    "addBranchesIntoAutomation": "إضافة تفرعات للإختيارات"
   },
   "failedToLoadImage": "فشل تحميل الصورة",
   "failedToLoadVideo": " فشل تحميل الفيديو",

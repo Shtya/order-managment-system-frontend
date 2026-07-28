@@ -712,7 +712,15 @@ const tutorialData = [
 //   },*/
 // ];
 
-
+export const WAREHOUSE_STATUSES = new Set([
+    OrderStatus.RETURNED,
+    OrderStatus.DISTRIBUTED,
+    OrderStatus.PRINTED,
+    OrderStatus.PREPARING,
+    OrderStatus.READY,
+    OrderStatus.SHIPPED,
+    OrderStatus.RETURN_PREPARING,
+]);
 
 
 // Main Orders Page Component
@@ -886,8 +894,9 @@ export default function OrdersTab({
     employee: "all",
     startDate: null,
     endDate: null,
-    // product: "all",
-    // area: "all",
+    postponedStartDate: null,
+    postponedEndDate: null,
+    shippingStatus: "all",
     store: "all",
     shippingCompany: "all",
   });
@@ -918,16 +927,6 @@ export default function OrdersTab({
     handlePageChange(1, pager.per_page);
   }, [debouncedSearch, adminId]);
 
-  useEffect(() => {
-    if (filters.status !== OrderStatus.POSTPONED) {
-      setFilters(prev => ({
-        ...prev,
-        postponedStartDate: null,
-        postponedEndDate: null
-      }));
-    }
-  }, [filters.status]);
-
   const buildParams = (
     page = pager.current_page,
     per_page = pager.per_page,
@@ -952,10 +951,12 @@ export default function OrdersTab({
     if (filters.startDate) params.startDate = filters.startDate;
     if (filters.endDate) params.endDate = filters.endDate;
 
-    if (filters.status === OrderStatus.POSTPONED) {
-      if (filters.postponedStartDate) params.postponedStartDate = filters.postponedStartDate;
-      if (filters.postponedEndDate) params.postponedEndDate = filters.postponedEndDate;
-    }
+    if (filters.postponedStartDate) params.postponedStartDate = filters.postponedStartDate;
+    if (filters.postponedEndDate) params.postponedEndDate = filters.postponedEndDate;
+
+    if (filters.shippingStatus && filters.shippingStatus !== "all")
+      params.shippingStatus = filters.shippingStatus;
+
     if (filters.shippingCompany && filters.shippingCompany !== "all")
       params.shippingCompanyId = filters.shippingCompany;
     if (filters.store && filters.store !== "all")
@@ -1444,6 +1445,8 @@ export default function OrdersTab({
             const currentCode = row.status?.code;
             const currentStatusId = row.status?.id;
 
+    
+
             return (
               <div className="flex items-center gap-2">
                 <Select
@@ -1501,6 +1504,7 @@ export default function OrdersTab({
                       return (
                         <SelectItem
                           key={s.id}
+                          disabled={WAREHOUSE_STATUSES.has(s.code)}
                           value={String(s.id)}
                         // disabled={isSame} // 🔥 main logic
                         >
@@ -1531,9 +1535,9 @@ export default function OrdersTab({
           if (!ship?.id) return "—"
           return (
             <div className="flex items-center gap-2">
-              {ship?.rawStatus ? (
+              {ship?.unifiedStatus ? (
                 <Badge className={cn("rounded-xl")}>
-                  {ship?.rawStatus}
+                  {ship?.unifiedStatus}
                 </Badge>
               ) : (
                 "—"
@@ -2284,26 +2288,51 @@ export default function OrdersTab({
               />
             </FilterField>
 
-            {filters.status === OrderStatus.POSTPONED && (
-              <FilterField label={t("postponed.date")}>
-                <DateRangePicker
-                  value={{
-                    startDate: filters.postponedStartDate,
-                    endDate: filters.postponedEndDate,
-                  }}
-                  onChange={(newDates) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      postponedStartDate: newDates.startDate,
-                      postponedEndDate: newDates.endDate,
-                    }))
-                  }
-                  placeholder={t("postponed.datePlaceholder")}
-                  dataSize="default"
-                  maxDate={null}
-                />
-              </FilterField>
-            )}
+            <FilterField label={t("postponed.date")}>
+              <DateRangePicker
+                value={{
+                  startDate: filters.postponedStartDate,
+                  endDate: filters.postponedEndDate,
+                }}
+                onChange={(newDates) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    postponedStartDate: newDates.startDate,
+                    postponedEndDate: newDates.endDate,
+                  }))
+                }
+                placeholder={t("postponed.datePlaceholder")}
+                dataSize="default"
+                minDate="today"
+                maxDate={null}
+              />
+            </FilterField>
+
+            <FilterField label={t("filters.shipmentStatus")}>
+              <Select
+                value={filters.shippingStatus}
+                onValueChange={(v) =>
+                  setFilters((f) => ({ ...f, shippingStatus: v }))
+                }
+              >
+                <SelectTrigger
+                  className="h-10 rounded-xl border-border bg-background text-sm
+                    focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all"
+                >
+                  <SelectValue
+                    placeholder={t("filters.shipmentStatusPlaceholder")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("filters.all")}</SelectItem>
+                  {(unifiedShipmentStatuses || []).map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {t(`trackingStatus.${code}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FilterField>
 
             <StoreFilter
               value={filters.store}

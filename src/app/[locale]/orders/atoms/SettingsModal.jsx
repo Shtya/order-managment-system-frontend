@@ -1023,6 +1023,15 @@ export function GeneralTab({ settings, patch, t, tTutorial }) {
 // ────────────────────────────────────────────────────────────────────────────
 export function AutomationTab({ settings, statuses, patch, toggleCode, t, tTutorial }) {
 
+  const WAREHOUSE_CODES = new Set([
+    "returned", "delivered", "distributed", "printed",
+    "preparing", "ready", "shipped", "return_preparing",
+  ]);
+  const nonWarehouseStatuses = useMemo(
+    () => statuses.filter((s) => !WAREHOUSE_CODES.has(s.code)),
+    [statuses],
+  );
+
   return (
     <div className="space-y-5">
       {/* 1 — Auto-move status */}
@@ -1048,7 +1057,7 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t, tTutor
               <SelectValue placeholder={t("retrySettings.selectStatus")} />
             </SelectTrigger>
             <SelectContent>
-              {statuses.map((s) => (
+              {nonWarehouseStatuses.map((s) => (
                 <SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
                   <span className="flex items-center gap-2">
                     {/* <span
@@ -1083,7 +1092,7 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t, tTutor
           example={tTutorial("fields.retryStatuses.example")}
         >
           <StatusMultiSelect
-            statuses={statuses}
+            statuses={nonWarehouseStatuses}
             selected={settings.retryStatuses}
             onToggle={(code) => toggleCode("retryStatuses", code)}
             onClear={() => patch({ retryStatuses: [] })}
@@ -1112,7 +1121,7 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t, tTutor
           example={tTutorial("fields.confirmationStatuses.example")}
         >
           <StatusMultiSelect
-            statuses={statuses}
+            statuses={nonWarehouseStatuses}
             selected={settings.confirmationStatuses}
             onToggle={(code) => toggleCode("confirmationStatuses", code)}
             onClear={() => patch({ confirmationStatuses: [] })}

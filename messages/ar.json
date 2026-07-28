@@ -4910,7 +4910,10 @@
       "preparing": "قيد التحضير",
       "ready_to_ship": "جاهز للشحن",
       "out_for_delivery": "خرج للتوصيل",
-      "returned_to_warehouse": "تم الإرجاع للمستودع"
+      "returned_to_warehouse": "تم الإرجاع للمستودع",
+      "customer_data_wrong": "بيانات العميل غير صحيحة",
+      "customer_not_respond": "العميل لا يرد",
+      "customer_refused": "العميل رفض الاستلام"
     },
     "trackShipment": {
       "title": "تتبع الشحنة",
@@ -5551,7 +5554,9 @@
         "main": "المخزن الرئيسي",
         "branch": "الفرع"
       },
-      "replaceDate": "تاريخ الاستبدال"
+      "replaceDate": "تاريخ الاستبدال",
+      "shipmentStatusPlaceholder": "اختر حالة الشحنة",
+      "shipmentStatus": "حالة الشحنة"
     },
     "automationTitle": "سجلات تشغيل الأتمتة",
     "noRecords": "لم يتم العثور على بيانات لهذا الطلب.",

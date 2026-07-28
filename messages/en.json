@@ -4936,7 +4936,10 @@
       "preparing": "Preparing",
       "ready_to_ship": "Ready to Ship",
       "out_for_delivery": "Out for Delivery",
-      "returned_to_warehouse": "Returned to Warehouse"
+      "returned_to_warehouse": "Returned to Warehouse",
+      "customer_data_wrong": "Customer data is incorrect",
+      "customer_not_respond": "Customer did not respond",
+      "customer_refused": "Customer refused"
     },
     "trackShipment": {
       "title": "Shipment Tracking",
@@ -5566,7 +5569,9 @@
         "main": "Main Warehouse",
         "branch": "Branch"
       },
-      "replaceDate": "Replacement date"
+      "replaceDate": "Replacement date",
+      "shipmentStatusPlaceholder": "Select the shipment status",
+      "shipmentStatus": "Shipment status"
     },
     "automationTitle": "Automation Runs",
     "noRecords": "No data found for this order.",

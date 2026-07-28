@@ -1274,7 +1274,7 @@ export function ScanReturnsSubtab({
           search: debouncedSearch,
           includeReplaced: true,
           shippingCompanyId: carrierId === "all" ? undefined : carrierId,
-          status: 'shipped,delivered',
+          status: 'shipped,delivered,failed_delivery',
         }
       });
       setPager(prev => ({

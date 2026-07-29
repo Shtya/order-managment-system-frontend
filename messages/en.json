@@ -11167,7 +11167,7 @@
             "postponedDate": "2026-07-12",
             "returnedAt": "2026-07-10 11:15",
             "customerNotes": "Please call 30 minutes before delivery",
-            "orderNumber": "ORD-123",
+            "orderNumber": "ORDZW7NRMY",
             "customerName": "John Doe",
             "phoneNumber": "+123456789",
             "secondPhoneNumber": "+987654321",
@@ -11195,10 +11195,14 @@
             "quantity": "2",
             "price": "250",
             "unitCost": "250",
-            "lineTotal": "500"
+            "lineTotal": "500",
+            "duplicateCount": "1",
+            "originalOrderNumber": "ORDAMQLZZS"
           },
           "firstitems": "First product",
-          "lastitems": "Last product"
+          "lastitems": "Last product",
+          "duplicateCount": "Repetition number",
+          "originalOrderNumber": "The original order number duplicated from"
         },
         "runPanel": {
           "title": "Run Information",

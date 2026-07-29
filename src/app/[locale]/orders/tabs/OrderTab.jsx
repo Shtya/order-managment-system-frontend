@@ -1402,7 +1402,7 @@ export default function OrdersTab({
               <div className="flex items-center gap-2">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-red-600 leading-tight">
-                    {t("table.duplicate") || "Duplicate"} ({row.duplicateCount + 1})
+                    {t("table.duplicate") || "Duplicate"} ({row.duplicateCount})
                   </span>
 
                   {row.originalOrderNumber && (

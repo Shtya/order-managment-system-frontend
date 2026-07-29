@@ -4707,7 +4707,7 @@
     "filters": "الفلاتر",
     "year": "السنة",
     "month": "الشهر",
-    "noResults" :"لا توجد نتائج",
+    "noResults": "لا توجد نتائج",
     "allowPopups": "يرجى السماح بالنوافذ المنبثقة (Pop-ups) للطباعة",
     "printReport": "طباعة التقرير",
     "use": "استخدام",
@@ -11188,7 +11188,7 @@
             "postponedDate": "2026-07-12",
             "returnedAt": "2026-07-10 11:15",
             "customerNotes": "يرجى الاتصال قبل التوصيل بنصف ساعة",
-            "orderNumber": "ORD-123",
+            "orderNumber": "ORDZW7NRMY",
             "customerName": "أحمد محمد",
             "phoneNumber": "01023459658",
             "secondPhoneNumber": "01245234569",
@@ -11216,10 +11216,14 @@
             "quantity": "2",
             "price": "250",
             "unitCost": "250",
-            "lineTotal": "500"
+            "lineTotal": "500",
+            "duplicateCount": "1",
+            "originalOrderNumber": "ORDAMQLZZS"
           },
           "firstitems": "أول منتج",
-          "lastitems": "أخر منتج"
+          "lastitems": "أخر منتج",
+          "duplicateCount": "رقم التكرار",
+          "originalOrderNumber": "رقم الطلب الأصلي المُكرَّر منه"
         },
         "runPanel": {
           "title": "معلومات التشغيل",

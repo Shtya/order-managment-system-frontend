@@ -37,6 +37,8 @@ export function useOrderProperties() {
         {id: "postponedDate", label: t("postponedDate"), icon: Activity, example: t("examples.postponedDate"), path: "postponedDate" },
         {id: "returnedAt", label: t("returnedAt"), icon: Activity, example: t("examples.returnedAt"), path: "returnedAt" },
         {id: "customerNotes", label: t("customerNotes"), icon: Tag, example: t("examples.customerNotes"), path: "customerNotes" },
+        {id: "duplicateCount", label: t("duplicateCount"), icon: Tag, example: t("examples.duplicateCount"), path: "duplicateCount" },
+        {id: "originalOrderNumber", label: t("originalOrderNumber"), icon: Tag, example: t("examples.originalOrderNumber"), path: "originalOrderNumber" },
         {
             id: "itemsAll", label: t("items"), icon: Package, children: [
                 { id: "items[].variant.product.name", label: t("productName"), icon: Package, example: t("examples.productName"), path: "items[].variant.product.name" },

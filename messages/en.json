@@ -388,6 +388,7 @@
     "products": "Products",
     "newProduct": "New Product",
     "newBundle": "New Bundle",
+    "warehousesManagement": "Warehouses Management",
     "warehouse": "Warehouse",
     "wallet": "Wallet",
     "manageWarehouse": "Warehouse",
@@ -1367,6 +1368,10 @@
       "whatsapp_update_account": "Update WhatsApp account",
       "warehouses_create": "Create warehouses",
       "warehouses_delete": "Delete warehouses",
+      "warehouses_locations_create": "Create warehouse locations",
+      "warehouses_locations_delete": "Delete warehouse locations",
+      "warehouses_locations_read": "View warehouse locations",
+      "warehouses_locations_update": "Update warehouse locations",
       "warehouses_read": "View warehouses",
       "warehouses_scan-preparation": "Scan warehouse preparation",
       "warehouses_scan-shipping": "Scan warehouse shipping",
@@ -13170,6 +13175,87 @@
         }
       }
     }
+  },
+  "warehousesManagement": {
+    "title": "Warehouses Management",
+    "breadcrumb": {
+      "home": "Home",
+      "management": "Warehouses Management"
+    },
+    "tabs": {
+      "warehouses": "Warehouses",
+      "storageLocations": "Storage Locations",
+      "zones": "Zones"
+    },
+    "stats": {
+      "total": "Total Warehouses",
+      "active": "Active",
+      "zones": "Zones",
+      "racks": "Racks",
+      "shelves": "Shelves",
+      "bins": "Bins"
+    },
+    "storage_location_types": {
+      "zone": "Zone",
+      "rack": "Rack",
+      "shelf": "Shelf",
+      "bin": "Bin"
+    },
+    "searchPlaceholder": "Search warehouses...",
+    "emptyTitle": "No warehouses found",
+    "emptySubtitle": "Create a warehouse to get started",
+    "locationSearchPlaceholder": "Search storage locations...",
+    "locationEmptyTitle": "No storage locations found",
+    "locationEmptySubtitle": "Create a storage location to get started",
+    "columns": {
+      "name": "Name",
+      "address": "Address",
+      "description": "Description",
+      "status": "Status",
+      "createdAt": "Created At",
+      "type": "Type",
+      "parent": "Parent Location",
+      "warehouse": "Warehouse"
+    },
+    "actions": {
+      "createWarehouse": "Create Warehouse",
+      "editWarehouse": "Edit Warehouse",
+      "deleteWarehouse": "Delete Warehouse",
+      "createLocation": "Create Storage Location",
+      "editLocation": "Edit Storage Location",
+      "deleteLocation": "Delete Storage Location",
+      "confirmDelete": "Are you sure you want to delete this warehouse?",
+      "confirmDeleteLocation": "Are you sure you want to delete this storage location?"
+    },
+    "form": {
+      "name": "Name",
+      "address": "Address",
+      "description": "Description",
+      "isActive": "Active",
+      "type": "Type",
+      "parentId": "Parent Location",
+      "noParent": "No Parent (Root Level)",
+      "namePlaceholder": "Enter warehouse name",
+      "addressPlaceholder": "Enter warehouse address",
+      "descriptionPlaceholder": "Enter description",
+      "nameRequired": "Name is required",
+      "nameLocationPlaceholder": "Enter the name of the storage location",
+      "warehouseRequired": "Warehouse is required",
+      "selectWarehouse": "Select warehouse",
+      "selectType": "Select type",
+      "allWarehouses": "All warehouses",
+      "typeRequired": "Type is required"
+    },
+    "messages": {
+      "created": "Warehouse created successfully",
+      "updated": "Warehouse updated successfully",
+      "deleted": "Warehouse deleted successfully",
+      "locationCreated": "Storage location created successfully",
+      "locationUpdated": "Storage location updated successfully",
+      "locationDeleted": "Storage location deleted successfully"
+    },
+    "chooseLocation": "Choose a storage location",
+    "search": "Search ..."
   },
   "selected": "Selected"
 }

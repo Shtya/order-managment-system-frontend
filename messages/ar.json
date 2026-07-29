@@ -388,6 +388,7 @@
     "products": "المنتجات",
     "newProduct": "منتج جديد",
     "newBundle": "إضافة بندل منتجات",
+    "warehousesManagement": "إدارة المستودعات",
     "warehouse": "المخزن",
     "wallet": "المحفظة",
     "manageWarehouse": "المخزن",
@@ -1371,6 +1372,10 @@
       "warehouses_read": "عرض المخازن",
       "warehouses_scan-preparation": "مسح تجهيز المخزن",
       "warehouses_scan-shipping": "مسح شحن المخزن",
+      "warehouses_locations_create": "إنشاء مواقع التخزين",
+      "warehouses_locations_delete": "حذف مواقع التخزين",
+      "warehouses_locations_read": "عرض مواقع التخزين",
+      "warehouses_locations_update": "تعديل مواقع التخزين",
       "warehouses_update": "تعديل المخازن",
       "warehouses_scan_preparation": "مسح تجهيز المستودع",
       "warehouses_scan_shipping": "مسح شحن المستودع",
@@ -13197,6 +13202,87 @@
         }
       }
     }
+  },
+  "warehousesManagement": {
+    "title": "إدارة المستودعات",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "management": "إدارة المستودعات"
+    },
+    "tabs": {
+      "warehouses": "المستودعات",
+      "storageLocations": "مواقع التخزين",
+      "zones": "المناطق"
+    },
+    "stats": {
+      "total": "إجمالي المستودعات",
+      "active": "نشط",
+      "zones": "المناطق",
+      "racks": "الأرفف المعدنية",
+      "shelves": "المستويات",
+      "bins": "الخانات"
+    },
+    "storage_location_types": {
+      "zone": "منطقة",
+      "rack": "رف تخزين معدني",
+      "shelf": "مستوى رف",
+      "bin": "خانة تخزين"
+    },
+    "searchPlaceholder": "البحث عن مستودعات...",
+    "emptyTitle": "لم يتم العثور على مستودعات",
+    "emptySubtitle": "قم بإنشاء مستودع للبدء",
+    "locationSearchPlaceholder": "البحث عن مواقع التخزين...",
+    "locationEmptyTitle": "لم يتم العثور على مواقع تخزين",
+    "locationEmptySubtitle": "قم بإنشاء موقع تخزين للبدء",
+    "columns": {
+      "name": "الاسم",
+      "address": "العنوان",
+      "description": "الوصف",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإنشاء",
+      "type": "النوع",
+      "parent": "الموقع الأب",
+      "warehouse": "المستودع"
+    },
+    "actions": {
+      "createWarehouse": "إنشاء مستودع",
+      "editWarehouse": "تعديل المستودع",
+      "deleteWarehouse": "حذف المستودع",
+      "createLocation": "إنشاء موقع تخزين",
+      "editLocation": "تعديل مكان التخزين",
+      "deleteLocation": "حذف مكان التخزين",
+      "confirmDelete": "هل أنت متأكد من حذف هذا المستودع؟",
+      "confirmDeleteLocation": "هل أنت متأكد من حذف مكان التخزين هذا؟"
+    },
+    "form": {
+      "name": "الاسم",
+      "address": "العنوان",
+      "description": "الوصف",
+      "isActive": "نشط",
+      "type": "النوع",
+      "parentId": "الموقع الأب",
+      "noParent": "بدون أب (مستوى جذر)",
+      "namePlaceholder": "أدخل اسم المستودع",
+      "addressPlaceholder": "أدخل عنوان المستودع",
+      "descriptionPlaceholder": "أدخل الوصف",
+      "nameRequired": "الاسم مطلوب",
+      "nameLocationPlaceholder": "أدخل إسم مكان التخزين",
+      "warehouseRequired": "المستودع مطلوب",
+      "selectWarehouse": "اختر المستودع",
+      "selectType": "اختر النوع",
+      "allWarehouses": "جميع المستودعات",
+      "typeRequired": "النوع مطلوب"
+    },
+    "messages": {
+      "created": "تم إنشاء المستودع بنجاح",
+      "updated": "تم تحديث المستودع بنجاح",
+      "deleted": "تم حذف المستودع بنجاح",
+      "locationCreated": "تم إنشاء مكان التخزين بنجاح",
+      "locationUpdated": "تم تحديث مكان التخزين بنجاح",
+      "locationDeleted": "تم حذف مكان التخزين بنجاح"
+    },
+    "chooseLocation": "إختار مكان التخزين",
+    "search": " ... إبحث"
   },
   "selected": "محدد"
 }

@@ -52,6 +52,7 @@ import PageHeader from '@/components/atoms/Pageheader';
 import SafeSelect from '@/components/molecules/SafeSelect';
 import SupplierSelect from '@/components/molecules/SupplierSelect';
 import ProductFilter from '@/components/atoms/ProductFilter';
+import { StorageLocationSelect } from '../../warehouses-management/atoms/StorageLocationsTab';
 import { InvoiceSummary, ReceiptImageUpload } from '../../purchases/new/page';
 import { useOrdersSettings } from '@/hook/useOrdersSettings';
 import { avatarSrc } from '@/components/atoms/UserSelect';
@@ -190,7 +191,7 @@ const makeSchema = (t, tValidation) =>
 			.notRequired(),
 		salePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
 		lowestPrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
-		storageRack: yup.string().nullable().max(2000, t('validation.storageRackTooLong', { max: 2000 })),
+		storageLocationId: yup.string().nullable(),
 		categoryId: yup.string().nullable(),
 		storeId: yup.string().nullable(),
 		warehouseId: yup.string().nullable(),
@@ -341,7 +342,7 @@ function getDefaultValues() {
 		hasPurchase: false,
 		type: 'variable',
 		sku: '',
-		name: '', slug: '', wholesalePrice: '', salePrice: '', lowestPrice: '', storageRack: '',
+		name: '', slug: '', wholesalePrice: '', salePrice: '', lowestPrice: '', storageLocationId: '',
 		categoryId: '', storeId: '', warehouseId: '', description: '',
 		callCenterProductDescription: '', upsellingEnabled: false,
 		upsellingProducts: [], attributes: [], combinations: [],
@@ -640,6 +641,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const tPurchase = useTranslations("purchaseInvoice");
 	const tValidation = useTranslations('validation');
 	const t = useTranslations('addProduct');
+	const tc = useTranslations('common');
+	const tw = useTranslations('warehousesManagement');
 	const locale = useLocale();
 	const [imageErrors, setImageErrors] = useState({
 		main: { general: '', specific: {} },
@@ -677,6 +680,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const upsellingEnabled = watch('upsellingEnabled');
 	const productName = watch('name');
 	const productSlug = watch('slug');
+	const whId = watch('warehouseId');
+	const storageLocationId = watch('storageLocationId');
+
 	const productType = attributeFields.length > 0 ? 'variable' : 'single';
 
 	const attributesForDupCheck = useWatch({ control, name: 'attributes' }) || [];
@@ -688,6 +694,14 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		if (!upsellingEnabled) setValue('upsellingProducts', [], { shouldDirty: true });
 	}, [upsellingEnabled, setValue]);
 
+	const prevWhId = useRef(whId);
+
+	useEffect(() => {
+		if (prevWhId.current !== whId && whId && whId !== 'none' && prevWhId.current) {
+			setValue('storageLocationId', null, { shouldDirty: true });
+		}
+		prevWhId.current = whId;
+	}, [whId, setValue]);
 
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
@@ -985,7 +999,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 			const lp = safeNumberString(data.lowestPrice);
 			if (lp !== '') fd.append('lowestPrice', lp);
-			if ((data.storageRack ?? '').trim()) fd.append('storageRack', data.storageRack.trim());
+			if (data.storageLocationId) fd.append('storageLocationId', data.storageLocationId);
 			if ((data.slug ?? '').trim()) fd.append('slug', data.slug.trim());
 
 
@@ -1017,10 +1031,10 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			const imagesMeta = (otherFiles || []).filter((f) => f?.isFromLibrary && !f?.isExisting && f?.url).map((f) => ({ url: String(f.url) }));
 			const orphanIds = (otherFiles || []).filter((f) => !f?.isExisting && !f?.isFromLibrary && f?.orphanId).map((f) => f.orphanId);
 
-			
+
 			if (isEditMode) fd.append('imagesMeta', JSON.stringify([...existingImages, ...imagesMeta]));
 			if (!isEditMode) fd.append('sku', data.sku);
-			
+
 			fd.append('imagesMeta', JSON.stringify(imagesMeta));
 			if (orphanIds.length) fd.append('imagesOrphanIds', JSON.stringify(orphanIds));
 			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
@@ -1088,7 +1102,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				fd.append('remoteId', remoteId);
 			}
 
-			
+
 			const apiCall = isEditMode
 				? api.patch(`/products/${productId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
 				: api.post('/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -1124,7 +1138,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		reset({
 			type: existingProduct.type || 'variable',
 			name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '', sku: existingProduct.sku || '',
-			salePrice: existingProduct.salePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '',
+			salePrice: existingProduct.salePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageLocationId: existingProduct.storageLocationId || '',
 			categoryId: (existingProduct.categoryId || existingProduct.category?.id) ? String(existingProduct.categoryId || existingProduct.category?.id) : 'none',
 			storeId: (existingProduct.storeId || existingProduct.store?.id) ? String(existingProduct.storeId || existingProduct.store?.id) : 'none',
 			warehouseId: (existingProduct.warehouseId || existingProduct.warehouse?.id) ? String(existingProduct.warehouseId || existingProduct.warehouse?.id) : 'none', description: existingProduct.description || '',
@@ -1344,9 +1358,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									</Field>
 
 
-									<Field label={t('fields.storageRack')} error={errors?.storageRack?.message}>
-										<Input {...register('storageRack')} placeholder={t('placeholders.storageRack')} />
-									</Field>
 
 									<Field label={t('fields.category')} error={errors?.categoryId?.message}>
 										<Controller
@@ -1471,6 +1482,20 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 													</Select>
 												);
 											}}
+										/>
+									</Field>
+
+									<Field label={`${t('fields.storageRack')} (${tw('storage_location_types.bin')})`} error={errors?.storageLocationId?.message}>
+										<Controller
+											control={control}
+											name="storageLocationId"
+											render={({ field }) => (
+												<StorageLocationSelect
+													value={field.value}
+													onChange={field.onChange}
+													warehouseId={whId}
+												/>
+											)}
 										/>
 									</Field>
 

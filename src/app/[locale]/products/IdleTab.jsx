@@ -38,7 +38,7 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
 
     if (searchDebounced?.trim()) params.set("search", searchDebounced.trim());
 
-    if (filters.storageRack?.trim()) params.set("storageRack.ilike", filters.storageRack.trim());
+    if (filters.storageLocationId) params.set("storageLocationId", filters.storageLocationId);
     if (filters.categoryId) params.set("categoryId", filters.categoryId);
     if (filters.storeId) params.set("storeId", filters.storeId);
     if (filters.warehouseId) params.set("warehouseId", filters.warehouseId);
@@ -129,7 +129,7 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
       },
       { key: "store", header: t("table.store"), className: "min-w-[120px]", cell: (row) => row?.store?.name ?? na },
       { key: "warehouse", header: t("table.warehouse"), className: "min-w-[120px]", cell: (row) => row?.warehouse?.name ?? na },
-      { key: "storageRack", header: t("table.storageRack"), className: "min-w-[100px]", cell: (row) => row.storageRack ?? na },
+      { key: "storageRack", header: t("table.storageRack"), className: "min-w-[100px]", cell: (row) => row.storageLocation?.name ?? na },
       {
         key: "salePrice",
         header: t("table.salePrice"),

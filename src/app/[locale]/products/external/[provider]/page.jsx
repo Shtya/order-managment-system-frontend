@@ -66,7 +66,7 @@ export default function ImportExternalProductPage() {
             wholesalePrice: ext.expense || '',
             salePrice: ext.price || '',
             lowestPrice: '',
-            storageRack: '',
+            storageLocationId: '',
             categoryName: ext.categories?.[0]?.name || '', // نأخذ أول تصنيف
             categorySlug: ext.categories?.[0]?.slug || '', // نأخذ أول تصنيف
             warehouseId: '',

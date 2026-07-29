@@ -290,7 +290,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 
 		if (searchDebounced?.trim()) params.set("search", searchDebounced.trim());
 		if (activetab === "deleted_products") params.set("isActive", "false");
-		if (filters.storageRack?.trim()) params.set("storageRack.ilike", filters.storageRack.trim());
+		if (filters.storageLocationId) params.set("storageLocationId", filters.storageLocationId);
 		if (filters.categoryId) params.set("categoryId", filters.categoryId);
 		if (filters.storeId) params.set("storeId", filters.storeId);
 		if (filters.warehouseId) params.set("warehouseId", filters.warehouseId);
@@ -607,7 +607,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 				},
 			},
 			{ key: "warehouse", header: t("table.warehouse"), className: "min-w-[120px]", cell: (row) => row?.warehouse?.name ?? na },
-			{ key: "storageRack", header: t("table.storageRack"), className: "min-w-[100px]", cell: (row) => row.storageRack ?? na },
+			{ key: "storageRack", header: t("table.storageRack"), className: "min-w-[100px]", cell: (row) => row.storageLocation?.name ?? na },
 			{
 				key: "salePrice",
 				header: t("table.salePrice"),
@@ -1099,10 +1099,10 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 									</div>
 								</div>
 
-								{product.storageRack ? (
+								{product.storageLocation ? (
 									<div className="mt-4 text-sm text-slate-700 dark:text-slate-200">
 										<span className="font-semibold">{t("common.storageRack")}:</span>{" "}
-										<span className="text-slate-600 dark:text-slate-300">{product.storageRack}</span>
+										<span className="text-slate-600 dark:text-slate-300">{product.storageLocation?.name}</span>
 									</div>
 								) : null}
 							</div>

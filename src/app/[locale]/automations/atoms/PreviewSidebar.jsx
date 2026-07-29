@@ -282,7 +282,6 @@ function makeVariantAndProduct({ index, store, status }) {
         salePrice: unitPrice,
         sku: `SKU-${faker.string.alphanumeric(8).toUpperCase()}`,
         type: 'VARIABLE',
-        storageRack: faker.location.secondaryAddress(),
         categoryId: null,
         storeId: store?.id,
         warehouseId: null,

@@ -26,6 +26,7 @@ import useBundlesTab, { BundleViewModal } from "./BundlesTab";
 import useIdleTab from "./IdleTab";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
+import { StorageLocationSelect } from "../warehouses-management/atoms/StorageLocationsTab";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useSearchParams } from "next/navigation";
 import { useSocket } from "@/context/SocketContext";
@@ -59,6 +60,8 @@ export default function ProductsPage() {
 	const tFailed = useTranslations('orders.failedOrders');
 	const tTutorial = useTranslations("tutorial");
 	const t = useTranslations("products");
+	const tc = useTranslations("common");
+	const tw = useTranslations("warehousesManagement");
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
@@ -69,7 +72,7 @@ export default function ProductsPage() {
 	const [searchDebounced, setSearchDebounced] = useState("");
 
 	const [filtersOpen, setFiltersOpen] = useState(false);
-	const defaultFilters = useMemo(() => ({ storageRack: "", categoryId: "", storeId: "", warehouseId: "", productType: "none", priceFrom: "", priceTo: "", salePriceFrom: "", salePriceTo: "" }), []);
+	const defaultFilters = useMemo(() => ({ storageLocationId: "", categoryId: "", storeId: "", warehouseId: "", productType: "none", priceFrom: "", priceTo: "", salePriceFrom: "", salePriceTo: "" }), []);
 	const [filters, setFilters] = useState(defaultFilters);
 	const [filterErrors, setFilterErrors] = useState({});
 
@@ -270,7 +273,7 @@ export default function ProductsPage() {
 		const [cats, sts, whs, providers] = await Promise.all([
 			api.get("/lookups/categories", { params: { limit: 200 } }),
 			api.get("/lookups/stores", { params: { limit: 200 } }),
-			api.get("/lookups/warehouses", { params: { limit: 200 } }),
+			api.get("/lookups/warehouses", { params: { limit: 200, isActive: true } }),
 			api.get("/stores/providers", { params: { limit: 200 } })
 		]);
 		setCategories(cats.data ?? []);
@@ -288,6 +291,14 @@ export default function ProductsPage() {
 			}
 		})();
 	}, []);
+
+	const prevWarehouseId = useRef(filters.warehouseId);
+	useEffect(() => {
+		if (prevWarehouseId.current !== filters.warehouseId && filters.warehouseId) {
+			setFilters((f) => ({ ...f, storageLocationId: "" }));
+		}
+		prevWarehouseId.current = filters.warehouseId;
+	}, [filters.warehouseId]);
 
 	const onAskDelete = (id, scope) => setDeleteState({ open: true, id, scope });
 
@@ -533,17 +544,6 @@ export default function ProductsPage() {
 				onApplyFilters={onApplyFilters}
 				filters={
 					<>
-						{/* Storage Rack */}
-						{active !== "bundles" && (
-							<FilterField label={t("filters.storageRack")}>
-								<Input
-									value={filters.storageRack || ""}
-									onChange={(e) => setFilters((f) => ({ ...f, storageRack: e.target.value }))}
-									placeholder={t("filters.storageRackPlaceholder")}
-									className="h-10 rounded-xl text-sm"
-								/>
-							</FilterField>
-						)}
 
 						{/* Category */}
 						{active !== "bundles" && (
@@ -608,6 +608,18 @@ export default function ProductsPage() {
 								</Select>
 							</FilterField>
 						)}
+
+						{/* Storage Rack */}
+						{active !== "bundles" && (
+							<FilterField label={`${t("filters.storageRack")} (${tw("storage_location_types.bin")})`}>
+								<StorageLocationSelect
+									value={filters.storageLocationId}
+									onChange={(v) => setFilters((f) => ({ ...f, storageLocationId: v || "" }))}
+									warehouseId={filters.warehouseId}
+								/>
+							</FilterField>
+						)}
+
 						{active !== "bundles" && (
 							<FilterField label={t("filters.type")}>
 								<Select

@@ -67,6 +67,8 @@ import {
   Landmark,
   DollarSign,
   MapPin,
+  WarehouseIcon,
+  Boxes,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -617,6 +619,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         { icon: PackagePlus, labelKey: "newProduct", permission: "products.read", href: "/products/new" },
         { icon: Layers, labelKey: "newBundle", permission: "products.read", href: "/bundles/new" },
         { icon: Package, labelKey: "categories", permission: "categories.read", href: "/products/categories" },
+        { icon: Boxes , labelKey: "warehousesManagement", permission: "warehouses.read", href: "/warehouses-management" },
       ],
     },
 

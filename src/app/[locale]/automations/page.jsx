@@ -45,15 +45,8 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AutomationsTab } from "../settings/page";
 import { OrdersSettingsProvider } from "@/hook/useOrdersSettings";
+import { normalizeAxiosError } from "@/utils/axios";
 
-function normalizeAxiosError(err) {
-  const msg =
-    err?.response?.data?.message ??
-    err?.response?.data?.error ??
-    err?.message ??
-    "Unexpected error";
-  return Array.isArray(msg) ? msg.join(", ") : String(msg);
-}
 
 function FilterField({ label, children }) {
   return (

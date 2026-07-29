@@ -1372,10 +1372,10 @@
       "warehouses_read": "عرض المخازن",
       "warehouses_scan-preparation": "مسح تجهيز المخزن",
       "warehouses_scan-shipping": "مسح شحن المخزن",
-      "warehouses_locations_create": "إنشاء مواقع التخزين",
-      "warehouses_locations_delete": "حذف مواقع التخزين",
-      "warehouses_locations_read": "عرض مواقع التخزين",
-      "warehouses_locations_update": "تعديل مواقع التخزين",
+      "warehouses_locations_create": "إنشاء أماكن التخزين",
+      "warehouses_locations_delete": "حذف أماكن التخزين",
+      "warehouses_locations_read": "عرض أماكن التخزين",
+      "warehouses_locations_update": "تعديل أماكن التخزين",
       "warehouses_update": "تعديل المخازن",
       "warehouses_scan_preparation": "مسح تجهيز المستودع",
       "warehouses_scan_shipping": "مسح شحن المستودع",
@@ -4707,6 +4707,7 @@
     "filters": "الفلاتر",
     "year": "السنة",
     "month": "الشهر",
+    "noResults" :"لا توجد نتائج",
     "allowPopups": "يرجى السماح بالنوافذ المنبثقة (Pop-ups) للطباعة",
     "printReport": "طباعة التقرير",
     "use": "استخدام",
@@ -13211,7 +13212,7 @@
     },
     "tabs": {
       "warehouses": "المستودعات",
-      "storageLocations": "مواقع التخزين",
+      "storageLocations": "أماكن التخزين",
       "zones": "المناطق"
     },
     "stats": {
@@ -13231,7 +13232,7 @@
     "searchPlaceholder": "البحث عن مستودعات...",
     "emptyTitle": "لم يتم العثور على مستودعات",
     "emptySubtitle": "قم بإنشاء مستودع للبدء",
-    "locationSearchPlaceholder": "البحث عن مواقع التخزين...",
+    "locationSearchPlaceholder": "البحث عن أماكن التخزين...",
     "locationEmptyTitle": "لم يتم العثور على مواقع تخزين",
     "locationEmptySubtitle": "قم بإنشاء موقع تخزين للبدء",
     "columns": {

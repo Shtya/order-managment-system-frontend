@@ -342,8 +342,8 @@ function getDefaultValues() {
 		hasPurchase: false,
 		type: 'variable',
 		sku: '',
-		name: '', slug: '', wholesalePrice: '', salePrice: '', lowestPrice: '', storageLocationId: '',
-		categoryId: '', storeId: '', warehouseId: '', description: '',
+		name: '', slug: '', wholesalePrice: '', salePrice: '', lowestPrice: '', storageLocationId: 'none',
+		categoryId: '', storeId: '', warehouseId: 'none', description: '',
 		callCenterProductDescription: '', upsellingEnabled: false,
 		upsellingProducts: [], attributes: [], combinations: [],
 		purchase: {
@@ -698,7 +698,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	useEffect(() => {
 		if (prevWhId.current !== whId && whId && whId !== 'none' && prevWhId.current) {
-			setValue('storageLocationId', null, { shouldDirty: true });
+			setValue('storageLocationId', "none", { shouldDirty: true });
 		}
 		prevWhId.current = whId;
 	}, [whId, setValue]);
@@ -999,7 +999,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 			const lp = safeNumberString(data.lowestPrice);
 			if (lp !== '') fd.append('lowestPrice', lp);
-			if (data.storageLocationId) fd.append('storageLocationId', data.storageLocationId);
+			if (data.storageLocationId && data.storageLocationId !== 'none') fd.append('storageLocationId', data.storageLocationId);
 			if ((data.slug ?? '').trim()) fd.append('slug', data.slug.trim());
 
 
@@ -1016,7 +1016,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			}
 
 			if (data.storeId) fd.append('storeId', data.storeId);
-			if (data.warehouseId) fd.append('warehouseId', data.warehouseId);
+			if (data.warehouseId && data.warehouseId != 'none') fd.append('warehouseId', data.warehouseId);
 			if ((data.description ?? '').trim()) fd.append('description', data.description.trim());
 			if ((data.callCenterProductDescription ?? '').trim()) fd.append('callCenterProductDescription', data.callCenterProductDescription.trim());
 			fd.append('upsellingEnabled', data.upsellingEnabled ? 'true' : 'false');
@@ -1491,6 +1491,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											name="storageLocationId"
 											render={({ field }) => (
 												<StorageLocationSelect
+													showNoneOption={true}
 													value={field.value}
 													onChange={field.onChange}
 													warehouseId={whId}

@@ -452,8 +452,10 @@ export default function AuthBrandSide({ mode, t: tProp }) {
 
   return (
     <div
+
       style={{
         position: "relative",
+        paddingTop: "170px",
         width: "100%",
         height: "100%",
         overflow: "hidden",
@@ -599,7 +601,7 @@ export default function AuthBrandSide({ mode, t: tProp }) {
         }}
         style={{
           position: "absolute",
-          top: "38%",
+          top: "50%",
           right: 22,
           width: 18,
           height: 18,
@@ -640,7 +642,7 @@ export default function AuthBrandSide({ mode, t: tProp }) {
         }}
         style={{
           position: "absolute",
-          top: "58%",
+          top: "70%",
           left: 16,
           width: 12,
           height: 12,
@@ -714,7 +716,7 @@ export default function AuthBrandSide({ mode, t: tProp }) {
               />
               <span
                 style={{
-                  fontSize: 9.5,
+                  fontSize: 10,
                   fontWeight: 700,
                   color: P.lavender,
                   letterSpacing: "0.14em",
@@ -729,12 +731,12 @@ export default function AuthBrandSide({ mode, t: tProp }) {
 
             <h1
               style={{
-                fontSize: "clamp(20px, 2.4vw, 32px)",
+                fontSize: "clamp(22px, 2.7vw, 36px)", // slightly larger
                 fontWeight: 900,
                 color: "#fff",
-                lineHeight: 1.22,
-                letterSpacing: "-0.8px",
-                marginBottom: 10,
+                lineHeight: 1.2,
+                letterSpacing: "-0.9px",
+                marginBottom: 12,
                 whiteSpace: "pre-line",
               }}
             >
@@ -742,11 +744,12 @@ export default function AuthBrandSide({ mode, t: tProp }) {
                 ? t("brand.headline_signin")
                 : t("brand.headline_signup")}
             </h1>
+
             <p
               style={{
-                fontSize: "clamp(12px, 1vw, 13.5px)",
+                fontSize: "clamp(13px, 1.1vw, 15px)", // slightly larger
                 color: P.textMid,
-                lineHeight: 1.78,
+                lineHeight: 1.8,
               }}
             >
               {isSignin ? t("brand.desc_signin") : t("brand.desc_signup")}

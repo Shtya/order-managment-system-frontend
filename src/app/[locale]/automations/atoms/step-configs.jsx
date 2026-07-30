@@ -33,6 +33,7 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Checkbox } from "@/components/ui/checkbox";
+import { SendSmsModal } from "../../sms/atoms/SendSmsModal";
 
 
 function normalizeAxiosError(err) {
@@ -1393,6 +1394,73 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     );
 }
 
+export function SendSmsConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const t = useTranslations("whatsApp.automations.builder.nodes");
+    const orderProperties = useOrderProperties();
+    const [tempValue, setTempValue] = useState({});
+    const didSubmitRef = useRef(false);
+
+    const defaultBranches = useMemo(() => ([
+        { id: 'sent', label: t('branches.sent', { fallback: 'Sent' }), condition: 'sent' },
+        { id: 'failed', label: t('branches.failed', { fallback: 'Not Sent' }), condition: 'failed' }
+    ]), [t]);
+
+    useEffect(() => {
+        if (isOpen) {
+            didSubmitRef.current = false;
+            const initialValue = value || {};
+            setTempValue({
+                ...initialValue,
+                branches: initialValue?.branches || defaultBranches,
+            });
+            setDisabled(false);
+        }
+    }, [value, isOpen, defaultBranches, setDisabled]);
+
+    const variableProps = useMemo(() => ({
+        disableHydrate: false,
+        variables: orderProperties,
+        popupTitle: tConfig('orderProperties'),
+    }), []);
+
+    const handleModalClose = useCallback((data = null) => {
+        
+        if (didSubmitRef.current) return;
+        onClose(null);
+    }, [onClose]);
+
+    const handleSmsSubmit = useCallback(async (payload, ctx) => {
+        didSubmitRef.current = true;
+
+        const providerName = ctx?.integration?.provider?.name || null;
+        const providerCode = ctx?.integration?.providerCode || null;
+
+        const nextValue = {
+            ...tempValue,
+            ...payload,
+            integrationId: ctx?.integrationId || tempValue?.integrationId || null,
+            providerName: providerName || tempValue?.providerName || null,
+            providerCode: providerCode || tempValue?.providerCode || null,
+            branches: tempValue?.branches || defaultBranches,
+        };
+
+        onChange(nextValue);
+        onClose(nextValue);
+    }, [defaultBranches, onChange, onClose, tempValue]);
+
+    return (
+        <SendSmsModal
+            variableProps={variableProps}
+            onClose={handleModalClose}
+            showIntegrationSelect={true}
+            onSubmit={handleSmsSubmit}
+            initialValues={tempValue}
+            phonePlaceholder={t("phoneMessagePlaceholder")}
+            phoneRequired={false}
+        />
+    )
+}
 /**
  * Action: Send Upsell
  */

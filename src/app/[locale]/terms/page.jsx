@@ -5,7 +5,7 @@ const content = {
     title: "Terms and Conditions",
     updated: "Last updated: June 2, 2026",
     intro:
-      "These Terms and Conditions govern your access to and use of the Madar platform (madartest.online). By using our services, you agree to comply with these terms and acknowledge our integration with Meta Platform APIs.",
+      "These Terms and Conditions govern your access to and use of the Madar platform (getmadar.net). By using our services, you agree to comply with these terms and acknowledge our integration with Meta Platform APIs.",
     sections: [
       {
         title: "1. Scope of Service",
@@ -58,7 +58,7 @@ const content = {
       {
         title: "8. Contact",
         body: `
-          <p>For questions regarding these terms, please contact us at <a href="https://madartest.online/en/auth" class="text-blue-600 underline">madartest.online/en/auth</a>.</p>
+          <p>For questions regarding these terms, please contact us at <a href="https://getmadar.net/en/auth" class="text-blue-600 underline">getmadar.net/en/auth</a>.</p>
         `,
       },
     ],
@@ -68,7 +68,7 @@ const content = {
     title: "الشروط والأحكام",
     updated: "آخر تحديث: 2 يونيو 2026",
     intro:
-      "تنظم هذه الشروط والأحكام وصولك واستخدامك لمنصة مدار (madartest.online). باستخدامك لخدماتنا، فإنك توافق على الالتزام بهذه الشروط وتقر بتكاملنا مع واجهات برمجة تطبيقات منصة ميتا (Meta Platform APIs).",
+      "تنظم هذه الشروط والأحكام وصولك واستخدامك لمنصة مدار (getmadar.net). باستخدامك لخدماتنا، فإنك توافق على الالتزام بهذه الشروط وتقر بتكاملنا مع واجهات برمجة تطبيقات منصة ميتا (Meta Platform APIs).",
     sections: [
       {
         title: "1. نطاق الخدمة",
@@ -121,7 +121,7 @@ const content = {
       {
         title: "8. التواصل",
         body: `
-          <p>للاستفسارات المتعلقة بهذه الشروط، يرجى التواصل معنا عبر <a href="https://madartest.online/en/auth" class="text-blue-600 underline">madartest.online/en/auth</a>.</p>
+          <p>للاستفسارات المتعلقة بهذه الشروط، يرجى التواصل معنا عبر <a href="https://getmadar.net/en/auth" class="text-blue-600 underline">getmadar.net/en/auth</a>.</p>
         `,
       },
     ],

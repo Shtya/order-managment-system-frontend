@@ -5,7 +5,7 @@ const content = {
     title: "Privacy Policy",
     updated: "Last updated: June 1, 2026",
     intro:
-      "Madar (available at madartest.online) is a multi-tenant e-commerce operations and WhatsApp CRM platform. We help businesses manage customer communication, orders, shipping, products, suppliers, and store operations from one dashboard.",
+      "Madar (available at getmadar.net) is a multi-tenant e-commerce operations and WhatsApp CRM platform. We help businesses manage customer communication, orders, shipping, products, suppliers, and store operations from one dashboard.",
     sections: [
       {
         title: "Who We Are",
@@ -159,8 +159,8 @@ const content = {
         title: "Contact Us",
         body: `
           <div class="bg-white/50 p-4 rounded-xl border border-gray-100 space-y-2">
-            <p class="text-xs flex items-center gap-2"><span class="font-mono text-gray-400 w-16 uppercase">Platform</span> Madar — madartest.online</p>
-            <p class="text-xs flex items-center gap-2"><span class="font-mono text-gray-400 w-16 uppercase">Support</span> madartest.online/en/auth</p>
+            <p class="text-xs flex items-center gap-2"><span class="font-mono text-gray-400 w-16 uppercase">Platform</span> Madar — getmadar.net</p>
+            <p class="text-xs flex items-center gap-2"><span class="font-mono text-gray-400 w-16 uppercase">Support</span> getmadar.net/en/auth</p>
           </div>
         `,
       },
@@ -171,7 +171,7 @@ const content = {
     title: "سياسة الخصوصية",
     updated: "آخر تحديث: 2 يونيو 2026",
     intro:
-      "تعد منصة مدار (المتاحة عبر madartest.online) منصة متعددة المستأجرين لإدارة عمليات التجارة الإلكترونية وإدارة علاقات العملاء عبر واتساب. نحن نساعد الشركات على إدارة اتصالات العملاء والطلبات والشحن والمنتجات والموردين وعمليات المتجر من لوحة تحكم واحدة.",
+      "تعد منصة مدار (المتاحة عبر getmadar.net) منصة متعددة المستأجرين لإدارة عمليات التجارة الإلكترونية وإدارة علاقات العملاء عبر واتساب. نحن نساعد الشركات على إدارة اتصالات العملاء والطلبات والشحن والمنتجات والموردين وعمليات المتجر من لوحة تحكم واحدة.",
     sections: [
       {
         title: "من نحن",
@@ -330,8 +330,8 @@ const content = {
         title: "اتصل بنا",
         body: `
           <div class="bg-white/50 p-4 rounded-xl border border-gray-100 space-y-2">
-            <p class="text-xs flex items-center gap-2 text-left" dir="ltr"><span class="font-mono text-gray-400 w-16 uppercase">Platform</span> Madar — madartest.online</p>
-            <p class="text-xs flex items-center gap-2 text-left" dir="ltr"><span class="font-mono text-gray-400 w-16 uppercase">Support</span> madartest.online/en/auth</p>
+            <p class="text-xs flex items-center gap-2 text-left" dir="ltr"><span class="font-mono text-gray-400 w-16 uppercase">Platform</span> Madar — getmadar.net</p>
+            <p class="text-xs flex items-center gap-2 text-left" dir="ltr"><span class="font-mono text-gray-400 w-16 uppercase">Support</span> getmadar.net/en/auth</p>
           </div>
         `,
       },

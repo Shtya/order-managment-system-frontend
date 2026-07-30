@@ -13,7 +13,7 @@ import Flatpickr from "react-flatpickr";
 
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import api from "@/utils/api";
@@ -54,7 +54,8 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
     const t = useTranslations("plans")
     const router = useRouter()
     const { isSuperAdmin } = useAuth()
-
+    const locale = useLocale()
+    const isRTL = locale === "ar";
     const [pager, setPager] = useState({ records: [], total_records: 0, current_page: 1, per_page: 12 });
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
@@ -209,7 +210,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
             key: "subscription",
             header: t("columns.subscription"),
             cell: (row) => (
-                <span className="text-sm font-medium">{row.subscription?.plan?.name || "—"}</span>
+                <span className="text-sm font-medium">{(isRTL ? row.subscription?.plan?.name : row.subscription?.plan?.nameEn) || "—"}</span>
             ),
         },
         {

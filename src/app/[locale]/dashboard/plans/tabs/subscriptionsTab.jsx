@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import Flatpickr from "react-flatpickr";
 
@@ -65,7 +65,8 @@ export const SubscriptionStatus = Object.freeze({
 export default function SubscriptionsTab() {
   const t = useTranslations("subscriptions"); // Changed namespace to 'subscriptions'
   const router = useRouter();
-
+  const locale = useLocale();
+  const isRTL = locale === "ar";
   const [pager, setPager] = useState({
     records: [],
     total_records: 0,
@@ -239,7 +240,7 @@ export default function SubscriptionsTab() {
             <div className="flex items-center gap-1">
               <Package size={14} className="text-blue-500" />
               <span className="text-sm font-medium">
-                {row.plan?.name || t("status_labels.deleted_plan")}
+                {(isRTL ? row.plan?.name : row.plan?.nameEn) || t("status_labels.deleted_plan")}
               </span>
             </div>
             <Badge

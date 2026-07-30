@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { Link } from "@/i18n/navigation";
+import { MadarLogo } from "@/components/atoms/BrandLogo";
 
 /* ══════════════════════════════════════════════════════════════
    PALETTE — same purple universe, richer depth
@@ -673,61 +674,10 @@ export default function AuthBrandSide({ mode, t: tProp }) {
             width: "fit-content",
           }}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.06, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginBottom: "clamp(24px, 3.8vh, 42px)",
-              cursor: "pointer",
-            }}
-          >
-            {/* Logo tile */}
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 13,
-                background: "rgba(255,255,255,0.12)",
-                backdropFilter: "blur(12px)",
-                border: `1px solid ${P.borderHi}`,
-                boxShadow: `0 4px 22px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 1px ${P.border}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <Logo />
-            </div>
-            <div>
-              <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 800,
-                  color: "#fff",
-                  letterSpacing: "-0.5px",
-                  lineHeight: 1.1,
-                }}
-              >
-                {t("brand.name")}
-              </div>
-              <div
-                style={{
-                  fontSize: 8.5,
-                  color: P.textLow,
-                  letterSpacing: "2.2px",
-                  textTransform: "uppercase",
-                  marginTop: 3,
-                }}
-              >
-                {t("brand.tagline")}
-              </div>
-            </div>
-          </motion.div>
+          <div className="mb-2! flex items-center gap-2">
+            <img src="/madaar.svg" alt="MADAR" className="h-8 w-auto" />
+            <MadarLogo color="#fff" className="h-5 w-auto" />
+          </div>
         </Link>
 
         {/* ── Headline — switches with mode ── */}
@@ -797,7 +747,6 @@ export default function AuthBrandSide({ mode, t: tProp }) {
                 fontSize: "clamp(12px, 1vw, 13.5px)",
                 color: P.textMid,
                 lineHeight: 1.78,
-                maxWidth: 330,
               }}
             >
               {isSignin ? t("brand.desc_signin") : t("brand.desc_signup")}
@@ -806,7 +755,7 @@ export default function AuthBrandSide({ mode, t: tProp }) {
         </AnimatePresence>
 
         {/* ── Stats — 3 separate cards in a row ── */}
-        <div
+        {/* <div
           style={{
             display: "flex",
             gap: 8,
@@ -822,10 +771,10 @@ export default function AuthBrandSide({ mode, t: tProp }) {
               delay={0.28 + i * 0.08}
             />
           ))}
-        </div>
+        </div> */}
 
         {/* ── Features ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        {/* <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           {FEATURES.map((f, i) => (
             <FeatureRow
               key={f.key}
@@ -835,7 +784,7 @@ export default function AuthBrandSide({ mode, t: tProp }) {
               index={i}
             />
           ))}
-        </div>
+        </div> */}
 
         {/* ── Social footer ── */}
         <motion.div

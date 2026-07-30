@@ -99,9 +99,9 @@ export default function TalbatiLanding({ heroImage }) {
       </div>
       <ShippingSection />
       {/* <TestimonialsSection /> */}
-      {/* <div id="pricing">
+      <div id="pricing">
         <PricingSection />
-      </div> */}
+      </div>
       <div id="faq">
         <FaqSection />
       </div>

@@ -17,6 +17,7 @@ export function ActionNode({ id, data, selected }) {
         'update_order_status': { label: t('actionTypes.update_order_status'), subtitle: t('nodes.action.management'), icon: RefreshCw, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'send_upsell': { label: t('actionTypes.send_upsell'), subtitle: t('nodes.action.upsell'), icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'assign_order_to_employee': { label: t('actionTypes.assign_order_to_employee'), subtitle: t('nodes.action.management'), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+        'send_sms': { label: t('actionTypes.send_sms'), subtitle: t('nodes.action.subtitle'), icon: Send, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-500/10', },
     }), [t]);
 
     const updateNodeInternals = useUpdateNodeInternals();
@@ -121,7 +122,24 @@ export function ActionNode({ id, data, selected }) {
                                 )}
                             </div>
                         )}
+                        {data.type === 'send_sms' && (
+                            <div>
+                                <div className="flex items-center justify-between">
+                                    <span className="opacity-50 font-bold">{t('nodes.provider', { fallback: 'Provider' })}</span>
+                                    <span className="font-black text-blue-700 dark:text-blue-400 truncate">
+                                        {data.config?.providerName || data.config?.providerCode || data.config?.integrationId || '—'}
+                                    </span>
+                                </div>
+                                {data.config?.toNumber && (
+                                    <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                        <span className="opacity-50 text-[9px]">{t('nodes.recipient')}</span>
+                                        <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{data.config.toNumber}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </>
+
                 )}
             </div>
 

@@ -11,6 +11,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import toast from "react-hot-toast";
 import api from "@/utils/api";
 import { useExport } from "@/hook/useExport";
+import { useDebounce } from "@/hook/useDebounce";
 import Table, { FilterField } from "@/components/atoms/Table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -42,6 +43,8 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
     const [editOpen, setEditOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
 
+    const { debouncedValue: debouncedSearch } = useDebounce({ value: search });
+
     const hasActiveFilters = useMemo(() =>
         !!(filters.startDate || filters.endDate), [filters]);
 
@@ -49,16 +52,15 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
         setPagination(p => ({ ...p, current_page: 1 }));
     }
 
-    const fetchData = useCallback(async (page = 1, limit = 12) => {
+    const fetchData = async (page = 1, limit = 12) => {
         setIsLoading(true);
         try {
             const params = new URLSearchParams();
             params.set("page", page);
             params.set("limit", limit);
-            if (search.trim()) params.set("search", search.trim());
+            if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
             if (filters.startDate) params.set("startDate", filters.startDate);
             if (filters.endDate) params.set("endDate", filters.endDate);
-            
 
             const res = await api.get(`/warehouses?${params.toString()}`);
             setRecords(res.data.records ?? []);
@@ -73,9 +75,14 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
         } finally {
             setIsLoading(false);
         }
-    }, [search, filters, tc]);
+    };
 
-    useEffect(() => { fetchData(pagination.current_page, pagination.per_page); }, [fetchData]);
+    useEffect(() => { fetchData(pagination.current_page, pagination.per_page); }, []);
+
+    useEffect(() => {
+        resetPager();
+        fetchData(1, pagination.per_page);
+    }, [debouncedSearch]);
 
     const onExport = useCallback(async () => {
         const params = {};
@@ -110,6 +117,11 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
         fetchData(pagination.current_page, pagination.per_page);
         onStatsChange?.();
     }, [fetchData, pagination.current_page, pagination.per_page, onStatsChange]);
+
+    const applyFilters = useCallback(() => {
+        resetPager();
+        fetchData(1, pagination.per_page);
+    }, [fetchData, pagination.per_page]);
 
     const columns = useMemo(() => [
         { key: "name", header: t("columns.name"), cell: (row) => <span className="font-medium">{row.name}</span> },
@@ -153,7 +165,7 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
             <Table
                 searchValue={search}
                 onSearchChange={setSearch}
-                onSearch={() => resetPager()}
+                onSearch={() => { resetPager(); fetchData(1, pagination.per_page); }}
                 labels={{
                     searchPlaceholder: t("searchPlaceholder"),
                     filter: tc("filter"),
@@ -163,6 +175,19 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
                     emptyTitle: t("emptyTitle"),
                     emptySubtitle: t("emptySubtitle"),
                 }}
+                filters={
+                    <>
+                        <FilterField label={tc("date")}>
+                            <DateRangePicker
+                                value={{ startDate: filters.startDate, endDate: filters.endDate }}
+                                onChange={(v) => setFilters(f => ({ ...f, ...v }))}
+                                placeholder={tc("date")}
+                                dataSize="default"
+                                maxDate="today"
+                            />
+                        </FilterField>
+                    </>
+                }
                 actions={[
                     { key: "create", label: t("actions.createWarehouse"), icon: <Plus size={15} />, color: "primary", onClick: openCreate, permission: "warehouses.create" },
                     { key: "export", label: tc("export"), icon: exportLoading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "warehouses.read" },
@@ -171,7 +196,7 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
                 data={records}
                 isLoading={isLoading}
                 hasActiveFilters={hasActiveFilters}
-                onApplyFilters={() => resetPager()}
+                onApplyFilters={applyFilters}
                 pagination={pagination}
                 onPageChange={({ page, per_page }) => fetchData(page, per_page)}
             />

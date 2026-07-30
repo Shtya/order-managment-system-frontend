@@ -239,81 +239,107 @@ function useIsMobile() {
 	return isMobile;
 }
 
-function FloatingBadge({ badge, inView, isMobile }) {
-	const shouldAnimate = !isMobile;
 
-	return (
-		<motion.div
-			initial={{ opacity: 0, scale: 0.6, y: 20 }}
-			animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
-			transition={{
-				delay: badge.delay,
-				duration: 0.5,
-				type: "spring",
-				stiffness: 160,
-				damping: 18,
-			}}
-			style={{
-				position: isMobile ? "relative" : "absolute",
-				...(isMobile ? {} : badge.position),
-				zIndex: 10,
-				width: isMobile ? "100%" : "auto",
-			}}
-		>
-			<motion.div
-				animate={shouldAnimate ? { y: badge.floatY } : { y: 0 }}
-				transition={
-					shouldAnimate
-						? {
-							duration: badge.floatDur,
-							repeat: Infinity,
-							repeatType: "mirror",
-							ease: "easeInOut",
-						}
-						: {}
-				}
-				className="flex items-center gap-2 md:gap-2.5 px-3 py-2 md:px-4 md:py-2.5 rounded-xl"
-				style={{
-					backdropFilter: "blur(12px)",
-					background: "rgba(255,255,255,0.85)",
-					border: "1px solid rgba(255,255,255,0.9)",
-					boxShadow:
-						"0 6px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-					direction: "rtl",
-					whiteSpace: isMobile ? "normal" : "nowrap",
-					maxWidth: isMobile ? "100%" : 420,
-				}}
-			>
-				{/* icon */}
-				<div
-					className="flex-shrink-0"
-					style={{
-						width: isMobile ? 26 : 36,
-						height: isMobile ? 26 : 36,
-					}}
-				>
-					<img
-						src={badge.emoji}
-						className="w-full h-full object-contain"
-					/>
-				</div>
+export function FloatingBadge({ badge, inView, isMobile }) {
+  const shouldAnimate = !isMobile;
 
-				{/* text */}
-				<span
-					style={{
-						fontSize: isMobile ? 12 : 13,
-						fontWeight: 700,
-						color: "#1e1b4b",
-						fontFamily: "'Cairo','Tajawal',sans-serif",
-						lineHeight: 1.4,
-					}}
-				>
-					{badge.text}
-				</span>
-			</motion.div>
-		</motion.div>
-	);
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.6, y: 20 }}
+      animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
+      transition={{
+        delay: badge.delay,
+        duration: 0.5,
+        type: "spring",
+        stiffness: 160,
+        damping: 18,
+      }}
+      style={{
+        position: isMobile ? "relative" : "absolute",
+        ...(isMobile ? {} : badge.position),
+        zIndex: 10,
+        width: isMobile ? "100%" : "auto",
+      }}
+    >
+      <motion.div
+        animate={shouldAnimate ? { y: badge.floatY } : { y: 0 }}
+        transition={
+          shouldAnimate
+            ? {
+                duration: badge.floatDur,
+                repeat: Infinity,
+                repeatType: "mirror",
+                ease: "easeInOut",
+              }
+            : {}
+        }
+        dir="rtl"
+        className={`
+          flex items-center backdrop-blur-md bg-white/85 border border-white/90
+          
+          /* Mobile Padding & Radius */
+          px-3 py-2 rounded-xl gap-2
+          
+          /* Non-Mobile Responsive Padding & Gaps */
+          md:px-2 md:py-1 md:gap-1.5 md:rounded-lg
+          lg:px-2.5 lg:py-1.5 lg:gap-2 lg:rounded-xl
+          xl:px-3 xl:py-2 xl:gap-2
+          2xl:px-4 2xl:py-2.5 2xl:gap-2.5
+          3xl:px-5 3xl:py-3 3xl:gap-3
+          
+          /* Responsive Max-Width & Whitespace */
+          ${
+            isMobile
+              ? "w-full max-w-full whitespace-normal"
+              : "w-auto whitespace-nowrap md:max-w-[220px] lg:max-w-[280px] xl:max-w-[340px] 2xl:max-w-[400px] 3xl:max-w-[480px]"
+          }
+        `}
+        style={{
+          boxShadow:
+            "0 6px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+        }}
+      >
+        {/* Responsive Icon Container */}
+        <div
+          className="
+            flex-shrink-0
+            w-6 h-6
+            md:w-4 md:h-4
+            lg:w-5 lg:h-5
+            xl:w-6 xl:h-6
+            2xl:w-7 2xl:h-7
+            3xl:w-9 3xl:h-9
+          "
+        >
+          <img
+            src={badge.emoji}
+            alt=""
+            className="w-full h-full object-contain"
+          />
+        </div>
+
+        {/* Responsive Text */}
+        <span
+          className="
+            font-bold text-[#1e1b4b] leading-snug
+            text-xs
+            md:text-[10px]
+            lg:text-[11px]
+            xl:text-xs
+            2xl:text-[13px]
+            3xl:text-base
+          "
+          style={{
+            fontFamily: "'Cairo','Tajawal',sans-serif",
+          }}
+        >
+          {badge.text}
+        </span>
+      </motion.div>
+    </motion.div>
+  );
 }
+
 export default function ServicesSection() {
 	const t = useTranslations("servicesSection");
 	const locale = useLocale();

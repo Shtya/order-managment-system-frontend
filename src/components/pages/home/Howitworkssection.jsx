@@ -17,14 +17,29 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Field } from "@/app/[locale]/auth/tabs/AuthUi";
+import { Aref_Ruqaa, Caveat } from "next/font/google";
 
+// Exact Arabic Ruq'ah script font as seen in the screenshot
+const arefRuqaa = Aref_Ruqaa({
+  weight: ["700"], // Load ONLY the weight you need (e.g. 700 instead of both 400 and 700)
+  subsets: ["arabic"],
+  display: "swap", // Prevents invisible text while font loads
+  preload: false,  // Set to false if this section is lower down on the homepage
+});
+
+const caveat = Caveat({
+  weight: ["700"],
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+})
 const BRAND = "#6763AF";
 const BRAND_L = "#8b88c9";
 const ease = [0.22, 1, 0.36, 1];
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-	 SHARED: StepArrow
-	 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   SHARED: StepArrow
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function StepArrow({ label, side, delay, inView }) {
   const flip = side === "left";
   return (
@@ -78,15 +93,15 @@ function StepArrow({ label, side, delay, inView }) {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-	 SHARED: StepCard wrapper
-	 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   SHARED: StepCard wrapper
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-	 CARD 3 — ShippingCard  (Step 3, left column)
-	 Edit this component to change the shipping partners card.
-	 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   CARD 3 — ShippingCard  (Step 3, left column)
+   Edit this component to change the shipping partners card.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function AramexIcon({ color }) {
   return (
@@ -235,9 +250,9 @@ function ConnectingLines({ inView }) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-	 ROOT EXPORT — HowItWorksSection
-	 Composes the three cards above.
-	 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   ROOT EXPORT — HowItWorksSection
+   Composes the three cards above.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 export default function HowItWorksSection() {
   const t = useTranslations("howItWorks");
   const locale = useLocale();
@@ -346,7 +361,8 @@ export default function HowItWorksSection() {
 
 function SignupCard({ inView, ref, step, t }) {
   // const [ref, inView] = useInView();
-
+  const locale = useLocale();
+  const isRtl = locale === "ar";
   const fields = [
     // { icon: User, placeholder: t("fields.name") },
     { icon: Mail, placeholder: "you@example.com", label: t("fields.email") },
@@ -365,10 +381,24 @@ function SignupCard({ inView, ref, step, t }) {
       }}
     >
       <div style={{ width: "100%", maxWidth: 340 }}>
-        <img
-          src={"landing/step-1.png"}
-          className="absolute left-1/2 max-lg:hidden -translate-1/2 top-[-60px] w-[120px]"
-        />
+        {/* Dynamic Step Annotation replacing the static PNG */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-[-90px] max-lg:hidden flex flex-col items-center select-none pointer-events-none">
+          {/* Localized handwritten text matching the image exact style */}
+          <span
+            className={`text-[#6763AF] md:text-[1.5rem] leading-tight whitespace-nowrap ${isRtl ? arefRuqaa.className : caveat.className
+              }`}
+          >
+            {isRtl ? "الخطوة الأولى" : "Step 1"}
+          </span>
+
+          {/* Arrow Image directly underneath */}
+          <img
+            src="landing/step-1-arrow.png"
+            alt="arrow"
+            className={`w-[110px] h-auto mt-1 transition-transform duration-200 ${isRtl ? "scale-x-100" : "-scale-x-100"
+              }`}
+          />
+        </div>
 
         {/* ── card ── */}
         <motion.div
@@ -387,38 +417,38 @@ function SignupCard({ inView, ref, step, t }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {fields.map((f, i) => {
               const Icon = f.icon;
-                
-              
+
+
               return (
-                <Field label={f.label} style={{marginBottom: "5px"}}>
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={inView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ delay: 0.28 + i * 0.09, duration: 0.45, ease }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "10px 14px",
-                    borderRadius: 14,
-                    background: "#f0eefb",
-                    border: "1px solid rgba(103,99,175,0.13)",
-                    cursor: "text",
-                  }}
-                >
-                  <Icon
-                    size={14}
-                    color={BRAND}
-                    strokeWidth={2}
-                    style={{ flexShrink: 0 }}
-                  />
-                  <span
-                    style={{ fontSize: 12, color: "#aaa", fontWeight: 500 }}
+                <Field label={f.label} style={{ marginBottom: "5px" }}>
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={inView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ delay: 0.28 + i * 0.09, duration: 0.45, ease }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "10px 14px",
+                      borderRadius: 14,
+                      background: "#f0eefb",
+                      border: "1px solid rgba(103,99,175,0.13)",
+                      cursor: "text",
+                    }}
                   >
-                    {f.placeholder}
-                  </span>
-                </motion.div>
+                    <Icon
+                      size={14}
+                      color={BRAND}
+                      strokeWidth={2}
+                      style={{ flexShrink: 0 }}
+                    />
+                    <span
+                      style={{ fontSize: 12, color: "#aaa", fontWeight: 500 }}
+                    >
+                      {f.placeholder}
+                    </span>
+                  </motion.div>
                 </Field>
               );
             })}
@@ -513,6 +543,8 @@ function SignupCard({ inView, ref, step, t }) {
 }
 
 function AnalyticsCard({ ref, inView, step }) {
+  const locale = useLocale();
+  const isRtl = locale === "ar";
   return (
     <div
       ref={ref}
@@ -523,11 +555,27 @@ function AnalyticsCard({ ref, inView, step }) {
       }}
     >
       <div style={{ width: "100%", maxWidth: 340 }}>
-        <img
-          src={"landing/step-2.png"}
-          className="absolute left-1/2 max-lg:hidden -translate-1/2 top-[-60px] w-[120px]"
-        />
+       
+        <div style={{ width: "100%", maxWidth: 340 }}>
+          {/* Dynamic Step Annotation replacing the static PNG */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-[-90px] max-lg:hidden flex flex-col items-center select-none pointer-events-none">
+            {/* Localized handwritten text matching the image exact style */}
+            <span
+              className={`text-[#6763AF] md:text-[1.5rem] leading-tight whitespace-nowrap ${isRtl ? arefRuqaa.className : caveat.className
+                }`}
+            >
+              {isRtl ? "الخطوة الثالثة" : "Step 3"}
+            </span>
 
+            {/* Arrow Image directly underneath */}
+            <img
+              src="landing/step-2-arrow.png"
+              alt="arrow"
+              className={`w-[110px] h-auto mt-1 transition-transform duration-200 ${isRtl ? "scale-x-100" : "-scale-x-100"
+                }`}
+            />
+          </div>
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -578,6 +626,8 @@ function AnalyticsCard({ ref, inView, step }) {
 }
 
 function ShippingCard({ ref, inView, step }) {
+  const locale = useLocale();
+  const isRtl = locale === "ar";
   return (
     <div
       ref={ref}
@@ -588,10 +638,24 @@ function ShippingCard({ ref, inView, step }) {
         background: "linear-gradient(1.84deg, #FFFFFF 1.1%, #E8E8FF 100%)",
       }}
     >
-      <img
-        src={"landing/step-3.png"}
-        className="absolute left-1/2 max-lg:hidden -translate-1/2 bottom-[-140px] w-[120px]"
-      />
+
+      <div className="absolute left-1/2 -translate-1/2 bottom-[-140px]  max-lg:hidden flex flex-col items-center select-none pointer-events-none">
+        {/* Localized handwritten text matching the image exact style */}
+        <img
+          src="landing/step-3-arrow.png"
+          alt="arrow"
+          className={`w-[110px] h-auto mt-1 transition-transform duration-200 ${isRtl ? "scale-x-100" : "-scale-x-100"
+            }`}
+        />
+        <span
+          className={`text-[#6763AF] md:text-[1.5rem] leading-tight whitespace-nowrap ${isRtl ? arefRuqaa.className : caveat.className
+            }`}
+        >
+          {isRtl ? "الخطوة الثانية" : "Step 2"}
+        </span>
+
+        {/* Arrow Image directly underneath */}
+      </div>
 
       <div style={{ width: "100%", maxWidth: 340 }}>
         {/* ── outer lavender card ── */}

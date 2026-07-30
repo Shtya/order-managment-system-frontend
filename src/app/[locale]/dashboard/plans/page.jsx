@@ -63,7 +63,7 @@ import { Switch } from "@/components/ui/switch";
 
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import TransactionTab from "./tabs/transactionTab";
 import SubscriptionsTab from "./tabs/subscriptionsTab";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -140,9 +140,12 @@ function usePlans() {
 				return {
 					id: plan.id,
 					name: plan.name,
+					nameEn: plan.nameEn || "",
 					description: plan.description || "",
+					descriptionEn: plan.descriptionEn || "",
 					color: plan.color || "from-blue-500 to-blue-600",
 					features: Array.isArray(plan.features) ? plan.features : [],
+					featuresEn: plan.featuresEn || "",
 					isActive: plan.isActive !== false,
 					isPopular: !!plan.isPopular,
 
@@ -189,13 +192,16 @@ function usePlans() {
 			// Construct payload using cleaned data from handleSave
 			const payload = {
 				name: planData.name,
+				nameEn: planData.nameEn,
 				// Map the UI boolean to the SQL string 'negotiated' or 'standard'
 				type: planData.type,
 				price: planData.price, // Null or Number, already handled in handleSave
 				duration: planData.duration,
 				durationIndays: planData.durationIndays, // Typo fixed to match DTO
 				description: planData.description || "",
+				descriptionEn: planData.descriptionEn || "",
 				features: Array.isArray(planData.features) ? planData.features : [],
+				featuresEn: planData.featuresEn || "",
 				color: planData.color || "from-blue-500 to-blue-600",
 				isActive: true,
 				isPopular: !!planData.isPopular,
@@ -246,13 +252,16 @@ function usePlans() {
 			// to support the 'null' = unlimited logic.
 			const payload = {
 				name: planData.name,
+				nameEn: planData.nameEn,
 				// PlanType is standard or custom based on isNegotiated
 				type: planData.type,
 				price: planData.price, // Already null or Number from handleSave
 				duration: planData.duration,
 				durationIndays: planData.durationIndays,
 				description: planData.description || "",
+				descriptionEn: planData.descriptionEn || "",
 				features: Array.isArray(planData.features) ? planData.features : [],
+				featuresEn: planData.featuresEn || "",
 				color: planData.color || "from-blue-500 to-blue-600",
 				isActive: true,
 				isPopular: !!planData.isPopular,
@@ -336,14 +345,19 @@ function EditablePlanCard({
 	isSaving,
 	isBusyGlobal,
 }) {
+	const locale = useLocale();
+	const isRTL = locale === "ar";
 	const t = useTranslations("plans");
 	const [formData, setFormData] = useState({
 		name: plan.name || "",
+		nameEn: plan.nameEn || "",
 		price: plan.price || "",
 		duration: plan.duration || "monthly",
 		durationIndays: plan.durationIndays || 30,
 		description: plan.description || "",
+		descriptionEn: plan.descriptionEn || "",
 		features: plan.features || [],
+		featuresEn: plan.featuresEn || [],
 		color: plan.color || "from-blue-500 to-blue-600",
 		isPopular: plan.isPopular || false,
 		type: plan.type,
@@ -366,16 +380,20 @@ function EditablePlanCard({
 	});
 
 	const [newFeature, setNewFeature] = useState("");
+	const [newFeatureEn, setNewFeatureEn] = useState("");
 
 	useEffect(() => {
 		if (!isEditing) {
 			setFormData({
 				name: plan.name || "",
+				nameEn: plan.nameEn || "",
 				price: plan.price || "",
 				duration: plan.duration || "monthly",
 				durationIndays: plan.durationIndays || 30,
 				description: plan.description || "",
+				descriptionEn: plan.descriptionEn || "",
 				features: plan.features || [],
+				featuresEn: plan.featuresEn || [],
 				color: plan.color || "from-blue-500 to-blue-600",
 				isPopular: plan.isPopular || false,
 				type: plan.type,
@@ -447,6 +465,29 @@ function EditablePlanCard({
 		const updated = [...(formData.features || [])];
 		updated[index] = value;
 		setFormData({ ...formData, features: updated });
+	};
+
+	const handleAddFeatureEn = () => {
+		if (newFeatureEn.trim()) {
+			setFormData({
+				...formData,
+				featuresEn: [...(formData.featuresEn || []), newFeatureEn.trim()],
+			});
+			setNewFeatureEn("");
+		}
+	};
+
+	const handleRemoveFeatureEn = (index) => {
+		setFormData({
+			...formData,
+			featuresEn: (formData.featuresEn || []).filter((_, i) => i !== index),
+		});
+	};
+
+	const handleUpdateFeatureEn = (index, value) => {
+		const updated = [...(formData.featuresEn || [])];
+		updated[index] = value;
+		setFormData({ ...formData, featuresEn: updated });
 	};
 
 	const colorOptions = [
@@ -726,7 +767,14 @@ function EditablePlanCard({
 							value={formData.name}
 							onChange={(e) => setFormData({ ...formData, name: e.target.value })}
 							className="text-center font-bold text-base sm:text-lg rounded-xl"
-							placeholder={t("planCard.planNamePlaceholder")}
+							placeholder={t("planCard.planNamePlaceholderAr")}
+							disabled={isSaving}
+						/>
+						<Input
+							value={formData.nameEn}
+							onChange={(e) => setFormData({ ...formData, nameEn: e.target.value })}
+							className="text-center font-bold text-base sm:text-lg rounded-xl"
+							placeholder={t("planCard.planNamePlaceholderEn")}
 							disabled={isSaving}
 						/>
 
@@ -761,7 +809,15 @@ function EditablePlanCard({
 							value={formData.description}
 							onChange={(e) => setFormData({ ...formData, description: e.target.value })}
 							className="rounded-xl text-xs sm:text-sm"
-							placeholder={t("planCard.planDescriptionPlaceholder")}
+							placeholder={t("planCard.planDescriptionPlaceholderAr")}
+							rows={2}
+							disabled={isSaving}
+						/>
+						<Textarea
+							value={formData.descriptionEn}
+							onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
+							className="rounded-xl text-xs sm:text-sm"
+							placeholder={t("planCard.planDescriptionPlaceholderEn")}
 							rows={2}
 							disabled={isSaving}
 						/>
@@ -786,7 +842,7 @@ function EditablePlanCard({
 
 							<div className="mt-4 text-center">
 								<div className="text-base sm:text-lg font-bold text-gray-700 dark:text-slate-300 flex items-center justify-center flex-wrap gap-2">
-									{plan.name}
+									{isRTL ? plan.name : (plan.nameEn || plan.name)}
 									{plan.type === 'trial' && (
 										<span className="text-[10px] sm:text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full whitespace-nowrap">
 											{t("planCard.trial")}
@@ -798,9 +854,9 @@ function EditablePlanCard({
 									{getDurationLabel()}
 								</p>
 
-								{!!plan.description && (
+								{!!(isRTL ? plan.description : plan.descriptionEn) && (
 									<p className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 mt-2 px-2 sm:px-4 italic">
-										{plan.description}
+										{isRTL ? plan.description : plan.descriptionEn}
 									</p>
 								)}
 							</div>
@@ -1011,47 +1067,98 @@ function EditablePlanCard({
 						</div>
 
 						{/* Existing features editor */}
-						<div className="space-y-2 max-h-64 overflow-y-auto">
-							{(formData.features || []).map((feature, index) => (
-								<div key={index} className="flex items-center gap-2 group">
+						<div className="space-y-2">
+							<span className="text-xs font-semibold text-gray-500 dark:text-slate-400">AR</span>
+							<div className="space-y-2 max-h-64 overflow-y-auto">
+								{(formData.features || []).map((feature, index) => (
+									<div key={index} className="flex items-center gap-2 group">
+										<Input
+											value={feature}
+											onChange={(e) => handleUpdateFeature(index, e.target.value)}
+											className="flex-1 h-9 text-sm rounded-xl"
+											disabled={isSaving}
+										/>
+										<button
+											onClick={() => handleRemoveFeature(index)}
+											disabled={isSaving}
+											className={cn(
+												"w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center ",
+												isSaving && "opacity-50 cursor-not-allowed"
+											)}
+										>
+											<X size={14} />
+										</button>
+									</div>
+								))}
+
+								<div className="flex items-center gap-2">
 									<Input
-										value={feature}
-										onChange={(e) => handleUpdateFeature(index, e.target.value)}
+										value={newFeature}
+										onChange={(e) => setNewFeature(e.target.value)}
+										onKeyDown={(e) => e.key === "Enter" && handleAddFeature()}
+										placeholder={t("planCard.addNewFeaturePlaceholder")}
 										className="flex-1 h-9 text-sm rounded-xl"
 										disabled={isSaving}
 									/>
 									<button
-										onClick={() => handleRemoveFeature(index)}
+										onClick={handleAddFeature}
 										disabled={isSaving}
 										className={cn(
-											"w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center ",
-											isSaving && "opacity-50 cursor-not-allowed"
+											"w-8 h-8 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center",
+											isSaving && "opacity-60 cursor-not-allowed"
 										)}
 									>
-										<X size={14} />
+										<Plus size={14} />
 									</button>
 								</div>
-							))}
+							</div>
+						</div>
 
-							<div className="flex items-center gap-2">
-								<Input
-									value={newFeature}
-									onChange={(e) => setNewFeature(e.target.value)}
-									onKeyDown={(e) => e.key === "Enter" && handleAddFeature()}
-									placeholder={t("planCard.addNewFeaturePlaceholder")}
-									className="flex-1 h-9 text-sm rounded-xl"
-									disabled={isSaving}
-								/>
-								<button
-									onClick={handleAddFeature}
-									disabled={isSaving}
-									className={cn(
-										"w-8 h-8 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center",
-										isSaving && "opacity-60 cursor-not-allowed"
-									)}
-								>
-									<Plus size={14} />
-								</button>
+						{/* English features editor */}
+						<div className="space-y-2">
+							<span className="text-xs font-semibold text-gray-500 dark:text-slate-400">EN</span>
+							<div className="space-y-2 max-h-64 overflow-y-auto">
+								{(formData.featuresEn || []).map((feature, index) => (
+									<div key={index} className="flex items-center gap-2 group">
+										<Input
+											value={feature}
+											onChange={(e) => handleUpdateFeatureEn(index, e.target.value)}
+											className="flex-1 h-9 text-sm rounded-xl"
+											disabled={isSaving}
+										/>
+										<button
+											onClick={() => handleRemoveFeatureEn(index)}
+											disabled={isSaving}
+											className={cn(
+												"w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center ",
+												isSaving && "opacity-50 cursor-not-allowed"
+											)}
+										>
+											<X size={14} />
+										</button>
+									</div>
+								))}
+
+								<div className="flex items-center gap-2">
+									<Input
+										value={newFeatureEn}
+										onChange={(e) => setNewFeatureEn(e.target.value)}
+										onKeyDown={(e) => e.key === "Enter" && handleAddFeatureEn()}
+										placeholder={t("planCard.addNewFeaturePlaceholder")}
+										className="flex-1 h-9 text-sm rounded-xl"
+										disabled={isSaving}
+									/>
+									<button
+										onClick={handleAddFeatureEn}
+										disabled={isSaving}
+										className={cn(
+											"w-8 h-8 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center",
+											isSaving && "opacity-60 cursor-not-allowed"
+										)}
+									>
+										<Plus size={14} />
+									</button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -1106,7 +1213,7 @@ function EditablePlanCard({
 						</div>
 
 						<div className="space-y-2">
-							{(plan.features || []).map((feature, index) => (
+							{(isRTL ? (plan.features || []) : (Array.isArray(plan.featuresEn) ? plan.featuresEn : plan.features || [])).map((feature, index) => (
 								<motion.div
 									key={index}
 									initial={{ opacity: 0, x: -10 }}
@@ -1229,6 +1336,8 @@ function TransactionDetailsDialog({ open, onClose, transaction }) {
  * Main Page Component
  * ========================= */
 export default function AdminSubscriptionsPage() {
+	const locale = useLocale();
+	const isRTL = locale === "ar";
 	const t = useTranslations("plans")
 	const [activeTab, setActiveTab] = useState("plans");
 	const [search, setSearch] = useState("");
@@ -1289,13 +1398,16 @@ export default function AdminSubscriptionsPage() {
 	const handleCreatePlan = async () => {
 		if (creatingPlan) return;
 		const today = new Date();
-
+		const time  = today.getTime();
 		const newPlan = {
-			name: `${t("planPage.defaultPlanName")} ${today.getTime()}`,
+			name: `باقة جديدة ${time}`,
+			nameEn: `New Plan ${time}`,
 			price: 50,
 			duration: "monthly",
 			description: "",
-			features: [`${t("planPage.defaultFeature")} 1`, `${t("planPage.defaultFeature")} 2`, `${t("planPage.defaultFeature")} 3`],
+			descriptionEn: "",
+			features: [`ميزة 1`, `ميزة 2`, `ميزة 3`],
+			featuresEn: [`Feature 1`, `Feature 2`, `Feature 3`],
 			isActive: true,
 			color: "from-blue-500 to-blue-600",
 			includedOrders: 30,

@@ -127,6 +127,132 @@
       "error": "تعذّر تحميل القدرات — تأكد من ضبط بيانات الاعتماد."
     }
   },
+  "smsProviders": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "sms": "الرسائل النصية",
+      "providers": "مزودي الخدمة"
+    },
+    "settings": {
+      "title": "إعدادات {name}",
+      "subtitle": "قم بإعداد بيانات اعتماد مزود الرسائل النصية",
+      "fields": {
+        "username": "اسم المستخدم",
+        "password": "كلمة المرور",
+        "sender": "اسم المرسل"
+      },
+      "placeholders": {
+        "username": "اسم المستخدم",
+        "password": "كلمة المرور"
+      },
+      "securityNote": "يتم تشفير بيانات الاعتماد عند التخزين ولا تتم مشاركتها أبداً.",
+      "save": "حفظ التغييرات",
+      "saving": "جاري الحفظ…"
+    },
+    "senders": {
+      "addTitle": "إضافة مرسل",
+      "editTitle": "تعديل المرسل",
+      "subtitle": "إدارة معرفات المرسل لـ {name}",
+      "save": "حفظ",
+      "saved": "تم الحفظ بنجاح",
+      "add": "إضافة مرسل",
+      "default": "افتراضي",
+      "defaultTitle": "المرسل الافتراضي",
+      "setDefault": "تعيين كافتراضي",
+      "edit": "تعديل",
+      "integration": "المزود",
+      "fields": {
+        "name": "الاسم",
+        "identifier": "المعرف",
+        "description": "الوصف",
+        "default": "تعيين كافتراضي",
+        "defaultHint": "يُستخدم تلقائياً عند إرسال الرسائل النصية."
+      },
+      "placeholders": {
+        "name": "اسم المرسل",
+        "identifier": "معرف المرسل",
+        "description": "ملاحظات اختيارية"
+      },
+      "validation": {
+        "nameRequired": "الاسم مطلوب",
+        "identifierRequired": "المعرف مطلوب",
+        "integrationRequired": "شركة الارسال مطلوبه"
+      }
+    },
+    "send": {
+      "title": "إرسال رسالة SMS",
+      "subtitle": "أرسل رسالة SMS للعميل",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "01234567890",
+      "message": "الرسالة",
+      "messagePlaceholder": "اكتب رسالتك هنا…",
+      "sender": "المرسل",
+      "senderPlaceholder": "اختر المرسل",
+      "integrationPlaceholder": "اختر التكامل",
+      "noSenders": "لا يوجد مرسلين",
+      "send": "إرسال",
+      "sending": "جاري الإرسال…",
+      "success": "تم إرسال الرسالة بنجاح!",
+      "failed": "لم يتم إرسال الرسالة. {error}",
+      "validation": {
+        "phoneRequired": "رقم الهاتف مطلوب",
+        "phoneInvalid": "أدخل رقم هاتف مصري صحيح (010, 011, 012, أو 015 متبوعاً بـ 8 أرقام)",
+        "messageRequired": "الرسالة مطلوبة",
+        "senderRequired": "المرسل مطلوب"
+      }
+    },
+    "card": {
+      "configureFirst": "قم بالإعداد أولاً",
+      "disable": "تعطيل",
+      "enable": "تفعيل",
+      "active": "مفعّل",
+      "inactive": "غير مفعّل",
+      "updating": "جاري التحديث ...",
+      "configured": "تم الإعداد",
+      "notConfigured": "لم يتم الإعداد",
+      "settingsTitle": "فتح الإعدادات",
+      "settings": "الإعدادات",
+      "sendTitle": "إرسال رسالة اختبار",
+      "send": "إرسال رسالة",
+      "website": "الموقع الإلكتروني"
+    },
+    "title": "المرسلين",
+    "searchPlaceholder": "ابحث عن المرسلين...",
+    "emptyTitle": "لم يتم العثور على مرسلين",
+    "emptySubtitle": "قم بإنشاء أول مرسل للبدء",
+    "stats": {
+      "total": "الإجمالي",
+      "active": "النشط",
+      "sent": "تم الإرسال",
+      "failed": "فشل",
+      "pending": "قيد الانتظار"
+    },
+    "actions": {
+      "addSender": "إضافة مرسل",
+      "deleteSender": "حذف المرسل",
+      "confirmDelete": "هل أنت متأكد من حذف هذا المرسل؟"
+    },
+    "logs": {
+      "title": "سجل الرسائل",
+      "fields": {
+        "phone": "الهاتف",
+        "message": "الرسالة",
+        "sender": "المرسل",
+        "sentAt": "تاريخ الإرسال"
+      },
+      "status": {
+        "sent": "تم الإرسال",
+        "failed": "فشل",
+        "pending": "قيد الانتظار"
+      },
+      "resend": "إعادة إرسال",
+      "resendAll": "إعادة إرسال الفاشلة",
+      "resendAllTitle": "إعادة إرسال جميع الرسائل الفاشلة",
+      "resendAllDesc": "سيتم إعادة وضع جميع الرسائل الفاشلة في قائمة الانتظار للإرسال مرة أخرى. هل تريد المتابعة؟",
+      "emptyTitle": "لم يتم العثور على سجلات",
+      "emptySubtitle": "لا توجد سجلات رسائل تطابق معايير البحث"
+    }
+  },
   "replacement": {
     "title": "إدارة طلبات الاستبدال",
     "breadcrumb": {
@@ -366,6 +492,10 @@
     "subscription_required": "الاشتراك مطلوب",
     "logo": "لوجو",
     "whatsapp": "الواتساب",
+    "sms": "SMS",
+    "smsProviders": "المزودين",
+    "smsSenders": "المرسلين",
+    "smsLogs": "السجلات",
     "users": "المستخدمون",
     "whatsAppAccounts": "حساباتي",
     "chats": "المحادثات",
@@ -1381,7 +1511,19 @@
       "warehouses_scan_shipping": "مسح شحن المستودع",
       "whatsapp_create": "إنشاء واتساب",
       "whatsapp_update": "تحديث واتساب",
-      "whatsapp_delete": "حذف واتساب"
+      "whatsapp_delete": "حذف واتساب",
+      "sms_providers_read": "عرض مزودي الرسائل (SMS)",
+      "sms_integrations_read": "عرض تكاملات الرسائل (SMS)",
+      "sms_integrations_create": "إنشاء تكاملات الرسائل (SMS)",
+      "sms_integrations_update": "تعديل تكاملات الرسائل (SMS)",
+      "sms_senders_read": "عرض المُرسلين (SMS)",
+      "sms_senders_create": "إنشاء مُرسل (SMS)",
+      "sms_senders_update": "تعديل المُرسلين (SMS)",
+      "sms_senders_delete": "حذف المُرسلين (SMS)",
+      "sms_send": "إرسال رسالة (SMS)",
+      "sms_logs_read": "عرض سجلات الرسائل (SMS)",
+      "sms_logs_resend": "إعادة إرسال رسالة (SMS)",
+      "sms_logs_export": "تصدير سجلات الرسائل (SMS)"
     },
     "group": {
       "accounting": "المحاسبة",
@@ -4788,6 +4930,9 @@
     },
     "searchPlaceholder": "إبحث عن الادمن...",
     "admin": "الأدمن",
+    "yes": "نعم",
+    "no": "لا",
+    "created_at": "تاريخ الانشاء",
     "richTextEditor": {
       "placeholder": "أدخل نصًا منسقًا...",
       "normal": "عادي",
@@ -7179,7 +7324,11 @@
         "cyan": "سماوي"
       },
       "date": "التاريخ",
-      "status": "الحالة"
+      "status": "الحالة",
+      "planDescriptionPlaceholderAr": "أدخل وصف الباقة باللغة العربية...",
+      "planDescriptionPlaceholderEn": "أدخل وصف الباقة باللغة الانجليزية...",
+      "planNamePlaceholderAr": "اسم الباقة بالعربية",
+      "planNamePlaceholderEn": "اسم الباقة بالانجليزية"
     },
     "deleteDialog": {
       "title": "حذف الباقة",
@@ -7917,9 +8066,9 @@
       "mode_signin": "تسجيل الدخول",
       "mode_signup": "إنشاء حساب",
       "headline_signin": "مرحبًا بعودتك\nأدر أعمالك بكفاءة",
-      "headline_signup": "انضم إلى المنصة\nوابدأ رحلتك اليوم",
+      "headline_signup": "أنشئ حسابك\n وابدأ تشغيل أعمالك بكفاءة",
       "desc_signin": "قم بتسجيل الدخول للوصول إلى لوحة التحكم الخاصة بك وإدارة طلباتك وعملياتك بكل سهولة.",
-      "desc_signup": "سجّل حسابك الآن وابدأ في إدارة مخزونك وطلباتك بأعلى كفاءة ممكنة.",
+      "desc_signup": "مدار يجمع أدوات التشغيل اليومية في مكان واحد، من إدارة الطلبات والكول سنتر إلى المخزون، الحسابات، التقارير، واتساب API، الأتمتة، ربط المتاجر، والتكامل مع شركات الشحن.",
       "stat_val_merchants": "+١٢k",
       "stat_val_orders": "+٣M",
       "stat_val_uptime": "٩٩.٩٪",
@@ -8127,6 +8276,7 @@
           "prefix": "خطط أسعار",
           "highlight": "بسيطة وشفافة"
         },
+        "extraFee": "{fee} رسوم إضافية للطلب",
         "subheading": "اختر الخطة التي تناسب حجم واحتياجات عملك.",
         "perMonth": "شهر",
         "cta": "ابدأ الآن",
@@ -10876,7 +11026,8 @@
           "send_whatsapp_message": "إرسال رسالة واتساب",
           "update_order_status": "تحديث حالة الطلب",
           "send_upsell": "إرسال عرض",
-          "assign_order_to_employee": "تعيين الطلب لموظف"
+          "assign_order_to_employee": "تعيين الطلب لموظف",
+          "send_sms": "إرسال رسالة ٍ SMS"
         },
         "conditionTypes": {
           "order_check": "فحص بيانات الطلب",
@@ -10918,14 +11069,18 @@
           "branches": {
             "assigned": "تم التعيين",
             "noRolesMatch": "لا توجد قواعد مطابقة",
-            "notEligible": "غير مؤهل للتعيين"
+            "notEligible": "غير مؤهل للتعيين",
+            "sent": "تم الارسال",
+            "failed": "فشل الارسال"
           },
           "yes": "نعم",
           "no": "لا",
           "noConditions": "لا توجد شروط",
           "otherConditions": "+ {count} شروط أخرى",
           "messageType": "نوع الرسالة",
-          "account": "الحساب"
+          "account": "الحساب",
+          "phoneMessagePlaceholder": "أدخل الرقم أو اترك فارغاً لاستخدام رقم العميل من الطلب",
+          "provider": "المزود"
         },
         "sidebar": {
           "title": "بناء المسارات",

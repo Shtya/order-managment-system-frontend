@@ -241,6 +241,7 @@ function PlanCard({
   isLoading,
   idx = 0,
 }) {
+  
   const { settings, isLoading: isSettingsLoading } = usePlatformSettings();
   const whatsapp = settings?.whatsapp;
   const t = useTranslations("subscriptions");
@@ -308,7 +309,9 @@ function PlanCard({
     await onCancel(activeSubscription.id);
     setShowCancelConfirm(false);
   }
-
+  const description = isRTL ? plan.description : plan.descriptionEn;
+  const name = isRTL ? plan.name : plan.nameEn;
+  const features = isRTL ? plan.features : plan.featuresEn;
   return (
     <>
       <motion.article
@@ -365,11 +368,11 @@ function PlanCard({
           {/* Plan name */}
           <div className="space-y-1">
             <p className="text-[11px] font-black uppercase tracking-[0.15em] text-primary">
-              {plan.name}
+              {name}
             </p>
-            {plan.description && (
+            {description && (
               <p className="text-[13px] leading-relaxed font-medium text-slate-400 dark:text-slate-500">
-                {plan.description}
+                {description}
               </p>
             )}
           </div>
@@ -438,13 +441,13 @@ function PlanCard({
           </div>
 
           {/* Features */}
-          {plan.features && plan.features.length > 0 && (
+          {features && features.length > 0 && (
             <div className="space-y-4 pt-2">
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 {t("card.includedFeatures")}
               </p>
               <ul className="space-y-3">
-                {plan.features.map((label, i) => (
+                {features.map((label, i) => (
                   <motion.li
                     key={label}
                     initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
@@ -478,7 +481,7 @@ function PlanCard({
               </button>
             ) : plan.type === "negotiated" ? (
               <a
-                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(t("messages.whatsappInterested", { planName: plan.name }))}`}
+                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(t("messages.whatsappInterested", { planName: name }))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-full h-11 rounded-xl font-black text-[13px] tracking-wide transition-all duration-300 bg-[#25D366] text-white shadow-lg shadow-[#25D366]/20 hover:scale-[1.02] active:scale-[0.98]"

@@ -127,6 +127,132 @@
       "error": "Could not load capabilities — make sure credentials are configured."
     }
   },
+  "smsProviders": {
+    "breadcrumb": {
+      "home": "Home",
+      "sms": "SMS",
+      "providers": "Providers"
+    },
+    "settings": {
+      "title": "{name} Settings",
+      "subtitle": "Configure your SMS provider credentials",
+      "fields": {
+        "username": "Username",
+        "password": "Password",
+        "sender": "Sender Name"
+      },
+      "placeholders": {
+        "username": "اسم المستخدم",
+        "password": "كلمة المرور"
+      },
+      "securityNote": "Credentials are encrypted at rest and never shared.",
+      "save": "Save Changes",
+      "saving": "Saving…"
+    },
+    "senders": {
+      "addTitle": "Add Sender",
+      "editTitle": "Edit Sender",
+      "subtitle": "Manage sender identifiers for {name}",
+      "save": "Save",
+      "saved": "Saved successfully",
+      "add": "Add sender",
+      "default": "Default",
+      "defaultTitle": "Default Sender",
+      "setDefault": "Set Default",
+      "edit": "Edit",
+      "integration": "Provider",
+      "fields": {
+        "name": "Name",
+        "identifier": "Identifier",
+        "description": "Description",
+        "default": "Set as default",
+        "defaultHint": "Used automatically when sending SMS."
+      },
+      "placeholders": {
+        "name": "Sender name",
+        "identifier": "Sender identifier",
+        "description": "Optional notes"
+      },
+      "validation": {
+        "nameRequired": "Name is required",
+        "identifierRequired": "Identifier is required",
+        "integrationRequired": "Integration with company required"
+      }
+    },
+    "send": {
+      "title": "Send Test SMS",
+      "subtitle": "Send a SMS message to customer number",
+      "phone": "Phone number",
+      "phonePlaceholder": "01234567890",
+      "message": "Message",
+      "messagePlaceholder": "Type your test message here…",
+      "sender": "Sender",
+      "senderPlaceholder": "Choose sender",
+      "integrationPlaceholder": "Choose integration",
+      "noSenders": "No senders found",
+      "send": "Send",
+      "sending": "Sending…",
+      "success": "Test SMS sent successfully!",
+      "failed": "Message not sent. {error}",
+      "validation": {
+        "phoneRequired": "Phone number is required",
+        "phoneInvalid": "Enter a valid Egyptian phone number (010, 011, 012, or 015 followed by 8 digits)",
+        "messageRequired": "Message is required",
+        "senderRequired": "Sender is required"
+      }
+    },
+    "card": {
+      "configureFirst": "Configure first",
+      "disable": "Deactivate",
+      "enable": "Activate",
+      "active": "Active",
+      "inactive": "Inactive",
+      "updating": "Updating...",
+      "configured": "Configured",
+      "notConfigured": "Not configured",
+      "settingsTitle": "Open settings",
+      "settings": "Settings",
+      "sendTitle": "Send test SMS",
+      "send": "Send Message",
+      "website": "Website"
+    },
+    "title": "Senders",
+    "searchPlaceholder": "Search senders...",
+    "emptyTitle": "No senders found",
+    "emptySubtitle": "Create your first sender to get started",
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "sent": "Sent",
+      "failed": "Failed",
+      "pending": "Pending"
+    },
+    "actions": {
+      "addSender": "Add Sender",
+      "deleteSender": "Delete Sender",
+      "confirmDelete": "Are you sure you want to delete this sender?"
+    },
+    "logs": {
+      "title": "SMS Logs",
+      "fields": {
+        "phone": "Phone",
+        "message": "Message",
+        "sender": "Sender",
+        "sentAt": "Sent at"
+      },
+      "status": {
+        "sent": "Sent",
+        "failed": "Failed",
+        "pending": "Pending"
+      },
+      "resend": "Resend",
+      "resendAll": "Resend all failed",
+      "resendAllTitle": "Resend all failed messages",
+      "resendAllDesc": "This will re-queue all failed SMS messages for sending again. Continue?",
+      "emptyTitle": "No logs found",
+      "emptySubtitle": "No SMS logs match your criteria"
+    }
+  },
   "replacement": {
     "title": "Replacement Orders Management",
     "breadcrumb": {
@@ -364,6 +490,10 @@
     "safes": "Safes",
     "locked": "Locked",
     "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "smsProviders": "Providers",
+    "smsSenders": "Senders",
+    "smsLogs": "Logs",
     "subscription_required": "Subscription Required",
     "logo": "Logo",
     "users": "Users",
@@ -1380,7 +1510,19 @@
       "warehouses_scan_shipping": "Scan warehouse shipping",
       "whatsapp_create": "Create whatsapp",
       "whatsapp_update": "Update whatsapp",
-      "whatsapp_delete": "delete whatsapp"
+      "whatsapp_delete": "delete whatsapp",
+      "sms_providers_read": "View SMS providers",
+      "sms_integrations_read": "View SMS integrations",
+      "sms_integrations_create": "Create SMS integrations",
+      "sms_integrations_update": "Update SMS integrations",
+      "sms_senders_read": "View SMS senders",
+      "sms_senders_create": "Create SMS senders",
+      "sms_senders_update": "Update SMS senders",
+      "sms_senders_delete": "Delete SMS senders",
+      "sms_send": "Send SMS",
+      "sms_logs_read": "View SMS logs",
+      "sms_logs_resend": "Resend SMS",
+      "sms_logs_export": "Export SMS logs"
     },
     "group": {
       "accounting": "Accounting",
@@ -4793,6 +4935,9 @@
     },
     "searchPlaceholder": "Find an admin...",
     "admin": "Admin",
+    "yes": "Yes",
+    "no": "No",
+    "created_at": "Created At",
     "richTextEditor": {
       "placeholder": "Enter some rich text...",
       "normal": "Normal",
@@ -7194,7 +7339,11 @@
         "cyan": "Cyan"
       },
       "date": "Date",
-      "status": "Status"
+      "status": "Status",
+      "planDescriptionPlaceholderAr": "Enter the package description in Arabic...",
+      "planDescriptionPlaceholderEn": "Enter the plan description in English...",
+      "planNamePlaceholderAr": "Plna name in Arabic",
+      "planNamePlaceholderEn": "Plan name in English"
     },
     "deleteDialog": {
       "title": "Delete Plan",
@@ -7932,9 +8081,9 @@
       "mode_signin": "Sign In",
       "mode_signup": "Create Account",
       "headline_signin": "Welcome Back\nManage Your Business Efficiently",
-      "headline_signup": "Join the Platform\nStart Your Journey Today",
+      "headline_signup": "Create your account\nAnd start running your business efficiently",
       "desc_signin": "Sign in to access your dashboard and manage your orders and operations with ease.",
-      "desc_signup": "Create your account now and start managing your inventory and orders with maximum efficiency.",
+      "desc_signup": "Madar brings all your daily business operations into one platform—from order management and call center operations to inventory, accounting, reporting, WhatsApp API, automation, store integrations, and shipping carrier integrations.",
       "stat_val_merchants": "+12k",
       "stat_val_orders": "+3M",
       "stat_val_uptime": "99.9%",
@@ -8142,6 +8291,7 @@
           "prefix": "Pricing plans",
           "highlight": "simple and transparent"
         },
+        "extraFee": "{fee} extra order fee",
         "subheading": "Choose the plan that fits your business size and needs.",
         "perMonth": "month",
         "cta": "Start now",
@@ -10855,7 +11005,8 @@
           "send_whatsapp_message": "Send WhatsApp Message",
           "update_order_status": "Update Order Status",
           "send_upsell": "Send Upsell",
-          "assign_order_to_employee": "Assign Order to Employee"
+          "assign_order_to_employee": "Assign Order to Employee",
+          "send_sms": "Send SMS message"
         },
         "conditionTypes": {
           "order_check": "Check Order Data",
@@ -10897,14 +11048,18 @@
           "branches": {
             "assigned": "Assigned",
             "noRolesMatch": "No Rules Match",
-            "notEligible": "Not Eligible"
+            "notEligible": "Not Eligible",
+            "sent": "Sent",
+            "failed": "Send Failed"
           },
           "yes": "Yes",
           "no": "No",
           "noConditions": "No conditions",
           "otherConditions": "+ {count} other conditions",
           "messageType": "Message type",
-          "account": "Account"
+          "account": "Account",
+          "phoneMessagePlaceholder": "Enter a phone number, or leave it empty to use the customer's phone number from the order.",
+          "provider": "Provider"
         },
         "sidebar": {
           "title": "Build Workflows",

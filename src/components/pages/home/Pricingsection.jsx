@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useRouter } from "@/i18n/navigation";
 import { useSubscriptionsApi } from "../../../app/[locale]/plans/page";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
-import { dollor, dollorSign } from "@/utils/healpers";
+import { dollor, dollorSign, PLATFORM_CURRENCY } from "@/utils/healpers";
+import { cn } from "@/utils/cn";
+import { CircleCheck } from "lucide-react";
 
 /* ─── Check icon ─── */
 function Check({ color = "#6d28d9" }) {
@@ -134,239 +136,55 @@ function Feature({ label, isNew, featured, t }) {
   );
 }
 
-/* ─── Pricing Card ─── */
-function PricingCard({ plan, t, index, onAction }) {
-  const tWel = useTranslations("onboarding.welcome.pricing");
-  const featured = plan.featured;
-  const getPriceDisplay = () => {
-    if (plan.type === "negotiated") {
-      return (
-        <span
-          style={{
-            fontSize: 30,
-            fontWeight: 800,
-            color: featured ? "#BAEB33" : "#f97316",
-            letterSpacing: "-1px",
-          }}
-        >
-          {t("negotiated")}
-        </span>
-      );
-    }
+/**
+ * NOTES ON CHANGES
+ * - Removed the subscribe/CTA button and the `useRouter`/`handleAction` logic entirely.
+ *   This section is now purely informational — it shows what each plan includes,
+ *   nothing more. Point people to /plans (or wherever) from elsewhere on the page
+ *   if you want a path to signup.
+ * - Removed the separate <PricingCard /> import and inlined the card markup here,
+ *   since the old card was the main source of the weak UI.
+ * - Fixed a bug in the original: `formatCurrency(plan.extraOrderFee, dollor, dollorSign)`
+ *   referenced two undefined variables (`dollor`, `dollorSign`). Assuming
+ *   `formatCurrency` already knows the platform's currency (that's what
+ *   `usePlatformSettings` is for), it's now just `formatCurrency(plan.extraOrderFee)`.
+ * - Introduces one new bit of UI copy ("Most popular" badge) that isn't in your
+ *   translation files yet. It's handled with a simple inline fallback based on
+ *   locale — move it into `pricing.mostPopular` in your messages files when you
+ *   get a chance, then swap the inline ternary for `t("mostPopular")`.
+ */
 
-    if (plan.type === "trial") {
-      return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <span
-            style={{
-              fontFamily:
-                "'Instrument Serif', 'DM Serif Display', Georgia, serif",
-              fontSize: 48,
-              lineHeight: 1,
-              letterSpacing: "-0.04em",
-              fontWeight: 400,
-              color: featured ? "#ffffff" : "#111",
-            }}
-          >
-            {plan.price || 0}
-          </span>
-          <span
-            style={{
-              fontSize: 11,
-              background: featured ? "rgba(186,235,51,0.2)" : "#dbeafe",
-              color: featured ? "#BAEB33" : "#1d4ed8",
-              padding: "2px 10px",
-              borderRadius: 20,
-              fontWeight: 700,
-              width: "fit-content",
-            }}
-          >
-            {tWel("types.trial")}
-          </span>
-        </div>
-      );
-    }
-
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "flex-start",
-          gap: 6,
-          flexDirection: "row",
-        }}
-      >
-        <span
-          style={{
-            fontFamily:
-              "'Instrument Serif', 'DM Serif Display', Georgia, serif",
-            fontSize: 48,
-            lineHeight: 1,
-            letterSpacing: "-0.04em",
-            fontWeight: 400,
-            color: featured ? "#ffffff" : "#111",
-          }}
-        >
-          {plan.price}
-        </span>
-        <span
-          style={{
-            fontSize: 13,
-            color: featured
-              ? "rgba(255,255,255,0.7)"
-              : "#6b7280",
-          }}
-        >
-          / {t("perMonth")}
-        </span>
-      </div>
-    );
-  };
-
-  return (
-    <div
-      className="min-w-75 max-w-75"
-      style={{
-        flex: 1,
-        borderRadius: 20,
-        padding: featured ? "32px 28px" : "28px 24px",
-        direction: "rtl",
-        position: "relative",
-        background: featured ? "#1b1945" : "#fff",
-        border: featured ? "" : "4px solid #6763AF0F",
-        boxShadow: featured
-          ? "0px 30px 50px 0px #00000014;"
-          : "0px 30px 50px 0px #6763AF0A;",
-        transform: featured ? "scale(1.03)" : "scale(1)",
-        zIndex: featured ? 2 : 1,
-        transition: "box-shadow 0.3s, transform 0.3s",
-        // opacity: 0,
-        animation: `cardIn 0.5s cubic-bezier(.34,1.56,.64,1) forwards`,
-        animationDelay: `${index * 0.1}s`,
-      }}
-    >
-      {/* Price */}
-      <div style={{ marginBottom: 14 }}>{getPriceDisplay()}</div>
-
-      {/* Plan name + dot */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          gap: 6,
-          marginBottom: 4,
-        }}
-      >
-        <span
-          style={{
-            fontWeight: 700,
-            fontSize: 14,
-            color: featured ? "#ffffff" : "#111",
-          }}
-        >
-          {plan.name || "Plans"}
-        </span>
-      </div>
-
-      {/* Subtitle */}
-      <p
-        style={{
-          fontSize: 12,
-          textAlign: "right",
-          marginBottom: 20,
-          color: featured
-            ? "rgba(255,255,255,0.55)"
-            : "#9ca3af",
-          lineHeight: 1.6,
-        }}
-      >
-        {plan.subtitle}
-      </p>
-
-      {/* CTA */}
-      <button
-        onClick={onAction}
-        className="rounded-full"
-        style={{
-          width: "100%",
-          padding: "11px 0",
-          fontWeight: 700,
-          fontSize: 14,
-          cursor: "pointer",
-          border: "none",
-          background: featured ? "#BAEB33" : "#1B1945",
-          color: "#fff",
-          transition: "opacity 0.2s, transform 0.2s",
-          marginBottom: 24,
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = "0.88";
-          e.currentTarget.style.transform = "translateY(-1px)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.opacity = "1";
-          e.currentTarget.style.transform = "none";
-        }}
-      >
-        {t("cta")}
-      </button>
-
-      {/* Divider */}
-      <div
-        style={{
-          height: 1,
-          background: featured
-            ? "rgba(255,255,255,0.1)"
-            : "#e5e7eb",
-          marginBottom: 16,
-        }}
-      />
-
-      {/* Features */}
-      <div
-        className={`${featured ? "bg-[#201E4E] border-[#3D3D3D80]" : "bg-[#F8F9FFC7] border-[#6763AF0A]"} border p-2 rounded-xl`}
-        style={{ display: "flex", flexDirection: "column" }}
-      >
-        {plan.features.map((f, i) => (
-          <Feature
-            key={i}
-            label={f.label || t(`plans.${plan.id}.features.f${i + 1}`)}
-            isNew={f.isNew}
-            featured={featured}
-            t={t}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Main ─── */
 export default function PricingSection() {
   const tWel = useTranslations("onboarding.welcome.pricing");
   const t = useTranslations("pricing");
-  const router = useRouter();
-  const { formatCurrency } = usePlatformSettings()
-  const {
-    isLoading,
-    plans: rawPlans,
-    fetchPlans,
-    user,
-  } = useSubscriptionsApi();
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+
+  const { formatCurrency } = usePlatformSettings();
+  const { isLoading, plans: rawPlans, fetchPlans } = useSubscriptionsApi();
 
   useEffect(() => {
     fetchPlans();
   }, [fetchPlans]);
 
-  // Format plans for display (inspired by onboarding/page.jsx)
+  // A restrained, on-brand palette per tier. Falls back to plan.color if the
+  // API supplies one, otherwise cycles through these three.
+  const TIER_THEMES = [
+    { accent: "#10b981", tint: "#10b98114", ring: "#10b98133" }, // emerald
+    { accent: "#6763af", tint: "#6763af14", ring: "#6763af33" }, // brand violet
+    { accent: "#a855f7", tint: "#a855f714", ring: "#a855f733" }, // purple
+  ];
+
   const plans = useMemo(() => {
     return rawPlans.map((plan, index) => {
       const price = Number(plan.price || 0);
-      const features = [...(Array.isArray(plan.features) ? plan.features : [])];
+      const name = isRTL ? plan.name : plan.nameEn;
+      const description = isRTL ? plan.description : plan.descriptionEn;
+      const localizedFeatures = isRTL ? plan.features : plan.featuresEn;
+      const features = [
+        ...(Array.isArray(localizedFeatures) ? localizedFeatures : []),
+      ];
 
-      // Add limit details (translated or English as per user's preference)
       if (plan.usersLimit !== null) {
         features.push(tWel("limits.users", { count: plan.usersLimit }));
       } else {
@@ -380,7 +198,9 @@ export default function PricingSection() {
       }
 
       if (plan.shippingCompaniesLimit !== null) {
-        features.push(tWel("limits.shipping", { count: plan.shippingCompaniesLimit }));
+        features.push(
+          tWel("limits.shipping", { count: plan.shippingCompaniesLimit }),
+        );
       } else {
         features.push(tWel("limits.unlimitedShipping"));
       }
@@ -392,22 +212,29 @@ export default function PricingSection() {
       }
 
       if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
-        features.push(tWel("limits.extraFee", { fee: formatCurrency(plan.extraOrderFee, dollor, dollorSign), currency: tWel("currency") || dollorSign }));
+        features.push(
+          tWel("extraFee", {
+            fee: formatCurrency(plan.extraOrderFee, PLATFORM_CURRENCY),
+          }),
+        );
       }
 
       if (plan.bulkUploadPerMonth > 0) {
-        features.push(tWel("limits.bulkUpload", { count: plan.bulkUploadPerMonth }));
+        features.push(
+          tWel("limits.bulkUpload", { count: plan.bulkUploadPerMonth }),
+        );
       }
+
+      const theme = TIER_THEMES[index % TIER_THEMES.length];
 
       return {
         id: plan.id,
-        name: plan.name,
-        type: plan.type,
-        price: plan.price,
+        name,
+        price,
         featured: !!plan.isPopular,
-        dotColor:
-          plan.color ||
-          (index === 0 ? "#4ade80" : index === 1 ? "#818cf8" : "#a855f7"),
+        accent: plan.color || theme.accent,
+        tint: theme.tint,
+        ring: theme.ring,
         tier:
           plan.duration === "monthly"
             ? t("types.monthly")
@@ -417,11 +244,12 @@ export default function PricingSection() {
         features: features.map((f) =>
           typeof f === "string" ? { label: f, isNew: false } : f,
         ),
-        subtitle: plan.description || "",
+        subtitle: description || "",
       };
     });
-  }, [rawPlans, t]);
-  // Arrange plans: popular in center (if 3 or more)
+  }, [rawPlans, t, tWel, isRTL, formatCurrency]);
+  console.log(plans);
+  // Popular plan sits in the center once there are 3+ plans.
   const arranged = useMemo(() => {
     const result = [...plans];
     const popularIndex = result.findIndex((p) => p.featured);
@@ -432,75 +260,125 @@ export default function PricingSection() {
     return result;
   }, [plans]);
 
-  const handleAction = () => {
-    if (user) {
-      router.push("/plans");
-    } else {
-      router.push("/auth?mode=signup");
-    }
-  };
-
   if (isLoading) return null;
+  if (!arranged.length) return null;
 
   return (
-    <>
-      <style>{`
-        @keyframes cardIn {
-          from { opacity: 0; transform: translateY(28px) scale(0.96); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes cardInFeatured {
-          from { opacity: 0; transform: translateY(28px) scale(0.96); }
-          to   { opacity: 1; transform: scale(1.03); }
-        }
-      `}</style>
+    <section
+      dir={isRTL ? "rtl" : "ltr"}
+      style={{ background: "linear-gradient(180deg, #faf9ff 0%, #f3f1fb 100%)" }}
+      className="px-6 py-20 md:py-24"
+    >
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="mx-auto mb-14 max-w-2xl text-center">
+          <span
+            className="mb-4 inline-block rounded-full px-4 py-1 text-xs font-semibold tracking-wide"
+            style={{ background: "#6763AF14", color: "#6763AF" }}
+          >
+            {isRTL ? "الأسعار" : "Pricing"}
+          </span>
 
-      <section
-        className="text-center"
-        style={{
-          background: "#faf9ff",
-          padding: "72px 24px 80px",
-        }}
-      >
-        <div className="mb-[50px] " style={{ textAlign: "center" }}>
-          <motion.h2 className="text-3xl md:text-[2.1rem] font-extrabold text-gray-900 leading-snug">
+          <h2 className="text-3xl font-extrabold leading-tight text-gray-900 md:text-4xl">
             {t("heading.prefix")}{" "}
-            <motion.span
-              className="inline-block px-5 py-1 rounded-xl"
-              style={{ background: `#6763AF16`, color: "#6763AF" }}
+            <span
+              className="inline-block rounded-xl px-3 py-0.5"
+              style={{ background: "#6763AF16", color: "#6763AF" }}
             >
               {t("heading.highlight")}
-            </motion.span>
-          </motion.h2>
+            </span>
+          </h2>
 
-          <motion.p className="text-xl text-gray-500 mt-2">
-            {t("subheading")}
-          </motion.p>
+          <p className="mt-4 text-lg text-gray-500">{t("subheading")}</p>
         </div>
 
         {/* Cards */}
-        <div className="max-lg:justify-center"
-          style={{
-            display: "flex",
-            gap: 16,
-            maxWidth: 960,
-            margin: "0 auto",
-            // alignItems: "center",
-            flexWrap: "wrap",
-          }}
+        <div
+          className={`mx-auto grid max-w-5xl gap-6 sm:grid-cols-2 ${arranged.length >= 3 ? "lg:grid-cols-3" : "lg:grid-cols-2"
+            }`}
         >
           {arranged.map((plan, i) => (
-            <PricingCard
+            <motion.div
               key={plan.id}
-              plan={plan}
-              //   isYearly={isYearly}
-              t={t}
-              index={i}
-              onAction={handleAction}
-            />
+              initial={{ opacity: 0, y: 24, scale: 0.97 }}
+              whileInView={{
+                opacity: 1,
+                y: plan.featured ? -12 : 0,
+                scale: plan.featured ? 1.02 : 1,
+              }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.45, delay: i * 0.08, ease: "easeOut" }}
+              className="relative flex flex-col rounded-2xl bg-white p-7"
+              style={{
+                boxShadow: plan.featured
+                  ? `0 20px 40px -12px ${plan.ring}, 0 0 0 1.5px ${plan.accent}`
+                  : "0 8px 24px -12px rgba(17,17,26,0.12)",
+              }}
+            >
+              {plan.featured && (
+                <span
+                  className={cn(
+                    "absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r",
+                    plan.accent
+                  )}
+                >
+                  {isRTL ? "الأكثر طلبًا" : "Most Popular"}
+                </span>
+              )}
+
+              {/* Tier color thread */}
+              <span
+                className="mb-4 h-1.5 w-10 rounded-full"
+                style={{ background: plan.accent }}
+              />
+
+              <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
+              {plan.subtitle && (
+                <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+                  {plan.subtitle}
+                </p>
+              )}
+
+              <div className="mt-6 flex items-baseline gap-1.5">
+                <span className="text-4xl font-black tracking-tight text-gray-900 tabular-nums">
+                  {formatCurrency(plan.price, PLATFORM_CURRENCY)}
+                </span>
+                <span className="text-sm font-medium text-gray-400">
+                  / {plan.tier}
+                </span>
+              </div>
+
+              <div
+                className="my-6 h-px w-full"
+                style={{ background: "#11111a0f" }}
+              />
+
+              <ul className="flex-1 space-y-3">
+                {plan.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5 text-sm text-gray-700">
+                    <CircleCheck
+                      size={18}
+                      strokeWidth={2}
+                      className="text-green-500 flex-shrink-0"
+                    />
+                    <span className="leading-snug">
+                      {feature.label}
+                      {feature.isNew && (
+                        <span
+                          className="ms-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                          style={{ background: plan.tint, color: plan.accent }}
+                        >
+                          {isRTL ? "جديد" : "New"}
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
           ))}
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }

@@ -69,6 +69,7 @@ import {
   MapPin,
   WarehouseIcon,
   Boxes,
+  MessageSquare,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -681,6 +682,31 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         },
 
       ]
+    },
+    {
+      icon: MessageSquare,
+      labelKey: "sms",
+      href: "/sms/providers",
+      children: [
+        {
+          icon: Plug,
+          labelKey: "smsProviders",
+          href: "/sms/providers",
+          permission: "sms.providers.read",
+        },
+        {
+          icon: Users,
+          labelKey: "smsSenders",
+          href: "/sms/senders",
+          permission: "sms.senders.read",
+        },
+        {
+          icon: FileText,
+          labelKey: "smsLogs",
+          href: "/sms/logs",
+          permission: "sms.logs.read",
+        },
+      ],
     },
     {
       icon: FaBolt,

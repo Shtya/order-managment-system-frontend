@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info, Plus, Truck, CheckCircle, Boxes, PackageSearch, Download, Trash2, Hash, ShoppingCart, Undo2, Warehouse } from "lucide-react";
+import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info, Plus, Truck, CheckCircle, Boxes, PackageSearch, Download, Trash2, Hash, ShoppingCart, Undo2, Warehouse, UserX, Building2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 
@@ -59,9 +59,9 @@ function subMonths(date, months) {
 export default function ProductsPage() {
 	const tFailed = useTranslations('orders.failedOrders');
 	const tTutorial = useTranslations("tutorial");
-	const t = useTranslations("products");
 	const tc = useTranslations("common");
 	const tw = useTranslations("warehousesManagement");
+	const t = useTranslations("products");
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
@@ -95,7 +95,7 @@ export default function ProductsPage() {
 	const [selectedProducts, setSelectedProducts] = useState([]);
 	const [exportToStoreModal, setExportToStoreModal] = useState(false);
 	const { reservedEnabled } = useOrdersSettings();
-	
+
 	const exportBuilderRef = useRef(null);
 
 	const hasActiveFilters = useMemo(() => {
@@ -222,7 +222,7 @@ export default function ProductsPage() {
 				icon: PackageSearch,
 				color: "#3B82F6", // Blue
 				example: tTutorial("products.availableItems.example")
-				
+
 			},
 			{
 				name: t("stats.withShippingCompanies"),
@@ -231,7 +231,7 @@ export default function ProductsPage() {
 				icon: Truck,
 				color: "#6B7CFF",
 				example: tTutorial("products.withShippingCompanies.example")
-				
+
 			},
 			{
 				name: t("stats.soldPieces"),
@@ -240,7 +240,7 @@ export default function ProductsPage() {
 				icon: CheckCircle,
 				color: "#F59E0B",
 				example: tTutorial("products.soldPieces.example")
-				
+
 			},
 			...(reservedEnabled ? [{
 				// ✅ Updated to show Reserved Items
@@ -250,7 +250,7 @@ export default function ProductsPage() {
 				icon: Boxes, // ✅ Correct Lucide icon
 				color: "#3B82F6",
 				example: tTutorial("products.reservedItems.example")
-				
+
 			}] : []),
 			{
 				// ✅ Updated to show Reserved Items
@@ -260,7 +260,23 @@ export default function ProductsPage() {
 				icon: PackageSearch, // ✅ Correct Lucide icon
 				color: "#3B82F6",
 				example: tTutorial("products.remaingStock.example")
-				
+
+			},
+			{
+				name: t("stats.customerDamagedItems"),
+				description: t("statsDescription.customerDamagedItems"),
+				value: summary.damaged?.customer?.toString(),
+				icon: UserX,
+				color: "#F59E0B",
+				example: tTutorial("products.customerDamagedItems.example"),
+			},
+			{
+				name: t("stats.companyDamagedItems"),
+				description: t("statsDescription.companyDamagedItems"),
+				value: summary.damaged?.company?.toString(),
+				icon: Building2,
+				color: "#EF4444",
+				example: tTutorial("products.companyDamagedItems.example"),
 			},
 		];
 	}, [summary, t, reservedEnabled]);

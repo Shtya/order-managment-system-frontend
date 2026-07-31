@@ -343,7 +343,7 @@ export function StorageLocationSelect({
         setLoading(true);
         try {
             const res = await api.get("/warehouses/locations", {
-                params: { warehouseId, types: types.join(","), search: search || undefined, limit: 50, page: pageNum, isActive: "true", id: value || undefined },
+                params: { warehouseId, types: types.join(","), search: search || undefined, limit: 50, page: pageNum, isActive: "true", id: !!value && value != "none" ? value : undefined },
             });
             const records = res.data.records ?? [];
             setItems(prev => append ? [...prev, ...records] : records);

@@ -143,6 +143,7 @@ export const OrderStatus = {
   CANCELLED: "cancelled",
   RETURN_PREPARING: "return_preparing",
   RETURNED: "returned",
+  PARTIALLY_RETURNED: "partially_returned",
 };
 
 // // Helper function to generate random order number like ORD77QURTE
@@ -714,6 +715,7 @@ const tutorialData = [
 
 export const WAREHOUSE_STATUSES = new Set([
     OrderStatus.RETURNED,
+    OrderStatus.PARTIALLY_RETURNED,
     OrderStatus.DISTRIBUTED,
     OrderStatus.PRINTED,
     OrderStatus.PREPARING,

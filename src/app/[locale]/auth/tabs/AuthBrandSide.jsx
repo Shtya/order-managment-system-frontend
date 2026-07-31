@@ -455,11 +455,13 @@ export default function AuthBrandSide({ mode, t: tProp }) {
 
       style={{
         position: "relative",
-        paddingTop: "170px",
         width: "100%",
         height: "100%",
         overflow: "hidden",
         minHeight: 0,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
       }}
     >
       {/* ── Deep background ── */}
@@ -601,7 +603,7 @@ export default function AuthBrandSide({ mode, t: tProp }) {
         }}
         style={{
           position: "absolute",
-          top: "50%",
+          top: "25%",
           right: 22,
           width: 18,
           height: 18,
@@ -667,6 +669,9 @@ export default function AuthBrandSide({ mode, t: tProp }) {
           gap: 0,
         }}
       >
+        {/* ── Top spacer — centers content above the footer ── */}
+        <div style={{ flex: 1 }} />
+
         {/* ── Logo row ── */}
         <Link
           href="/"
@@ -677,7 +682,7 @@ export default function AuthBrandSide({ mode, t: tProp }) {
           }}
         >
           <div className="mb-2! flex items-center gap-2">
-            <img src="/madaar.svg" alt="MADAR" className="h-8 w-auto" />
+            <img src="/white-madar.png" alt="MADAR" className="h-8 w-auto" />
             <MadarLogo color="#fff" className="h-5 w-auto" />
           </div>
         </Link>
@@ -757,6 +762,9 @@ export default function AuthBrandSide({ mode, t: tProp }) {
           </motion.div>
         </AnimatePresence>
 
+        {/* ── Bottom spacer — pushes the footer to the bottom ── */}
+        <div style={{ flex: 1 }} />
+
         {/* ── Stats — 3 separate cards in a row ── */}
         {/* <div
           style={{
@@ -794,7 +802,7 @@ export default function AuthBrandSide({ mode, t: tProp }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.4 }}
-          style={{ marginTop: "auto", paddingTop: "clamp(18px, 2.5vh, 28px)" }}
+          style={{ paddingTop: "clamp(18px, 2.5vh, 28px)" }}
         >
           {/* Divider */}
           <div

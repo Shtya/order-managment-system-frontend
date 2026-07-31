@@ -748,7 +748,7 @@ function ReturnsScanInputBar({
 
 
 
-function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChange, onSelectAll, onUnselectAll, selectedItems, returnReason, onReasonChange, onSave, isSaving }) {
+function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChange, onRestockQuantityChange, onDamageResponsibilityChange, onSelectAll, onUnselectAll, selectedItems, returnReason, onReasonChange, onSave, isSaving }) {
   const t = useTranslations("warehouse.returns");
   const { formatCurrency } = usePlatformSettings();
   const totalQty = localProducts.reduce((s, p) => s + (p.quantity || 0), 0);
@@ -880,6 +880,8 @@ function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChang
                 t("scan.table.productName"),
                 "SKU",
                 t("scan.table.qty"),
+                t("scan.table.restockQty"),
+                t("scan.table.damageResponsibility"),
                 t("scan.table.price"),
                 t("scan.table.return"),
               ].map((h, i) => (
@@ -974,13 +976,57 @@ function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChang
                           min="1"
                           max={p.quantity}
                           value={selection.quantity}
-                          onChange={(e) => onQuantityChange(p.id, parseInt(e.target.value) || 0)}
+                          onChange={(e) => onQuantityChange(p.id, parseInt(e.target.value) || 0, p.quantity)}
                           className={cn("w-16 h-8 text-center text-sm font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary outline-none", DS.radiusSm)}
                         />
                         <span className="text-[10px] text-slate-400">/ {p.quantity}</span>
                       </div>
                     ) : (
                       <span className="font-mono text-sm font-bold text-slate-400">{p.quantity}</span>
+                    )}
+                  </td>
+
+                  <td className="px-4 py-3 text-center">
+                    {checked ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          max={selection.quantity}
+                          value={selection.restockQuantity ?? 0}
+                          onChange={(e) => onRestockQuantityChange(p.id, parseInt(e.target.value) || 0, selection.quantity)}
+                          className={cn("w-16 h-8 text-center text-sm font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary outline-none", DS.radiusSm)}
+                        />
+                        <span className="text-[10px] text-slate-400">/ {selection.quantity}</span>
+                      </div>
+                    ) : (
+                      <span className="font-mono text-sm font-bold text-slate-400">-</span>
+                    )}
+                  </td>
+
+                  <td className="px-4 py-3 text-center">
+                    {checked ? (
+                      <Select
+                        value={selection.damageResponsibility ?? "internal"}
+                        onValueChange={(v) => onDamageResponsibilityChange(p.id, v)}
+                        disabled={selection.restockQuantity === selection.quantity}
+                      >
+                        <SelectTrigger
+                          size="sm"
+                          className={cn(
+                            "w-32 h-8 text-center text-xs font-bold",
+                            selection.restockQuantity === selection.quantity && "opacity-50 cursor-not-allowed"
+                          )}
+                        >
+                          <SelectValue placeholder={t("scan.responsibilities.placeholder")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="company">{t("scan.responsibilities.company")}</SelectItem>
+                          <SelectItem value="internal">{t("scan.responsibilities.internal")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <span className="font-mono text-sm font-bold text-slate-400">-</span>
                     )}
                   </td>
 
@@ -1561,6 +1607,8 @@ export function ScanReturnsSubtab({
         newItems[p.id] = {
           originalItemId: p.id,
           quantity: p.quantity,
+          restockQuantity: p.quantity,
+          damageResponsibility: "internal",
           id: p.id
         };
       }
@@ -1568,10 +1616,30 @@ export function ScanReturnsSubtab({
     });
   };
 
-  const changeQuantity = (id, qty) => {
+  const changeQuantity = (id, qty, maxQty) => {
+    const safeQty = Math.min(maxQty || qty, Math.max(1, qty));
+    setSelectedItems(prev => {
+      const current = prev[id];
+      const nextRestockQty = Math.min(current?.restockQuantity ?? safeQty, safeQty);
+      return {
+        ...prev,
+        [id]: { ...current, quantity: safeQty, restockQuantity: nextRestockQty }
+      };
+    });
+  };
+
+  const changeRestockQuantity = (id, qty, maxQty) => {
+    const safeQty = Math.min(maxQty || qty, Math.max(0, qty));
     setSelectedItems(prev => ({
       ...prev,
-      [id]: { ...prev[id], quantity: qty }
+      [id]: { ...prev[id], restockQuantity: safeQty }
+    }));
+  };
+
+  const changeDamageResponsibility = (id, value) => {
+    setSelectedItems(prev => ({
+      ...prev,
+      [id]: { ...prev[id], damageResponsibility: value }
     }));
   };
 
@@ -1581,6 +1649,8 @@ export function ScanReturnsSubtab({
       all[p.id] = {
         originalItemId: p.id,
         quantity: p.quantity,
+        restockQuantity: p.quantity,
+        damageResponsibility: "internal",
         id: p.id
       };
     });
@@ -1622,10 +1692,15 @@ export function ScanReturnsSubtab({
       const payload = {
         orderId: activeOrder.id,
         reason: returnReason,
-        items: Object.values(selectedItems).map(item => ({
-          originalItemId: item.originalItemId,
-          quantity: item.quantity
-        }))
+        items: Object.values(selectedItems).map(item => {
+          const damagedQty = item.quantity - (item.restockQuantity ?? item.quantity);
+          return {
+            originalItemId: item.originalItemId,
+            quantity: item.quantity,
+            restockQuantity: item.restockQuantity,
+            ...(damagedQty > 0 ? { damageResponsibility: item.damageResponsibility } : {})
+          };
+        })
       };
 
       await api.post('/order-returns/return-request', payload);
@@ -1849,6 +1924,8 @@ export function ScanReturnsSubtab({
             selectedItems={selectedItems}
             onToggleItem={toggleItem}
             onQuantityChange={changeQuantity}
+            onRestockQuantityChange={changeRestockQuantity}
+            onDamageResponsibilityChange={changeDamageResponsibility}
             onSelectAll={selectAll}
             onUnselectAll={unselectAll}
             returnReason={returnReason}

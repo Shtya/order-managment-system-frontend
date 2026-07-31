@@ -503,12 +503,13 @@
     "plans": "الخطط",
     "overview": "نظرة عامة",
     "templates": "القوالب",
-    "automations": "التشغيل التلقائي",
+    "automations": "الأتمتة والتشغيل",
+    "automationsPaths": "مسارات الأتمتة",
     "addAutomation": "إضافة تشغيل تلقائي جديد",
     "systemErrors": "تسجيلات الأخطاء",
     "addTemplate": "إضافة قوالب جديدة",
-    "automationLogs": "سجل التشغيل",
-    "runningAutomations": "عمليات التشغيل",
+    "automationLogs": "سجل الأتمتة",
+    "runningAutomations": "تشغيلات الأتمتة",
     "dashboard": "لوحة التحكم",
     "orders": "الطلبات",
     "employeeOrders": "طلبات الموظفين",
@@ -2665,6 +2666,8 @@
           "customer": "العميل",
           "productName": "اسم المنتج",
           "qty": "الكمية",
+          "restockQty": "كمية الإرجاع للمخزون",
+          "damageResponsibility": " سبب التلف",
           "price": "السعر",
           "return": "الإرجاع",
           "selected": "محدد",
@@ -2716,7 +2719,12 @@
         "readyToManifest": "جاهز لإنشاء الملف",
         "noOrdersSelected": "لم يتم اختيار أي طلبات",
         "createManifest": "إنشاء الملف",
-        "reviewCreateManifest": "مراجعة و إنشاء الملف\t"
+        "reviewCreateManifest": "مراجعة و إنشاء الملف\t",
+        "responsibilities": {
+          "placeholder": "التلف بواسطة؟",
+          "company": "شركة الشحن",
+          "internal": "داخليا"
+        }
       },
       "files": {
         "searchPlaceholder": "ابحث برقم الملف أو شركة الشحن أو الطلب...",
@@ -4144,7 +4152,9 @@
       "acceptedReturnPieces": "مرتجع للمورد (مقبول)",
       "totalStockOnHand": "إجمالي المخزون الفعلي",
       "remaingStock": "المتبقي من المخزون",
-      "totalStock": "إجمالي المخزون"
+      "totalStock": "إجمالي المخزون",
+      "customerDamagedItems": "المنتجات التالفة داخليًا",
+      "companyDamagedItems": "المنتجات التالفة بسبب شركة الشحن"
     },
     "statsDescription": {
       "totalProducts": "إجمالي عدد المنتجات النشطة في مخزونك",
@@ -4153,7 +4163,9 @@
       "withShippingCompanies": "عدد القطع الموجودة حاليًا لدى شركات الشحن ولم يتم تسليمها للعملاء أو إرجاعها بعد",
       "soldPieces": "إجمالي عدد القطع التي تم بيعها وتسليمها للعملاء",
       "reservedItems": "عدد العناصر المحجوزة حالياً",
-      "remaingStock": "(المخزون المتبقي محسوب كـ ((المخزون في شركات الشحن + االمخزون علي الرف)"
+      "remaingStock": "(المخزون المتبقي محسوب كـ ((المخزون في شركات الشحن + االمخزون علي الرف)",
+      "customerDamagedItems": "إجمالي كمية المنتجات التي التالفة بأسباب من عندنا ولم تتم إعادتها إلى المخزون.",
+      "companyDamagedItems": "إجمالي كمية المنتجات التي تعرضت للتلف بسبب شركة الشحن ولم تتم إعادتها إلى المخزون."
     },
     "toolbar": {
       "searchPlaceholder": "البحث عن المنتجات...",
@@ -5195,6 +5207,46 @@
         "returnQuantity": "الكمية المرجعة"
       }
     },
+    "returnRequests": {
+      "cardTitle": "طلبات الاسترجاع",
+      "cardSubtitle": "طلبات الاسترجاع المنشأة لهذا الطلب",
+      "count_one": "{count} طلب",
+      "count_other": "{count} طلبات",
+      "reason": "سبب الاسترجاع",
+      "requestedAt": "تاريخ الطلب",
+      "totalReturned": "إجمالي المرتجع",
+      "totalRestocked": "المرتجع للمخزون",
+      "totalDamaged": "إجمالي التالف",
+      "statuses": {
+        "pending": "قيد الانتظار",
+        "approved": "مقبول",
+        "rejected": "مرفوض"
+      },
+      "responsibilities": {
+        "company": "شركة الشحن",
+        "internal": "داخليا"
+      },
+      "conditions": {
+        "intact": "سليم",
+        "opened": "مفتوح",
+        "used": "مستعمل",
+        "damaged": "تالف",
+        "defective": "معيب مصنعياً",
+        "missingParts": "مفقود جزء",
+        "resellable": "قابل لإعادة البيع",
+        "other": "أخرى"
+      },
+      "table": {
+        "product": "المنتج",
+        "variant": "SKU للمنتج المرتجع",
+        "quantity": "الكمية المرتجعة",
+        "restockQuantity": "الكمية المرتجعة للمخزون",
+        "damagedQuantity": "الكمية التالفة",
+        "responsibility": "التلف بواسطة",
+        "condition": "الحالة"
+      },
+      "count": "عدد طلبات الاسترجاع: {count}"
+    },
     "search": {
       "placeholder": "ابحث عن طلب..."
     },
@@ -5617,6 +5669,7 @@
       "ready": "جاهز للشحن",
       "shipped": "تم الشحن",
       "returned": "مرتجع",
+      "partially_returned": "مرتجع جزئيًا",
       "failed_delivery": "فشل التوصيل",
       "no_answer": "لا يوجد رد",
       "out_of_area": "خارج نطاق التوصيل",
@@ -6759,7 +6812,7 @@
       "confirmRate": "نسبة الطلبات التي تم تأكيدها (الطلبات التي تم تأكيدها في أي وقت، وليس فقط تلك التي في الحالة المؤكدة الآن). محسوبة كـ ((الطلبات المؤكدة / إجمالي الطلبات) × 100)",
       "deliveryRate": "نسبة الطلبات التي تم توصيلها بنجاح ((الطلبات المُوصلة / إجمالي الطلبات) × 100)",
       "cancelled": "نسبة الطلبات التي تم إلغاؤها ((الطلبات الملغاة / إجمالي الطلبات) × 100)",
-      "returned": "نسبة الطلبات التي تم إرجاعها ((الطلبات المرتجعة / إجمالي الطلبات) × 100)",
+      "returned": "نسبة الطلبات التي تم إرجاعها ((الطلبات المرتجعة جزئيا او كليا / إجمالي الطلبات) × 100)",
       "inDelivery": "عدد الطلبات التي توجد حاليًا في عملية الشحن/التوصيل",
       "newOrders": "عدد الطلبات الجديدة حاليا و التي تم انشائها ",
       "totalOrders": "إجمالي عدد جميع الطلبات التي تم استلامها ",
@@ -6777,7 +6830,7 @@
       "outOfDelivery": "إجمالي عدد الطلبات خارج منطقة التوصيل",
       "wrongNumber": "إجمالي عدد الطلبات ذات رقم الهاتف الخاطئ",
       "new": "عدد الطلبات الجديدة حاليا و التي تم انشائها ",
-      "returnedOrders": "نسبة الطلبات التي تم إرجاعها ((الطلبات المرتجعة / إجمالي الطلبات) × 100)",
+      "returnedOrders": "نسبة الطلبات التي تم إرجاعها ((الطلبات المرتجعة جزئيا او كليا / إجمالي الطلبات) × 100)",
       "canceled": "نسبة الطلبات التي تم إلغاؤها ((الطلبات الملغاة / إجمالي الطلبات) × 100)",
       "confirmed": "إجمالي عدد الطلبات في الحالة المؤكدة",
       "shipped": "عدد الطلبات التي توجد حاليًا في عملية الشحن/التوصيل",
@@ -8846,6 +8899,7 @@
       "ready": "جاهز للشحن",
       "shipped": "تم الشحن",
       "returned": "مرتجع",
+      "partially_returned": "مرتجع جزئيًا",
       "no_answer": "لا يوجد رد",
       "out_of_area": "خارج نطاق التوصيل",
       "pending": "معلق",
@@ -10969,18 +11023,18 @@
       "breadcrumb": {
         "home": "الرئيسية",
         "whatsapp": "واتساب",
-        "automations": "الأتمتة"
+        "automations": "مسارات الأتمتة"
       },
       "toolbar": {
-        "addAutomation": "إضافة أتمتة",
-        "searchPlaceholder": "البحث بالاسم..."
+        "addAutomation": "إضافة مسار أتمتة",
+        "searchPlaceholder": "ابحث باسم المسار..."
       },
       "stats": {
-        "published": "منشورة",
+        "published": "نشطة",
         "paused": "متوقفة",
-        "draft": "مسودة",
+        "draft": "مسودات",
         "archived": "مؤرشفة",
-        "total": "العدد الكلي"
+        "total": "إجمالي المسارات"
       },
       "filters": {
         "status": "الحالة",
@@ -10988,8 +11042,8 @@
         "date": "التاريخ"
       },
       "table": {
-        "name": "الاسم",
-        "triggerType": "المحفز",
+        "name": "اسم المسار",
+        "triggerType": "بداية التشغيل",
         "status": "الحالة",
         "createdAt": "تاريخ الإنشاء",
         "empty": "لم يتم العثور على أتمتة"
@@ -11083,7 +11137,7 @@
           "provider": "المزود"
         },
         "sidebar": {
-          "title": "بناء المسارات",
+          "title": "بناء الأتمتة",
           "subtitle": "اسحب العناصر لبناء مسار عملك",
           "namePlaceholder": "اسم الأتمتة...",
           "addFirst": "ابدأ بإضافة محفز للمسار أولاً",
@@ -11267,7 +11321,7 @@
             "employeeEmailUpdated": "تم تحديث بريد الموظف من \"{oldEmail}\" إلى \"{newEmail}\"",
             "employeeNotFound": "الموظف المحدد ({employee}) لم يعد موجوداً أو غير نشط.",
             "templateNameUpdated": "تم تحديث اسم القالب من \"{oldName}\" إلى \"{newName}\"",
-            "templateButtonsChanged": "تغير عدد الأزرار في القالب ({template}). يرجى إعادة ضبط المسارات المتفرعة.",
+            "templateButtonsChanged": "تغير عدد الأزرار في القالب ({template}). يرجى إعادة ضبط الأتمتة المتفرعة.",
             "templateButtonTypeChanged": "تم تغيير نوع الزر \"{label}\" إلى {type}",
             "templateButtonTextChanged": "تم تحديث نص الزر من \"{oldText}\" إلى \"{newText}\"",
             "templateButtonUrlUpdated": "تم تحديث الرابط الخاص بالزر \"{text}\"",
@@ -11477,7 +11531,7 @@
       }
     },
     "automationLogs": {
-      "title": "تشغيل المسارات",
+      "title": "تشغيل الأتمتة",
       "subtitle": "مراقبة العمليات الجارية",
       "reorder": "إعادة ترتيب",
       "editVersion": "تعديل التشغيل التلقائي",
@@ -11495,17 +11549,17 @@
       "noRuns": "لا توجد عمليات",
       "stepsCompleted": "{count} خطوة مكتملة",
       "noData": "لا توجد بيانات",
-      "errorFetchingRuns": "حدث خطأ أثناء تحميل المسارات",
+      "errorFetchingRuns": "حدث خطأ أثناء تحميل الأتمتة",
       "errorFetchingDetails": "حدث خطأ أثناء تحميل التفاصيل",
       "loadingExecutionDetails": "جاري تحميل تفاصيل التنفيذ...",
       "breadcrumb": {
-        "logs": "سجلات التنفيذ"
+        "logs": "سجل الأتمتة"
       },
       "stats": {
         "running": "جاري التنفيذ",
         "problems": "بها مشاكل",
         "completed": "مكتملة",
-        "total": "إجمالي التنفيذ",
+        "total": "إجمالي العمليات",
         "pending": "قيد الانتظار",
         "paused": "متوقف مؤقتاً"
       },
@@ -11514,7 +11568,7 @@
       },
       "table": {
         "automation": "الأتمتة",
-        "trigger": "المحفز / الكيان",
+        "trigger": "بداية التشغيل",
         "status": "الحالة",
         "progress": "التقدم",
         "steps": "خطوات",

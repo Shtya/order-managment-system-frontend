@@ -505,11 +505,12 @@
     "overview": "Overview",
     "templates": "Templates",
     "automations": "Automations",
+    "automationsPaths": "Automation Paths",
     "addAutomation": "Add Automation",
     "systemErrors": "Error Logs",
     "addTemplate": "Add Template",
     "automationLogs": "Automation Logs",
-    "runningAutomations": "Automation Activities",
+    "runningAutomations": "Automation Runs",
     "orders": "Orders",
     "employeeOrders": "Employee Orders",
     "newPurchase": "New Purchase",
@@ -2670,6 +2671,8 @@
           "customer": "Customer",
           "productName": "Product Name",
           "qty": "Qty",
+          "restockQty": "Restock Qty",
+          "damageResponsibility": "Cause of damage",
           "price": "Price",
           "return": "Return",
           "selected": "Selected",
@@ -2721,7 +2724,12 @@
         "readyToManifest": "Ready to create manifest",
         "noOrdersSelected": "No orders selected",
         "createManifest": "Create Manifest",
-        "reviewCreateManifest": "Review and create manifest"
+        "reviewCreateManifest": "Review and create manifest",
+        "responsibilities": {
+          "placeholder": "Damage by?",
+          "company": "Shipping Company",
+          "internal": "internally"
+        }
       },
       "files": {
         "searchPlaceholder": "Search return files...",
@@ -4149,7 +4157,9 @@
       "acceptedReturnPieces": "Returned to supplier (accepted)",
       "totalStockOnHand": "Total stock on hand",
       "remaingStock": "Remaining stock",
-      "totalStock": "Total inventory"
+      "totalStock": "Total inventory",
+      "customerDamagedItems": "Internally damaged products",
+      "companyDamagedItems": "Damaged products due to shipping company"
     },
     "statsDescription": {
       "totalProducts": "Total number of active products in your inventory",
@@ -4158,7 +4168,9 @@
       "withShippingCompanies": "The number of items currently held by shipping companies that have not yet been delivered to customers or returned",
       "soldPieces": "Total number of items sold and delivered to customers",
       "reservedItems": "Number of items currently reserved",
-      "remaingStock": "The remaining inventory is calculated as ((inventory in shipping companies, inventory on the shelf))"
+      "remaingStock": "The remaining inventory is calculated as ((inventory in shipping companies, inventory on the shelf))",
+      "customerDamagedItems": "The total amount of products that were damaged due to our reasons and were not returned to stock.",
+      "companyDamagedItems": "The total amount of products that were damaged by the shipping company and were not returned to stock."
     },
     "toolbar": {
       "searchPlaceholder": "Search products...",
@@ -5210,6 +5222,46 @@
         "returnQuantity": "Returned quantity"
       }
     },
+    "returnRequests": {
+      "cardTitle": "Return Requests",
+      "cardSubtitle": "Return requests created for this order",
+      "count_one": "{count} request",
+      "count_other": "{count} requests",
+      "reason": "Return Reason",
+      "requestedAt": "Request Date",
+      "totalReturned": "Total Returned",
+      "totalRestocked": "Returned to Stock",
+      "totalDamaged": "Total Damaged",
+      "statuses": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "responsibilities": {
+        "company": "Shipping Company",
+        "internal": "internally"
+      },
+      "conditions": {
+        "intact": "Intact",
+        "opened": "Opened Box",
+        "used": "Used",
+        "damaged": "Damaged",
+        "defective": "Defective",
+        "missingParts": "Missing Parts",
+        "resellable": "Resellable",
+        "other": "Other"
+      },
+      "table": {
+        "product": "Product",
+        "variant": "SKU of the returned product",
+        "quantity": "Returned Qty",
+        "restockQuantity": "Restocked Qty",
+        "damagedQuantity": "Damaged Qty",
+        "responsibility": "Damage By",
+        "condition": "Condition"
+      },
+      "count": "Number of return requests: {count}"
+    },
     "search": {
       "placeholder": "Search for an order..."
     },
@@ -5633,6 +5685,7 @@
       "ready": "Ready to shipping",
       "shipped": "Shipped",
       "returned": "Returned",
+      "partially_returned": "Partially Returned",
       "no_answer": "No Answer",
       "out_of_area": "Out of Delivery Area",
       "distributed": "Distributed",
@@ -6700,6 +6753,7 @@
       "inWarehouseOrders": "In Warehouse",
       "newOrders": "New",
       "returnedOrders": "Returned",
+      "partiallyReturnedOrders": "Partially Returned",
       "postponedOrders": "Postponed",
       "outOfDeliveryOrders": "Out of Delivery Area",
       "wrongNumberOrders": "Wrong Number",
@@ -6774,7 +6828,7 @@
       "confirmRate": "Percentage of orders that were confirmed (orders were confirmed at any time, not just those in confirmed status now). Calculated as ((confirmed orders / total orders) * 100)",
       "deliveryRate": "Percentage of orders that were successfully delivered ((delivered orders / total orders) * 100)",
       "cancelled": "Percentage of orders that were cancelled ((cancelled orders / total orders) * 100)",
-      "returned": "Percentage of orders that were returned ((returned orders / total orders) * 100)",
+      "returned": "Percentage of returned orders ((partially or completely returned orders / total orders) x 100)",
       "inDelivery": "Number of orders currently in the shipping/delivery process",
       "newOrders": "The total number of new orders created during the selected period",
       "totalOrders": "Total number of all orders received",
@@ -6792,7 +6846,7 @@
       "outOfDelivery": "Total number of orders out of delivery area",
       "wrongNumber": "Total number of orders with wrong phone number",
       "new": "The total number of new orders created during the selected period",
-      "returnedOrders": "Percentage of orders that were returned ((returned orders / total orders) * 100)",
+      "returnedOrders": "Percentage of orders that were returned ((partially or completely returned orders / total orders) * 100)",
       "canceled": "Percentage of orders that were cancelled ((cancelled orders / total orders) * 100)",
       "confirmed": "Total number of orders in confirmed status",
       "shipped": "Number of orders currently in the shipping/delivery process",
@@ -10948,16 +11002,16 @@
       "breadcrumb": {
         "home": "Home",
         "whatsapp": "WhatsApp",
-        "automations": "Automations"
+        "automations": "Automation Paths"
       },
       "toolbar": {
-        "addAutomation": "Add Automation",
-        "searchPlaceholder": "Search by name..."
+        "addAutomation": "Add automation path",
+        "searchPlaceholder": "Search by automation name..."
       },
       "stats": {
-        "published": "Published",
+        "published": "Active",
         "paused": "Paused",
-        "draft": "Draft",
+        "draft": "Drafts",
         "archived": "Archived",
         "total": "Total Flows"
       },
@@ -10967,8 +11021,8 @@
         "date": "Date"
       },
       "table": {
-        "name": "Name",
-        "triggerType": "Trigger",
+        "name": "Automation Name",
+        "triggerType": "Automation Trigger",
         "status": "Status",
         "createdAt": "Created At",
         "empty": "No automations found"
@@ -11478,13 +11532,13 @@
       "errorFetchingDetails": "Error loading details",
       "loadingExecutionDetails": "Loading execution details...",
       "breadcrumb": {
-        "logs": "Execution Logs"
+        "logs": "Automation Logs"
       },
       "stats": {
         "running": "Running",
         "problems": "Problems",
         "completed": "Completed",
-        "total": "Total Runs",
+        "total": "Total Executions",
         "pending": "Pending",
         "paused": "Paused"
       },
@@ -11493,7 +11547,7 @@
       },
       "table": {
         "automation": "Automation",
-        "trigger": "Trigger / Entity",
+        "trigger": "Automation Trigger",
         "status": "Status",
         "progress": "Progress",
         "steps": "Steps",

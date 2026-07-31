@@ -132,15 +132,15 @@ export const BASE_CONFIG = {
                         configComponent: 'AssignOrderToEmployeeConfig',
                         className: 'max-w-xl!',
                         hasCustom: true
-                    },
-                    {
-                        id: 'send_sms',
-                        icon: MessageSquare,
-                        type: 'action',
-                        configComponent: 'SendSmsConfig',
-                        className: 'max-w-xl!',
-                        hasCustom: true
                     }
+                    // {
+                    //     id: 'send_sms',
+                    //     icon: MessageSquare,
+                    //     type: 'action',
+                    //     configComponent: 'SendSmsConfig',
+                    //     className: 'max-w-xl!',
+                    //     hasCustom: true
+                    // }
                 ]
             }
         ]

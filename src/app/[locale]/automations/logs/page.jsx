@@ -88,8 +88,8 @@ export default function AutomationLogsPage() {
     const router = useRouter();
     const tCommon = useTranslations("common");
     const tAutomations = useTranslations("whatsApp.automations");
-    const t = useTranslations("whatsApp.automationLogs");
     const tTutorial = useTranslations("tutorial.automationLogs");
+    const t = useTranslations("whatsApp.automationLogs");
 
     const [search, setSearch] = useState("");
     const { debouncedValue: debouncedSearch } = useDebounce({ value: search });

@@ -170,8 +170,8 @@ export function ProductOrdersByStatusModal({
 
 export default function useProductsTab({ setExternalModal, searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
 	const router = useRouter();
-	const t = useTranslations("products");
 	const tTutorial = useTranslations("tutorial");
+	const t = useTranslations("products");
 	const requestIdRef = useRef(0);
 	const { formatCurrency } = usePlatformSettings();
 	const { reservedEnabled, calculateAvailableStock } = useOrdersSettings();
@@ -489,7 +489,54 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 					</Badge>
 				},
 			},
+			{
+				key: "customerDamagedQuantity",
+				header: t("stats.customerDamagedItems"),
+				className: "min-w-[140px]",
+				cell: (row) => {
 
+					const s = row.stockSummary;
+					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
+					const qty = Number(s.inventory?.customerDamagedQuantity ?? 0);
+
+					return (
+						<Badge
+							className={cn(
+								"rounded-full font-semibold",
+								qty > 0
+									? "bg-orange-100 text-orange-700 border border-orange-200"
+									: "bg-gray-100 text-gray-600 border border-gray-200"
+							)}
+						>
+							{qty}
+						</Badge>
+					);
+				},
+			},
+			{
+				key: "companyDamagedQuantity",
+				header: t("stats.companyDamagedItems"),
+				className: "min-w-[140px]",
+				cell: (row) => {
+					const s = row.stockSummary;
+					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
+					const qty = Number(s.inventory?.companyDamagedQuantity ?? 0);
+
+
+					return (
+						<Badge
+							className={cn(
+								"rounded-full font-semibold",
+								qty > 0
+									? "bg-red-100 text-red-700 border border-red-200"
+									: "bg-gray-100 text-gray-600 border border-gray-200"
+							)}
+						>
+							{qty}
+						</Badge>
+					);
+				},
+			},
 			{ key: "mainImage", header: t("table.mainImage"), className: "w-[100px]", type: "img" },
 			{
 				key: "shippedTracking",
@@ -727,7 +774,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 		];
 	}, [reservedEnabled, router, t, onAskDelete, onOpenView, formatCurrency, activetab, pager.per_page, selectedProducts, openProductOrders]);
 
-	return { tutorialActions: true,loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal, handleShippingCompanyChange, handleOrdersExport, exportLoading };
+	return { tutorialActions: true, loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal, handleShippingCompanyChange, handleOrdersExport, exportLoading };
 }
 
 export function SkuPrintModal({ open, onClose, product }) {
@@ -781,7 +828,7 @@ export function SkuPrintModal({ open, onClose, product }) {
 				const attrs = s?.attributes ? Object.entries(s.attributes) : [];
 				const attrStr = attrs.map(([k, v]) => `${k}: ${v}`).join(" | ");
 				const qty = quantities[s.id] || 1;
-				
+
 				const barcodeDataUrl = await getBarcodeDataUrl(s.sku);
 
 				for (let i = 0; i < qty; i++) {

@@ -90,8 +90,8 @@ function buildListQuery({ page, per_page, search, filters }) {
 export default function AutomationsPage() {
   const router = useRouter();
   const tCommon = useTranslations("common");
-  const t = useTranslations("whatsApp.automations");
   const tTutorial = useTranslations("tutorial.automations");
+  const t = useTranslations("whatsApp.automations");
 
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({ value: search });

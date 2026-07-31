@@ -25,6 +25,8 @@ import {
   QrCode,
   Hash,
   ArrowLeftRight,
+  RotateCcw,
+  Boxes,
   ExternalLink,
   ImageIcon,
   Building2,
@@ -35,6 +37,7 @@ import {
   Fingerprint,
   MapPin as MapPinIcon,
   Loader2,
+  AlertTriangle,
 } from "lucide-react";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import {
@@ -707,6 +710,14 @@ export function OrderDetailsPage({ order, loading }) {
               formatCurrency={formatCurrency}
               formatDate={formatDate}
               router={router}
+            />
+          )}
+
+          {/* Return requests card */}
+          {order.returnRequests?.length > 0 && (
+            <ReturnRequestsCard
+              returnRequests={order.returnRequests}
+              formatDate={formatDate}
             />
           )}
 
@@ -1535,6 +1546,427 @@ function ReplacementInfoCard({
         )} */}
       </div>
     </motion.div >
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// RETURN REQUESTS CARD
+// ──────────────────────────────────────────────────────────────────────────────
+const RETURN_CONDITION_KEYS = [
+  "intact",
+  "opened",
+  "used",
+  "damaged",
+  "defective",
+  "missingParts",
+  "resellable",
+  "other",
+];
+
+function ReturnStatusBadge({ status }) {
+  const t = useTranslations("orders");
+  const styles = {
+    pending: {
+      bg: "rgba(245,158,11,0.08)",
+      border: "rgba(245,158,11,0.25)",
+      color: "#d97706",
+      dot: "#f59e0b",
+    },
+    approved: {
+      bg: "rgba(16,185,129,0.08)",
+      border: "rgba(16,185,129,0.25)",
+      color: "#10b981",
+      dot: "#10b981",
+    },
+    rejected: {
+      bg: "rgba(239,68,68,0.08)",
+      border: "rgba(239,68,68,0.25)",
+      color: "#ef4444",
+      dot: "#ef4444",
+    },
+  };
+  const s = styles[status] || styles.pending;
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold leading-none border shrink-0"
+      style={{ background: s.bg, color: s.color, borderColor: s.border }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.dot }} />
+      {t(`returnRequests.statuses.${status}`)}
+    </span>
+  );
+}
+
+function ReturnRequestsCard({ returnRequests, formatDate }) {
+  const t = useTranslations("orders");
+
+  if (!returnRequests?.length) return null;
+
+  const items = returnRequests.flatMap((rr) => rr.items || []);
+  const totalReturned = items.reduce((sum, it) => sum + (it.quantity || 0), 0);
+  const totalRestocked = items.reduce(
+    (sum, it) => sum + (it.restockQuantity || 0),
+    0,
+  );
+  const totalDamaged = items.reduce(
+    (sum, it) => sum + (it.damagedQuantity || 0),
+    0,
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.12, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className="relative main-card rounded-2xl border overflow-hidden"
+      style={{ borderColor: P_25, boxShadow: `0 4px 24px ${P_15}` }}
+    >
+      <AccentBar />
+
+      {/* Header */}
+      <div
+        className="flex items-center justify-between gap-3 px-5 py-4 border-b"
+        style={{ background: P_06, borderColor: P_20 }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: P_15, border: `1px solid ${P_25}` }}
+          >
+            <RotateCcw size={15} style={{ color: P }} />
+          </div>
+          <div>
+            <p className="text-sm font-bold" style={{ color: P }}>
+              {t("returnRequests.cardTitle")}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {t("returnRequests.cardSubtitle")}
+            </p>
+          </div>
+        </div>
+        {/* <span
+          className="text-[10px] font-bold px-3 py-1.5 rounded-xl shrink-0"
+          style={{ background: P_10, color: P, border: `1px solid ${P_25}` }}
+        >
+          {t("returnRequests.count", { count: returnRequests.length })}
+        </span> */}
+      </div>
+
+      <div className="p-5 space-y-4">
+        {returnRequests.map((rr) => {
+          const rrItems = rr.items || [];
+          const rrTotal = rrItems.reduce((sum, it) => sum + (it.quantity || 0), 0);
+          const rrRestocked = rrItems.reduce(
+            (sum, it) => sum + (it.restockQuantity || 0),
+            0,
+          );
+          const rrDamaged = rrItems.reduce(
+            (sum, it) => sum + (it.damagedQuantity || 0),
+            0,
+          );
+
+          return (
+            <div
+              key={rr.id}
+              className="rounded-2xl border border-border/35 bg-muted/20 p-4 space-y-4"
+            >
+              {/* Request meta */}
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 min-w-[200px]">
+                  <div className="flex items-start gap-2">
+                    <FileText
+                      size={11}
+                      className="mt-0.5 shrink-0"
+                      style={{ color: P }}
+                    />
+                    <div className="min-w-0">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-wide">
+                        {t("returnRequests.reason")}
+                      </p>
+                      <p className="text-xs font-semibold text-foreground mt-0.5 leading-relaxed">
+                        {rr.reason || "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Calendar
+                      size={11}
+                      className="mt-0.5 shrink-0"
+                      style={{ color: P }}
+                    />
+                    <div className="min-w-0">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-wide">
+                        {t("returnRequests.requestedAt")}
+                      </p>
+                      <p className="text-xs font-semibold text-foreground mt-0.5">
+                        {formatDate(rr.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <ReturnStatusBadge status={rr.status} />
+              </div>
+
+              {/* Items table */}
+              {rrItems.length > 0 && (
+                <div className="rounded-2xl border border-border/35 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr>
+                          <th colSpan={7} className="p-0 h-0 leading-none">
+                            <AccentBar />
+                          </th>
+                        </tr>
+                        <tr
+                          style={{
+                            background: P_06,
+                            borderBottom: `1px solid ${P_20}`,
+                          }}
+                        >
+                          {[
+                            t("returnRequests.table.product"),
+                            t("returnRequests.table.variant"),
+                            t("returnRequests.table.quantity"),
+                            t("returnRequests.table.restockQuantity"),
+                            t("returnRequests.table.damagedQuantity"),
+                            t("returnRequests.table.responsibility"),
+                            // t("returnRequests.table.condition"),
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              className="text-right px-3 py-2.5 text-[9px] font-black uppercase tracking-wider whitespace-nowrap"
+                              style={{ color: P }}
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rrItems.map((item, i) => {
+                          const variant = item.returnedVariant;
+                          const product = variant?.product;
+                          const sku = variant?.sku || item.returnedVariantId;
+                          const rawCondition = String(item.condition || "").trim();
+                          const conditionKey = RETURN_CONDITION_KEYS.find(
+                            (k) => k.toLowerCase() === rawCondition.toLowerCase(),
+                          );
+
+                          return (
+                            <tr
+                              key={item.id ?? i}
+                              className={cn(
+                                "border-t border-border/20 transition-colors hover:bg-muted/20",
+                                i % 2 !== 0 && "bg-muted/[0.035]",
+                              )}
+                            >
+                              <td className="px-3 py-3">
+                                <div className="flex items-center gap-2">
+                                  {product?.mainImage ? (
+                                    <img
+                                      src={avatarSrc(product.mainImage)}
+                                      className="w-7 h-7 rounded-xl object-cover border border-border/40 shrink-0"
+                                    />
+                                  ) : (
+                                    <div
+                                      className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
+                                      style={{
+                                        background: P_10,
+                                        border: `1px solid ${P_20}`,
+                                      }}
+                                    >
+                                      <Boxes size={11} style={{ color: P }} />
+                                    </div>
+                                  )}
+                                  <div className="min-w-0">
+                                    <p className="text-[10px] font-bold text-foreground line-clamp-1">
+                                      {product?.name || t("details.unknownProduct")}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="px-3 py-3">
+                                {variant?.name ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold border border-border/40 text-muted-foreground bg-muted/30">
+                                    {variant.name}
+                                  </span>
+                                ) : sku ? (
+                                  <span className="text-[9px] text-muted-foreground font-mono">
+                                    {sku}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground/80">
+                                    —
+                                  </span>
+                                )}
+                              </td>
+
+                              <td className="px-3 py-3 text-right">
+                                <span
+                                  className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[10px] font-black"
+                                  style={{ background: P_10, color: P }}
+                                >
+                                  ×{item.quantity ?? 0}
+                                </span>
+                              </td>
+
+                              <td className="px-3 py-3 text-right">
+                                <span
+                                  className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[10px] font-black"
+                                  style={{
+                                    background: "rgba(16,185,129,0.10)",
+                                    color: "#10b981",
+                                  }}
+                                >
+                                  ×{item.restockQuantity ?? 0}
+                                </span>
+                              </td>
+
+                              <td className="px-3 py-3 text-right">
+                                <span
+                                  className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[10px] font-black"
+                                  style={{
+                                    background: "rgba(239,68,68,0.10)",
+                                    color: "#ef4444",
+                                  }}
+                                >
+                                  ×{item.damagedQuantity ?? 0}
+                                </span>
+                              </td>
+
+                              <td className="px-3 py-3 text-right">
+                                {item.damageResponsibility ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold border border-border/40 text-muted-foreground bg-muted/30">
+                                    {t(
+                                      `returnRequests.responsibilities.${item.damageResponsibility}`,
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground/80">
+                                    —
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* <td className="px-3 py-3 text-right">
+                                {rawCondition ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold border border-border/40 text-muted-foreground bg-muted/30">
+                                    {conditionKey
+                                      ? t(
+                                          `returnRequests.conditions.${conditionKey}`,
+                                        )
+                                      : rawCondition}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground/80">
+                                    —
+                                  </span>
+                                )}
+                              </td> */}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Per-request totals */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
+                  style={{
+                    background: "var(--card)",
+                    borderColor: "var(--border)",
+                  }}
+                >
+                  <Boxes size={11} style={{ color: P }} />
+                  <span className="text-[9px] text-muted-foreground">
+                    {t("returnRequests.totalReturned")}
+                  </span>
+                  <span className="text-xs font-black text-foreground">
+                    {rrTotal}
+                  </span>
+                </div>
+
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
+                  style={{
+                    background: "rgba(16,185,129,0.06)",
+                    borderColor: "rgba(16,185,129,0.2)",
+                  }}
+                >
+                  <Package size={11} style={{ color: "#10b981" }} />
+                  <span className="text-[9px] text-muted-foreground">
+                    {t("returnRequests.totalRestocked")}
+                  </span>
+                  <span className="text-xs font-black" style={{ color: "#10b981" }}>
+                    {rrRestocked}
+                  </span>
+                </div>
+
+                {rrDamaged > 0 && (
+                  <div
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
+                    style={{
+                      background: "rgba(239,68,68,0.06)",
+                      borderColor: "rgba(239,68,68,0.2)",
+                    }}
+                  >
+                    <AlertTriangle size={11} style={{ color: "#ef4444" }} />
+                    <span className="text-[9px] text-muted-foreground">
+                      {t("returnRequests.totalDamaged")}
+                    </span>
+                    <span className="text-xs font-black" style={{ color: "#ef4444" }}>
+                      {rrDamaged}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Overall totals */}
+      <div
+        className="flex flex-wrap items-center gap-3 px-5 py-4 border-t"
+        style={{ borderColor: P_20, background: P_06 }}
+      >
+        <div className="flex items-center gap-2">
+          <Boxes size={12} style={{ color: P }} />
+          <span className="text-[9px] text-muted-foreground uppercase tracking-wide">
+            {t("returnRequests.totalReturned")}
+          </span>
+          <span className="text-sm font-black" style={{ color: P }}>
+            {totalReturned}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Package size={12} style={{ color: "#10b981" }} />
+          <span className="text-[9px] text-muted-foreground uppercase tracking-wide">
+            {t("returnRequests.totalRestocked")}
+          </span>
+          <span className="text-sm font-black" style={{ color: "#10b981" }}>
+            {totalRestocked}
+          </span>
+        </div>
+        {totalDamaged > 0 && (
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={12} style={{ color: "#ef4444" }} />
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wide">
+              {t("returnRequests.totalDamaged")}
+            </span>
+            <span className="text-sm font-black" style={{ color: "#ef4444" }}>
+              {totalDamaged}
+            </span>
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }
 

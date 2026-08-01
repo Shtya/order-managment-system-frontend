@@ -74,18 +74,40 @@ export default async function RootLayout({ children, params }) {
   const dir = locale === 'en' ? 'ltr' : 'rtl';
   const messages = await getMessages();
 
-  
+
   return (
     <html lang={locale} dir={dir} translate="no" suppressHydrationWarning>
       <head>
         <meta name="facebook-domain-verification" content="tv61v5592fgxbg7icblxrfhspnom86" />
         <meta name="google-site-verification" content="gFuuXG2Qnxsb3NMlS6sLEuUlm5s0S1VCX4cKmexELBw" />
+
+        <Script id="gtm" strategy="afterInteractive">
+          {
+            `
+            (function(w,d,s,l,i){w[l] = w[l] || [];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KHTSW6PS');
+            `
+          }
+        </Script>
+
       </head>
 
 
       <body
         className={`${sora.variable} ${openSans.variable} ${robotoMono.variable} ${inter.variable} ${arabicFont.variable}`}
       >
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-KHTSW6PS"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+
         <Script id="facebook-init" strategy="beforeInteractive">
           {`
             window.fbAsyncInit = function () {

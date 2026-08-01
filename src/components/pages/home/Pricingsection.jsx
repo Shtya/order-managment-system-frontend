@@ -159,6 +159,7 @@ export default function PricingSection() {
   const t = useTranslations("pricing");
   const locale = useLocale();
   const isRTL = locale === "ar";
+  const router = useRouter();
 
   const { formatCurrency } = usePlatformSettings();
   const { isLoading, plans: rawPlans, fetchPlans } = useSubscriptionsApi();
@@ -206,13 +207,12 @@ export default function PricingSection() {
 
 
 
-      if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
-        features.push(
-          tWel("extraFee", {
-            fee: formatCurrency(plan.extraOrderFee, dollorSign),
-          }),
-        );
-      }
+      const extraOrderFee =
+        plan.extraOrderFee !== null && plan.extraOrderFee > 0
+          ? tWel("extraFee", {
+              fee: formatCurrency(plan.extraOrderFee, dollorSign),
+            })
+          : null;
 
       // if (plan.bulkUploadPerMonth > 0) {
       //   features.push(
@@ -240,6 +240,7 @@ export default function PricingSection() {
           typeof f === "string" ? { label: f, isNew: false } : f,
         ),
         subtitle: description || "",
+        extraOrderFee,
       };
     });
   }, [rawPlans, t, tWel, isRTL, formatCurrency]);
@@ -343,6 +344,28 @@ export default function PricingSection() {
                 </span>
               </div>}
 
+              {plan.extraOrderFee && (
+                <div
+                  className="mt-4 flex items-center gap-2 self-start rounded-xl px-3 py-2.5"
+                  style={{
+                    background: plan.tint,
+                    border: `1px solid ${plan.ring}`,
+                  }}
+                >
+                  <CircleCheck
+                    size={16}
+                    className="flex-shrink-0"
+                    style={{ color: plan.accent }}
+                  />
+                  <span
+                    className="text-xs font-bold"
+                    style={{ color: plan.accent }}
+                  >
+                    {plan.extraOrderFee}
+                  </span>
+                </div>
+              )}
+
               <div
                 className="my-6 h-px w-full"
                 style={{ background: "#11111a0f" }}
@@ -370,6 +393,17 @@ export default function PricingSection() {
                   </li>
                 ))}
               </ul>
+
+              <button
+                onClick={() => router.push("/auth?mode=signup")}
+                className="mt-6 w-full rounded-xl py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                style={{
+                  background: "#6763AF",
+                  boxShadow: "0 6px 18px rgba(103, 99, 175, 0.28)",
+                }}
+              >
+                {t("cta")}
+              </button>
             </motion.div>
           ))}
         </div>

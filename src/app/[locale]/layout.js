@@ -51,9 +51,19 @@ export function generateStaticParams() {
 }
 
 export const metadata = {
-  title: 'Madar: The Comprehensive Business Order Management Platform',
+  title: 'Madar',
   description:
-    'Efficiently manage orders, streamline shipments, and gain business insights with real-time analytics.'
+    'Madar helps businesses manage orders, shipping, and operations in one platform.',
+  applicationName: 'Madar',
+  openGraph: {
+    title: 'Madar',
+    description: 'Madar helps businesses manage orders, shipping, and operations in one platform.',
+    siteName: 'Madar',
+  },
+  twitter: {
+    title: 'Madar',
+    description: 'Madar helps businesses manage orders, shipping, and operations in one platform.',
+  },
 };
 
 export default async function RootLayout({ children, params }) {
@@ -64,11 +74,12 @@ export default async function RootLayout({ children, params }) {
   const dir = locale === 'en' ? 'ltr' : 'rtl';
   const messages = await getMessages();
 
-  console.log(process.env.NEXT_PUBLIC_FB_API_VERSION)
+  
   return (
     <html lang={locale} dir={dir} translate="no" suppressHydrationWarning>
       <head>
         <meta name="facebook-domain-verification" content="tv61v5592fgxbg7icblxrfhspnom86" />
+        <meta name="google-site-verification" content="gFuuXG2Qnxsb3NMlS6sLEuUlm5s0S1VCX4cKmexELBw" />
       </head>
 
 

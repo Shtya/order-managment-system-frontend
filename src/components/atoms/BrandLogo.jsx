@@ -114,10 +114,9 @@ export default function BrandLogo({ className = "", size = "h-8" }) {
         >
             <div className="relative flex items-center justify-center">
                 {/* The Logo Image */}
-                <div className={cn(size, "w-aut")}>
-                    {<img src='/logo.png' className="h-[35px]!"/>}
+                <div className={cn(size, "w-auto")}> 
+                    <img src="/logo.png" alt="Madar" className="h-[35px] w-auto" />
                 </div>
-
 
                 <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
@@ -130,6 +129,7 @@ export default function BrandLogo({ className = "", size = "h-8" }) {
                     }}
                 />
             </div>
+            <span className="text-lg font-semibold tracking-tight text-gray-900 whitespace-nowrap sr-only">Madar</span>
         </motion.div>
     );
 }

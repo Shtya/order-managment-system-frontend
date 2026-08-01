@@ -242,10 +242,10 @@ function DepositModal({ onClose, onDeposit, t, currency, rate: usdToEgp }) {
       return;
     }
     
-    if (!Number.isInteger(Number(amt))) {
-      setErr(t("errors.wholeNumberRequired"));
-      return;
-    }
+    // if (!Number.isInteger(Number(amt))) {
+    //   setErr(t("errors.wholeNumberRequired"));
+    //   return;
+    // }
 
     setSubmitting(true);
     setErr("");
@@ -308,7 +308,7 @@ function DepositModal({ onClose, onDeposit, t, currency, rate: usdToEgp }) {
               <input
                 type="number"
                 min="50"
-                step="1"
+                step="0.01"
                 value={amount}
                 onChange={(e) => {
                   setAmount(e.target.value);

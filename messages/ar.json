@@ -7447,7 +7447,7 @@
       "users": "المستخدمين",
       "stores": "المتاجر",
       "shipping": "شركات الشحن",
-      "orders": "الطلبات المتضمنة",
+      "orders": "طلب ف الشهر",
       "extraFee": "رسوم الطلب الإضافي",
       "bulkUpload": "رفع الطلبات/شهرياً",
       "unlimited": "غير محدود",
@@ -8351,7 +8351,7 @@
           "unlimitedStores": "متاجر غير محدودة",
           "shipping": "{count} شركات شحن",
           "unlimitedShipping": "شركات شحن غير محدودة",
-          "orders": "{count} طلب متضمن",
+          "orders": "{count} طلب ف الشهر",
           "unlimitedOrders": "طلبات غير محدودة",
           "extraFee": "{fee} {currency} رسوم إضافية للطلب",
           "bulkUpload": "{count} رفع جماعي/شهر"
@@ -8420,7 +8420,7 @@
         "unlimited_stores": "متاجر غير محدودة",
         "shipping_companies": "شركات شحن",
         "unlimited_shipping_companies": "شركات شحن غير محدودة",
-        "included_orders": "طلب متضمن",
+        "included_orders": "طلب ف الشهر",
         "unlimited_orders": "طلبات غير محدودة",
         "extra_order_fee": "ج.م رسوم طلب إضافي",
         "bulk_upload": "رفع جماعي/شهر"
@@ -8455,7 +8455,7 @@
         "users": "المستخدمين",
         "stores": "المتاجر",
         "shipping": "شركات الشحن",
-        "orders": "الطلبات المتضمنة",
+        "orders": "طلب ف الشهر",
         "extraFee": "رسوم الطلب الإضافي",
         "bulkUpload": "رفع الطلبات/شهرياً",
         "unlimited": "غير محدود"

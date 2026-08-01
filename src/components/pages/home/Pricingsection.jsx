@@ -181,35 +181,30 @@ export default function PricingSection() {
       const name = isRTL ? plan.name : plan.nameEn;
       const description = isRTL ? plan.description : plan.descriptionEn;
       const localizedFeatures = isRTL ? plan.features : plan.featuresEn;
-      const features = [
-        ...(Array.isArray(localizedFeatures) ? localizedFeatures : []),
-      ];
+      let features = [];
+      
+      if (plan.includedOrders !== null) {
+        features.push(tWel("limits.orders", { count: plan.includedOrders }));
+      } 
+      if (Array.isArray(localizedFeatures)) {
+        features.push(...localizedFeatures);
+      }
 
       if (plan.usersLimit !== null) {
         features.push(tWel("limits.users", { count: plan.usersLimit }));
-      } else {
-        features.push(tWel("limits.unlimitedUsers"));
       }
 
       if (plan.storesLimit !== null) {
         features.push(tWel("limits.stores", { count: plan.storesLimit }));
-      } else {
-        features.push(tWel("limits.unlimitedStores"));
       }
 
       if (plan.shippingCompaniesLimit !== null) {
         features.push(
           tWel("limits.shipping", { count: plan.shippingCompaniesLimit }),
         );
-      } else {
-        features.push(tWel("limits.unlimitedShipping"));
       }
 
-      if (plan.includedOrders !== null) {
-        features.push(tWel("limits.orders", { count: plan.includedOrders }));
-      } else {
-        features.push(tWel("limits.unlimitedOrders"));
-      }
+
 
       if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
         features.push(
@@ -339,7 +334,7 @@ export default function PricingSection() {
                 </p>
               )}
 
-             {plan.price > 0 && <div className="mt-6 flex items-baseline gap-1.5">
+              {plan.price > 0 && <div className="mt-6 flex items-baseline gap-1.5">
                 <span className="text-4xl font-black tracking-tight text-gray-900 tabular-nums">
                   {formatCurrency(plan.price, PLATFORM_CURRENCY)}
                 </span>

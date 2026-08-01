@@ -1951,7 +1951,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                     >
                       <X size={14} /> {t("cancel_btn")}
                     </button>
-                  ) : p.type === "negotiated" && whatsapp != '0' ? (
+                  ) : p.type === "negotiated" && whatsapp != '0' && !!whatsapp ? (
                     <a
                       href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
                         `مرحباً، أنا مهتم بخطة ${p.name}`,

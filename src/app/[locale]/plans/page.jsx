@@ -479,7 +479,7 @@ function PlanCard({
                   {t("actions.cancel")}
                 </span>
               </button>
-            ) : plan.type === "negotiated" && whatsapp != '0' ? (
+            ) : plan.type === "negotiated" && whatsapp != '0' && !!whatsapp ? (
               <a
                 href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(t("messages.whatsappInterested", { planName: name }))}`}
                 target="_blank"

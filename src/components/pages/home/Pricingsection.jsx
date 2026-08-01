@@ -246,16 +246,16 @@ export default function PricingSection() {
   }, [rawPlans, t, tWel, isRTL, formatCurrency]);
   console.log(plans);
   // Popular plan sits in the center once there are 3+ plans.
-  const arranged = useMemo(() => {
-    const result = [...plans];
-    const popularIndex = result.findIndex((p) => p.featured);
-    if (popularIndex > -1 && result.length >= 3) {
-      const [popularPlan] = result.splice(popularIndex, 1);
-      result.splice(1, 0, popularPlan);
-    }
-    return result;
-  }, [plans]);
-
+  const arranged = plans;
+// useMemo(() => {
+//     const result = [...plans];
+//     const popularIndex = result.findIndex((p) => p.featured);
+//     if (popularIndex > -1 && result.length >= 3) {
+//       const [popularPlan] = result.splice(popularIndex, 1);
+//       result.splice(1, 0, popularPlan);
+//     }
+//     return result;
+//   }, [plans]);
   if (isLoading) return null;
   if (!arranged.length) return null;
 

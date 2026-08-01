@@ -84,15 +84,32 @@ export function AuthProvider({ children }) {
             setToken(data.accessToken);
         }
 
-        // Call local API for session management
-        await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                accessToken: data.accessToken,
-                user: data.user
-            }),
-        });
+        // Call local API for session management (cookie-based auth for middleware/SSR)
+        // NOTE: This must NOT break the login flow if it fails. localStorage is sufficient
+        // for client-side; the middleware cookie will be refreshed on subsequent requests
+        // via the user fetched from /users/me.
+        try {
+            const cookieRes = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    accessToken: data.accessToken,
+                    user: data.user
+                }),
+            });
+
+            if (!cookieRes.ok) {
+                // Log but don't throw — the user already has a valid localStorage token.
+                // In production, transient reverse-proxy errors (502) should not break UX.
+                console.error(
+                    `[handleAuthSuccess] Session cookie API returned ${cookieRes.status}.` +
+                    ' Client-side localStorage auth still works; navigation will proceed.'
+                );
+            }
+        } catch (err) {
+            // Network errors or uncaught exceptions: log but never block login.
+            console.error('[handleAuthSuccess] Failed to call session cookie API. Network or proxy error.', err);
+        }
 
         // Navigation Logic
         const targetPath = getDashboardRoute(data.user);

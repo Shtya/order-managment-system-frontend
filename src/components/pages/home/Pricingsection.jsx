@@ -214,7 +214,7 @@ export default function PricingSection() {
       if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
         features.push(
           tWel("extraFee", {
-            fee: formatCurrency(plan.extraOrderFee, PLATFORM_CURRENCY),
+            fee: formatCurrency(plan.extraOrderFee, dollorSign),
           }),
         );
       }

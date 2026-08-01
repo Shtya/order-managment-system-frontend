@@ -166,7 +166,7 @@ function usePlans() {
 
 					// 4. Fixed Fees
 					extraOrderFee: parseLimit(plan.extraOrderFee),
-					bulkUploadPerMonth: Number(plan.bulkUploadPerMonth ?? 0),
+					// bulkUploadPerMonth: Number(plan.bulkUploadPerMonth ?? 0),
 
 					// Metadata
 					createdAt: plan.createdAt,
@@ -212,7 +212,7 @@ function usePlans() {
 				shippingCompaniesLimit: planData.shippingCompaniesLimit,
 				includedOrders: planData.includedOrders,
 				extraOrderFee: planData.extraOrderFee,
-				bulkUploadPerMonth: planData.bulkUploadPerMonth,
+				// bulkUploadPerMonth: planData.bulkUploadPerMonth,
 			};
 
 			const { data } = await api.post("/plans", payload);
@@ -272,7 +272,7 @@ function usePlans() {
 				shippingCompaniesLimit: planData.shippingCompaniesLimit,
 				includedOrders: planData.includedOrders,
 				extraOrderFee: planData.extraOrderFee,
-				bulkUploadPerMonth: planData.bulkUploadPerMonth,
+				// bulkUploadPerMonth: planData.bulkUploadPerMonth,
 			};
 
 			const { data } = await api.patch(`/plans/${id}`, payload);
@@ -368,7 +368,7 @@ function EditablePlanCard({
 		shippingCompaniesLimit: plan.shippingCompaniesLimit ?? 0,
 		includedOrders: plan.includedOrders ?? 100,
 		extraOrderFee: plan.extraOrderFee ?? 0.75,
-		bulkUploadPerMonth: plan.bulkUploadPerMonth ?? 0,
+		// bulkUploadPerMonth: plan.bulkUploadPerMonth ?? 0,
 
 		// Unlimited flags
 		usersUnlimited: plan.usersLimit === null,
@@ -404,7 +404,7 @@ function EditablePlanCard({
 				shippingCompaniesLimit: plan.shippingCompaniesLimit ?? 0,
 				includedOrders: plan.includedOrders ?? 100,
 				extraOrderFee: plan.extraOrderFee ?? 0.75,
-				bulkUploadPerMonth: plan.bulkUploadPerMonth ?? 0,
+				// bulkUploadPerMonth: plan.bulkUploadPerMonth ?? 0,
 
 				// Unlimited flags
 				usersUnlimited: plan.usersLimit === null,
@@ -429,7 +429,7 @@ function EditablePlanCard({
 			shippingCompaniesLimit: formData.shippingUnlimited ? null : Number(formData.shippingCompaniesLimit ?? 0),
 			includedOrders: formData.ordersUnlimited ? null : Number(formData.includedOrders ?? 100),
 			extraOrderFee: formData.extraFeeNotAllowed ? null : Number(formData.extraOrderFee),
-			bulkUploadPerMonth: Number(formData.bulkUploadPerMonth ?? 0),
+			// bulkUploadPerMonth: Number(formData.bulkUploadPerMonth ?? 0),
 			durationIndays: formData.duration === 'custom' ? Number(formData.durationIndays ?? 30) : null,
 
 			// Remove UI-only flags before saving
@@ -1052,7 +1052,7 @@ function EditablePlanCard({
 							</div>
 
 							{/* Bulk Upload Per Month */}
-							<div className="space-y-1">
+							{/* <div className="space-y-1">
 								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.bulkUploadLabel")}</Label>
 								<Input
 									type="number"
@@ -1063,7 +1063,7 @@ function EditablePlanCard({
 									min="0"
 									disabled={isSaving}
 								/>
-							</div>
+							</div> */}
 						</div>
 
 						{/* Existing features editor */}
@@ -1202,14 +1202,14 @@ function EditablePlanCard({
 									)}
 								</span>
 							</div>
-							{plan.bulkUploadPerMonth > 0 && (
+							{/* {plan.bulkUploadPerMonth > 0 && (
 								<div className="flex items-center justify-between text-xs sm:text-sm">
 									<span className="text-gray-500 dark:text-slate-400">{t("planCard.bulkUploadLabel")}</span>
 									<span className="font-semibold text-gray-800 dark:text-slate-200">
 										{plan.bulkUploadPerMonth}
 									</span>
 								</div>
-							)}
+							)} */}
 						</div>
 
 						<div className="space-y-2">
@@ -1416,7 +1416,7 @@ export default function AdminSubscriptionsPage() {
 			// ✅ NEW defaults (limits)
 			usersLimit: 1,
 			shippingCompaniesLimit: 0,
-			bulkUploadPerMonth: 0,
+			// bulkUploadPerMonth: 0,
 		};
 
 		try {

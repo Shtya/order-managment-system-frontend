@@ -219,11 +219,11 @@ export default function PricingSection() {
         );
       }
 
-      if (plan.bulkUploadPerMonth > 0) {
-        features.push(
-          tWel("limits.bulkUpload", { count: plan.bulkUploadPerMonth }),
-        );
-      }
+      // if (plan.bulkUploadPerMonth > 0) {
+      //   features.push(
+      //     tWel("limits.bulkUpload", { count: plan.bulkUploadPerMonth }),
+      //   );
+      // }
 
       const theme = TIER_THEMES[index % TIER_THEMES.length];
 
@@ -339,14 +339,14 @@ export default function PricingSection() {
                 </p>
               )}
 
-              <div className="mt-6 flex items-baseline gap-1.5">
+             {plan.price > 0 && <div className="mt-6 flex items-baseline gap-1.5">
                 <span className="text-4xl font-black tracking-tight text-gray-900 tabular-nums">
                   {formatCurrency(plan.price, PLATFORM_CURRENCY)}
                 </span>
                 <span className="text-sm font-medium text-gray-400">
                   / {plan.tier}
                 </span>
-              </div>
+              </div>}
 
               <div
                 className="my-6 h-px w-full"

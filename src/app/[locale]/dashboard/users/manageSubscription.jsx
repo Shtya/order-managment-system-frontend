@@ -76,7 +76,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
         usersLimit: yup.number().nullable(),
         storesLimit: yup.number().nullable(),
         shippingCompaniesLimit: yup.number().nullable(),
-        bulkUploadPerMonth: yup.number().nullable(),
+        // bulkUploadPerMonth: yup.number().nullable(),
         extraOrderFee: yup.number().nullable(),
         // endDate: yup.date().nullable(),
         // usedOrders: yup.number().min(0).default(0),
@@ -94,7 +94,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
             usersLimit: null,
             storesLimit: null,
             shippingCompaniesLimit: null,
-            bulkUploadPerMonth: 0,
+            // bulkUploadPerMonth: 0,
             extraOrderFee: null,
             paymentMethod: isEditMode ? "" : "cash",
         },
@@ -149,7 +149,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                 usersLimit: data.usersLimit === null ? null : Number(data.usersLimit),
                 storesLimit: data.storesLimit === null ? null : Number(data.storesLimit),
                 shippingCompaniesLimit: data.shippingCompaniesLimit === null ? null : Number(data.shippingCompaniesLimit),
-                bulkUploadPerMonth: data.bulkUploadPerMonth !== "" ? Number(data.bulkUploadPerMonth) : 0,
+                // bulkUploadPerMonth: data.bulkUploadPerMonth !== "" ? Number(data.bulkUploadPerMonth) : 0,
 
                 // حقول إضافية
                 durationIndays: data.duration === 'custom' ? Number(data.durationIndays) : null,
@@ -189,7 +189,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
             usersLimit: plan.usersLimit,
             storesLimit: plan.storesLimit,
             shippingCompaniesLimit: plan.shippingCompaniesLimit,
-            bulkUploadPerMonth: plan.bulkUploadPerMonth || 0,
+            // bulkUploadPerMonth: plan.bulkUploadPerMonth || 0,
             extraOrderFee: plan.extraOrderFee,
             // نحتفظ ببعض القيم التي لا تعتمد على نوع الباقة
             status: prevValues.status,
@@ -347,7 +347,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                             { name: "storesLimit", label: "storesLimit" },
                             { name: "shippingCompaniesLimit", label: "shippingLimit" },
                             { name: "extraOrderFee", label: "extraOrderFee" },
-                            { name: "bulkUploadPerMonth", label: "bulkUpload", noInfinity: true },
+                            // { name: "bulkUploadPerMonth", label: "bulkUpload", noInfinity: true },
                         ].map((limit) => {
                             const isFeeField = limit.name === "extraOrderFee";
 

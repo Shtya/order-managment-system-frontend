@@ -335,12 +335,12 @@ export default function SubscriptionsTab() {
                 )}
               </span>
             </div>
-            <div className="flex justify-between">
+            {/* <div className="flex justify-between">
               <span className="text-muted-foreground">
                 {t("filters.bulk")}:
               </span>
               <span className="font-medium">{row.bulkUploadPerMonth || 0}</span>
-            </div>
+            </div> */}
           </div>
         ),
       },

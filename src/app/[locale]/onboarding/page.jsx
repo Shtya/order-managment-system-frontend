@@ -1523,9 +1523,9 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       features.push(`${plan.extraOrderFee} ${t("features.extra_order_fee")}`);
     }
 
-    if (plan.bulkUploadPerMonth > 0) {
-      features.push(`${plan.bulkUploadPerMonth} ${t("features.bulk_upload")}`);
-    }
+    // if (plan.bulkUploadPerMonth > 0) {
+    //   features.push(`${plan.bulkUploadPerMonth} ${t("features.bulk_upload")}`);
+    // }
 
     return {
       id: plan.id,

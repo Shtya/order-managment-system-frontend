@@ -5597,7 +5597,9 @@
       "unitPrice": "سعر الوحدة",
       "lineTotal": "الإجمالي",
       "whatsappResponseLocation": "موقع استجابة الواتساب",
-      "autoRetrieved": "تم الاسترداد تلقائياً"
+      "autoRetrieved": "تم الاسترداد تلقائياً",
+      "unitCost": "سعر التكلفة",
+      "totalUnitCost": "إجمالي التكلفة"
     },
     "workPage": {
       "changeStatus": "تغيير حالة الطلب",

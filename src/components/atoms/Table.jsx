@@ -182,7 +182,7 @@ export const TableToolbar = memo(function TableToolbar({
         )}
 
         {filteredActions.map((action) => (
-          <TutorialSpotlight title={action.label} description={action.description} example={action.example} card="sm">
+          <TutorialSpotlight key={action.key} title={action.label} description={action.description} example={action.example} card="sm">
             <motion.button
               key={action.key}
               whileHover={{ scale: 1.02, y: -1 }}

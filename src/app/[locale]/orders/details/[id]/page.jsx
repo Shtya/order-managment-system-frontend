@@ -530,6 +530,16 @@ export function OrderDetailsPage({ order, loading }) {
                           cls: "text-center",
                         },
                         {
+                          key: "unitCost",
+                          label: t("details.unitCost"),
+                          cls: "text-center",
+                        },
+                        {
+                          key: "unitCost",
+                          label: t("details.totalUnitCost"),
+                          cls: "text-center",
+                        },
+                        {
                           key: "unitPrice",
                           label: t("details.unitPrice"),
                           cls: "text-end",
@@ -606,6 +616,25 @@ export function OrderDetailsPage({ order, loading }) {
                             style={{ background: P_10, color: P }}
                           >
                             {item.quantity}
+                          </span>
+                        </td>
+
+                        {/* unitCost */}
+                        <td className="py-3 px-4 text-center">
+                          <span
+                            className="text-xs font-medium text-muted-foreground tabular-nums"
+                            style={{ fontFamily: "var(--mono, monospace)" }}
+                          >
+                            {formatCurrency(item.unitCost)}
+                          </span>
+                        </td>
+                        {/* unitCost */}
+                        <td className="py-3 px-4 text-center">
+                          <span
+                            className="text-xs font-medium text-muted-foreground tabular-nums"
+                            style={{ fontFamily: "var(--mono, monospace)" }}
+                          >
+                            {formatCurrency(item.unitCost * item.quantity)}
                           </span>
                         </td>
 

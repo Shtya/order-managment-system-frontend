@@ -1403,9 +1403,10 @@ function BtnGhost({ children, onClick, disabled }) {
   );
 }
 
-function BtnPrimary({ children, onClick, disabled, loading }) {
+function BtnPrimary({ children, onClick, disabled, loading, props }) {
   return (
     <button
+      {...props}
       onClick={onClick}
       disabled={disabled || loading}
       style={{
@@ -3523,6 +3524,7 @@ function FinishedStep({ open }) {
 
         {/* Go to dashboard */}
         <BtnPrimary
+          id="registraction-success-btn"
           onClick={handleSubmit}
           disabled={loading}
           style={{ width: "100%" }}

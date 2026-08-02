@@ -5,8 +5,10 @@ import api, { getLang } from "@/utils/api";
 
 const AuthContext = createContext();
 
+const USER_STORAGE_KEY = "user";
+
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState();
     const [isLoading, setIsLoading] = useState(true);
     const [token, setToken] = useState(() => typeof window !== 'undefined' ?  localStorage.getItem('accessToken') : null);
 
@@ -39,6 +41,7 @@ export function AuthProvider({ children }) {
         } else {
 
             localStorage.removeItem('accessToken');
+            localStorage.removeItem(USER_STORAGE_KEY);
             setToken(null);
             setUser(null);
         }
@@ -58,6 +61,20 @@ export function AuthProvider({ children }) {
         }
         initializeAuth();
     }, [fetchUser]);
+
+    // Persist user data to localStorage on every change (login, refresh, logout)
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        try {
+            if (user) {
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+            } else {
+                localStorage.removeItem(USER_STORAGE_KEY);
+            }
+        } catch {
+            // Ignore storage failures (private mode / quota).
+        }
+    }, [user]);
 
 
     const getDashboardRoute = useCallback((userData) => {
@@ -82,6 +99,10 @@ export function AuthProvider({ children }) {
         if (data?.accessToken) {
             localStorage.setItem('accessToken', data.accessToken);
             setToken(data.accessToken);
+        }
+
+        if (data?.user) {
+            setUser(data.user);
         }
 
         // Call local API for session management (cookie-based auth for middleware/SSR)
@@ -163,7 +184,7 @@ export function AuthProvider({ children }) {
 
     const logout = useCallback(async () => {
         try {
-            ["accessToken"].forEach((k) => localStorage.removeItem(k));
+            ["accessToken", USER_STORAGE_KEY].forEach((k) => localStorage.removeItem(k));
             setToken(null);
             setUser(null);
             await fetch("/api/auth/logout", {

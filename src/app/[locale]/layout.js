@@ -50,22 +50,56 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+
 export const metadata = {
-  title: 'Madar',
-  description:
-    'Madar helps businesses manage orders, shipping, and operations in one platform.',
-  applicationName: 'Madar',
-  openGraph: {
-    title: 'Madar',
-    description: 'Madar helps businesses manage orders, shipping, and operations in one platform.',
-    siteName: 'Madar',
+  metadataBase: new URL("https://getmadar.net"),
+
+  title: {
+    default: "Madar",
+    template: "%s | Madar",
   },
+
+  description:
+    "Madar helps businesses manage orders, shipping, and operations in one platform.",
+
+  applicationName: "Madar",
+
+  alternates: {
+    canonical: "/",
+  },
+
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://getmadar.net",
+    siteName: "Madar",
+    title: "Madar",
+    description:
+      "Madar helps businesses manage orders, shipping, and operations in one platform.",
+    images: [
+      {
+        url: "/logo.png", // => https://getmadar.net/logo.png
+        width: 1200,
+        height: 1200,
+        alt: "Madar Logo",
+      },
+    ],
+  },
+
   twitter: {
-    title: 'Madar',
-    description: 'Madar helps businesses manage orders, shipping, and operations in one platform.',
+    card: "summary_large_image",
+    title: "Madar",
+    description:
+      "Madar helps businesses manage orders, shipping, and operations in one platform.",
+    images: ["/logo.png"],
+  },
+
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
 };
-
 export default async function RootLayout({ children, params }) {
   const { locale } = await params;
 

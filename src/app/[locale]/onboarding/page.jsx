@@ -1663,7 +1663,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
             gridTemplateColumns: "repeat(3, 1fr)",
             gap: 14,
             marginBottom: 24,
-            alignItems: "center",
+            // alignItems: "center",
           }}
         >
           {arranged.map((p, index) => {

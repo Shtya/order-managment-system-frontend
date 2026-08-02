@@ -1934,31 +1934,35 @@ export function ScanReturnsSubtab({
             isSaving={isSaving}
           />
         </Panel>
-      ) : (
-        <Table
-          searchValue={search}
-          onSearchChange={setSearch}
-          data={pager.records}
-          columns={columns}
-          isLoading={loading}
-          pagination={{
-            total_records: pager.total_records,
-            per_page: pager.per_page,
-            current_page: pager.current_page
-          }}
-          onPageChange={({ page: p, per_page }) => fetchOrders(p, per_page)}
-          onSearch={(val) => setSearch(val)}
-          filters={[
-            <div key="carrier" className="w-48">
-              <ShippingCompanyFilter
-                value={carrierId}
-                onChange={setCarrierId}
-                hideLabel
-              />
-            </div>,
-          ]}
-        />
-      )}
+      ) : null
+      
+      // : (
+      //   <Table
+      //     searchValue={search}
+      //     onSearchChange={setSearch}
+      //     data={pager.records}
+      //     columns={columns}
+      //     isLoading={loading}
+      //     pagination={{
+      //       total_records: pager.total_records,
+      //       per_page: pager.per_page,
+      //       current_page: pager.current_page
+      //     }}
+      //     onPageChange={({ page: p, per_page }) => fetchOrders(p, per_page)}
+      //     onSearch={(val) => setSearch(val)}
+      //     filters={[
+      //       <div key="carrier" className="w-48">
+      //         <ShippingCompanyFilter
+      //           value={carrierId}
+      //           onChange={setCarrierId}
+      //           hideLabel
+      //         />
+      //       </div>,
+      //     ]}
+      //   />
+      // )
+      
+      }
 
       <ReturnsOrdersSlidePanel
         open={panelOpen}

@@ -37,6 +37,7 @@ import SwitcherTabs from "@/components/atoms/SwitcherTabs";
 import Button_ from "@/components/atoms/Button";
 
 import { cn } from "@/utils/cn";
+import { getDateRangeParams } from "@/utils/healpers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -288,8 +289,10 @@ export default function SuperAdminUsersPage() {
 			adminId: filters.adminId,
 		};
 
-		if (filters.startDate) params.startDate = filters.startDate;
-		if (filters.endDate) params.endDate = filters.endDate;
+		// normalize date range using helper
+		const dateParams = getDateRangeParams(filters);
+		if (dateParams.startDate) params.startDate = dateParams.startDate;
+		if (dateParams.endDate) params.endDate = dateParams.endDate;
 
 		try {
 			const res = await api.get("/users/super-admin/list", { params });

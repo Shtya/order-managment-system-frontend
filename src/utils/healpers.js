@@ -33,3 +33,32 @@ export const dollorSign = "$"
 export const DEFAULT_FONT_FAMILY = "Cairo";
 
 export const PLATFORM_CURRENCY = "EGP"
+
+// Returns normalized startDate/endDate ISO strings for API params
+export function getDateRangeParams(filters) {
+  const out = {};
+  if (!filters) return out;
+
+  if (filters.startDate) {
+    // Local midnight of start date -> UTC ISO string
+    out.startDate = new Date(filters.startDate).toISOString();
+  }
+
+  if (filters.endDate) {
+    // Add 1 day to local end date to capture up to midnight of the next day
+    const exactEnd = new Date(filters.endDate);
+    exactEnd.setDate(exactEnd.getDate() + 1);
+    exactEnd.setHours(0, 0, 0, 0);
+
+    out.endDate = exactEnd.toISOString();
+  } else if (filters.startDate) {
+    // If only one date is picked in the range picker, frame a single full day
+    const exactEnd = new Date(filters.startDate);
+    exactEnd.setDate(exactEnd.getDate() + 1);
+    exactEnd.setHours(0, 0, 0, 0);
+
+    out.endDate = exactEnd.toISOString();
+  }
+
+  return out;
+}

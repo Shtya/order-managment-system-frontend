@@ -30,7 +30,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
   STORE_PROVIDERS,
@@ -854,10 +854,10 @@ function Sidebar({ step }) {
           zIndex: 1,
         }}
       >
-        <div className="mb-2! flex items-center gap-2">
+        <Link href="/" className="mb-2! flex items-center gap-2">
           <img src="/white-madar.png" alt="MADAR" className="h-6 w-auto" />
           <MadarLogo color="#fff" className="h-4 w-auto" />
-        </div>
+        </Link>
       </div>
 
       {/* Steps */}
@@ -1464,7 +1464,11 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
     const price = Number(plan.price || 0);
 
     // Build features array with limits
-    const features = [...(Array.isArray(plan.features) ? plan.features : [])];
+    let features = [];
+    if (plan.includedOrders !== null) {
+      features.push(`${plan.includedOrders} ${t("features.included_orders")}`);
+    } 
+    features.push(...(Array.isArray(plan.features) ? plan.features : []));
 
     // Add limit details
     if (plan.usersLimit !== null) {
@@ -1475,21 +1479,11 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 
     if (plan.storesLimit !== null) {
       features.push(`${plan.storesLimit} ${t("features.stores")}`);
-    } else {
-      features.push(t("features.unlimited_stores"));
-    }
-
+    } 
     if (plan.shippingCompaniesLimit !== null) {
       features.push(`${plan.shippingCompaniesLimit} ${t("features.shipping_companies")}`);
-    } else {
-      features.push(t("features.unlimited_shipping_companies"));
-    }
+    } 
 
-    if (plan.includedOrders !== null) {
-      features.push(`${plan.includedOrders} ${t("features.included_orders")}`);
-    } else {
-      features.push(t("features.unlimited_orders"));
-    }
 
     const extraOrderFee =
       plan.extraOrderFee !== null && plan.extraOrderFee > 0

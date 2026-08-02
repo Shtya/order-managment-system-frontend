@@ -32,6 +32,7 @@ export default function LayoutShell({ children }) {
               <SocketProvider>
                 <NotificationProvider>
                   <PlatformSettingsProvider>
+                    <GTMPageView />
                     <DashboardLayout>{children}</DashboardLayout>
                   </PlatformSettingsProvider>
                 </NotificationProvider>

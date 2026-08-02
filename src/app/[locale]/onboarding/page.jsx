@@ -3524,7 +3524,7 @@ function FinishedStep({ open }) {
 
         {/* Go to dashboard */}
         <BtnPrimary
-          id="registraction-success-btn"
+          id="registration-success-btn"
           onClick={handleSubmit}
           disabled={loading}
           style={{ width: "100%" }}

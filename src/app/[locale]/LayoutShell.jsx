@@ -20,6 +20,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import { OrdersSettingsProvider } from "@/hook/useOrdersSettings";
 import { TutorialProvider, useTutorial } from "@/context/TutorialContext";
 import "@/utils/pdfFonts";
+import GTMPageView from "@/components/atoms/GTMPageView";
 
 
 export default function LayoutShell({ children }) {

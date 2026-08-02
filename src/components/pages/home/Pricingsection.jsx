@@ -244,7 +244,7 @@ export default function PricingSection() {
       };
     });
   }, [rawPlans, t, tWel, isRTL, formatCurrency]);
-  console.log(plans);
+  
   // Popular plan sits in the center once there are 3+ plans.
   const arranged = plans;
 // useMemo(() => {

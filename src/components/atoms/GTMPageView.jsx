@@ -8,8 +8,9 @@ export default function GTMPageView() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+
     window.dataLayer = window.dataLayer || [];
-    
+      
     window.dataLayer.push({
       event: 'pageview',
       page_path: pathname,

@@ -312,6 +312,7 @@ function PlanCard({
   const description = isRTL ? plan.description : plan.descriptionEn;
   const name = isRTL ? plan.name : plan.nameEn;
   const features = isRTL ? plan.features : plan.featuresEn;
+  
   return (
     <>
       <motion.article
@@ -365,20 +366,20 @@ function PlanCard({
 
         {/* Card body */}
         <div className="relative z-10 flex flex-col flex-1 gap-6 p-6">
-          {/* Plan name */}
-          <div className="space-y-1">
-            <p className="text-[11px] font-black uppercase tracking-[0.15em] text-primary">
+          {/* Plan name (more prominent) */}
+          <div className="space-y-2">
+            <h3 className="text-xl sm:text-2xl font-extrabold leading-tight text-slate-900 dark:text-white">
               {name}
-            </p>
+            </h3>
             {description && (
-              <p className="text-[13px] leading-relaxed font-medium text-slate-400 dark:text-slate-500">
+              <p className="text-sm leading-relaxed font-medium text-slate-500 dark:text-slate-400">
                 {description}
               </p>
             )}
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline gap-1.5">
+          {(!!plan.price && plan.price > 0)  || plan.type === "negotiated" ? (<div className="flex items-baseline gap-1.5">
             {plan.type === "negotiated" ? (
               <span className="text-3xl font-black text-slate-900 dark:text-white">
                 {t("card.negotiated")}
@@ -399,10 +400,23 @@ function PlanCard({
               </>
             )}
           </div>
+        ) : null}
 
           {/* Divider */}
           <div className="h-px bg-slate-50 dark:bg-slate-800" />
-
+           {plan.extraOrderFee !== null ? (
+              <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800">
+                <span className="text-[12px] font-bold text-slate-500 dark:text-slate-400">{t("limits.extraFee")}</span>
+                <span className="text-[12px] font-black text-primary">
+                  {plan.extraOrderFee} {dollorSign}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-rose-50/50 dark:bg-rose-500/5 border-rose-100/50 dark:border-rose-500/10">
+                <span className="text-[12px] font-bold text-rose-500/70">{t("limits.extraFee")}</span>
+                <span className="text-[11px] font-black text-rose-500 uppercase">{t("limits.notAllowed")}</span>
+              </div>
+            )}
           {/* Limits Display */}
           <div className="grid grid-cols-1 gap-3">
             {[
@@ -425,19 +439,7 @@ function PlanCard({
               </div>
             ))}
 
-            {plan.extraOrderFee !== null ? (
-              <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800">
-                <span className="text-[12px] font-bold text-slate-500 dark:text-slate-400">{t("limits.extraFee")}</span>
-                <span className="text-[12px] font-black text-primary">
-                  {plan.extraOrderFee} {dollorSign}
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-rose-50/50 dark:bg-rose-500/5 border-rose-100/50 dark:border-rose-500/10">
-                <span className="text-[12px] font-bold text-rose-500/70">{t("limits.extraFee")}</span>
-                <span className="text-[11px] font-black text-rose-500 uppercase">{t("limits.notAllowed")}</span>
-              </div>
-            )}
+           
           </div>
 
           {/* Features */}

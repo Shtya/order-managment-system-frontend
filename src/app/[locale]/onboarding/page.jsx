@@ -7,7 +7,7 @@ import api from "@/utils/api";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-
+import { dollor, dollorSign, PLATFORM_CURRENCY } from "@/utils/healpers";
 import {
   AlertCircle,
   ArrowRight,
@@ -57,6 +57,7 @@ import { useSubscriptionsApi } from "../plans/page";
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
+import { MadarLogo } from "@/components/atoms/BrandLogo";
 /* ─── CSS ─────────────────────────────────────────────────── */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -853,45 +854,9 @@ function Sidebar({ step }) {
           zIndex: 1,
         }}
       >
-        <div
-          style={{
-            width: 42,
-            height: 42,
-            borderRadius: 13,
-            background: "rgba(255,255,255,.14)",
-            border: "1px solid rgba(255,255,255,.2)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 16px rgba(0,0,0,.22)",
-          }}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-            <line x1="12" y1="22.08" x2="12" y2="12" />
-          </svg>
-        </div>
-        <div>
-          <div
-            style={{
-              fontSize: 17,
-              fontWeight: 800,
-              color: "#fff",
-              letterSpacing: "-0.3px",
-            }}
-          >
-            {t("brand")}
-          </div>
+        <div className="mb-2! flex items-center gap-2">
+          <img src="/white-madar.png" alt="MADAR" className="h-6 w-auto" />
+          <MadarLogo color="#fff" className="h-4 w-auto" />
         </div>
       </div>
 
@@ -1367,7 +1332,9 @@ function PlanSkeleton() {
 
 /* ─────────────────────────────────────────────────────────
    PLAN FEATURE ITEM (Keep original styling)
-───────────────────────────────────────────────────────── */
+───────────/* ──────────────────────────────────────────────
+   Feature Row
+────────────────────────────────────────────── */
 function PlanFeature({ label, featured }) {
   return (
     <div
@@ -1378,14 +1345,19 @@ function PlanFeature({ label, featured }) {
         marginBottom: 6,
       }}
     >
-      <IcCheck
-        size={12}
+      <span
         style={{
           flexShrink: 0,
           marginTop: 2,
           color: featured ? "#BAEB33" : "var(--p)",
+          fontSize: 12,
+          lineHeight: 1,
+          fontWeight: 700,
         }}
-      />
+      >
+        ✔
+      </span>
+
       <span
         style={{
           fontSize: 11.5,
@@ -1519,9 +1491,10 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       features.push(t("features.unlimited_orders"));
     }
 
-    if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
-      features.push(`${plan.extraOrderFee} ${t("features.extra_order_fee")}`);
-    }
+    const extraOrderFee =
+      plan.extraOrderFee !== null && plan.extraOrderFee > 0
+        ? plan.extraOrderFee
+        : null;
 
     // if (plan.bulkUploadPerMonth > 0) {
     //   features.push(`${plan.bulkUploadPerMonth} ${t("features.bulk_upload")}`);
@@ -1540,15 +1513,17 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 
       isPopular: !!plan.isPopular,
       features,
+      extraOrderFee,
     };
   });
   // Arrange plans: popular in center
+
   const arranged = [...plans];
-  const popularIndex = arranged.findIndex((p) => p.isPopular);
-  if (popularIndex > -1 && arranged.length >= 3) {
-    const [popularPlan] = arranged.splice(popularIndex, 1);
-    arranged.splice(1, 0, popularPlan);
-  }
+  // const popularIndex = arranged.findIndex((p) => p.isPopular);
+  // if (popularIndex > -1 && arranged.length >= 3) {
+  //   const [popularPlan] = arranged.splice(popularIndex, 1);
+  //   arranged.splice(1, 0, popularPlan);
+  // }
 
   // Set default selection
   // useEffect(() => {
@@ -1625,16 +1600,22 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       <div style={{ marginBottom: 24 }}>
         <h2
           style={{
-            fontSize: 22,
+            fontSize: 28,
             fontWeight: 900,
             color: "var(--text)",
-            letterSpacing: "-0.4px",
-            marginBottom: 6,
+            letterSpacing: "-0.5px",
+            marginBottom: 8,
           }}
         >
           {t("title")}
         </h2>
-        <p style={{ fontSize: 13.5, color: "var(--text-3)" }}>
+        <p
+          style={{
+            fontSize: 14,
+            color: "var(--text-3)",
+            lineHeight: 1.7,
+          }}
+        >
           {t("subtitle")}
         </p>
       </div>
@@ -1688,7 +1669,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
           {arranged.map((p, index) => {
             const price = p.priceMonthly;
             const isSelected = selectedId === p.id;
-            const isFeatured = index === 1;
+            const isFeatured = p.isPopular;
             const isCurrentPlan = p.id === currentPlanId;
             const isTrialDisabled = cannotSubscribeToTrial(p.id);
 
@@ -1813,18 +1794,18 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 6,
+                      gap: 8,
                       marginBottom: 10,
                     }}
                   >
                     <span
                       style={{
-                        width: 7,
-                        height: 7,
+                        width: 9,
+                        height: 9,
                         borderRadius: "50%",
                         flexShrink: 0,
                         background: p.dotColor,
-                        boxShadow: `0 0 6px ${p.dotColor}`,
+                        boxShadow: `0 0 8px ${p.dotColor}`,
                       }}
                     />
                     {/* <span
@@ -1840,9 +1821,11 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                     </span> */}
                     <span
                       style={{
-                        fontSize: 14,
+                        fontSize: 19,
                         fontWeight: 800,
                         color: isFeatured ? "#fff" : "var(--text)",
+                        letterSpacing: "-0.2px",
+                        lineHeight: 1.3,
                       }}
                     >
                       {p.name}
@@ -1876,7 +1859,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         {t("status.negotiated")}
                       </span>
                     </div>
-                  ) : (
+                  ) : !!price && price > 0 ? (
                     <>
                       <div
                         style={{
@@ -1911,7 +1894,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         </span>
                       </div>
                     </>
-                  )}
+                  ) : null}
 
                   {/* CTA Button */}
                   {isCurrentPlan ? (
@@ -1922,15 +1905,15 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                       }}
                       style={{
                         width: "100%",
-                        padding: "10px 0",
+                        padding: "9px 0",
                         borderRadius: 99,
                         border: "none",
                         fontFamily: "var(--font)",
-                        fontSize: 13,
+                        fontSize: 13.5,
                         fontWeight: 700,
                         cursor: "pointer",
-                        marginBottom: 18,
-                        marginTop: 6,
+                        marginBottom: 14,
+                        marginTop: 4,
                         background: "#ef4444",
                         color: "#fff",
                         boxShadow: "0 4px 16px rgba(239,68,68,.35)",
@@ -1962,15 +1945,15 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                       onClick={(e) => e.stopPropagation()}
                       style={{
                         width: "100%",
-                        padding: "10px 0",
+                        padding: "9px 0",
                         borderRadius: 99,
                         border: "none",
                         fontFamily: "var(--font)",
-                        fontSize: 13,
+                        fontSize: 13.5,
                         fontWeight: 700,
                         cursor: "pointer",
-                        marginBottom: 18,
-                        marginTop: 6,
+                        marginBottom: 14,
+                        marginTop: 4,
                         background: "#25D366",
                         color: "#fff",
                         boxShadow: "0 4px 16px rgba(37,211,102,.35)",
@@ -1996,18 +1979,18 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                     <button
                       style={{
                         width: "100%",
-                        padding: "10px 0",
+                        padding: "9px 0",
                         borderRadius: 99,
                         border: "none",
                         fontFamily: "var(--font)",
-                        fontSize: 13,
+                        fontSize: 13.5,
                         fontWeight: 700,
                         cursor:
                           isTrialDisabled || hasActiveSubscription
                             ? "not-allowed"
                             : "pointer",
-                        marginBottom: 18,
-                        marginTop: 6,
+                        marginBottom: 14,
+                        marginTop: 4,
                         background:
                           isTrialDisabled || hasActiveSubscription
                             ? "#9ca3af"
@@ -2069,6 +2052,44 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                       )}
                     </button>
                   )}
+
+                  {p.extraOrderFee ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        width: "100%",
+                        padding: "9px 12px",
+                        borderRadius: 12,
+                        border: `1px solid ${isFeatured ? "rgba(255,255,255,.18)" : "#6763AF14"}`,
+                        background: isFeatured ? "rgba(255,255,255,.08)" : "#F8FAFF",
+                        color: isFeatured ? "#fff" : "#111827",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        marginBottom: 14,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          background: isFeatured ? "#BAEB33" : "#6763AF",
+                          display: "inline-block",
+                          flexShrink: 0,
+                        }}
+                      />
+                      {t("features.extra_order_fee_badge", {
+                        fee: `${p.extraOrderFee}`,
+                        currency: dollorSign
+                      })}
+                    </div>
+                  ) : null}
 
                   {/* Divider */}
                   <div
@@ -2605,7 +2626,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
   useEffect(() => {
     const unsubscribe = subscribe("STORE_SYNC_STATUS", (payload) => {
       if (payload) {
-        const { storeId, status, type} = payload;
+        const { storeId, status, type } = payload;
         setStores((prev) =>
           prev.map((store) =>
             store.id === storeId ?

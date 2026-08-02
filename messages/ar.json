@@ -8428,7 +8428,8 @@
         "included_orders": "طلب ف الشهر",
         "unlimited_orders": "طلبات غير محدودة",
         "extra_order_fee": "ج.م رسوم طلب إضافي",
-        "bulk_upload": "رفع جماعي/شهر"
+        "bulk_upload": "رفع جماعي/شهر",
+        "extra_order_fee_badge": "{fee} {currency} رسوم إضافية للطلب"
       },
       "toasts": {
         "select_plan_error": "يرجى اختيار خطة",

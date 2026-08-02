@@ -8444,7 +8444,8 @@
         "included_orders": "Orders per month",
         "unlimited_orders": "Unlimited orders",
         "extra_order_fee": "Extra order fee (EGP)",
-        "bulk_upload": "Bulk upload/month"
+        "bulk_upload": "Bulk upload/month",
+        "extra_order_fee_badge": "{fee} {currency} Additional fees for the order"
       },
       "toasts": {
         "select_plan_error": "Please select a plan",

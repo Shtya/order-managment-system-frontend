@@ -683,31 +683,31 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
       ]
     },
-    // {
-    //   icon: MessageSquare,
-    //   labelKey: "sms",
-    //   href: "/sms/providers",
-    //   children: [
-    //     {
-    //       icon: Plug,
-    //       labelKey: "smsProviders",
-    //       href: "/sms/providers",
-    //       permission: "sms.providers.read",
-    //     },
-    //     {
-    //       icon: Users,
-    //       labelKey: "smsSenders",
-    //       href: "/sms/senders",
-    //       permission: "sms.senders.read",
-    //     },
-    //     {
-    //       icon: FileText,
-    //       labelKey: "smsLogs",
-    //       href: "/sms/logs",
-    //       permission: "sms.logs.read",
-    //     },
-    //   ],
-    // },
+    {
+      icon: MessageSquare,
+      labelKey: "sms",
+      href: "/sms/providers",
+      children: [
+        {
+          icon: Plug,
+          labelKey: "smsProviders",
+          href: "/sms/providers",
+          permission: "sms.providers.read",
+        },
+        {
+          icon: Users,
+          labelKey: "smsSenders",
+          href: "/sms/senders",
+          permission: "sms.senders.read",
+        },
+        {
+          icon: FileText,
+          labelKey: "smsLogs",
+          href: "/sms/logs",
+          permission: "sms.logs.read",
+        },
+      ],
+    },
     {
       icon: FaBolt,
       labelKey: "automations",

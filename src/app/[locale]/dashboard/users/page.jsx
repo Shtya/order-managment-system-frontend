@@ -80,6 +80,7 @@ import { ActionButtons } from "@/components/atoms/Actions";
 import AssignFeatureModal from "./assignFeatureModal";
 import ManageWalletModal from "./ManageWalletModal";
 import AdminFilter from "@/components/atoms/AdminFilter";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 import {
 	Tooltip,
 	TooltipContent,
@@ -218,7 +219,7 @@ export default function SuperAdminUsersPage() {
 	const [activeTab, setActiveTab] = useState("all"); // all|active|inactive
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
-	const [filters, setFilters] = useState({ roleId: "", active: "all", adminId: "" });
+	const [filters, setFilters] = useState({ roleId: "", active: "all", adminId: "", startDate: null, endDate: null });
 
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -276,7 +277,7 @@ export default function SuperAdminUsersPage() {
 		setLoading(true);
 		setError("");
 		setApiMsg("");
- 
+
 		const params = {
 			page: page ?? pagination.current_page,
 			limit: per_page ?? pagination.per_page,
@@ -286,6 +287,9 @@ export default function SuperAdminUsersPage() {
 			active: filters.active,
 			adminId: filters.adminId,
 		};
+
+		if (filters.startDate) params.startDate = filters.startDate;
+		if (filters.endDate) params.endDate = filters.endDate;
 
 		try {
 			const res = await api.get("/users/super-admin/list", { params });
@@ -412,14 +416,18 @@ export default function SuperAdminUsersPage() {
 	async function handleExport() {
 		setError("");
 		try {
+			const params = {
+				tab: activeTab,
+				search,
+				roleId: filters.roleId,
+				active: filters.active,
+				adminId: filters.adminId,
+			};
+			if (filters.startDate) params.startDate = filters.startDate;
+			if (filters.endDate) params.endDate = filters.endDate;
+
 			const res = await api.get("/users/super-admin/export/csv", {
-				params: {
-					tab: activeTab,
-					search,
-					roleId: filters.roleId,
-					active: filters.active,
-					adminId: filters.adminId,
-				},
+				params,
 				responseType: "blob",
 			});
 			downloadBlob(res.data, "users.csv");
@@ -447,7 +455,7 @@ export default function SuperAdminUsersPage() {
 				key: "email",
 				header: t("table.email"),
 				className: "text-gray-600 dark:text-slate-200",
-				cell: (row) => <span  className="">{row.email}</span>,
+				cell: (row) => <span className="">{row.email}</span>,
 			},
 			{
 				key: "role",
@@ -479,7 +487,7 @@ export default function SuperAdminUsersPage() {
 							<div className="font-semibold text-gray-800 dark:text-slate-100">
 								{row.admin.name || `#${row.admin.id}`}
 							</div>
-							<div  className=" text-xs text-gray-500 dark:text-slate-400">
+							<div className=" text-xs text-gray-500 dark:text-slate-400">
 								{row.admin.email || ""}
 							</div>
 						</div>
@@ -769,31 +777,56 @@ export default function SuperAdminUsersPage() {
 				// filters UI (this replaces your FiltersPanel)
 				filters={
 					<>
-					<FilterField label={t("filters.role")}>
-						<Select
-							value={filters.roleId || "all"}
-							onValueChange={(val) => setFilters((p) => ({ ...p, roleId: val === "all" ? "" : val }))}
-						>
-							<SelectTrigger className="!h-[42px]">
-								<SelectValue placeholder={t("filters.rolePlaceholder")} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">{t("filters.allRoles")}</SelectItem>
-								{roles.map((r) => (
-									<SelectItem key={String(r.id)} value={String(r.id)}>
-										{r.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</FilterField>
+						<FilterField label={t("filters.role")}>
+							<Select
+								value={filters.roleId || "all"}
+								onValueChange={(val) => setFilters((p) => ({ ...p, roleId: val === "all" ? "" : val }))}
+							>
+								<SelectTrigger className="!h-[42px]">
+									<SelectValue placeholder={t("filters.rolePlaceholder")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">{t("filters.allRoles")}</SelectItem>
+									{roles.map((r) => (
+										<SelectItem key={String(r.id)} value={String(r.id)}>
+											{r.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FilterField>
 
 						<FilterField label={t("filters.status")}>
-							<Input
-								value={filters.active || ""}
-								onChange={(e) => setFilters((p) => ({ ...p, active: e.target.value }))}
-								className="!h-[42px]"
-								placeholder={t("filters.activePlaceholder")}
+							<Select
+								value={filters.active || "all"}
+								onValueChange={(val) => setFilters((p) => ({ ...p, active: val }))}
+							>
+								<SelectTrigger className="!h-[42px]">
+									<SelectValue placeholder={t("filters.activePlaceholder")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">{t("filters.all")}</SelectItem>
+									<SelectItem value="true">{t("filters.active")}</SelectItem>
+									<SelectItem value="false">{t("filters.inactive")}</SelectItem>
+								</SelectContent>
+							</Select>
+						</FilterField>
+
+						<FilterField label={t("filters.date")}>
+							<DateRangePicker
+								value={{
+									startDate: filters.startDate,
+									endDate: filters.endDate,
+								}}
+								onChange={(newDates) =>
+									setFilters((prev) => ({
+										...prev,
+										...newDates,
+									}))
+								}
+								placeholder={t("filters.datePlaceholder")}
+								dataSize="default"
+								maxDate="today"
 							/>
 						</FilterField>
 
@@ -807,9 +840,13 @@ export default function SuperAdminUsersPage() {
 						</FilterField>
 					</>
 				}
-			hasActiveFilters={
-				!!filters.roleId || (filters.active && filters.active !== "all") || !!filters.adminId
-			}
+				hasActiveFilters={
+					!!filters.roleId ||
+					(filters.active && filters.active !== "all") ||
+					!!filters.adminId ||
+					!!filters.startDate ||
+					!!filters.endDate
+				}
 				onApplyFilters={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
 
 				// table
@@ -1864,7 +1901,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 							<Input
 								placeholder={selectedCountry.placeholder}
-								
+
 								value={phoneNumber}
 								onChange={handlePhoneChange}
 								className={cn(

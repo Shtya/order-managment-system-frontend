@@ -1082,6 +1082,10 @@
       "allRoles": "جميع الأدوار",
       "activePlaceholder": "all / true / false",
       "adminIdPlaceholder": "رقم الهاتف (اختياري)",
+      "all": "الكل",
+      "inactive": "غير نشط",
+      "date": "التاريخ",
+      "datePlaceholder": "اختر الفترة",
       "apply": "تطبيق"
     },
     "table": {

@@ -1082,6 +1082,10 @@
       "allRoles": "All Roles",
       "activePlaceholder": "all / true / false",
       "adminIdPlaceholder": "Phone number (optional)",
+      "all": "All",
+      "inactive": "Inactive",
+      "date": "Date",
+      "datePlaceholder": "Select period",
       "apply": "Apply"
     },
     "table": {

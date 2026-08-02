@@ -1403,7 +1403,7 @@ function BtnGhost({ children, onClick, disabled }) {
   );
 }
 
-function BtnPrimary({ children, onClick, disabled, loading, props }) {
+function BtnPrimary({ children, onClick, disabled, loading, ...props }) {
   return (
     <button
       {...props}

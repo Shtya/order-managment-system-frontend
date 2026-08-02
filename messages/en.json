@@ -2656,7 +2656,8 @@
           "items": "Items",
           "loadingShippedOrders": "Loading shipped orders...",
           "ordersCount": "orders",
-          "itemsCount": "items"
+          "itemsCount": "items",
+          "availableReturnOrders": "Orders available for return"
         },
         "actions": {
           "selectAll": "Select All",

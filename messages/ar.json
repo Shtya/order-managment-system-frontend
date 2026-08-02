@@ -2651,7 +2651,8 @@
           "items": "القطع",
           "loadingShippedOrders": "جاري تحميل الطلبات المشحونة...",
           "ordersCount": "طلبات",
-          "itemsCount": "قطع"
+          "itemsCount": "قطع",
+          "availableReturnOrders": "الطلبات المتاحة للإسترجاع"
         },
         "actions": {
           "selectAll": "تحديد الكل",

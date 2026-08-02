@@ -575,9 +575,9 @@ function ReturnsScanInputBar({
           )}
         </AnimatePresence>
 
-        <div className="px-2.5 py-2 md:py-0 flex-shrink-0 z-10 border-b md:border-b-0 md:border-l border-slate-100 dark:border-slate-700 w-full md:w-auto md:min-w-[200px]">
+        {/* <div className="px-2.5 py-2 md:py-0 flex-shrink-0 z-10 border-b md:border-b-0 md:border-l border-slate-100 dark:border-slate-700 w-full md:w-auto md:min-w-[200px]">
           <ShippingCompanyFilter value={selectedCarrier} onChange={onCarrierChange} hideLabel={true} />
-        </div>
+        </div> */}
 
         <div className="flex flex-1 items-center min-w-0">
           <div className="ps-3 flex-shrink-0 z-10">
@@ -1788,7 +1788,7 @@ export function ScanReturnsSubtab({
           <div className="flex items-center gap-2 flex-wrap">
             <HeaderBadge>
               <ClipboardList size={11} />
-              {t("scan.labels.availableOrders")}: {pager.total_records}
+              {t("scan.labels.availableReturnOrders")}: {pager.total_records}
             </HeaderBadge>
           </div>
         </PanelHeader>
@@ -1860,54 +1860,42 @@ export function ScanReturnsSubtab({
                 </div>
               ))}
             </div>
-          ) : returnPreparingStats.length > 0 ? (
+          ) : returnPreparingStats.some((group) => Number(group.count) > 0) ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {returnPreparingStats.map(group => {
-                const hasOrders = group.count > 0;
-
-                return (
+              {returnPreparingStats
+                .filter((group) => Number(group.count) > 0)
+                .map((group) => (
                   <div
                     key={group.companyId}
-                    className={`relative overflow-hidden p-5 rounded-2xl flex flex-col gap-4 transition-all duration-200 border ${hasOrders
-                      ? "border-[var(--primary)]/20 bg-white dark:bg-slate-900 shadow-sm"
-                      : "border-slate-200 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/20"
-                      }`}
+                    className="relative overflow-hidden p-5 rounded-2xl flex flex-col gap-4 transition-all duration-200 border border-[var(--primary)]/20 bg-white dark:bg-slate-900 shadow-sm"
                   >
-                    {/* Accent line */}
-                    {hasOrders && (
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary),var(--third)]" />
-                    )}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary),var(--third)]" />
 
                     <div className="flex items-start justify-between gap-3 mt-1">
                       <div className="flex flex-col min-w-0">
-                        <span className={`text-sm font-bold truncate ${hasOrders ? "text-slate-800 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"}`}>
+                        <span className="text-sm font-bold truncate text-slate-800 dark:text-slate-100">
                           {group.companyName}
                         </span>
                         <span className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-1">
-                          {hasOrders ? t("scan.readyToManifest") : t("scan.noOrdersSelected")}
+                          {t("scan.readyToManifest")}
                         </span>
                       </div>
 
-                      <div className={`flex shrink-0 items-center justify-center min-w-[28px] h-7 px-2 rounded-lg font-bold text-xs tabular-nums ${hasOrders
-                        ? "bg-[var(--primary)]/10 text-[var(--primary)]"
-                        : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-400"
-                        }`}>
+                      <div className="flex shrink-0 items-center justify-center min-w-[28px] h-7 px-2 rounded-lg font-bold text-xs tabular-nums bg-[var(--primary)]/10 text-[var(--primary)]">
                         {group.count}
                       </div>
                     </div>
 
                     <Button_
                       size="sm"
-                      tone={hasOrders ? "primary" : "neutral"}
-                      variant={hasOrders ? "solid" : "outline"}
+                      tone="primary"
+                      variant="solid"
                       className="w-full mt-auto"
-                      disabled={!hasOrders}
                       label={t("scan.reviewCreateManifest") || "Create Manifest"}
                       onClick={() => handleOpenManifestPopup(group)}
                     />
                   </div>
-                );
-              })}
+                ))}
             </div>
           ) : null}
         </div>

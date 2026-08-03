@@ -52,7 +52,7 @@ export default function PaymentFailPage() {
                 session_id: sessionId || "",
                 plan_name: planName || "",
             });
-        }j
+        }
     }, [sessionId, amount, currency, purpose, planName]);
 
     useEffect(() => {

@@ -8,7 +8,6 @@ export default function GTMPageView() {
 
   useEffect(() => {
     window.dataLayer = window.dataLayer || [];
-
     window.dataLayer.push({
       event: 'pageview',
       page_path: pathname,

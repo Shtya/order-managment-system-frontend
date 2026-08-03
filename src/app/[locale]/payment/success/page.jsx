@@ -32,10 +32,25 @@ export default function PaymentSuccessPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const sessionId = searchParams.get("session_id");
+    const amount = searchParams.get("amount");
+    const currency = searchParams.get("currency");
+    const purpose = searchParams.get("purpose");
 
     const [loading, setLoading] = useState(true);
     const [session, setSession] = useState(null);
     const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (typeof window !== "undefined" && window.dataLayer) {
+            window.dataLayer.push({
+                event: "purchase_success",
+                purpose: purpose || "subscription_payment",
+                amount: amount ? Number(amount) : 0,
+                currency: currency || "EGP",
+                session_id: sessionId || "",
+            });
+        }
+    }, [sessionId, amount, currency, purpose]);
 
     useEffect(() => {
         if (sessionId) {

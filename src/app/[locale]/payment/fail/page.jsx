@@ -36,6 +36,7 @@ export default function PaymentFailPage() {
     const amount = searchParams.get("amount");
     const currency = searchParams.get("currency");
     const purpose = searchParams.get("purpose");
+    const planName = searchParams.get("plan_name");
 
     const [loading, setLoading] = useState(true);
     const [session, setSession] = useState(null);
@@ -49,9 +50,10 @@ export default function PaymentFailPage() {
                 amount: amount ? Number(amount) : 0,
                 currency: currency || "EGP",
                 session_id: sessionId || "",
+                plan_name: planName || "",
             });
-        }
-    }, [sessionId, amount, currency, purpose]);
+        }j
+    }, [sessionId, amount, currency, purpose, planName]);
 
     useEffect(() => {
         if (sessionId) {

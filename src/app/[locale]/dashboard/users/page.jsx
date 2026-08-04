@@ -215,6 +215,8 @@ function statusBadge(isActive, t) {
 
 export default function SuperAdminUsersPage() {
 	const tCommon = useTranslations("common");
+	const tOnboarding = useTranslations("onboarding");
+	const tAuth = useTranslations("auth");
 	const t = useTranslations("users");
 	const router = useRouter()
 	const [activeTab, setActiveTab] = useState("all"); // all|active|inactive
@@ -455,12 +457,6 @@ export default function SuperAdminUsersPage() {
 				className: "text-gray-700 dark:text-slate-200 font-semibold",
 			},
 			{
-				key: "email",
-				header: t("table.email"),
-				className: "text-gray-600 dark:text-slate-200",
-				cell: (row) => <span className="">{row.email}</span>,
-			},
-			{
 				key: "role",
 				header: t("table.role"),
 				cell: (row) => (
@@ -478,6 +474,101 @@ export default function SuperAdminUsersPage() {
 					</Badge>
 				),
 			},
+			{
+				key: "email",
+				header: t("table.email"),
+				className: "text-gray-600 dark:text-slate-200",
+				cell: (row) => <span className="">{row.email}</span>,
+			},
+			{
+				key: "phone",
+				header: t("table.phone"),
+				cell: (row) => <span className="text-gray-600 dark:text-slate-200">{row.phone || "-"}</span>,
+			},
+			{
+				key: "avatarUrl",
+				header: t("table.mainImage"),
+				className: "w-[100px]",
+				type: "img",
+			},
+			{
+				key: "currentOnboardingStep",
+				header: t("table.currentOnboardingStep"),
+				cell: (row) => {
+					if (row.role?.name !== "admin") return <span className="text-gray-500">-</span>;
+					const step = row.currentOnboardingStep;
+					if (!step) return <span className="text-gray-500">-</span>;
+					const key = step === "finished" ? "finished.title" : `steps.${step}.label`;
+					const label = tOnboarding(key);
+					return <span className="text-gray-600 dark:text-slate-200">{label === key ? step : label}</span>;
+				},
+			},
+			{
+				key: "companyName",
+				header: t("table.companyName"),
+				cell: (row) => <span className="text-gray-600 dark:text-slate-200">{row.company?.name || "-"}</span>,
+			},
+			{
+				key: "businessType",
+				header: tAuth("signup.business_type"),
+				cell: (row) => {
+					const bt = row.company?.businessType;
+					if (!bt) return <span className="text-gray-500">-</span>;
+					const key = `signup.${bt}`;
+					const label = tAuth(key);
+					return <span className="text-gray-600 dark:text-slate-200">{label === key ? bt : label}</span>;
+				},
+			},
+			{
+				key: "companyWebsite",
+				header: t("table.companyWebsite"),
+				cell: (row) =>
+					row.company?.website ? (
+						<a
+							href={row.company.website}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-blue-600 hover:underline dark:text-blue-400"
+						>
+							{row.company.website}
+						</a>
+					) : (
+						<span className="text-gray-600 dark:text-slate-200">-</span>
+					),
+			},
+			{
+				key: "walletBalance",
+				header: t("table.walletBalance"),
+				cell: (row) => <span className="text-gray-600 dark:text-slate-200">{row.wallet?.currentBalance ?? "-"}</span>,
+			},
+			{
+				key: "totalWithdrawn",
+				header: t("table.totalWithdrawn"),
+				cell: (row) => <span className="text-gray-600 dark:text-slate-200">{row.wallet?.totalWithdrawn ?? "-"}</span>,
+			},
+			{
+				key: "companyCurrency",
+				header: t("table.companyCurrency"),
+				cell: (row) => <span className="text-gray-600 dark:text-slate-200">{row.company?.currency || "-"}</span>,
+			},
+
+			{
+				key: "companyCountry",
+				header: t("table.companyCountry"),
+				cell: (row) => <span className="text-gray-600 dark:text-slate-200">{row.company?.country || "-"}</span>,
+			},
+			{
+				key: "companyPhone",
+				header: t("table.companyPhone"),
+				cell: (row) => <span className="text-gray-600 dark:text-slate-200">{row.company?.phone || "-"}</span>,
+			},
+			{
+				key: "companyAddress",
+				header: t("table.companyAddress"),
+				cell: (row) => <span className="text-gray-600 dark:text-slate-200">{row.company?.address || "-"}</span>,
+			},
+
+
 
 			// ✅ NEW: Admin owner info (super admin needs it)
 			{
@@ -680,7 +771,7 @@ export default function SuperAdminUsersPage() {
 				,
 			},
 		];
-	}, [t]);
+	}, [t, tOnboarding, tAuth]);
 
 	const openQueueBoard = async () => {
 		try {

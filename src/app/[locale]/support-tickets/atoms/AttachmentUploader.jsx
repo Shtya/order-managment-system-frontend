@@ -47,6 +47,8 @@ export default function AttachmentUploader({ files = [], onChange, disabled }) {
   const inputRef = useRef(null);
 
   const [previews, setPreviews] = useState({});
+  const [dragging, setDragging] = useState(false);
+  const dragDepthRef = useRef(0);
 
   // Blob URL management for images
   useEffect(() => {
@@ -104,11 +106,49 @@ export default function AttachmentUploader({ files = [], onChange, disabled }) {
       }
       if (filesFromClipboard.length) addFiles(filesFromClipboard);
     };
+    const preventDropNavigation = (e) => e.preventDefault();
     window.addEventListener("paste", onPaste);
-    return () => window.removeEventListener("paste", onPaste);
+    window.addEventListener("dragover", preventDropNavigation);
+    window.addEventListener("drop", preventDropNavigation);
+    return () => {
+      window.removeEventListener("paste", onPaste);
+      window.removeEventListener("dragover", preventDropNavigation);
+      window.removeEventListener("drop", preventDropNavigation);
+    };
   }, [disabled, addFiles]);
 
   const remove = (index) => onChange?.(files.filter((_, i) => i !== index));
+
+  const handleDragEnter = (e) => {
+    if (disabled) return;
+    e.preventDefault();
+    dragDepthRef.current += 1;
+    setDragging(true);
+  };
+
+  const handleDragOver = (e) => {
+    if (disabled) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+    if (dragDepthRef.current === 0) setDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    if (disabled) return;
+    e.preventDefault();
+    dragDepthRef.current = 0;
+    setDragging(false);
+    const dropped = Array.from(e.dataTransfer?.files || []);
+    if (dropped.length) addFiles(dropped);
+  };
+
+  const isMaxFilesReached = files.length >= MAX_FILES_PER_MSG;
+  const isInteractionDisabled = disabled || isMaxFilesReached;
 
   return (
     <div className="space-y-4">
@@ -178,29 +218,45 @@ export default function AttachmentUploader({ files = [], onChange, disabled }) {
       )}
 
       {/* Modernized Dropzone/Trigger */}
-      <button
-        type="button"
-        disabled={disabled || files.length >= MAX_FILES_PER_MSG}
-        onClick={() => inputRef.current?.click()}
+      <div
+        role="button"
+        tabIndex={isInteractionDisabled ? -1 : 0}
+        onClick={() => {
+          if (!isInteractionDisabled) inputRef.current?.click();
+        }}
+        onKeyDown={(e) => {
+          if ((e.key === "Enter" || e.key === " ") && !isInteractionDisabled) {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         className={cn(
-          "w-full relative group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border/60 bg-muted/20 px-6 py-6 transition-all duration-200",
-          "hover:bg-muted/50 hover:border-primary/40 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary/50",
-          "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-muted/20 disabled:hover:border-border/60"
+          "w-full relative group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed bg-muted/20 px-6 py-6 transition-all duration-200 cursor-pointer select-none",
+          dragging
+            ? "border-primary bg-primary/10 scale-[1.01]"
+            : "border-border/60 hover:bg-muted/50 hover:border-primary/40 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary/50",
+          isInteractionDisabled && "opacity-50 cursor-not-allowed pointer-events-none hover:bg-muted/20 hover:border-border/60"
         )}
       >
-        <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center shadow-xs border border-border/50 text-muted-foreground group-hover:text-primary transition-colors group-hover:scale-105">
-          <ImagePlus className="w-4 h-4" />
+        <div className="pointer-events-none flex flex-col items-center justify-center gap-3 text-center">
+          <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center shadow-xs border border-border/50 text-muted-foreground group-hover:text-primary transition-colors group-hover:scale-105">
+            <ImagePlus className="w-4 h-4" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+              {t("form.attachDrop")}
+            </p>
+            <p className="text-[11px] font-medium text-muted-foreground flex items-center justify-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+              <ClipboardPaste className="w-3.5 h-3.5" />
+              {t("form.orPaste")}
+            </p>
+          </div>
         </div>
-        <div className="text-center space-y-1">
-          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-            {t("form.attachDrop")}
-          </p>
-          <p className="text-[11px] font-medium text-muted-foreground flex items-center justify-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-            <ClipboardPaste className="w-3.5 h-3.5" />
-            {t("form.orPaste")}
-          </p>
-        </div>
-      </button>
+      </div>
     </div>
   );
 }

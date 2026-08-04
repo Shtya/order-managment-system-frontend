@@ -228,6 +228,28 @@ export const SocketProvider = ({ children }) => {
       });
     });
 
+    // ------------------ SUPPORT TICKETS ------------------
+
+    socket.on("support_ticket:created", (payload) => {
+      publish({ type: "SUPPORT_TICKET_CREATED", payload });
+    });
+
+    socket.on("support_ticket:updated", (payload) => {
+      publish({ type: "SUPPORT_TICKET_UPDATED", payload });
+    });
+
+    socket.on("support_ticket:message-created", (payload) => {
+      publish({ type: "SUPPORT_TICKET_MESSAGE_CREATED", payload });
+    });
+
+    socket.on("support_ticket:message-updated", (payload) => {
+      publish({ type: "SUPPORT_TICKET_MESSAGE_UPDATED", payload });
+    });
+
+    socket.on("support_ticket:read", (payload) => {
+      publish({ type: "SUPPORT_TICKET_READ", payload });
+    });
+
     // Cleanup listeners
     return () => {
       socket.off("connect");
@@ -243,6 +265,11 @@ export const SocketProvider = ({ children }) => {
       socket.off("whatsapp:message-updated");
       socket.off("whatsapp:conversation-new");
       socket.off("whatsapp:customer-new");
+      socket.off("support_ticket:created");
+      socket.off("support_ticket:updated");
+      socket.off("support_ticket:message-created");
+      socket.off("support_ticket:message-updated");
+      socket.off("support_ticket:read");
 
       socket.disconnect();
       socketRef.current = null;

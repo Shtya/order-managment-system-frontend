@@ -70,6 +70,7 @@ import {
   WarehouseIcon,
   Boxes,
   MessageSquare,
+  Ticket,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -848,6 +849,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       ],
     },
     {
+      icon: Ticket,
+      labelKey: "supportTickets",
+      href: "/support-tickets",
+      permission: "support_tickets.read",
+    },
+    {
       icon: Settings,
       labelKey: "settings",
       href: "/settings",
@@ -927,6 +934,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       icon: FaBugs,
       labelKey: "systemErrors",
       href: "/dashboard/errors",
+      roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: Headset,
+      labelKey: "supportTicketsAdmin",
+      href: "/dashboard/support-tickets",
       roles: ["SUPER_ADMIN"],
     }
 

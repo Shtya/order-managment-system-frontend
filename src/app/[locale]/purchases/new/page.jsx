@@ -25,6 +25,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { Textarea } from "@/components/ui/textarea";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 
 export function PurchaseInvoiceForm({ editedPurchase }) {
@@ -38,6 +39,10 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 	const tValidation = useTranslations("validation");
 	const t = useTranslations("purchaseInvoice");
 	const { formatCurrency, currency } = usePlatformSettings();
+
+	useEffect(() => {
+		setDocumentTitle(isEdit ? t("breadcrumb.editPurchaseInvoice") : t("breadcrumb.createPurchaseInvoice"));
+	}, [isEdit, t]);
 
 	const [receiptImage, setReceiptImage] = useState(null);
 	const [loading, setLoading] = useState(false);

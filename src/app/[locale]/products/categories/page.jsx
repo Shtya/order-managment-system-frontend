@@ -35,6 +35,7 @@ import { baseImg } from "@/utils/axios";
 import { Badge } from "@/components/ui/badge";
 import { ImageUploadBox, makeId } from "@/components/atoms/ImageUploadBox";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -303,6 +304,10 @@ export default function CategoriesPage() {
 		searchTimer.current = setTimeout(() => setDebouncedSearch(search), 350);
 		return () => clearTimeout(searchTimer.current);
 	}, [search]);
+
+	useEffect(() => {
+		setDocumentTitle(t("breadcrumb.categories"));
+	}, [t]);
 
 	const fetchCategories = useCallback(async ({ page = 1, per_page = 12 } = {}) => {
 		setLoading(true);

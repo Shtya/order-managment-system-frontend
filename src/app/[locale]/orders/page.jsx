@@ -32,6 +32,7 @@ import {
 
 import toast from "react-hot-toast";
 import api from "@/utils/api";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 import OrdersTab, { OrderStatus } from "./tabs/OrderTab";
 import FailedOrdersTab from "./tabs/Failedorderstab";
@@ -122,6 +123,11 @@ export default function Orders() {
 		const safeTab = allowedTabs.has(tabFromUrl) ? tabFromUrl : "orders";
 		setActiveTab(safeTab);
 	}, [searchParams, allowedTabs]);
+
+	useEffect(() => {
+		const activeItem = items.find((item) => item.id === activeTab);
+		setDocumentTitle(activeItem?.label);
+	}, [activeTab, items]);
 
 	useEffect(() => {
 		fetchStats();

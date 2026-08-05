@@ -23,6 +23,7 @@ import SafeSelect from "@/components/molecules/SafeSelect";
 import SupplierSelect from "@/components/molecules/SupplierSelect";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { cn } from "@/utils/cn";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 export function PurchaseReturnForm({ editedReturn }) {
 	const isEdit = editedReturn?.id !== undefined;
@@ -36,6 +37,10 @@ export function PurchaseReturnForm({ editedReturn }) {
 	const tValidation = useTranslations("validation");
 	const t = useTranslations("returnInvoice");
 	const { formatCurrency } = usePlatformSettings();
+
+	useEffect(() => {
+		setDocumentTitle(isEdit ? t("breadcrumb.editReturnInvoice") : t("breadcrumb.createReturnInvoice"));
+	}, [isEdit, t]);
 
 	const [receiptImage, setReceiptImage] = useState(null);
 	const [loading, setLoading] = useState(false);

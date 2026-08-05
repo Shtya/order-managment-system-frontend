@@ -17,6 +17,7 @@ import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { PrimaryBtn } from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import { SMS_PROVIDERS, useSmsIntegration, useSmsSettings } from "@/hook/sms";
 import { useAuth } from "@/context/AuthContext";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
@@ -43,6 +44,10 @@ export default function SmsProviders() {
 
     const [integrationStatuses, setStatuses] = useState({});
     const [statusLoading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setDocumentTitle(t("breadcrumb.providers"));
+    }, [t]);
 
     async function fetchStatuses() {
         try {

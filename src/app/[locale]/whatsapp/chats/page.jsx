@@ -1,9 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import ChatList from "../atoms/chats/ChatList";
 import ChatWindow from "../atoms/chats/ChatWindow";
 import ChatSidebar from "../atoms/chats/ChatSidebar";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import { ConversationProvider, useConversation } from "../atoms/chats/ConversationContext";
 
 function ChatsContent() {
@@ -54,6 +57,10 @@ function ChatsContent() {
 }
 
 export default function Chats() {
+    const t = useTranslations("chats");
+    useEffect(() => {
+        setDocumentTitle(t("title"));
+    }, [t]);
     return (
         <ConversationProvider>
             <ChatsContent />

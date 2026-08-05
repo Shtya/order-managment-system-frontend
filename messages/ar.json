@@ -9494,7 +9494,9 @@
       "validation": {
         "nameRequired": "الاسم مطلوب",
         "emailInvalid": "البريد الإلكتروني غير صحيح",
-        "emailRequired": "البريد الإلكتروني مطلوب"
+        "emailRequired": "البريد الإلكتروني مطلوب",
+        "required": "هذا الحقل مطلوب\t",
+        "phone_invalid": "رقم الهاتف غير صحيح\t"
       },
       "toast": {
         "saving": "جارٍ الحفظ...",

@@ -22,6 +22,11 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+// export const metadata = {
+//   title: "Employees",
+//   description: "Manage employee records, roles, and team access from one place.",
+// };
+
 import InfoCard from "@/components/atoms/InfoCard";
 import SwitcherTabs from "@/components/atoms/SwitcherTabs";
 import DataTable from "@/components/atoms/DataTable";

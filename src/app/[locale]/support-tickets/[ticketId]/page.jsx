@@ -17,6 +17,7 @@ import {
   CircleDot, Flag
 } from "lucide-react";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import TicketMessagesPanel from "../atoms/TicketMessagesPanel";
 import ActivityTimeline from "../atoms/ActivityTimeline";
 import CancelDialog from "../atoms/CancelDialog";
@@ -63,6 +64,10 @@ export default function TicketDetailPage() {
   const [activeTab, setActiveTab] = useState("messages");
   const activityLoadingRef = useRef(false);
   const ticketShortCode = `#TK-${String(ticket?.id || "").replace(/-/g, "").slice(0, 10).toUpperCase()}`;
+
+  useEffect(() => {
+    setDocumentTitle(ticket?.title || ticketShortCode);
+  }, [ticket?.title, ticketShortCode]);
   const loadDetail = useCallback(async () => {
     const data = await getTicket(ticketId);
     setTicket(data);

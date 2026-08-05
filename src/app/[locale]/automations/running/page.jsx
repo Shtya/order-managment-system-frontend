@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Search,

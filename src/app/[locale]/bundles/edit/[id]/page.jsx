@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useTranslations } from 'next-intl';
 import AddBundlePage from '../../new/page';
 import api from '@/utils/api';
+import { setDocumentTitle } from '@/utils/documentTitle';
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
@@ -21,6 +22,10 @@ export default function EditBundlePage() {
 
 	const [bundle, setBundle] = useState(null);
 	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		setDocumentTitle(t('breadcrumb.editBundle'));
+	}, [t]);
 
 	useEffect(() => {
 		if (!bundleId) return;

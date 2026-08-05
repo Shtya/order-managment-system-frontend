@@ -66,6 +66,7 @@ import {
   Path // <-- Add this
 } from "@react-pdf/renderer";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import Button_ from "@/components/atoms/Button";
 import { useTranslations, useLocale } from "next-intl";
 import { avatarSrc } from "@/components/atoms/UserSelect";
@@ -1540,6 +1541,10 @@ export default function OrdersStatisticsPage() {
   const locale = useLocale();
   const { formatCurrency } = usePlatformSettings();
   const { user } = useAuth();
+
+  useEffect(() => {
+    setDocumentTitle(t("breadcrumb.orderAnalysis"));
+  }, [t]);
   const [quickRange, setQuickRange] = useState("this_month");
   const [filters, setFilters] = useState({
     startDate: null,

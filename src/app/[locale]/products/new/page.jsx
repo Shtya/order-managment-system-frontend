@@ -57,6 +57,7 @@ import { InvoiceSummary, ReceiptImageUpload } from '../../purchases/new/page';
 import { useOrdersSettings } from '@/hook/useOrdersSettings';
 import { avatarSrc } from '@/components/atoms/UserSelect';
 import RichTextEditor from '@/components/atoms/RichTextEditor';
+import { setDocumentTitle } from '@/utils/documentTitle';
 
 const MAX_RECEIPT_MB = 5;
 const ALLOWED_RECEIPT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -693,6 +694,10 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	useEffect(() => {
 		if (!upsellingEnabled) setValue('upsellingProducts', [], { shouldDirty: true });
 	}, [upsellingEnabled, setValue]);
+
+	useEffect(() => {
+		setDocumentTitle(isEditMode ? t('breadcrumb.editProduct') : t('breadcrumb.addProduct'));
+	}, [isEditMode, t]);
 
 	const prevWhId = useRef(whId);
 

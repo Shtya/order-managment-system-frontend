@@ -22,6 +22,7 @@ import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 
 export default function ShippingReport() {
@@ -29,6 +30,10 @@ export default function ShippingReport() {
     const tCity = useTranslations("accounts.cityDeliveries");
     const tOrders = useTranslations("orders");
     const tTutorial = useTranslations("tutorial.shipping");
+
+    useEffect(() => {
+        setDocumentTitle(tCity("shippingReport"));
+    }, [tCity]);
 
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);

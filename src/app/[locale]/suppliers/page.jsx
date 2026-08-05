@@ -55,6 +55,11 @@ import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import TutorialSpotlight from "@/components/atoms/TutorialSpotlight";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+
+// export const metadata = {
+//   title: "Suppliers",
+//   description: "Manage supplier profiles, balances, and purchase relationships.",
+// };
 import { COUNTRIES } from "../settings/page";
 import SafeSelect from "../../../components/molecules/SafeSelect";
 import AccountIcon from "@/components/atoms/AccountIcon";

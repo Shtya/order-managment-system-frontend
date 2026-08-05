@@ -43,7 +43,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AutomationsTab } from "../settings/page";
+import { AutomationsTab } from "../../settings/page";
 import { OrdersSettingsProvider } from "@/hook/useOrdersSettings";
 import { normalizeAxiosError } from "@/utils/axios";
 

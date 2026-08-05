@@ -41,6 +41,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useDebounce } from "@/hook/useDebounce";
 import { MdOutlinePayment } from "react-icons/md";
 import SupplierPaymentsTable from "../../accounts/tabs/SupplierPaymentsTable";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 export default function SupplierDetailsPage() {
     const [activeSubTab, setActiveSubTab] = useState('purchases');
@@ -197,6 +198,10 @@ export default function SupplierDetailsPage() {
     useEffect(() => {
         fetchSupplier();
     }, [fetchSupplier]);
+
+    useEffect(() => {
+        setDocumentTitle(supplier?.name || supplier?.companyName);
+    }, [supplier]);
 
     useEffect(() => {
         fetchPurchases();

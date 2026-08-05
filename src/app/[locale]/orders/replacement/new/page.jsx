@@ -71,6 +71,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { ImageUploadBox } from "@/components/atoms/ImageUploadBox";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 let _imgIdCounter = 0;
 function makeId() {
@@ -1948,6 +1949,11 @@ export default function CreateReplacementPage({
     isEditMode && !existingData,
   );
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const nextTitle =  selectedOrder?.orderNumber  ? selectedOrder?.orderNumber  : isEditMode ? t("titleEdit") : t("title")
+    setDocumentTitle(nextTitle);
+  }, [selectedOrder?.orderNumber, isEditMode]);
 
   const [form, setForm] = useState({
     reason: "",

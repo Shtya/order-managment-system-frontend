@@ -11,6 +11,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import api from '@/utils/api';
+import { setDocumentTitle } from '@/utils/documentTitle';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -157,6 +158,12 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 		name: "description",
 		defaultValue: defaultValues()?.description || "",
 	});
+
+	useEffect(() => {
+		const fallbackTitle = isEditMode ? t('breadcrumb.editBundle') : t('breadcrumb.addBundle');
+		const nextTitle = (productName || existingBundle?.name || '').toString().trim() || fallbackTitle;
+		setDocumentTitle(nextTitle);
+	}, [isEditMode, existingBundle?.name, productName, t]);
 
 	useEffect(() => {
 		if (!watchSku || errors.sku || isEditMode) {

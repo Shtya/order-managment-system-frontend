@@ -391,6 +391,10 @@ const createAccountSchema = (t) => yup.object({
     .trim()
     .email(t("validation.emailInvalid"))
     .required(t("validation.emailRequired")),
+  phone: yup
+      .string()
+      .required(t("validation.required"))
+      .matches(/^[0-9]{7,11}$/, t("validation.phone_invalid")),
   employeeType: yup.string().trim().nullable(),
 });
 
@@ -2160,6 +2164,7 @@ function AccountTab() {
   const {
     register,
     handleSubmit,
+    setValue,
     reset,
     formState: { errors },
   } = useForm({
@@ -2382,7 +2387,7 @@ function AccountTab() {
             </Field>
 
             {/* Phone */}
-            <Field label={t("phone.label")} error={phoneError}>
+            <Field label={t("phone.label")} error={phoneError || errors.phone?.message}>
               <div className="flex gap-2">
                 <div className="w-40 shrink-0">
                   <Select
@@ -2418,6 +2423,7 @@ function AccountTab() {
                   value={phoneDigits}
                   onChange={(e) => {
                     const v = digitsOnly(e.target.value);
+                    setValue("phone", v);
                     setPhoneDigits(v);
                     setPhoneError(v ? validatePhone(v, selectedCountry) : "");
                   }}

@@ -23,6 +23,7 @@ import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import Table from "@/components/atoms/Table";
 import Button_ from "@/components/atoms/Button";
 import ActionButtons from "@/components/atoms/Actions";
@@ -123,6 +124,9 @@ export default function WhatsAppTemplatesPage() {
   const tCommon = useTranslations("common");
   const tTutorial = useTranslations("tutorial.whatsapp.templates");
   const t = useTranslations("whatsApp.templates");
+  useEffect(() => {
+    setDocumentTitle(t("breadcrumb.templates"));
+  }, [t]);
 
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({ value: search });

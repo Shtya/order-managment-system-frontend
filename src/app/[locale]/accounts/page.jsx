@@ -2,6 +2,11 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+
+// export const metadata = {
+//   title: "Accounts",
+//   description: "Review account balances, supplier payments, and financial activity across the workspace.",
+// };
 import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/atoms/Pageheader";
 import { Info, BarChart2, DollarSign, Wallet, CheckCircle, Plus, Building2, TrendingUp, Calendar, Package, Settings, RefreshCw, ArrowUpRight, ArrowDownLeft } from "lucide-react";

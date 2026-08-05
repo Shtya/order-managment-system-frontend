@@ -5,8 +5,7 @@ import { useParams } from "next/navigation";
 import api from "@/utils/api";
 import { PurchaseInvoiceForm } from "../../new/page";
 import toast from "react-hot-toast";
-import { useTranslations } from "next-intl";
-
+import { useTranslations } from "next-intl";import { setDocumentTitle } from '@/utils/documentTitle';
 export default function EditPurchaseInvoicePage() {
     const params = useParams();
     const id = params.id;
@@ -28,6 +27,10 @@ export default function EditPurchaseInvoicePage() {
                 });
         }
     }, [id, t]);
+
+    useEffect(() => {
+        setDocumentTitle(purchase?.receiptNumber || purchase?.invoiceNumber || purchase?.id);
+    }, [purchase]);
 
     if (loading) {
         return (

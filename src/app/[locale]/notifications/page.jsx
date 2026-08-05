@@ -15,6 +15,11 @@ import {
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+// export const metadata = {
+//   title: "Notifications",
+//   description: "Review alerts, updates, and operational notifications for your workspace.",
+// };
 import { useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { cn } from "@/utils/cn";

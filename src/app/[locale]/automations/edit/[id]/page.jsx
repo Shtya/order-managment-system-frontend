@@ -21,6 +21,7 @@ import { AUTOMATION_CONFIG } from "../../atoms/automation-config";
 import { useReactFlow, ReactFlow, Background, Controls, MiniMap, Panel } from "@xyflow/react";
 import { useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -182,6 +183,7 @@ export default function EditAutomationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const resetFlow = useFlowStore((state) => state.resetFlow);
+  const automationName = useFlowStore((s) => s.name);
 
   useEffect(() => {
     // سيتم تنفيذ هذه الدالة فقط عند مغادرة المستخدم للصفحة
@@ -222,6 +224,11 @@ export default function EditAutomationPage() {
     // Cleanup store on unmount if needed, or just let it be
     // return () => resetFlow();
   }, [automationId, setFlowData, t, version]);
+
+  useEffect(() => {
+    setDocumentTitle(automationName || "Edit Automation");
+  }, [automationName]);
+
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   if (loading) {
     return (

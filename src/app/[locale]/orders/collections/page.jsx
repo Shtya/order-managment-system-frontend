@@ -25,7 +25,7 @@ import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
-
+import { setDocumentTitle } from '@/utils/documentTitle';
 
 // ── Components ────────────────────────────────────────────────────────────────
 import Table, { FilterField } from "@/components/atoms/Table";
@@ -226,6 +226,12 @@ export default function OrderCollectionPage() {
 	const [historyModal, setHistoryModal] = useState({ open: false, order: null });
 
 	const { formatCurrency, shippingCompanies } = usePlatformSettings();
+
+		useEffect(() => {
+		const nextTitle =  activeTab === "not_collected" ? t('breadcrumb.notCollected') : t("breadcrumb.fullyCollected");
+		setDocumentTitle(nextTitle);
+	}, [activeTab]);
+
 
 	const [statsData, setStatsData] = useState({
 		notCollectedCount: 0,

@@ -27,6 +27,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import Button_ from "@/components/atoms/Button";
 import ProductFilter from "@/components/atoms/ProductFilter";
 import { Input } from "@/components/ui/input";
@@ -152,6 +153,9 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
   const tValidation = useTranslations("validation");
   const tTutorial = useTranslations("tutorial.upsells");
   const t = useTranslations("upsells");
+  useEffect(() => {
+    setDocumentTitle(isEdit ? t("actions.edit") : t("toolbar.addUpsell"));
+  }, [isEdit, t]);
   const {isTutorialMode} = useTutorial();
   const { formatCurrency, currency } = usePlatformSettings();
   const locale = useLocale();

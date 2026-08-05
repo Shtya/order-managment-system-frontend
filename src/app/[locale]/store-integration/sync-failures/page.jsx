@@ -54,6 +54,7 @@ import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { Bone } from "@/components/atoms/BannerSkeleton";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import ActionButtons from "@/components/atoms/Actions";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -182,6 +183,10 @@ function LogDetailsModal({ isOpen, onClose, log, isLoading }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function SyncFailuresPage() {
   const t = useTranslations("syncFailures");
+
+  useEffect(() => {
+    setDocumentTitle(t("breadcrumb.syncFailures"));
+  }, [t]);
 
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);

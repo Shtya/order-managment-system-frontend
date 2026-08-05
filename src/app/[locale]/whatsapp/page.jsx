@@ -103,6 +103,7 @@ export default function WhatsAppStatisticsPage() {
     return p;
   }, [quickRange, filters]);
 
+  
   const fetchData = useCallback(async () => {
     const p = buildParams();
     setLoading(true);

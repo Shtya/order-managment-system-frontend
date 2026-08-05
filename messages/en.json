@@ -9509,7 +9509,9 @@
       "validation": {
         "nameRequired": "Name is required",
         "emailInvalid": "Invalid email",
-        "emailRequired": "Email is required"
+        "emailRequired": "Email is required",
+        "required": "This field is required\t",
+        "phone_invalid": "Invalid phone number\t"
       },
       "toast": {
         "saving": "Saving changes...",

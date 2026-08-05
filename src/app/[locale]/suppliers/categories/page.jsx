@@ -34,6 +34,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import Table from "@/components/atoms/Table";
 import { useSearchParams } from "next/navigation";
 import { ActionButtons } from "@/components/atoms/Actions";
@@ -243,6 +244,9 @@ export default function SupplierCategoriesPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
+	useEffect(() => {
+		setDocumentTitle(t("breadcrumb.categories"));
+	}, [t]);
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const searchTimer = useRef(null);

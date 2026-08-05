@@ -69,6 +69,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const P = "var(--primary)";
@@ -237,6 +238,10 @@ export default function OrderDetailsPageWrapper() {
   useEffect(() => {
     if (orderId) fetchOrderDetails();
   }, [orderId]);
+
+  useEffect(() => {
+    setDocumentTitle(order?.orderNumber);
+  }, [order]);
 
   const fetchOrderDetails = async () => {
     try {

@@ -9,6 +9,7 @@ import CreateOrderPageComplete from '../../new/page';
 import api from '@/utils/api';
 import { useTranslations } from 'next-intl';
 import { normalizeAxiosError } from '@/utils/axios';
+import { setDocumentTitle } from '@/utils/documentTitle';
 
 export default function EditOrderPage() {
   const t = useTranslations('createOrder');
@@ -33,6 +34,11 @@ export default function EditOrderPage() {
       }
     })();
   }, [orderId]);
+
+  useEffect(() => {
+    if (!order) return;
+    setDocumentTitle(order?.orderNumber || order?.customerName || 'Edit Order');
+  }, [order]);
 
   if (loading) {
     return (

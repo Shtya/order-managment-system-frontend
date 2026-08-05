@@ -29,6 +29,7 @@ import Table from "@/components/atoms/Table";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useExport } from "@/hook/useExport";
 import { useDebounce } from "@/hook/useDebounce";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 
 const getRemainingTime = (targetDate) => {
@@ -108,6 +109,10 @@ export default function MyAssignedOrdersPage() {
 		fetchAssignedOrders();
 		fetchStats();
 	}, []);
+
+	useEffect(() => {
+		setDocumentTitle(t('myOrders.title'));
+	}, [t]);
 
 	// Table columns
 	const [searchTerm, setSearchTerm] = useState("");

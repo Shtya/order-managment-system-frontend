@@ -128,7 +128,6 @@ const content = {
     back: "العودة لتسجيل الدخول",
   },
 };
-
 export default async function TermsPage({ params }) {
   const { locale } = await params;
   const isArabic = locale === "ar";

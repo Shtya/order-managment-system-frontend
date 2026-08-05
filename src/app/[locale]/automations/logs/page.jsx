@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import {
     FileDown,
     Eye,

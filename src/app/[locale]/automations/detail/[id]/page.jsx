@@ -18,6 +18,7 @@ import { ConfirmDeleteDialog } from "../../atoms/ConfirmDeleteDialog";
 import { ReactFlow, Background, Controls, MiniMap, Panel } from "@xyflow/react";
 import { useRef, useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -101,6 +102,7 @@ export default function ViewAutomationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const resetFlow = useFlowStore((state) => state.resetFlow);
+  const automationName = useFlowStore((s) => s.name);
 
   useEffect(() => {
     // سيتم تنفيذ هذه الدالة فقط عند مغادرة المستخدم للصفحة
@@ -140,6 +142,10 @@ export default function ViewAutomationPage() {
 
     fetchAutomation();
   }, [automationId, setFlowData, t, version]);
+
+  useEffect(() => {
+    setDocumentTitle(automationName || "Automation Details");
+  }, [automationName]);
 
   if (loading) {
     return (

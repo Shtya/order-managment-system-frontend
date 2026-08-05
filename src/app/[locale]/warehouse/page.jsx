@@ -38,6 +38,8 @@ import {
 } from "./tabs/data";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
+import { setDocumentTitle } from "@/utils/documentTitle";
+
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthContext";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
@@ -217,6 +219,7 @@ export default function WarehouseFlowPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tWarning = useTranslations("warehouse.directShippingWarning");
+  const tWarehouse = useTranslations("warehouse");
   // ── Core data ──────────────────────────────────────────────────────────────
   const [orders, setOrders] = useState(initialOrders);
   const [opsLogs, setOpsLogs] = useState(initialOpsLogs);
@@ -231,6 +234,7 @@ export default function WarehouseFlowPage() {
   const activeSubtab = isValidSubtab(activeTab, activeSubtabFromUrl)
     ? activeSubtabFromUrl
     : (DEFAULT_SUBTABS[activeTab] || null);
+
 
   const setActiveSubtab = useCallback((subtabId, extra) => {
     const params = new URLSearchParams(searchParams.toString());

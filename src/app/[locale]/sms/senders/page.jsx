@@ -9,6 +9,7 @@ import { normalizeAxiosError } from "@/utils/axios";
 import { useExport } from "@/hook/useExport";
 import { useDebounce } from "@/hook/useDebounce";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import Table, { FilterField } from "@/components/atoms/Table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,6 +23,10 @@ export default function SmsSenders() {
     const tc = useTranslations("common");
     const st = useTranslations("smsProviders");
     const { handleExport, exportLoading } = useExport();
+
+    useEffect(() => {
+        setDocumentTitle(st("title"));
+    }, [st]);
 
     const [records, setRecords] = useState([]);
     const [pagination, setPagination] = useState({ total_records: 0, current_page: 1, per_page: 12 });

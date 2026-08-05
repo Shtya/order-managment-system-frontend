@@ -56,7 +56,7 @@ export const metadata = {
 
   title: {
     default: "Madar",
-    template: "%s | Madar",
+    template: "Madar | %s",
   },
 
   description:
@@ -66,6 +66,12 @@ export const metadata = {
 
   alternates: {
     canonical: "/",
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
 
   openGraph: {
@@ -93,12 +99,6 @@ export const metadata = {
       "Madar helps businesses manage orders, shipping, and operations in one platform.",
     images: ["/logo.png"],
   },
-
-  icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
-  },
 };
 export default async function RootLayout({ children, params }) {
   const { locale } = await params;
@@ -114,6 +114,9 @@ export default async function RootLayout({ children, params }) {
       <head>
         <meta name="facebook-domain-verification" content="tv61v5592fgxbg7icblxrfhspnom86" />
         <meta name="google-site-verification" content="gFuuXG2Qnxsb3NMlS6sLEuUlm5s0S1VCX4cKmexELBw" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/favicon.ico" />
 
         <Script id="gtm" strategy="afterInteractive">
           {

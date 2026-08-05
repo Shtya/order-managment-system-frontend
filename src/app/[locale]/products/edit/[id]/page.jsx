@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import AddProductPage from '../../new/page';
 import api from '@/utils/api';
 import { useTranslations } from 'next-intl';
+import { setDocumentTitle } from '@/utils/documentTitle';
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
@@ -37,6 +38,10 @@ export default function EditProductPage() {
 			}
 		})();
 	}, [productId]);
+
+	useEffect(() => {
+		setDocumentTitle(product?.name);
+	}, [product]);
 
 	if (loading) {
 		return (

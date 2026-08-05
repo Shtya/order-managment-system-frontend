@@ -10,6 +10,7 @@ import DataTable from "@/components/atoms/DataTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Button_ from "@/components/atoms/Button";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 /** ✅ Toolbar (JSX) */
 function DetailsTableToolbar({ t, searchValue, onSearchChange, onExport }) {
@@ -57,6 +58,10 @@ function DetailsTableToolbar({ t, searchValue, onSearchChange, onExport }) {
 
 export default function ShippingCompanyDetailsPage() {
 	const t = useTranslations("shippingDetails");
+
+	useEffect(() => {
+		setDocumentTitle(t("breadcrumb.details"));
+	}, [t]);
 
 	const [search, setSearch] = useState("");
 

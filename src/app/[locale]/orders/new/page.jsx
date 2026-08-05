@@ -34,6 +34,7 @@ import { GEO_CONFIG } from "@/utils/order-utils";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -790,7 +791,12 @@ export default function CreateOrderPageComplete({
 	const watchedDeposit = watch("deposit");
 	const watchedShippingCompanyId = watch("shippingCompanyId");
 	const area = watch("area");
+	
 
+	useEffect(() => {
+		const nextTitle =  existingOrder?.orderNumber?.trim() || (isEditMode? t("breadcrumb.editOrder") : fromId ? t("breadcrumb.duplicateOrder") : t("breadcrumb.createOrder"));
+		setDocumentTitle(nextTitle);
+	}, [existingOrder?.orderNumber, isEditMode, fromId]);
 
 	// ── Derive isBosta ───────────────────────────────────────────────────────
 	const selectedCompany = useMemo(
@@ -1190,11 +1196,7 @@ export default function CreateOrderPageComplete({
 					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.orders"), href: "/orders" },
 					{
-						name: isEditMode
-							? t("breadcrumb.editOrder")
-							: fromId
-								? t("breadcrumb.duplicateOrder")
-								: t("breadcrumb.createOrder"),
+						name: isEditMode? t("breadcrumb.editOrder") : fromId ? t("breadcrumb.duplicateOrder") : t("breadcrumb.createOrder"),
 					},
 				]}
 				buttons={

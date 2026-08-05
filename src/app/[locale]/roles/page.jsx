@@ -7,6 +7,11 @@ import {
 	Eye, Search, Check, ChevronRight,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+// export const metadata = {
+//   title: "Roles",
+//   description: "Manage user roles and permissions for your team.",
+// };
 import { cn } from "@/utils/cn";
 
 import { Input } from "@/components/ui/input";

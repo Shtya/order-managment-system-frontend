@@ -31,6 +31,7 @@ import * as yup from "yup";
 import toast from "react-hot-toast";
 import { cn } from "@/utils/cn";
 import api from "@/utils/api";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -508,6 +509,11 @@ export default function CollectOrderPage() {
       }
     })();
   }, [orderId, router, t, setValue]);
+
+  useEffect(() => {
+    if (!order) return;
+    setDocumentTitle(order?.orderNumber || order?.customerName || "Collect Order");
+  }, [order]);
 
   useEffect(() => {
     if (!order?.shippingCompanyId || isShippingLoading || shippingCompanies.length === 0) return;

@@ -31,6 +31,7 @@ import { AddressSection } from "../../new/page";
 import { GEO_CONFIG } from "@/utils/order-utils";
 import { Input } from "@/components/ui/input";
 import { alarmToast } from "@/utils/healpers";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import { Label } from "@/components/ui/label";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
 
@@ -483,6 +484,10 @@ export default function OrderConfirmationWorkPage() {
   );
 
   useEffect(() => { fetchNext(); fetchStatuses(); }, []);
+
+  useEffect(() => {
+    if (editedOrder?.orderNumber) setDocumentTitle(editedOrder.orderNumber);
+  }, [editedOrder?.orderNumber]);
 
   const fetchNext = async () => {
     try { setLoading(true); const r = await api.get("/order-assignment/employee/orders/next"); initOrder(r.data); }

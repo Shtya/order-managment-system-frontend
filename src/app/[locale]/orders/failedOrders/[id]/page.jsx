@@ -52,6 +52,7 @@ import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import { normalizeAxiosError } from "@/utils/axios";
 import Button_ from "@/components/atoms/Button";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import SafeHtmlRenderer from "@/components/atoms/SafeHtmlRenderer";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
@@ -437,6 +438,10 @@ export default function FailedOrderDetailsPage() {
     const isSuccess = failure?.status === 'success';
     const problems = data?.problems || [];
     const payload = failure?.payload;
+
+    useEffect(() => {
+        setDocumentTitle(`${payload?.fullName || id}`);
+    }, [payload?.fullName, id]);
 
     // 2. Actions
     const handleRetry = async () => {

@@ -39,6 +39,11 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { ExternalProductModal } from "../orders/failedOrders/[id]/page";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
+// export const metadata = {
+//   title: "Products",
+//   description: "Manage your products, inventory, pricing, and product information.",
+// };
+
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
 	return Array.isArray(msg) ? msg.join(", ") : String(msg);

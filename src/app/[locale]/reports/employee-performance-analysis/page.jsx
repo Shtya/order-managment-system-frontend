@@ -28,6 +28,7 @@ import Flatpickr from "react-flatpickr";
 // ── Shared Table system ──────────────────────────────────────────────────────
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import Button_ from "@/components/atoms/Button";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
@@ -85,6 +86,10 @@ export function EmployeeStatisticsPage() {
     const tTutorial = useTranslations("tutorial.employeePerformance");
     const router = useRouter();
     const { formatCurrency } = usePlatformSettings();
+
+    useEffect(() => {
+        setDocumentTitle(t("employeeStats.title"));
+    }, [t]);
 
     const [loading, setLoading] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);

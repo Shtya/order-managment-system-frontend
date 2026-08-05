@@ -38,6 +38,7 @@ import toast from "react-hot-toast";
 import InfoCard from "@/components/atoms/InfoCard";
 import DataTable from "@/components/atoms/DataTable";
 import TutorialSpotlight from "@/components/atoms/TutorialSpotlight";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
@@ -132,6 +133,10 @@ export default function PurchasesReturnPage() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
+
+	useEffect(() => {
+		setDocumentTitle(t("breadcrumb.returns"));
+	}, [t]);
 
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);

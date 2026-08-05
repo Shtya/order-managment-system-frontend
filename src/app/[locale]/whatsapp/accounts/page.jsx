@@ -34,6 +34,7 @@ import {
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import Button_, { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import Table, { FilterField } from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
@@ -1437,6 +1438,9 @@ export default function WhatsAppAccountsPage() {
   const tCommon = useTranslations("common");
   const tTutorial = useTranslations("tutorial.whatsapp.accounts");
   const t = useTranslations("whatsApp.accounts");
+  useEffect(() => {
+    setDocumentTitle(t("breadcrumb.accounts"));
+  }, [t]);
   const { settings, isSettingsLoading } = usePlatformSettings();
   const { patch, saveSetting, refreshOrdersSettings } = useOrdersSettings();
   const [guideModalOpen, setGuideModalOpen] = useState(false);

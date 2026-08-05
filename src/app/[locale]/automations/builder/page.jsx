@@ -28,6 +28,7 @@ import RunDetailsPanel, { StatusRunBadge } from "../atoms/RunDetailsPanel";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import { setDocumentTitle } from "@/utils/documentTitle";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -234,7 +235,6 @@ export default function AutomationBuilderPage() {
     }
     
   }, [resetFlow, setMode,]);
-
   return (
     <div className="flex h-screen flex-col  overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
       <div className="flex flex-1 overflow-hidden relative">

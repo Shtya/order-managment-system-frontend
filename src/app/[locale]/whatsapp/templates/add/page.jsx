@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/FloatingSelect"; // or standard select
 import Button_ from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
+import { setDocumentTitle } from "@/utils/documentTitle";
 import TemplatePreview from "../../atoms/TemplatePreview";
 import WhatsAppMessageBodyBuilder from "@/components/molecules/WhatsAppMessageBodyBuilder";
 import TemplateButtonBuilder from "../../atoms/TemplateButtonBuilder";
@@ -229,6 +230,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     const [headerMediaFile, setHeaderMediaFile] = useState(null);
 
     const isEdit = mode === "edit";
+    useEffect(() => {
+        setDocumentTitle(isEdit ? tForm("breadcrumbs.edit") : tForm("breadcrumbs.create"));
+    }, [isEdit, tForm]);
 
     const schema = useMemo(() => createTemplateFormSchema(tForm, isEdit ? "edit" : "create", superAdmin), [tForm, isEdit]);
 

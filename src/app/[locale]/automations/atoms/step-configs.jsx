@@ -688,6 +688,13 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         setTempValue({ ...tempValue, headerUrl: "" });
     };
 
+    const handleUseOrderFirstItemImage = (checked) => {
+        if (checked) {
+            handleMediaUrlChange();
+        }
+        setTempValue((prev) => ({ ...prev, useOrderFirstItemImage: !!checked }));
+    };
+
     const handleSave = () => {
         let deletedOldUrls = [];
         const oldLink = initialValueRef.current?.headerUrl;
@@ -891,12 +898,29 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                     <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                                         <ImageIcon size={12} /> {tConfig('mediaHeader')}
                                                     </p>
+                                                    {tempValue.templateData?.headerType?.toLowerCase() === 'image' && (
+                                                        <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-3">
+                                                            <Checkbox
+                                                                checked={!!tempValue.useOrderFirstItemImage}
+                                                                onCheckedChange={handleUseOrderFirstItemImage}
+                                                            />
+                                                            <span className="flex flex-col gap-0.5">
+                                                                <span className="text-[10px] md:text-xs font-black text-slate-700 dark:text-slate-200">
+                                                                    {tConfig('useOrderFirstItemImage')}
+                                                                </span>
+                                                                <span className="text-[9px] md:text-[10px] text-slate-400 font-bold">
+                                                                    {tConfig('useOrderFirstItemImageNote')}
+                                                                </span>
+                                                            </span>
+                                                        </label>
+                                                    )}
                                                     <MediaUpload
                                                         type={tempValue.templateData.headerType}
                                                         url={tempValue.headerUrl}
                                                         accountId={tempValue.accountId}
                                                         onUrlChange={handleMediaUrlChange}
                                                         onFileChange={handleMediaFileChange}
+                                                        disabled={tempValue.templateData?.headerTypee?.toLowerCase() === 'image' && !!tempValue.useOrderFirstItemImage}
                                                     />
                                                 </div>
                                             )}

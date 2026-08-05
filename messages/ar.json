@@ -11526,6 +11526,9 @@
           "maxLengthNote": "ملاحظة: يتم اقتطاع جميع قيم المتغيرات تلقائياً إلى 30 حرفاً، مع إزالة الكلمات من النهاية أولاً",
           "locationHeader": "ترويسة الموقع",
           "mediaHeader": "رأس الوسائط",
+          "useOrderFirstItemImage": "استخدام صورة أول منتج",
+          "useOrderFirstItemImageNote": "استخدام صورة أول عنصر من الطلب كصورة للهيدر",
+          "orderFirstItemImageDisabled": "سيتم أخذ صورة الهيدر تلقائياً من أول منتج في الطلب",
           "locationName": "اسم الموقع",
           "locationAddress": "عنوان الموقع",
           "messageHeader": "رأس الرسالة",
@@ -11598,6 +11601,23 @@
         },
         "orderProperties": {
           "title": "اختيار حقل من الطلب",
+          "orderData": "بيانات الطلب",
+          "globalData": "بيانات عامة",
+          "brandName": "اسم العلامة التجارية",
+          "date": "التاريخ",
+          "companyEmail": "البريد الإلكتروني للشركة",
+          "companyWebsite": "موقع الشركة",
+          "companyPhone": "هاتف الشركة",
+          "companyAddress": "عنوان الشركة",
+          "companyCurrency": "العملة",
+          "dateConfig": {
+            "title": "تاريخ ديناميكي",
+            "offset": "اليوم (0 = اليوم)",
+            "format": "صيغة التاريخ",
+            "today": "اليوم",
+            "insert": "إدراج",
+            "back": "رجوع"
+          },
           "orderNumber": "كود الطلب",
           "customerName": "اسم العميل",
           "phoneNumber": "رقم الجوال",
@@ -11683,12 +11703,20 @@
             "unitCost": "250",
             "lineTotal": "500",
             "duplicateCount": "1",
-            "originalOrderNumber": "ORDAMQLZZS"
+            "originalOrderNumber": "ORDAMQLZZS",
+            "brandName": "علامتي التجارية",
+            "date": "05-08-2026",
+            "companyEmail": "support@brand.com",
+            "companyWebsite": "brand.com",
+            "companyPhone": "+20123456789",
+            "companyAddress": "شارع الملك فهد، الرياض",
+            "companyCurrency": "EGP"
           },
           "firstitems": "أول منتج",
           "lastitems": "أخر منتج",
           "duplicateCount": "رقم التكرار",
-          "originalOrderNumber": "رقم الطلب الأصلي المُكرَّر منه"
+          "originalOrderNumber": "رقم الطلب الأصلي المُكرَّر منه",
+          "chooseDate": "تاريخ"
         },
         "runPanel": {
           "title": "معلومات التشغيل",

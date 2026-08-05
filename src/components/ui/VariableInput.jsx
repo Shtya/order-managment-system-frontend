@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Plus, ChevronRight, ChevronDown } from "lucide-react"
+import { Plus, ChevronRight, ChevronDown, ChevronLeft } from "lucide-react"
+import { useLocale } from "next-intl"
 import { cn } from "@/utils/cn"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { renderToStaticMarkup } from "react-dom/server"
@@ -33,7 +34,63 @@ const sizeClasses = {
 }
 
 // A chip token looks like {{variable.path}} inside the serialized value.
-const TOKEN_RE = /\{\{\s*([\w.]+)\s*\}\}/g
+// The character class allows word chars, dots, array indexes (items[-1]),
+// and dynamic tokens such as global.date.0.DD-MM-YYYY. Named date formats
+// (e.g. "global.date.0.Weekday D Month YYYY") contain spaces, so the token
+// is allowed to be made of several space-separated word groups.
+const TOKEN_RE = /\{\{\s*([\w.\[\]\-\/]+(?:\s+[\w.\[\]\-\/]+)*)\s*\}\}/g
+
+const DEFAULT_DATE_FORMATS = [
+    "DD-MM-YYYY",
+    "DD/MM/YYYY",
+    "YYYY-MM-DD",
+    "MM-DD-YYYY",
+    "DD.MM.YYYY",
+    "WeekdayShort D MonthShort",
+    "Weekday D Month",
+    "Weekday D Month YYYY",
+    "D Month",
+    "D Month YYYY",
+]
+
+// Localized month/weekday names used to render named date formats. Kept in
+// sync with the backend (nodeHandlers.registry.ts) so the editor preview
+// matches what is actually sent.
+const MONTH_NAMES = {
+    en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    ar: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
+}
+const MONTH_SHORT_NAMES = {
+    en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    ar: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يولي", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
+}
+const WEEKDAY_NAMES = {
+    en: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    ar: ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"],
+}
+const WEEKDAY_SHORT_NAMES = {
+    en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    ar: ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"],
+}
+
+const pad2 = (n) => String(n).padStart(2, "0")
+
+function formatDateWithFormat(date, format, lang = "en") {
+    const l = lang === "ar" ? "ar" : "en"
+    const tokens = {
+        YYYY: String(date.getFullYear()),
+        YY: String(date.getFullYear()).slice(-2),
+        MM: pad2(date.getMonth() + 1),
+        M: String(date.getMonth() + 1),
+        DD: pad2(date.getDate()),
+        D: String(date.getDate()),
+        Weekday: WEEKDAY_NAMES[l][date.getDay()],
+        WeekdayShort: WEEKDAY_SHORT_NAMES[l][date.getDay()],
+        Month: MONTH_NAMES[l][date.getMonth()],
+        MonthShort: MONTH_SHORT_NAMES[l][date.getMonth()],
+    }
+    return format.replace(/WeekdayShort|Weekday|MonthShort|Month|YYYY|YY|MM|M|DD|D/g, (m) => tokens[m] ?? m)
+}
 
 function buildChip(variable) {
     const chip = document.createElement("span")
@@ -143,12 +200,29 @@ function flattenVariables(variables) {
     return result
 }
 
+// Resolve a token id back to a variable for chip rendering. Configured
+// dynamic tokens (e.g. global.date.2.DD-MM-YYYY) don't exist verbatim in
+// the variable list, so we fall back to the base "date" variable.
+function findVariableForToken(flattened, id) {
+    const direct = flattened.find((v) => v.id === id)
+    if (direct) return direct
+
+    const dateMatch = id.match(/^global\.date\.(-?\d+)\.(.+)$/)
+    if (dateMatch) {
+        const base = flattened.find((v) => v.type === "date")
+        if (base) {
+            return { ...base, id, preview: `${dateMatch[1]} · ${dateMatch[2]}` }
+        }
+    }
+
+    return null
+}
+
 // Turn a {{variable.path}} string into DOM content (text + chip + <br> nodes).
 function hydrate(container, value, flattened) {
     container.innerHTML = ""
     if (!value) return
 
-    const byId = new Map(flattened.map((v) => [v.id, v]))
     let lastIndex = 0
     let match
     TOKEN_RE.lastIndex = 0
@@ -157,7 +231,7 @@ function hydrate(container, value, flattened) {
         if (match.index > lastIndex) {
             appendTextWithBreaks(container, value.slice(lastIndex, match.index))
         }
-        const variable = byId.get(id)
+        const variable = findVariableForToken(flattened, id)
         container.appendChild(variable ? buildChip(variable) : document.createTextNode(full))
         lastIndex = match.index + full.length
     }
@@ -188,8 +262,12 @@ const VariableInput = React.forwardRef(function VariableInput(
 ) {
     const editableRef = React.useRef(null)
     const savedRangeRef = React.useRef(null)
+    const locale = useLocale()
     const [open, setOpen] = React.useState(false)
     const [expanded, setExpanded] = React.useState({})
+    const [configNode, setConfigNode] = React.useState(null)
+    const [dateOffset, setDateOffset] = React.useState(0)
+    const [dateFormat, setDateFormat] = React.useState("DD-MM-YYYY")
     const wrapRef = React.useRef(null)
 
     // Memoize flattened variables for hydrate
@@ -533,6 +611,24 @@ const VariableInput = React.forwardRef(function VariableInput(
 
         emitChange()
     }
+    // Open the inline config panel for variables that need extra values
+    // (e.g. the dynamic date), otherwise insert the chip right away.
+    const openVariableConfig = React.useCallback((node) => {
+        setDateOffset(node.defaultOffset ?? 0)
+        setDateFormat(node.defaultFormat ?? DEFAULT_DATE_FORMATS[0])
+        setConfigNode(node)
+    }, [])
+
+    const confirmVariableConfig = React.useCallback(() => {
+        if (!configNode) return
+        const token = `global.date.${dateOffset}.${dateFormat}`
+        const target = new Date()
+        target.setDate(target.getDate() + (Number.isFinite(dateOffset) ? dateOffset : 0))
+        const sample = formatDateWithFormat(target, dateFormat, locale)
+        insertVariable({ ...configNode, id: token, preview: sample })
+        setConfigNode(null)
+    }, [configNode, dateOffset, dateFormat, insertVariable, locale])
+
     // Recursively render nodes
     const renderNode = React.useCallback((node, level = 0) => {
         const hasChildren = node.children && node.children.length > 0
@@ -544,6 +640,8 @@ const VariableInput = React.forwardRef(function VariableInput(
                     onClick={() => {
                         if (hasChildren) {
                             toggleExpand(node.id)
+                        } else if (node.requiresConfig) {
+                            openVariableConfig(node)
                         } else {
                             insertVariable(node)
                         }
@@ -585,7 +683,7 @@ const VariableInput = React.forwardRef(function VariableInput(
                 )}
             </div>
         )
-    }, [expanded, toggleExpand, insertVariable])
+    }, [expanded, toggleExpand, insertVariable, openVariableConfig])
     
     return (
         <div ref={wrapRef} className="group relative w-full">
@@ -636,7 +734,10 @@ const VariableInput = React.forwardRef(function VariableInput(
                                 onClick={(e) => {
                                     e.stopPropagation()
                                     
-                                    setOpen((o) => !o)
+                                    setOpen((o) => {
+                                        if (!o) setConfigNode(null)
+                                        return !o
+                                    })
                                 }}
                                 aria-label="Insert variable"
                                 className={cn(
@@ -660,14 +761,62 @@ const VariableInput = React.forwardRef(function VariableInput(
                         className="min-w-72! w-auto! p-3"
                         sideOffset={6}
                     >
-                        <div className="px-2 pb-2 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/80">
-                            {popupTitle}
-                        </div>
-                        <div className="space-y-1 max-h-[500px] overflow-y-auto"
-                            onWheel={(e) => e.stopPropagation()}
-                            onTouchMove={(e) => e.stopPropagation()}>
-                            {variables.map((variable) => renderNode(variable))}
-                        </div>
+                        {configNode ? (
+                            <div className="space-y-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setConfigNode(null)}
+                                    className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                    {configNode.configLabels?.back || "Back"}
+                                </button>
+                                <div className="space-y-1">
+                                    <p className="text-[11px] font-medium text-foreground">{configNode.label}</p>
+                                    <label className="block text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">
+                                        {configNode.configLabels?.offset || "Days offset"}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={dateOffset}
+                                        onChange={(e) => setDateOffset(parseInt(e.target.value || "0", 10))}
+                                        className="w-full h-9 rounded-lg border border-border bg-background px-2.5 text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="block text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">
+                                        {configNode.configLabels?.format || "Format"}
+                                    </label>
+                                    <select
+                                        value={dateFormat}
+                                        onChange={(e) => setDateFormat(e.target.value)}
+                                        className="w-full h-9 rounded-lg border border-border bg-background px-2.5 text-sm"
+                                    >
+                                        {(configNode.formats || DEFAULT_DATE_FORMATS).map((f) => (
+                                            <option key={f} value={f}>{formatDateWithFormat(new Date(), f, locale)}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={confirmVariableConfig}
+                                    className="w-full h-9 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+                                >
+                                    {configNode.configLabels?.insert || "Insert"}
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="px-2 pb-2 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/80">
+                                    {popupTitle}
+                                </div>
+                                <div className="space-y-1 max-h-[500px] overflow-y-auto"
+                                    onWheel={(e) => e.stopPropagation()}
+                                    onTouchMove={(e) => e.stopPropagation()}>
+                                    {variables.map((variable) => renderNode(variable))}
+                                </div>
+                            </>
+                        )}
                     </PopoverContent>
                 )}
             </Popover>

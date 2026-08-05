@@ -11505,6 +11505,9 @@
           "maxLengthNote": "Note: All variable values are automatically truncated to 30 characters, removing words from the end first",
           "locationHeader": "Location Header",
           "mediaHeader": "Media Header",
+          "useOrderFirstItemImage": "Use first product image",
+          "useOrderFirstItemImageNote": "Use the first item's image from the order as the header",
+          "orderFirstItemImageDisabled": "The header image will be taken automatically from the first product in the order",
           "locationName": "Location Name",
           "locationAddress": "Location Address",
           "messageHeader": "Message Header",
@@ -11577,6 +11580,23 @@
         },
         "orderProperties": {
           "title": "Select field from order",
+          "orderData": "Order Data",
+          "globalData": "Global Data",
+          "brandName": "Brand Name",
+          "date": "Date",
+          "companyEmail": "Company Email",
+          "companyWebsite": "Company Website",
+          "companyPhone": "Company Phone",
+          "companyAddress": "Company Address",
+          "companyCurrency": "Currency",
+          "dateConfig": {
+            "title": "Dynamic date",
+            "offset": "Day (0 = today)",
+            "format": "Date format",
+            "today": "Today",
+            "insert": "Insert",
+            "back": "Back"
+          },
           "orderNumber": "Order Number",
           "customerName": "Customer Name",
           "phoneNumber": "Phone Number",
@@ -11662,12 +11682,20 @@
             "unitCost": "250",
             "lineTotal": "500",
             "duplicateCount": "1",
-            "originalOrderNumber": "ORDAMQLZZS"
+            "originalOrderNumber": "ORDAMQLZZS",
+            "brandName": "My Brand",
+            "date": "05-08-2026",
+            "companyEmail": "support@brand.com",
+            "companyWebsite": "brand.com",
+            "companyPhone": "+20123456789",
+            "companyAddress": "123 Main St, London",
+            "companyCurrency": "EGP"
           },
           "firstitems": "First product",
           "lastitems": "Last product",
           "duplicateCount": "Repetition number",
-          "originalOrderNumber": "The original order number duplicated from"
+          "originalOrderNumber": "The original order number duplicated from",
+          "chooseDate": "Date"
         },
         "runPanel": {
           "title": "Run Information",

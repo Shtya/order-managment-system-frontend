@@ -24,12 +24,14 @@ export default function MediaUpload({
     url = "",
     accountId,
     onUrlChange,
-    onFileChange
+    onFileChange,
+    disabled = false
 }) {
     const t = useTranslations("whatsApp.templates.form.mediaUpload");
     const fileInputRef = useRef(null);
 
     const handleUploadClick = () => {
+        if (disabled) return;
         fileInputRef.current?.click();
     };
 
@@ -77,7 +79,8 @@ export default function MediaUpload({
                     "relative border-2 border-dashed rounded-2xl transition-all duration-200 overflow-hidden",
                     finalUrl
                         ? "border-primary/50 bg-primary/5"
-                        : "border-slate-200 dark:border-slate-800 hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-slate-900/50"
+                        : "border-slate-200 dark:border-slate-800 hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-slate-900/50",
+                    disabled && "opacity-50 pointer-events-none"
                 )}
             >
                 {finalUrl ? (

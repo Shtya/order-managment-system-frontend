@@ -1,62 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronRight, ChevronDown, Database, Hash, User, Phone, MapPin, DollarSign, Package, Tag, Activity, Store, Globe, Building2, Mail, Calendar } from "lucide-react";
+import {
+    ChevronRight, ChevronDown, Database, Hash, User, Phone, MapPin,
+    DollarSign, Package, Tag, Activity, Store, Globe, Building2, Mail, Calendar
+} from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useTranslations, useLocale } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { CompactDateConfig, DEFAULT_DATE_FORMATS, formatDateWithFormat, getNaturalDayName } from "@/components/ui/dateConfig";
 
-export const DEFAULT_DATE_FORMATS = [
-    "DD-MM-YYYY",
-    "DD/MM/YYYY",
-    "YYYY-MM-DD",
-    "MM-DD-YYYY",
-    "DD.MM.YYYY",
-    "WeekdayShort D MonthShort",
-    "Weekday D Month",
-    "Weekday D Month YYYY",
-    "D Month",
-    "D Month YYYY",
-];
+export { DEFAULT_DATE_FORMATS, formatDateWithFormat, getNaturalDayName };
 
-const MONTH_NAMES = {
-    en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-    ar: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
-};
-const MONTH_SHORT_NAMES = {
-    en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-    ar: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يولي", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
-};
-const WEEKDAY_NAMES = {
-    en: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-    ar: ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"],
-};
-const WEEKDAY_SHORT_NAMES = {
-    en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-    ar: ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"],
-};
-
-const pad2 = (n) => String(n).padStart(2, "0");
-
-function formatDateWithFormat(date, format, lang = "en") {
-    const l = lang === "ar" ? "ar" : "en";
-    const tokens = {
-        YYYY: String(date.getFullYear()),
-        YY: String(date.getFullYear()).slice(-2),
-        MM: pad2(date.getMonth() + 1),
-        M: String(date.getMonth() + 1),
-        DD: pad2(date.getDate()),
-        D: String(date.getDate()),
-        Weekday: WEEKDAY_NAMES[l][date.getDay()],
-        WeekdayShort: WEEKDAY_SHORT_NAMES[l][date.getDay()],
-        Month: MONTH_NAMES[l][date.getMonth()],
-        MonthShort: MONTH_SHORT_NAMES[l][date.getMonth()],
-    };
-    return format.replace(/WeekdayShort|Weekday|MonthShort|Month|YYYY|YY|MM|M|DD|D/g, (m) => tokens[m] ?? m);
-}
-
-export function useOrderProperties() {
+export function useOrderProperties(customOverrides = {}) {
     const t = useTranslations("whatsApp.automations.builder.orderProperties");
     const ORDER_PROPERTIES = [
         {
@@ -128,7 +84,7 @@ export function useOrderProperties() {
                 { id: "global.brandName", label: t("brandName"), icon: Building2, example: t("examples.brandName"), path: "global.brandName" },
                 {
                     id: "global.date.0.DD-MM-YYYY",
-                    label: t("chooseDate"),
+                    label: t("dateConfig.title"),
                     icon: Calendar,
                     path: "global.date.0.DD-MM-YYYY",
                     type: "date",
@@ -136,13 +92,27 @@ export function useOrderProperties() {
                     defaultOffset: 0,
                     defaultFormat: "DD-MM-YYYY",
                     formats: DEFAULT_DATE_FORMATS,
+                    ...customOverrides,
                     configLabels: {
                         title: t("dateConfig.title"),
+                        subtitle: t("dateConfig.subtitle"),
+                        relativeTitle: t("dateConfig.relativeTitle"),
+                        formatTitle: t("dateConfig.formatTitle"),
                         offset: t("dateConfig.offset"),
                         format: t("dateConfig.format"),
                         today: t("dateConfig.today"),
+                        twoDaysBefore: t("dateConfig.twoDaysBefore"),
+                        yesterday: t("dateConfig.yesterday"),
+                        sendDate: t("dateConfig.sendDate"),
+                        tomorrow: t("dateConfig.tomorrow"),
+                        twoDaysAfter: t("dateConfig.twoDaysAfter"),
+                        preview: t("dateConfig.preview"),
+                        localeDisplayedInArabic: t("dateConfig.localeDisplayedInArabic"),
+                        localeDisplayedInEnglish: t("dateConfig.localeDisplayedInEnglish"),
                         insert: t("dateConfig.insert"),
-                        back: t("dateConfig.back")
+                        insertDate: t("dateConfig.insertDate"),
+                        back: t("dateConfig.back"),
+                        ...(customOverrides?.configLabels || {}),
                     },
                     example: t("examples.date")
                 },
@@ -158,45 +128,95 @@ export function useOrderProperties() {
     return ORDER_PROPERTIES;
 }
 
-export function OrderPropertySelector({ open, onOpenChange, onSelect }) {
+export function OrderPropertySelector({
+    open,
+    onOpenChange,
+    onSelect,
+    customProperties,
+    customFormats,
+    configLabels: propLabels,
+    renderInput,
+    renderConfigPanel,
+    onConfigChange,
+}) {
     const [expanded, setExpanded] = useState({ orderData: true, globalData: true, itemsAll: true, itemsFirst: true, itemsLast: true });
     const [configNode, setConfigNode] = useState(null);
     const [dateOffset, setDateOffset] = useState(0);
     const [dateFormat, setDateFormat] = useState("DD-MM-YYYY");
     const t = useTranslations("whatsApp.automations.builder.orderProperties");
     const locale = useLocale();
-    const orderProperties = useOrderProperties();
+    const baseProperties = useOrderProperties(propLabels ? { configLabels: propLabels } : undefined);
+    const orderProperties = customProperties ?? baseProperties;
 
-    const toggleExpand = (id) => {
+    const activeFormats = useMemo(() => {
+        return customFormats ?? configNode?.formats ?? DEFAULT_DATE_FORMATS;
+    }, [customFormats, configNode]);
+
+    const activeLabels = useMemo(() => {
+        const defaults = {
+            title: t("dateConfig.title"),
+            subtitle: t("dateConfig.subtitle"),
+            relativeTitle: t("dateConfig.relativeTitle"),
+            formatTitle: t("dateConfig.formatTitle"),
+            offset: t("dateConfig.offset"),
+            format: t("dateConfig.format"),
+            today: t("dateConfig.today"),
+            twoDaysBefore: t("dateConfig.twoDaysBefore"),
+            yesterday: t("dateConfig.yesterday"),
+            sendDate: t("dateConfig.sendDate"),
+            tomorrow: t("dateConfig.tomorrow"),
+            twoDaysAfter: t("dateConfig.twoDaysAfter"),
+            preview: t("dateConfig.preview"),
+            localeDisplayedInArabic: t("dateConfig.localeDisplayedInArabic"),
+            localeDisplayedInEnglish: t("dateConfig.localeDisplayedInEnglish"),
+            insert: t("dateConfig.insert"),
+            insertDate: t("dateConfig.insertDate"),
+            back: t("dateConfig.back"),
+        };
+        return { ...defaults, ...(configNode?.configLabels || {}), ...(propLabels || {}) };
+    }, [t, configNode, propLabels]);
+
+    const toggleExpand = useCallback((id) => {
         setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
-    };
+    }, []);
 
-    const handleNodeClick = (node) => {
+    const handleOffsetChange = useCallback((next) => {
+        const safe = Number.isFinite(next) ? next : 0;
+        setDateOffset(safe);
+        onConfigChange?.({ offset: safe, format: dateFormat });
+    }, [dateFormat, onConfigChange]);
+
+    const handleFormatChange = useCallback((next) => {
+        setDateFormat(next);
+        onConfigChange?.({ offset: dateOffset, format: next });
+    }, [dateOffset, onConfigChange]);
+
+    const handleNodeClick = useCallback((node) => {
         if (node.children && node.children.length > 0) {
             toggleExpand(node.id);
             return;
         }
         if (node.requiresConfig) {
             setDateOffset(node.defaultOffset ?? 0);
-            setDateFormat(node.defaultFormat ?? DEFAULT_DATE_FORMATS[0]);
+            setDateFormat(node.defaultFormat ?? (customFormats?.[0] ?? DEFAULT_DATE_FORMATS[0]));
             setConfigNode(node);
             return;
         }
         onSelect(node);
-    };
+    }, [toggleExpand, onSelect, customFormats]);
 
-    const handleConfirmConfig = () => {
+    const handleConfirmConfig = useCallback(() => {
         if (!configNode) return;
         const token = `global.date.${dateOffset}.${dateFormat}`;
         onSelect({ ...configNode, id: token, path: token });
         setConfigNode(null);
-    };
+    }, [configNode, dateOffset, dateFormat, onSelect]);
 
-    const renderNode = (node, level = 0) => {
+    const renderNode = useCallback((node, level = 0) => {
         const hasChildren = node.children && node.children.length > 0;
         const isExpanded = expanded[node.id];
 
-        return (
+        const defaultRender = (
             <div key={node.id} className="select-none">
                 <div
                     onClick={() => handleNodeClick(node)}
@@ -212,7 +232,13 @@ export function OrderPropertySelector({ open, onOpenChange, onSelect }) {
                         ) : (
                             <div className="w-4 h-4" />
                         )}
-                        <node.icon size={18} className={cn("shrink-0", hasChildren ? "text-slate-400" : "text-primary")} />
+                        {node.icon ? (
+                            <node.icon size={18} className={cn("shrink-0", hasChildren ? "text-slate-400" : "text-primary")} />
+                        ) : (
+                            <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] bg-[var(--primary)] text-[10px] font-bold text-white">
+                                {node.label?.[0]?.toUpperCase() ?? "•"}
+                            </span>
+                        )}
                         <span className="text-sm font-bold truncate">{node.label}</span>
                         {!hasChildren && node.example && (
                             <span className="text-[10px] text-slate-400 font-medium truncate">({node.example})</span>
@@ -231,59 +257,76 @@ export function OrderPropertySelector({ open, onOpenChange, onSelect }) {
                 )}
             </div>
         );
-    };
 
-    const labels = configNode?.configLabels || {};
+        if (typeof renderInput === "function" && !hasChildren) {
+            return renderInput({ node, level, isExpanded, onClick: () => handleNodeClick(node), expanded }, defaultRender);
+        }
+        return defaultRender;
+    }, [expanded, handleNodeClick, renderInput]);
+
+    const previewDate = useMemo(() => {
+        const d = new Date();
+        d.setDate(d.getDate() + dateOffset);
+        return formatDateWithFormat(d, dateFormat, locale);
+    }, [dateOffset, dateFormat, locale]);
+
+    const renderDateConfigPanel = () => {
+        if (typeof renderConfigPanel === "function") {
+            return renderConfigPanel({
+                labels: activeLabels,
+                dateOffset,
+                dateFormat,
+                formats: activeFormats,
+                locale,
+                onOffsetChange: handleOffsetChange,
+                onFormatChange: handleFormatChange,
+                onConfirm: handleConfirmConfig,
+                onBack: () => setConfigNode(null),
+                previewDate,
+            });
+        }
+
+        return (
+            <CompactDateConfig
+                configNode={configNode}
+                dateOffset={dateOffset}
+                dateFormat={dateFormat}
+                locale={locale}
+                formats={activeFormats}
+                onBack={() => setConfigNode(null)}
+                onOffsetChange={handleOffsetChange}
+                onFormatChange={handleFormatChange}
+                onConfirm={handleConfirmConfig}
+            />
+        );
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
-                <DialogHeader className="p-6 border-b dark:border-slate-800">
-                    <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                        <Database className="text-primary" size={24} />
-                        {configNode ? configNode.label : t('title')}
+            <DialogContent className="max-w-lg p-0 overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border-none shadow-2xl bg-white dark:bg-slate-900">
+                <DialogHeader className="p-6 md:p-7 border-b border-slate-100 dark:border-slate-800">
+                    <DialogTitle className="text-xl md:text-2xl font-black flex items-center justify-start gap-2 text-slate-800 dark:text-slate-100">
+                        {configNode ? (
+                            <>
+                                <span className="text-primary">{configNode.label}</span>
+                                <Calendar className="text-primary" size={26} />
+                            </>
+                        ) : (
+                            <>
+                                <span>{t('title')}</span>
+                                <Database className="text-primary" size={26} />
+                            </>
+                        )}
                     </DialogTitle>
+                    {configNode && (
+                        <p className="text-center text-xs md:text-sm text-slate-400 mt-2 font-bold">
+                            {activeLabels.subtitle}
+                        </p>
+                    )}
                 </DialogHeader>
-                <div className="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="p-4 md:p-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
                     {configNode ? (
-                        <div className="space-y-4">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{labels.title}</p>
-                                <div>
-                                    <label className="block text-[11px] font-bold text-slate-500 mb-1">{labels.offset}</label>
-                                    <input
-                                        type="number"
-                                        value={dateOffset}
-                                        onChange={(e) => setDateOffset(parseInt(e.target.value || "0", 10))}
-                                        className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm font-bold"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[11px] font-bold text-slate-500 mb-1">{labels.format}</label>
-                                    <select
-                                        value={dateFormat}
-                                        onChange={(e) => setDateFormat(e.target.value)}
-                                        className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm font-bold"
-                                    >
-                                        {(configNode.formats || DEFAULT_DATE_FORMATS).map(f => (
-                                            <option key={f} value={f}>{formatDateWithFormat(new Date(), f, locale)}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => setConfigNode(null)}
-                                    className="flex-1 h-10 rounded-xl"
-                                >
-                                    {labels.back}
-                                </Button>
-                                <Button onClick={handleConfirmConfig} className="flex-1 h-10 rounded-xl bg-primary hover:bg-primary/90 text-white">
-                                    {labels.insert}
-                                </Button>
-                            </div>
-                        </div>
+                        renderDateConfigPanel()
                     ) : (
                         <div className="space-y-1">
                             {orderProperties.map(prop => renderNode(prop))}

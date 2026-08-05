@@ -166,10 +166,10 @@ export function CompactDateConfig({
             <button
                 type="button"
                 onClick={onBack}
-                className="flex items-center ms-auto gap-1.5 text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center self-end gap-1.5 rounded-lg border-2 border-border bg-background/80 px-3 py-1.5 text-xs font-bold text-muted-foreground transition-all hover:border-primary/60 hover:text-foreground hover:-translate-y-0.5"
             >
+                <ChevronLeft className="h-4 w-4" />
                 {labels.back || "Back"}
-                <ChevronLeft className="h-3.5 w-3.5" />
             </button>
 
             <div className="space-y-2">

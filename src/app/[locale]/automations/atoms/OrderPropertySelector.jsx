@@ -308,13 +308,13 @@ export function OrderPropertySelector({
                     <DialogTitle className="text-xl md:text-2xl font-black flex items-center justify-start gap-2 text-slate-800 dark:text-slate-100">
                         {configNode ? (
                             <>
-                                <span className="text-primary">{configNode.label}</span>
                                 <Calendar className="text-primary" size={26} />
+                                <span className="text-primary">{configNode.label}</span>
                             </>
                         ) : (
                             <>
-                                <span>{t('title')}</span>
                                 <Database className="text-primary" size={26} />
+                                <span>{t('title')}</span>
                             </>
                         )}
                     </DialogTitle>

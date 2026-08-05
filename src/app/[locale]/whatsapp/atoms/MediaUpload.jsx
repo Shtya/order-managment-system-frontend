@@ -5,7 +5,16 @@ import { UploadCloud, Trash2, FileText, Info } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { getMediaUrlOrOriginal, WHATSAPP_DOCUMENT_ACCEPT, WHATSAPP_IMAGE_ACCEPT, WHATSAPP_VIDEO_ACCEPT } from "@/utils/whatsapp-healper";
+
+const MAX_FILE_SIZES = {
+    IMAGE: 5,
+    VIDEO: 16,
+    DOCUMENT: 100
+};
+
+const getMaxFileSizeMB = (type) => MAX_FILE_SIZES[type] || 100;
 
 /**
  * Reusable Media Upload component for WhatsApp Template creation
@@ -46,6 +55,17 @@ export default function MediaUpload({
             case "DOCUMENT": return t("types.document");
             default: return t("types.file");
         }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        const maxSizeMB = getMaxFileSizeMB(type);
+        if (file && maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
+            toast.error(t("fileTooLarge", { size: `${maxSizeMB}MB` }));
+            e.target.value = "";
+            return;
+        }
+        onFileChange?.(e);
     };
 
     const finalUrl = useMemo(() => getMediaUrlOrOriginal(url, accountId), [url, accountId]);
@@ -97,7 +117,7 @@ export default function MediaUpload({
                             {t("dragAndDrop", { type: getTypeName() })}
                         </p>
                         <p className="text-xs text-slate-500 mb-6">
-                            {t("maxSize")}
+                            {t("maxSize", { size: `${getMaxFileSizeMB(type)}MB` })}
                         </p>
 
                         <div className="flex gap-3">
@@ -117,7 +137,7 @@ export default function MediaUpload({
                     type="file"
                     className="hidden"
                     accept={getAcceptType()}
-                    onChange={onFileChange}
+                    onChange={handleFileChange}
                 />
             </div>
 

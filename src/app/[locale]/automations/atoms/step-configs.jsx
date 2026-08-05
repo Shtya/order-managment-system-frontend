@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogD
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import UserSelect from "@/components/atoms/UserSelect";
 import { MediaForm, MediaPreviewForm } from "../../whatsapp/atoms/chats/MediaPreviewOverlay";
+import MediaUpload from "../../whatsapp/atoms/MediaUpload";
 import { LocationForm } from "../../whatsapp/atoms/chats/LocationModal";
 import { LocationRequestForm } from "../../whatsapp/atoms/chats/LocationRequestModal";
 import { ContactForm } from "../../whatsapp/atoms/chats/ContactModal";
@@ -512,10 +513,12 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
     const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
     const [isOrderSelectorOpen, setIsOrderSelectorOpen] = useState(false);
     const [activeVar, setActiveVar] = useState(null); // { type: 'header' | 'body', num: string }
+    const [headerMediaFile, setHeaderMediaFile] = useState(null);
+    const initialValueRef = useRef(null);
     const tChats = useTranslations("chats");
-    const tConfig = useTranslations("whatsApp.automations.builder.config");
     const tCommon = useTranslations("common");
     const nodes = useFlowStore((s) => s.nodes);
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
     const triggerNode = nodes.find(n => n.type === 'trigger');
     const isOrderTrigger = triggerNode?.data?.type?.startsWith('order_');
 
@@ -523,6 +526,13 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
 
     useEffect(() => {
         setTempValue(value || {});
+    }, [value, isOpen]);
+
+    useEffect(() => {
+        if (isOpen) {
+            initialValueRef.current = value || null;
+            setHeaderMediaFile(value?.headerMediaFile || null);
+        }
     }, [value, isOpen]);
 
     // Check if all variables are filled to enable save
@@ -553,7 +563,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         const parameterFormat = config.parameterFormat || 'positional';
         const headerVars = extractVariableNames(config.headerText || '', parameterFormat);
         const bodyVars = extractVariableNames(config.bodyText || '', parameterFormat);
-
+        
         const headerVariables = {};
         headerVars.forEach(num => {
             headerVariables[num] = { type: 'direct', value: '', label: '', example: config.headerVariables?.[num] || '' };
@@ -592,6 +602,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         setTempValue({
             ...tempValue,
             templateId: template.id,
+            accountId: template.accountId,
             templateName: template.name,
             templateData: config,
             parameterFormat,
@@ -599,6 +610,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
             bodyVariables,
             buttonVariables,
             locationData,
+            headerUrl: template?.templateConfig?.headerUrl,
             branches: config.buttons?.filter(btn => btn.type === 'CUSTOM')?.map((btn, i) => ({
                 id: `btn_${i}`,
                 label: btn.text,
@@ -606,6 +618,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                 condition: `button_click_${i}`
             })) || []
         });
+        setHeaderMediaFile(null);
         setIsTemplateDialogOpen(false);
     };
 
@@ -660,9 +673,31 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         setActiveVar(null);
     };
 
+    const handleMediaFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setHeaderMediaFile(file);
+            setTempValue({ ...tempValue, headerUrl: URL.createObjectURL(file) });
+        }
+        e.target.value = "";
+    };
+
+    const handleMediaUrlChange = () => {
+        console.log("called")
+        setHeaderMediaFile(null);
+        setTempValue({ ...tempValue, headerUrl: "" });
+    };
+
     const handleSave = () => {
-        onChange(tempValue);
-        onClose(tempValue);
+        let deletedOldUrls = [];
+        const oldLink = initialValueRef.current?.headerUrl;
+        const newLink = tempValue.headerUrl;
+        if (oldLink && oldLink !== newLink) {
+            deletedOldUrls.push(oldLink);
+        }
+        const nextValue = { ...tempValue, headerMediaFile, deletedOldUrls };
+        onChange(nextValue);
+        onClose(nextValue);
     };
 
     const renderVariableInput = (type, num, buttonLabel) => {
@@ -745,6 +780,8 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
             .filter(Boolean) || [];
     }, [tempValue.templateData?.buttons]);
 
+    const isMediaHeader = useMemo(() => ["IMAGE", "VIDEO", "DOCUMENT"].includes(tempValue.templateData?.headerType), [tempValue.templateData?.headerType]);
+
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
@@ -816,7 +853,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                             </div>
 
                                             {/* Variables Section */}
-                                            {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0 || tempValue.templateData?.headerType === 'LOCATION') && (
+                                            {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0 || tempValue.templateData?.headerType === 'LOCATION' || isMediaHeader) && (
                                                 <div className="space-y-6 md:space-y-8 p-4 md:p-8 rounded-2xl md:rounded-[32px] bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
                                                     <div>
                                                         <h4 className="text-[10px] md:text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">{tConfig('fillVariables')}</h4>
@@ -845,9 +882,24 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                                     {renderVariableInput('location', 'name', tConfig('locationName'))}
                                                                     {renderVariableInput('location', 'address', tConfig('locationAddress'))}
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {isMediaHeader && (
+                                                <div className="space-y-4">
+                                                    <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                        <ImageIcon size={12} /> {tConfig('mediaHeader')}
+                                                    </p>
+                                                    <MediaUpload
+                                                        type={tempValue.templateData.headerType}
+                                                        url={tempValue.headerUrl}
+                                                        accountId={tempValue.accountId}
+                                                        onUrlChange={handleMediaUrlChange}
+                                                        onFileChange={handleMediaFileChange}
+                                                    />
+                                                </div>
+                                            )}
 
                                                     {headerVars.length > 0 && (
                                                         <div className="space-y-4">

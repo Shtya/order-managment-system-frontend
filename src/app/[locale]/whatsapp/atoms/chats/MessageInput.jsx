@@ -14,6 +14,7 @@ import { cn } from "@/utils/cn";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
 import api from "@/utils/api";
+import toast from "react-hot-toast";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,6 +24,14 @@ import {
 import { useConversation } from "./ConversationContext";
 import { useAuth } from "@/context/AuthContext";
 import { WHATSAPP_DOCUMENT_ACCEPT, WHATSAPP_IMAGE_ACCEPT, WHATSAPP_SUPPORTED_ACCEPT, WHATSAPP_VIDEO_ACCEPT } from "@/utils/whatsapp-healper";
+
+const MAX_FILE_SIZES = {
+    image: 5,
+    video: 16,
+    document: 100
+};
+
+const getMaxFileSizeMB = (type) => MAX_FILE_SIZES[type] || 100;
 
 export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollToMessage, setShowInteractiveModal, setShowLocationRequestModal, setShowContactModal, setShowLocationModal, setShowListModal, setShowTemplateModal }) {
     const t = useTranslations("chats");
@@ -72,6 +81,12 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
 
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
+        const maxSizeMB = getMaxFileSizeMB(fileType);
+        if (file && maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
+            toast.error(t("fileTooLarge", { size: `${maxSizeMB}MB` }));
+            e.target.value = null;
+            return;
+        }
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {

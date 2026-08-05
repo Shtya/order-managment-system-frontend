@@ -35,6 +35,37 @@ export const nodeProcessors = {
         };
     },
 
+    send_whatsapp_template: async (node) => {
+        const config = node.data?.config;
+        const accountId = config?.accountId;
+        let newLinksIds = [];
+
+        if (config?.headerMediaFile) {
+            const mediaObj = {
+                url: config.headerUrl || "",
+                name: config.headerMediaFile?.name || "",
+                file: config.headerMediaFile
+            };
+
+            const mediaType = config.templateData?.headerType?.toLowerCase() || "image";
+            const uploadedAssetInfo = await handleAssetUpload({ mediaType, mediaObj }, accountId);
+            
+            config.headerUrl = mediaObj.link;
+            delete config.headerMediaFile;
+
+            if (uploadedAssetInfo?.id) {
+                newLinksIds.push(uploadedAssetInfo.id);
+            }
+        }
+
+        return {
+            data: {
+                ...node.data
+            },
+            newLinksIds
+        };
+    },
+
 };
 
 /**

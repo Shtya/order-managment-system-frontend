@@ -152,7 +152,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                      break;
                  }
              }
-             console.log(trigger, payload.trigger, payload);
+             
             const prev = {
                 ...payload,
                 previewId,

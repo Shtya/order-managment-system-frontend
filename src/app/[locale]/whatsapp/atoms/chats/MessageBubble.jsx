@@ -493,7 +493,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                     const key = param.parameter_name || (idx + 1);
                                     dynamicExamples[key] = param.text;
                                 } else if (["image", "video", "document"].includes(param.type?.toLowerCase())) {
-                                    headerMediaUrl = param[param.type]?.link || headerMediaUrl;
+                                    headerMediaUrl =  param[param.type]?.id || param[param.type]?.link || headerMediaUrl;
                                 } else if (param.type === "location") {
                                     locationData = param.location;
                                 }
@@ -1011,11 +1011,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
 
 
 export default memo(MessageBubble, (prevProps, nextProps) => {
-    console.log("MessageBubble memo check:", 
-        prevProps.message.reactions,
-        nextProps.message.reactions,
-        prevProps.message.reactions === nextProps.message.reactions
-    );
+    
     return (
         // Check if it's the exact same message
         prevProps.id === nextProps.id &&

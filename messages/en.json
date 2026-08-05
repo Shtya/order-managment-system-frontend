@@ -11124,7 +11124,8 @@
         "mediaUpload": {
           "title": "Upload {type}",
           "dragAndDrop": "Drag and drop {type} or choose a file",
-          "maxSize": "Max file size: 50MB",
+          "maxSize": "Max file size: {size}",
+          "fileTooLarge": "File exceeds the maximum allowed size of {size}.",
           "uploadButton": "Upload {type}",
           "policyNote": "Please ensure the {type} you send complies with our Terms of Service policy.",
           "types": {
@@ -11503,6 +11504,7 @@
           "fillVariablesDesc": "Enter static values or choose dynamic fields from the order",
           "maxLengthNote": "Note: All variable values are automatically truncated to 30 characters, removing words from the end first",
           "locationHeader": "Location Header",
+          "mediaHeader": "Media Header",
           "locationName": "Location Name",
           "locationAddress": "Location Address",
           "messageHeader": "Message Header",
@@ -12124,6 +12126,8 @@
     },
     "sendMessage": "Send Message",
     "preview": "Preview",
+    "fileTooLarge": "File exceeds the maximum allowed size of {size}.",
+    "mediaHeader": "Media Header",
     "messageTypes": {
       "text": "Text",
       "image": "Image",

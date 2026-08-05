@@ -34,6 +34,7 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 import LocationFields from "./LocationFields";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import { MapPin } from "lucide-react";
+import MediaUpload from "../MediaUpload";
 
 export default function TemplateMessageModal({ selectedAccount, open, onOpenChange }) {
     const t = useTranslations("chats");
@@ -51,6 +52,8 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
         buttonVariables: {}
     });
     const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+    const [headerMediaFile, setHeaderMediaFile] = useState(null);
+    const [mediaPreviewUrl, setMediaPreviewUrl] = useState("");
 
     const extractVariables = useCallback((text, type) => {
         if (!text) return [];
@@ -121,6 +124,8 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
             } : null
         });
         setIsTemplateDialogOpen(false);
+        setHeaderMediaFile(null);
+        setMediaPreviewUrl(config.headerUrl || "");
     };
 
     const handleLocationSelect = async (newLat, newLng) => {
@@ -160,6 +165,21 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
         }));
     };
 
+    const handleMediaFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setHeaderMediaFile(file);
+            setMediaPreviewUrl(URL.createObjectURL(file));
+        }
+        e.target.value = "";
+    };
+
+    const handleMediaUrlChange = () => {
+        
+        setHeaderMediaFile(null);
+        setMediaPreviewUrl("");
+    };
+
     const headerVars = useMemo(() => {
         console.log(templateMessage.templateData?.headerText, templateMessage.parameterFormat)
         return extractVariables(templateMessage.templateData?.headerText, templateMessage.parameterFormat);
@@ -175,6 +195,8 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
             .map((btn, idx) => ((btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') || btn.type === 'COPY_CODE' ? String(idx) : null))
             .filter(Boolean);
     }, [templateMessage.templateData?.buttons]);
+
+    const isMediaHeader = useMemo(() => ["IMAGE", "VIDEO", "DOCUMENT"].includes(templateMessage.templateData?.headerType), [templateMessage.templateData?.headerType]);
 
     const isAllFilled = useMemo(() => {
         if (!templateMessage.templateId) return false;
@@ -194,7 +216,7 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
 
     const handleSend = () => {
         const lang = templateMessage.language;
-
+            
         handleSendMessage({
             accountId: templateMessage.accountId,
             type: "template",
@@ -215,13 +237,13 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
                             return param;
                         })
                     }] : []),
-                    ...(templateMessage.templateData?.headerType === 'IMAGE' || templateMessage.templateData?.headerType === 'VIDEO' || templateMessage.templateData?.headerType === 'DOCUMENT' ? [{
+                    ...(isMediaHeader ? [{
                         type: "header",
                         parameters: [{
                             type: templateMessage.templateData.headerType.toLowerCase(),
-                            [templateMessage.templateData.headerType.toLowerCase()]: {
-                                link: avatarSrc(templateMessage.templateData.headerUrl)
-                            }
+                            [templateMessage.templateData.headerType.toLowerCase()]: headerMediaFile
+                                ? { link: mediaPreviewUrl, file: headerMediaFile }
+                                : { link: avatarSrc(templateMessage.templateData.headerUrl) }
                         }]
                     }] : []),
                     ...(templateMessage.templateData?.headerType === 'LOCATION' ? [{
@@ -289,6 +311,8 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
             });
 
         onOpenChange(false);
+        setHeaderMediaFile(null);
+        setMediaPreviewUrl("");
         setTemplateMessage({
             templateId: null,
             accountId: null,
@@ -403,7 +427,7 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
                                     </div>
 
                                     {/* Variables Filling Section */}
-                                    {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0 || templateMessage.templateData?.headerType === 'LOCATION') && (
+                                    {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0 || templateMessage.templateData?.headerType === 'LOCATION' || isMediaHeader) && (
                                         <div className="space-y-6 p-4 md:p-6 rounded-2xl md:rounded-3xl bg-muted/30 border border-border">
                                             <div>
                                                 <h4 className="text-[10px] md:text-xs font-black text-foreground uppercase tracking-widest mb-1">{t("fillVariables") || "Fill Variables"}</h4>
@@ -437,6 +461,21 @@ export default function TemplateMessageModal({ selectedAccount, open, onOpenChan
                                                             />
                                                         </div>
                                                     </div>
+                                                </div>
+                                            )}
+
+                                            {isMediaHeader && (
+                                                <div className="space-y-4">
+                                                    <p className="text-[9px] md:text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
+                                                        <Layout size={12} /> {t("mediaHeader") || "Media Header"}
+                                                    </p>
+                                                    <MediaUpload
+                                                        type={templateMessage.templateData.headerType}
+                                                        url={mediaPreviewUrl}
+                                                        accountId={templateMessage.accountId || selectedAccount?.id}
+                                                        onUrlChange={handleMediaUrlChange}
+                                                        onFileChange={handleMediaFileChange}
+                                                    />
                                                 </div>
                                             )}
 

@@ -11145,7 +11145,8 @@
         "mediaUpload": {
           "title": "رفع {type}",
           "dragAndDrop": "اسحب ال{type} وأفلته أو اختر ملفًا",
-          "maxSize": "أقصى حجم للملف: 50 ميجابايت",
+          "maxSize": "أقصى حجم للملف: {size}",
+          "fileTooLarge": "حجم الملف يتجاوز الحد الأقصى المسموح به ({size}).",
           "uploadButton": "رفع {type}",
           "policyNote": "يرجى التأكد من أن ال{type} التي ترسلها تتوافق مع سياسة شروط الخدمة الخاصة بنا.",
           "types": {
@@ -11524,6 +11525,7 @@
           "fillVariablesDesc": "أدخل قيم ثابتة أو اختر حقول ديناميكية من الطلب",
           "maxLengthNote": "ملاحظة: يتم اقتطاع جميع قيم المتغيرات تلقائياً إلى 30 حرفاً، مع إزالة الكلمات من النهاية أولاً",
           "locationHeader": "ترويسة الموقع",
+          "mediaHeader": "رأس الوسائط",
           "locationName": "اسم الموقع",
           "locationAddress": "عنوان الموقع",
           "messageHeader": "رأس الرسالة",
@@ -12146,6 +12148,8 @@
     },
     "sendMessage": "إرسال الرسالة",
     "preview": "معاينة",
+    "fileTooLarge": "حجم الملف يتجاوز الحد الأقصى المسموح به ({size}).",
+    "mediaHeader": "رأس الوسائط",
     "messageTypes": {
       "text": "نص",
       "image": "صورة",

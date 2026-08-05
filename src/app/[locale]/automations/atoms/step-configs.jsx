@@ -914,14 +914,15 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                             </span>
                                                         </label>
                                                     )}
-                                                    <MediaUpload
-                                                        type={tempValue.templateData.headerType}
-                                                        url={tempValue.headerUrl}
-                                                        accountId={tempValue.accountId}
-                                                        onUrlChange={handleMediaUrlChange}
-                                                        onFileChange={handleMediaFileChange}
-                                                        disabled={tempValue.templateData?.headerTypee?.toLowerCase() === 'image' && !!tempValue.useOrderFirstItemImage}
-                                                    />
+                                                    {!(tempValue.templateData?.headerType?.toLowerCase() === 'image' && tempValue.useOrderFirstItemImage) && (
+                                                        <MediaUpload
+                                                            type={tempValue.templateData.headerType}
+                                                            url={tempValue.headerUrl}
+                                                            accountId={tempValue.accountId}
+                                                            onUrlChange={handleMediaUrlChange}
+                                                            onFileChange={handleMediaFileChange}
+                                                        />
+                                                    )}
                                                 </div>
                                             )}
 

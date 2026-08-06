@@ -2511,7 +2511,7 @@ export default function OrdersTab({
                     setUpdating(id, true);
                     const res = await api.patch(`/orders/${id}/status`, {
                       statusId,
-                      postponedDate: postponedDate.toISOString(),
+                      postponedDate: new Date(postponedDate).toISOString(),
                       reminderDaysBefore: reminderDaysBefore ? Number(reminderDaysBefore) : null,
                     });
                     const newOrder = res.data || {};

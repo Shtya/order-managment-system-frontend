@@ -34,30 +34,42 @@ export const DEFAULT_FONT_FAMILY = "Cairo";
 
 export const PLATFORM_CURRENCY = "EGP"
 
-// Returns normalized startDate/endDate ISO strings for API params
+// Returns normalized startDate/endDate ISO strings for API params.
+// "YYYY-MM-DD" inputs are treated as local dates:
+//   startDate = local midnight of the start day,
+//   endDate   = local midnight of the day AFTER the end day (keeps the whole end day),
+//               unless start and end are the same day, in which case endDate = startDate.
 export function getDateRangeParams(filters) {
   const out = {};
   if (!filters) return out;
 
-  if (filters.startDate) {
-    // Local midnight of start date -> UTC ISO string
-    out.startDate = new Date(filters.startDate).toISOString();
-  }
+  const toLocalMidnight = (value, addDay = false) => {
+    if (!value) return null;
+    let date;
+    if (value instanceof Date) {
+      date = new Date(value);
+    } else if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const [y, m, d] = value.split("-").map(Number);
+      date = new Date(y, m - 1, d);
+    } else {
+      date = new Date(value);
+    }
+    if (isNaN(date.getTime())) return null;
+    date.setHours(0, 0, 0, 0);
+    if (addDay) date.setDate(date.getDate() + 1);
+    return date;
+  };
 
-  if (filters.endDate) {
-    // Add 1 day to local end date to capture up to midnight of the next day
-    const exactEnd = new Date(filters.endDate);
-    exactEnd.setDate(exactEnd.getDate() + 1);
-    exactEnd.setHours(0, 0, 0, 0);
+  const start = toLocalMidnight(filters.startDate);
+  const endRaw = toLocalMidnight(filters.endDate);
+  const sameDay = start && endRaw && endRaw.getTime() === start.getTime();
+  const end = endRaw ? (sameDay ? endRaw : toLocalMidnight(filters.endDate, true)) : null;
 
-    out.endDate = exactEnd.toISOString();
-  } else if (filters.startDate) {
-    // If only one date is picked in the range picker, frame a single full day
-    const exactEnd = new Date(filters.startDate);
-    exactEnd.setDate(exactEnd.getDate() + 1);
-    exactEnd.setHours(0, 0, 0, 0);
-
-    out.endDate = exactEnd.toISOString();
+  if (start) out.startDate = start.toISOString();
+  if (end) {
+    out.endDate = end.toISOString();
+  } else if (start) {
+    out.endDate = null;
   }
 
   return out;

@@ -99,7 +99,7 @@ export default function SupplierPaymentsTab({ onRefresh }) {
                 ...data,
                 amount: Number(data.amount),
                 invoiceId: data.invoiceId === "none" ? undefined : data.invoiceId,
-                paymentDate: data.paymentDate.toISOString(),
+                paymentDate: new Date(data.paymentDate).toISOString(),
             };
 
             await api.post("/supplier-payments", payload);

@@ -555,7 +555,7 @@ export default function CollectOrderPage() {
         safeId: data.safeId,
         amount: Number(data.amount),
         notes: data.notes || undefined,
-        collectedAt: data.collectionDate?.toISOString(),
+        collectedAt: data.collectionDate ? new Date(data.collectionDate).toISOString() : undefined,
       });
       toast.success(t("messages.success"));
       router.push("/orders/collections");

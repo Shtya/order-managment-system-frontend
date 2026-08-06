@@ -31,7 +31,6 @@ import {
   useSupportTicketEvents,
 } from "@/hook/useSupportTickets";
 import { useExport } from "@/hook/useExport";
-import { getDateRangeParams } from "@/utils/healpers";
 import { TERMINAL_STATUSES, TICKET_STATUS } from "@/constants/support-ticket";
 
 const STAT_CARDS = [
@@ -81,15 +80,14 @@ export default function AdminSupportTicketsPage() {
 
   const refresh = useCallback(
     ({ page: p = page, limit: l = limit } = {}) => {
-      const dateParams = getDateRangeParams(filters);
       fetchList({
         search: debouncedSearch || undefined,
         status: filters.status,
         priority: filters.priority,
         unassigned: filters.unassigned || undefined,
         hasUnreadSupport: filters.hasUnreadSupport || undefined,
-        startDate: dateParams.startDate,
-        endDate: dateParams.endDate,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
         sortBy: filters.sortBy || "created_at",
         sortOrder: filters.sortOrder || "DESC",
         page: p,
@@ -98,8 +96,8 @@ export default function AdminSupportTicketsPage() {
       fetchStats({
         status: filters.status,
         priority: filters.priority,
-        startDate: dateParams.startDate,
-        endDate: dateParams.endDate,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
       });
     },
     [fetchList, fetchStats, debouncedSearch, filters, page, limit],
@@ -264,15 +262,14 @@ export default function AdminSupportTicketsPage() {
   );
 
   const onExport = () => {
-    const dateParams = getDateRangeParams(filters);
     handleExport({
       endpoint: "/admin/support-tickets/export",
       params: {
         search: debouncedSearch || undefined,
         status: filters.status,
         priority: filters.priority,
-        startDate: dateParams.startDate,
-        endDate: dateParams.endDate,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
       },
       filename: "Support_Tickets.xlsx",
     });

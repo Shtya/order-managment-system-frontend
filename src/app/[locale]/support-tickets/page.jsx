@@ -28,7 +28,6 @@ import {
   useSupportTicketEvents,
 } from "@/hook/useSupportTickets";
 import { useExport } from "@/hook/useExport";
-import { getDateRangeParams } from "@/utils/healpers";
 
 const STAT_CARDS = [
   { key: "total", icon: LifeBuoy , sortOrder: 0 },
@@ -71,13 +70,12 @@ export default function SupportTicketsPage() {
 
   const refresh = useCallback(
     ({ page: p = page, limit: l = limit } = {}) => {
-      const dateParams = getDateRangeParams(filters);
       fetchList({
         search: debouncedSearch || undefined,
         status: filters.status != 'all' ? filters.status : undefined,
         priority: filters.priority != 'all' ? filters.priority : undefined,
-        startDate: dateParams.startDate,
-        endDate: dateParams.endDate,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
         sortBy: filters.sortBy || "created_at",
         sortOrder: filters.sortOrder || "DESC",
         page: p,
@@ -138,15 +136,14 @@ export default function SupportTicketsPage() {
   };
 
   const onExport = () => {
-    const dateParams = getDateRangeParams(filters);
     handleExport({
       endpoint: "/support-tickets/export",
       params: {
         search: debouncedSearch || undefined,
         status: filters.status,
         priority: filters.priority,
-        startDate: dateParams.startDate,
-        endDate: dateParams.endDate,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
       },
       filename: "Support_Tickets.xlsx",
     });

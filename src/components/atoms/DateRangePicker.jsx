@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import Flatpickr from "react-flatpickr";
 import { useTranslations } from "next-intl";
+import { getDateRangeParams } from "@/utils/healpers";
 
 export default function DateRangePicker({
   value,
@@ -28,14 +29,27 @@ export default function DateRangePicker({
     ].filter(Boolean); // Filter out nulls if empty
   }, [value, mode]);
 
+  const toDateString = (date) => {
+    if (!date) return null;
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
   const handleChange = (selectedDates) => {
     if (mode === "single") {
-      onChange(selectedDates[0] || null);
+      const ymd = toDateString(selectedDates[0] || null);
+      onChange(ymd ? new Date(ymd).toISOString() : null);
     } else {
       const [s, e] = selectedDates;
+      const formatted = getDateRangeParams({
+        startDate: toDateString(s),
+        endDate: toDateString(e),
+      });
       onChange({
-        startDate: s ? s : null,
-        endDate: e ? e : null,
+        startDate: formatted.startDate ?? null,
+        endDate: formatted.endDate ?? null,
       });
     }
 

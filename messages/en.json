@@ -12194,6 +12194,52 @@
         "location_request": "Request the customer's current location"
       }
     },
+    "messageModes": {
+      "custom": "Custom Messages",
+      "business": "Business Ready Messages"
+    },
+    "businessMessages": {
+      "orderPostponeDate": "Postpone Order Date",
+      "offerDiscount": "Offer Discount",
+      "descriptions": {
+        "orderPostponeDate": "Let the customer choose a new delivery date",
+        "offerDiscount": "Send a discount offer the customer can accept"
+      },
+      "generatedRows": "Dates",
+      "businessConfigTitle": "Business Options",
+      "next": "Next",
+      "prev": "Previous",
+      "orderPostponeDateTexts": {
+        "headerText": "Postpone your order date",
+        "bodyText": "Please choose a new delivery date for your order {orderNumber}.",
+        "footerText": "Thank you for your patience.",
+        "menuLabel": "Choose a date",
+        "deliveryAt": "Delivery at"
+      },
+      "offerDiscountTexts": {
+        "headerText": "Special Discount for You",
+        "bodyText": "Get {discountValue}% off your order {orderNumber}!",
+        "footerText": "Enjoy your order!",
+        "buttonAccept": "Accept Offer",
+        "buttonDecline": "Not now"
+      }
+    },
+    "businessConfig": {
+      "daysCount": "Days count",
+      "excludeWeekends": "Exclude weekends",
+      "startFromTomorrow": "Start from tomorrow",
+      "dateFormat": "Date format",
+      "discountValue": "Discount value",
+      "discountType": "Discount type",
+      "options": {
+        "percentage": "Percentage",
+        "fixed": "Fixed amount"
+      },
+      "validation": {
+        "min": "Minimum value is {min}",
+        "max": "Maximum value is {max}"
+      }
+    },
     "address": "Address",
     "viewOptions": "View Options",
     "menuLabel": "Button text",

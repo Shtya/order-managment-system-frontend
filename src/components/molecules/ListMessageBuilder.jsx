@@ -33,7 +33,8 @@ function SortableRow({
   handleRowChange,
   handleRemoveRow,
   errors,
-  variableProps
+  variableProps,
+  disabled = {}
 }) {
   const t = useTranslations("chats");
   const {
@@ -72,8 +73,11 @@ function SortableRow({
     >
       <div
         {...attributes}
-        {...listeners}
-        className="pt-2 text-slate-300 hover:text-primary cursor-grab active:cursor-grabbing shrink-0"
+        {...(disabled.reorder ? {} : listeners)}
+        className={cn(
+          "pt-2 text-slate-300 hover:text-primary shrink-0",
+          disabled.reorder ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"
+        )}
       >
         <GripVertical size={16} />
       </div>
@@ -85,6 +89,7 @@ function SortableRow({
             maxLength={24}
             value={row.title}
             onChange={(val) => handleRowChange(sIdx, rIdx, "title", val)}
+            disabled={disabled.rows || disabled.editRowValue}
            {...variableProps}
             error={rowError}
             className="h-9"
@@ -99,14 +104,16 @@ function SortableRow({
           multiline={true}
           value={row.description}
           onChange={(val) => handleRowChange(sIdx, rIdx, "description", val)}
+          disabled={disabled.rows || disabled.editRowDescription}
          {...variableProps}
           className="text-[13px] min-h-[40px]"
         />
       </div>
       <button
         type="button"
+        disabled={disabled.removeRow}
         onClick={() => handleRemoveRow(sIdx, rIdx)}
-        className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-all"
+        className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-slate-300 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
       >
         <Trash2 size={16} />
       </button>
@@ -126,7 +133,8 @@ export default function ListMessageBuilder({
     allowVariables: false
   },
   accountId,
-  variableProps
+  variableProps,
+  disabled = {}
 }) {
   const tc = useTranslations("chats");
   const t = useTranslations("upsells.builder");
@@ -230,6 +238,7 @@ export default function ListMessageBuilder({
             <button
               key={type}
               type="button"
+              disabled={disabled.headerType}
               onClick={() => {
                 setHeaderMediaFile?.(null);
                 handleUpdate({ headerType: type, headerText: "", headerUrl: "" });
@@ -238,7 +247,8 @@ export default function ListMessageBuilder({
                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors border",
                 headerType === type
                   ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
-                  : "bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  : "bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800",
+                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-slate-950"
               )}
             >
               {t(`headerTypes.${type}`)}
@@ -254,6 +264,7 @@ export default function ListMessageBuilder({
               maxLength={60}
               value={headerText}
               onChange={(val) => handleUpdate({ headerText: val })}
+              disabled={disabled.headerText}
               {...variableProps}
               
             />
@@ -266,6 +277,7 @@ export default function ListMessageBuilder({
               type={headerType}
               url={headerUrl}
               accountId={accountId}
+              disabled={disabled.headerMedia}
               onUrlChange={(url) => handleUpdate({ headerUrl: url })}
               onFileChange={(file) => handleFileChange(file)}
             />
@@ -282,6 +294,7 @@ export default function ListMessageBuilder({
         allowVariables={config.allowVariables}
         error={bodyError}
         variableProps={variableProps}
+        disabled={disabled.bodyText}
       />
       {/* {bodyError && <p className="text-[11px] text-red-500">{bodyError}</p>} */}
 
@@ -294,6 +307,7 @@ export default function ListMessageBuilder({
           maxLength={60}
           value={footerText}
           onChange={(val) => handleUpdate({ footerText: val })}
+          disabled={disabled.footerText}
           {...variableProps}
         />
       </div>
@@ -310,6 +324,7 @@ export default function ListMessageBuilder({
             maxLength={200}
             value={menuLabel}
             onChange={(val) => handleUpdate({ menuLabel: val })}
+            disabled={disabled.menuLabel}
             {...variableProps}
             error={menuLabelError}
           />
@@ -329,8 +344,9 @@ export default function ListMessageBuilder({
               {sections.length < config.maxSections && (
                 <button
                   type="button"
+                  disabled={disabled.addSection}
                   onClick={handleAddSection}
-                  className="text-xs font-bold flex items-center gap-1 text-primary hover:text-primary/80"
+                  className="text-xs font-bold flex items-center gap-1 text-primary hover:text-primary/80 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-primary"
                 >
                   <Plus size={14} />
                   {tc("addSection")}
@@ -349,8 +365,9 @@ export default function ListMessageBuilder({
               {sections.length > 1 && (
                 <button
                   type="button"
+                  disabled={disabled.removeSection}
                   onClick={() => handleRemoveSection(sIdx)}
-                  className="absolute top-4 right-4 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-all opacity-0 group-hover/section:opacity-100"
+                  className="absolute top-4 right-4 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-all opacity-0 group-hover/section:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-slate-300 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -365,6 +382,7 @@ export default function ListMessageBuilder({
                   maxLength={24}
                   value={section.title}
                   onChange={(val) => handleSectionTitleChange(sIdx, val)}
+                  disabled={disabled.sections || disabled.editSectionTitle}
                   {...variableProps}
                   error={sectionError}
                   className="h-9 bg-white dark:bg-slate-950"
@@ -397,6 +415,7 @@ export default function ListMessageBuilder({
                           handleRemoveRow={handleRemoveRow}
                           variableProps={variableProps}
                           errors={errors?.sections}
+                          disabled={disabled}
                         />
                       ))}
                     </div>
@@ -406,8 +425,9 @@ export default function ListMessageBuilder({
                 {totalRows < config.maxRows && (
                   <button
                     type="button"
+                    disabled={disabled.addRow}
                     onClick={() => handleAddRow(sIdx)}
-                    className="w-full py-2.5 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-slate-400 hover:border-primary hover:text-primary hover:bg-white dark:hover:bg-slate-950 transition-all flex items-center justify-center gap-2 text-xs font-bold"
+                    className="w-full py-2.5 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-slate-400 hover:border-primary hover:text-primary hover:bg-white dark:hover:bg-slate-950 transition-all flex items-center justify-center gap-2 text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-300 dark:disabled:hover:border-slate-700 disabled:hover:text-slate-400 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
                   >
                     <PlusCircle size={14} />
                     {tc("addRow")}

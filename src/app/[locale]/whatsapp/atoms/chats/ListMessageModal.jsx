@@ -52,6 +52,7 @@ export const ListMessageForm = forwardRef(({
     setLocalHeaderMediaFile,
     localHeaderMediaFile,
     accountId = null,
+    disabledFields: disabledFieldsProp,
 }, ref) => {
     const t = useTranslations("chats");
     const locale = useLocale();
@@ -69,7 +70,7 @@ export const ListMessageForm = forwardRef(({
             sections: [{ title: "", rows: [] }]
         }
     });
-
+    
     const {
         watch,
         setValue,
@@ -80,6 +81,12 @@ export const ListMessageForm = forwardRef(({
     } = form;
 
     const watchAllFields = watch();
+
+    const [disabledFields, setDisabledFields] = useState(disabledFieldsProp || {});
+
+    useEffect(() => {
+        setDisabledFields(disabledFieldsProp || {});
+    }, [disabledFieldsProp]);
 
     const preparePayload = (data) => {
         const mediaId = data?.id ? data?.id : isMediaId(data.headerUrl) ? data.headerUrl : undefined;
@@ -162,6 +169,8 @@ export const ListMessageForm = forwardRef(({
         trigger,
         watch,
         form,
+        setDisabledFields: (fields) => setDisabledFields((prev) => ({ ...prev, ...fields })),
+        getDisabledFields: () => disabledFields,
         submit: async () => {
             const valid = await trigger();
             if (!valid) return null;
@@ -185,6 +194,7 @@ export const ListMessageForm = forwardRef(({
                     errors={errors}
                     accountId={accountId}
                     variableProps={variableProps}
+                    disabled={disabledFields}
                 />
             </div>
 

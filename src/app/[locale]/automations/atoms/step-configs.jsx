@@ -28,11 +28,10 @@ import { ContactForm } from "../../whatsapp/atoms/chats/ContactModal";
 import { ListMessageForm } from "../../whatsapp/atoms/chats/ListMessageModal";
 import { InteractiveMessageForm } from "../../whatsapp/atoms/chats/InteractiveMessageModal";
 import { TextMessageForm } from "../../whatsapp/atoms/chats/TextMessageForm";
+import { BusinessMessageForm } from "./BusinessMessageForm";
+import { businessMessageDefinitions, businessMessageTypes } from "./businessMessages";
 import WhatsAppAccountSelect from "../../whatsapp/atoms/WhatsAppAccountSelect";
 import Button_ from "@/components/atoms/Button";
-import { useForm } from "react-hook-form";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SendSmsModal } from "../../sms/atoms/SendSmsModal";
 
@@ -53,6 +52,58 @@ function FormGroup({ label, description, children, error }) {
             {children}
             {error && <p className="text-[10px] text-rose-500 font-bold mt-1">{error}</p>}
         </div>
+    );
+}
+
+function MessageTypeCard({ icon: Icon, label, description, color, isConfigured, isSelected, onClick }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={`flex flex-col p-4 md:p-5 rounded-2xl border transition-all duration-200 text-start group w-full relative overflow-hidden ${isConfigured
+                ? "border-2 border-emerald-400 bg-emerald-50/10 dark:bg-emerald-950/10 shadow-sm"
+                : isSelected
+                    ? "border-2 border-primary bg-primary/5 dark:bg-primary/10 shadow-sm"
+                    : "border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm"
+                }`}
+        >
+            {/* Top Row: Title & Icon */}
+            <div className="flex items-center justify-between w-full gap-3 mb-2">
+                <h4
+                    className={`text-xs md:text-sm font-bold truncate ${isConfigured
+                        ? "text-slate-800 dark:text-slate-100"
+                        : "text-slate-700 dark:text-slate-200"
+                        }`}
+                >
+                    {label}
+                </h4>
+
+                {/* Icon Box */}
+                <div
+                    className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${isConfigured
+                        ? "bg-transparent text-emerald-600 dark:text-emerald-400"
+                        : "bg-slate-50 dark:bg-slate-800/60 text-slate-500"
+                        }`}
+                >
+                    <Icon
+                        size={isConfigured ? 24 : 18}
+                        className={isConfigured ? "text-emerald-500" : color}
+                    />
+                </div>
+            </div>
+
+            {/* Bottom Row: Description */}
+            {description && (
+                <p
+                    className={`text-[11px] md:text-xs leading-relaxed line-clamp-2 w-full ${isConfigured
+                        ? "text-slate-500 dark:text-slate-400 font-medium"
+                        : "text-slate-400 dark:text-slate-500"
+                        }`}
+                >
+                    {description}
+                </p>
+            )}
+        </button>
     );
 }
 
@@ -700,6 +751,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         const oldLink = initialValueRef.current?.headerUrl;
         const newLink = tempValue.headerUrl;
         if (oldLink && oldLink !== newLink) {
+
             deletedOldUrls.push(oldLink);
         }
         const nextValue = { ...tempValue, headerMediaFile, deletedOldUrls };
@@ -1043,7 +1095,8 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     const tChats = useTranslations("chats");
     const orderProperties = useOrderProperties();
     const [step, setStep] = useState('select'); // 'select' | 'form'
-    const [selectedType, setSelectedType] = useState(null);
+    const [selectedMessage, setSelectedMessage] = useState(null); // { mode, type, businessUseCase? }
+    const [businessStep, setBusinessStep] = useState('options'); // business form internal step: 'options' | 'message'
     const [tempValue, setTempValue] = useState(value || {});
     const [accounts, setAccounts] = useState([]);
     const configuredType = tempValue.messageType;
@@ -1064,7 +1117,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
         interactive: true,
     });
 
-    const messageTypes = [
+    const customMessageTypes = [
         { icon: MessageSquare, label: tChats("messageTypes.text"), description: tChats("messageTypes.descriptions.text"), color: "text-emerald-500", type: "text" },
         { icon: ImageIcon, label: tChats("messageTypes.image"), description: tChats("messageTypes.descriptions.image"), color: "text-purple-500", type: "image" },
         { icon: FileText, label: tChats("messageTypes.document"), description: tChats("messageTypes.descriptions.document"), color: "text-orange-500", type: "document" },
@@ -1099,19 +1152,27 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             const initialValue = value || {};
             initialValueRef.current = initialValue;
             setTempValue(initialValue);
-            setSelectedType(initialValue.messageType || null);
-
-            setAddClientResponseToOrder((prev) => {
-                const newState = {
-                    ...prev,
-                    [initialValue.messageType]: !!initialValue?.actionIntent,
-                };
-                // Sync temp state with permanent state when opening
-                setTempAddClientResponseToOrder(newState);
-                return newState;
-            });
+            const isBusiness = initialValue.messageMode === 'business';
+            setSelectedMessage(isBusiness
+                ? { mode: 'business', type: initialValue.messageType, businessUseCase: initialValue.businessUseCase }
+                : { mode: 'custom', type: initialValue.messageType || null });
 
             if (initialValue.messageType) {
+                const hasIntent = isBusiness
+                    ? initialValue.actionIntent === 'branches' || (initialValue.branches?.length || 0) > 0
+                    : !!initialValue?.actionIntent;
+                setAddClientResponseToOrder((prev) => {
+                    const newState = {
+                        ...prev,
+                        [initialValue.messageType]: hasIntent,
+                    };
+                    // Sync temp state with permanent state when opening
+                    setTempAddClientResponseToOrder(newState);
+                    return newState;
+                });
+            }
+
+            if (initialValue.messageType && !isBusiness) {
                 if (initialValue.messageData) {
                     restoreFormData(initialValue.messageData);
                 }
@@ -1129,6 +1190,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             }
         } else if (messageType === 'interactive' && messageData?.interactive?.header) {
             const header = messageData.interactive.header;
+            
             return header[header?.type]?.link;
         } else if (['image', 'video', 'document'].includes(messageType)) {
             return messageData[messageType]?.link;
@@ -1150,22 +1212,68 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
         }, 20);
     };
 
-    const handleTypeSelect = (type) => {
-        setSelectedType(type);
+    const restoreBusinessForm = () => {
+        if (!tempValue.messageData && !tempValue.businessConfig) return;
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts++;
+            if (formRef.current?.restore) {
+                formRef.current.restore({
+                    messageData: tempValue.messageData,
+                    businessConfig: tempValue.businessConfig,
+                });
+                clearInterval(interval);
+            } else if (attempts > 15) {
+                clearInterval(interval); // Give up after ~300ms if not mounted
+            }
+        }, 20);
+    };
+
+    const handleMessageSelect = (selected) => {
+        setSelectedMessage(selected);
         setStep('form');
-        // Restore immediately if clicking into an already configured type
-        if (type === tempValue.messageType && tempValue.messageData) {
+        if (selected.mode === 'business') {
+            setBusinessStep('options');
+        }
+        // Restore immediately if clicking into an already configured message
+        if (selected.mode === 'custom' && selected.type === tempValue.messageType && tempValue.messageData) {
             restoreFormData(tempValue.messageData, tempValue.messageType);
+        } else if (selected.mode === 'business' && selected.businessUseCase === tempValue.businessUseCase) {
+            restoreBusinessForm();
         }
     };
 
     const handleSubmitClick = async () => {
+        if (selectedMessage?.mode === 'business') {
+            const result = await formRef.current?.submit?.();
+            if (result) {
+                setTempValue({
+                    ...tempValue,
+                    messageMode: 'business',
+                    messageType: selectedMessage.type,
+                    businessUseCase: selectedMessage.businessUseCase,
+                    messageData: result.messageData,
+                    businessConfig: result.businessConfig,
+                    recipientNumber: tempValue.recipientNumber || "",
+                    accountId: tempValue.accountId,
+                    accountName: tempValue.accountName,
+                });
+                // Move data from temp state to permanent state upon saving form
+                setAddClientResponseToOrder(tempAddClientResponseToOrder);
+                setStep('select');
+            }
+            return;
+        }
         const payload = await formRef.current?.submit?.();
         if (payload) {
             setTempValue({
                 ...tempValue,
-                messageType: selectedType,
+                messageMode: 'custom',
+                messageType: selectedMessage?.type,
                 messageData: payload,
+                businessUseCase: undefined,
+                businessConfig: undefined,
+                businessCommand: undefined,
                 recipientNumber: tempValue.recipientNumber || "",
                 accountId: tempValue.accountId,
                 accountName: tempValue.accountName,
@@ -1183,28 +1291,51 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     };
 
     const handleSave = useCallback(() => {
+        const isBusiness = tempValue.messageMode === 'business';
         let deletedOldUrls = [];
         if (initialValueRef.current) {
             const oldLink = getMediaLink(initialValueRef.current.messageData, initialValueRef.current.messageType);
             const newLink = getMediaLink(tempValue.messageData, tempValue.messageType);
             if (oldLink && oldLink !== newLink) {
+                
                 deletedOldUrls.push(oldLink);
             }
         }
-        const typeDate = messageTypes.find(t => t.type === tempValue.messageType);
-        // Using the permanent state that has been saved
         let branches = undefined;
-        const hasActionIntent = typeDate && addClientResponseToOrder[tempValue.messageType];
-        if (tempValue && tempValue.messageType === 'interactive' && addClientResponseToOrder.interactive) {
-            branches = tempValue.messageData?.interactive?.action?.buttons?.map((btn, i) => ({
-                id: btn.reply.id,
-                label: btn.reply.title,
-                sourceButton: btn,
-            })) || [];
+        let actionIntent = null;
+        if (isBusiness) {
+            // Business command is stored separately; actionIntent/branches are
+            // still controlled by the "add branches into automation" checkbox.
+            if (tempValue.messageType === 'interactive') {
+                const addBranches = !!addClientResponseToOrder.interactive;
+                actionIntent = addBranches ? 'branches' : null;
+                if (addBranches) {
+                    branches = tempValue.messageData?.interactive?.action?.buttons?.map((btn) => ({
+                        id: btn.reply.id,
+                        label: btn.reply.title,
+                        sourceButton: btn,
+                    })) || [];
+                }
+            }
+        } else {
+            const typeDate = customMessageTypes.find(t => t.type === tempValue.messageType);
+            const hasActionIntent = typeDate && addClientResponseToOrder[tempValue.messageType];
+            actionIntent = hasActionIntent ? typeDate.actionIntent : null;
+            if (tempValue && tempValue.messageType === 'interactive' && addClientResponseToOrder.interactive) {
+                branches = tempValue.messageData?.interactive?.action?.buttons?.map((btn, i) => ({
+                    id: btn.reply.id,
+                    label: btn.reply.title,
+                    sourceButton: btn,
+                })) || [];
+            }
         }
         handleCloseDialog({
             ...tempValue,
-            actionIntent: hasActionIntent ? typeDate.actionIntent : null,
+            messageMode: isBusiness ? 'business' : 'custom',
+            actionIntent,
+            businessCommand: isBusiness
+                ? businessMessageDefinitions[tempValue.businessUseCase]?.businessCommand || null
+                : undefined,
             messageType: tempValue.messageType,
             messageData: tempValue.messageData,
             recipientNumber: tempValue.recipientNumber || "",
@@ -1217,12 +1348,47 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
 
     const handleBack = () => {
         setStep('select');
-        setSelectedType(null);
+        setSelectedMessage(null);
         // Reset temp state back to permanent state if user hits back instead of save
         setTempAddClientResponseToOrder(addClientResponseToOrder);
     };
 
     const renderMessageForm = () => {
+        if (selectedMessage?.mode === 'business') {
+            const definition = businessMessageDefinitions[selectedMessage.businessUseCase];
+            if (!definition) return null;
+            return (
+                <BusinessMessageForm
+                    ref={formRef}
+                    definition={definition}
+                    variableProps={variableProps}
+                    accountId={tempValue?.accountId}
+                    onStepChange={setBusinessStep}
+                >
+                    {definition.messageType === 'interactive' && (
+                        <div className="mt-4 flex items-center gap-2">
+                            <Checkbox
+                                id="addClientResponseToOrder"
+                                checked={tempAddClientResponseToOrder?.interactive}
+                                onCheckedChange={(checked) => {
+                                    setTempAddClientResponseToOrder((prev) => ({
+                                        ...prev,
+                                        interactive: checked,
+                                    }));
+                                }}
+                            />
+                            <label
+                                htmlFor="addClientResponseToOrder"
+                                className="text-sm font-medium text-foreground cursor-pointer"
+                            >
+                                {tChats("addBranchesIntoAutomation")}
+                            </label>
+                        </div>
+                    )}
+                </BusinessMessageForm>
+            );
+        }
+        const selectedType = selectedMessage?.type;
         switch (selectedType) {
             case 'image':
             case 'video':
@@ -1327,10 +1493,14 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     };
 
     useEffect(() => {
-        if (step === 'form' && selectedType && selectedType === tempValue.messageType && tempValue.messageData) {
-            restoreFormData(tempValue.messageData, tempValue.messageType);
+        if (step === 'form' && selectedMessage) {
+            if (selectedMessage.mode === 'custom' && selectedMessage.type === tempValue.messageType && tempValue.messageData) {
+                restoreFormData(tempValue.messageData, tempValue.messageType);
+            } else if (selectedMessage.mode === 'business' && selectedMessage.businessUseCase === tempValue.businessUseCase) {
+                restoreBusinessForm();
+            }
         }
-    }, [step, selectedType]);
+    }, [step, selectedMessage]);
 
     return (
         <Dialog open={isOpen} onOpenChange={() => handleCloseDialog(null)}>
@@ -1368,63 +1538,46 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                             />
                         </div>
 
-                        {/* Changed grid layout to 2 columns to fit horizontal card content */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            {messageTypes.map((msgType) => {
-                                const isConfigured = configuredType === msgType.type;
-                                const isSelected = tempValue.type === msgType.type;
-
-                                return (
-                                    <button
+                        {/* Custom Messages */}
+                        <div className="mb-8">
+                            <h4 className="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4">
+                                {tChats("messageModes.custom")}
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                {customMessageTypes.map((msgType) => (
+                                    <MessageTypeCard
                                         key={msgType.type}
-                                        type="button"
-                                        onClick={() => handleTypeSelect(msgType.type)}
-                                        className={`flex flex-col p-4 md:p-5 rounded-2xl border transition-all duration-200 text-start group w-full relative overflow-hidden ${isConfigured
-                                            ? "border-2 border-emerald-400 bg-emerald-50/10 dark:bg-emerald-950/10 shadow-sm"
-                                            : isSelected
-                                                ? "border-2 border-primary bg-primary/5 dark:bg-primary/10 shadow-sm"
-                                                : "border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm"
-                                            }`}
-                                    >
-                                        {/* Top Row: Title & Icon */}
-                                        <div className="flex items-center justify-between w-full gap-3 mb-2">
-                                            <h4
-                                                className={`text-xs md:text-sm font-bold truncate ${isConfigured
-                                                    ? "text-slate-800 dark:text-slate-100"
-                                                    : "text-slate-700 dark:text-slate-200"
-                                                    }`}
-                                            >
-                                                {msgType.label}
-                                            </h4>
+                                        icon={msgType.icon}
+                                        label={msgType.label}
+                                        description={msgType.description}
+                                        color={msgType.color}
+                                        isConfigured={tempValue.messageMode !== 'business' && configuredType === msgType.type}
+                                        isSelected={selectedMessage?.mode === 'custom' && selectedMessage?.type === msgType.type}
+                                        onClick={() => handleMessageSelect({ mode: 'custom', type: msgType.type })}
+                                    />
+                                ))}
+                            </div>
+                        </div>
 
-                                            {/* Icon Box */}
-                                            <div
-                                                className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${isConfigured
-                                                    ? "bg-transparent text-emerald-600 dark:text-emerald-400"
-                                                    : "bg-slate-50 dark:bg-slate-800/60 text-slate-500"
-                                                    }`}
-                                            >
-                                                <msgType.icon
-                                                    size={isConfigured ? 24 : 18}
-                                                    className={isConfigured ? "text-emerald-500" : msgType.color}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Bottom Row: Description */}
-                                        {msgType.description && (
-                                            <p
-                                                className={`text-[11px] md:text-xs leading-relaxed line-clamp-2 w-full ${isConfigured
-                                                    ? "text-slate-500 dark:text-slate-400 font-medium"
-                                                    : "text-slate-400 dark:text-slate-500"
-                                                    }`}
-                                            >
-                                                {msgType.description}
-                                            </p>
-                                        )}
-                                    </button>
-                                );
-                            })}
+                        {/* Business Ready Messages */}
+                        <div>
+                            <h4 className="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4">
+                                {tChats("messageModes.business")}
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                {businessMessageTypes.map((msgType) => (
+                                    <MessageTypeCard
+                                        key={msgType.id}
+                                        icon={msgType.icon}
+                                        label={tChats(msgType.labelKey)}
+                                        description={tChats(msgType.descriptionKey)}
+                                        color={msgType.color}
+                                        isConfigured={tempValue.messageMode === 'business' && tempValue.businessUseCase === msgType.businessUseCase}
+                                        isSelected={selectedMessage?.mode === 'business' && selectedMessage?.businessUseCase === msgType.businessUseCase}
+                                        onClick={() => handleMessageSelect({ mode: 'business', type: msgType.messageType, businessUseCase: msgType.businessUseCase })}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}
@@ -1460,11 +1613,29 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                 label={tCommon('back')}
                                 className="w-full sm:w-auto"
                             />
+                            {selectedMessage?.mode === 'business' && businessStep === 'options' && (
+                                <Button_
+                                    type="button"
+                                    onClick={() => formRef.current?.next?.()}
+                                    label={tChats('businessMessages.next')}
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+                                />
+                            )}
+                            {selectedMessage?.mode === 'business' && businessStep === 'message' && (
+                                <Button_
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => formRef.current?.prev?.()}
+                                    label={tChats('businessMessages.prev')}
+                                    className="w-full sm:w-auto"
+                                />
+                            )}
                             <Button_
                                 type="button"
                                 onClick={handleSubmitClick}
                                 className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                                 label={tChats('save')}
+                                disabled={selectedMessage?.mode === 'business' && businessStep === 'options'}
                             /> </>}
                 </DialogFooter>
             </DialogContent>

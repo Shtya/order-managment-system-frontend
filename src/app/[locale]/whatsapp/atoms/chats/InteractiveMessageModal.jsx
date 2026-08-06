@@ -27,6 +27,7 @@ export const InteractiveMessageForm = forwardRef(({
     headerMediaFile,
     accountId = null,
     children,
+    disabledFields: disabledFieldsProp,
 }, ref) => {
     const t = useTranslations("chats");
     const locale = useLocale();
@@ -66,6 +67,12 @@ export const InteractiveMessageForm = forwardRef(({
     const { handleSubmit: handleSubmitForm, watch, setValue, reset, getValues, trigger, formState: { errors } } = form;
 
     const watchAllFields = watch();
+
+    const [disabledFields, setDisabledFields] = useState(disabledFieldsProp || {});
+
+    useEffect(() => {
+        setDisabledFields(disabledFieldsProp || {});
+    }, [disabledFieldsProp]);
 
     const preparePayload = (data) => {
         const mediaId = data?.id ? data?.id : isMediaId(data.headerUrl) ? data.headerUrl : undefined;
@@ -147,6 +154,8 @@ export const InteractiveMessageForm = forwardRef(({
         trigger,
         watch,
         form,
+        setDisabledFields: (fields) => setDisabledFields((prev) => ({ ...prev, ...fields })),
+        getDisabledFields: () => disabledFields,
         submit: async () => {
             const valid = await trigger();
             if (!valid) return null;
@@ -177,6 +186,7 @@ export const InteractiveMessageForm = forwardRef(({
                     errors={errors}
                     accountId={accountId}
                     variableProps={variableProps}
+                    disabled={disabledFields}
                 />
                 {children}
             </div>

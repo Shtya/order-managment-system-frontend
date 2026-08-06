@@ -22,7 +22,8 @@ export default function InteractiveMessageBuilder({
     buttonStyles: [] // e.g. ["emerald", "red"]
   },
   accountId,
-  variableProps = {}
+  variableProps = {},
+  disabled = {}
 }) {
   const t = useTranslations("upsells.builder");
   
@@ -87,6 +88,7 @@ export default function InteractiveMessageBuilder({
               <button
                 key={type}
                 type="button"
+                disabled={disabled.headerType}
                 onClick={() => {
                   setHeaderMediaFile?.(null);
                   handleUpdate({ headerType: type, headerText: "", headerUrl: "" });
@@ -95,7 +97,8 @@ export default function InteractiveMessageBuilder({
                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors border",
                   headerType === type
                     ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
-                    : "bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    : "bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800",
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-slate-950"
                 )}
               >
                 {t(`headerTypes.${type}`)}
@@ -112,6 +115,7 @@ export default function InteractiveMessageBuilder({
                 value={headerText}
                 onChange={(val) => handleUpdate({ headerText: val })}
                 error={errors.headerText}
+                disabled={disabled.headerText}
                 {...variableProps}
               />
               {errors.headerText && <p className="text-[11px] text-red-500">{errors.headerText.message || errors.headerText}</p>}
@@ -124,6 +128,7 @@ export default function InteractiveMessageBuilder({
                 type={headerType}
                 url={headerUrl}
                 accountId={accountId}
+                disabled={disabled.headerMedia}
                 onUrlChange={(url) => {
                   if(!url) {
                     setHeaderMediaFile?.(null);
@@ -147,6 +152,7 @@ export default function InteractiveMessageBuilder({
         allowVariables={config.allowVariables}
         error={errors.bodyText?.message || errors.bodyText}
         variableProps={variableProps}
+        disabled={disabled.bodyText}
       />
 
       {/* Footer Settings */}
@@ -159,6 +165,7 @@ export default function InteractiveMessageBuilder({
             maxLength={60}
             value={footerText}
             onChange={(val) => handleUpdate({ footerText: val })}
+            disabled={disabled.footerText}
             {...variableProps}
             error={errors.footerText}
           />
@@ -191,6 +198,7 @@ export default function InteractiveMessageBuilder({
                       maxLength={20}
                       value={btn.text}
                       onChange={(val) => handleButtonChange(idx, val)}
+                      disabled={disabled.buttons}
                       // {...variableProps}
                       error={btnError}
                       className="h-11"
@@ -204,8 +212,9 @@ export default function InteractiveMessageBuilder({
                 {buttons.length > config.minButtons && (
                   <button
                     type="button"
+                    disabled={disabled.removeButton}
                     onClick={() => handleRemoveButton(idx)}
-                    className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all self-start mt-1"
+                    className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all self-start mt-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
                   >
                     <Trash2 size={20} />
                   </button>
@@ -217,8 +226,9 @@ export default function InteractiveMessageBuilder({
           {buttons.length < config.maxButtons && (
             <button
               type="button"
+              disabled={disabled.addButton}
               onClick={handleAddButton}
-              className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2 font-bold text-sm"
+              className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-200 dark:disabled:hover:border-slate-800 disabled:hover:text-slate-500 disabled:hover:bg-transparent"
             >
               <PlusCircle size={18} />
               {t("addButton")}

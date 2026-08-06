@@ -12217,6 +12217,52 @@
         "location_request": "طلب الموقع الجغرافي من العميل"
       }
     },
+    "messageModes": {
+      "custom": "رسائل مخصصة",
+      "business": "رسائل أعمال جاهزة"
+    },
+    "businessMessages": {
+      "orderPostponeDate": "تأجيل تاريخ الطلب",
+      "offerDiscount": "عرض خصم",
+      "descriptions": {
+        "orderPostponeDate": "دع العميل يختار تاريخ تسليم جديد",
+        "offerDiscount": "أرسل عرض خصم يمكن للعميل قبوله"
+      },
+      "generatedRows": "التواريخ",
+      "businessConfigTitle": "خيارات العمل",
+      "next": "التالي",
+      "prev": "السابق",
+      "orderPostponeDateTexts": {
+        "headerText": "أجل تاريخ طلبك",
+        "bodyText": "الرجاء اختيار موعد تسليم جديد لطلبك {orderNumber}.",
+        "footerText": "شكراً لصبرك.",
+        "menuLabel": "اختر تاريخاً",
+        "deliveryAt": "التوصيل في"
+      },
+      "offerDiscountTexts": {
+        "headerText": "خصم خاص لك",
+        "bodyText": "احصل على خصم {discountValue}% على طلبك {orderNumber}!",
+        "footerText": "استمتع بطلبك!",
+        "buttonAccept": "قبول العرض",
+        "buttonDecline": "ليس الآن"
+      }
+    },
+    "businessConfig": {
+      "daysCount": "عدد الأيام",
+      "excludeWeekends": "استبعاد عطلة نهاية الأسبوع",
+      "startFromTomorrow": "البدء من الغد",
+      "dateFormat": "صيغة التاريخ",
+      "discountValue": "قيمة الخصم",
+      "discountType": "نوع الخصم",
+      "options": {
+        "percentage": "نسبة مئوية",
+        "fixed": "مبلغ ثابت"
+      },
+      "validation": {
+        "min": "الحد الأدنى للقيمة هو {min}",
+        "max": "الحد الأقصى للقيمة هو {max}"
+      }
+    },
     "address": "العنوان",
     "viewOptions": "عرض الخيارات",
     "menuLabel": "نص الزر",

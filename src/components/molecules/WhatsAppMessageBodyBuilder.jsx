@@ -22,7 +22,8 @@ export default function WhatsAppMessageBodyBuilder({
   onInsertVariable,
   error,
   className,
-  variableProps = {}
+  variableProps = {},
+  disabled = false
 }) {
   const t = useTranslations("whatsApp.templates.form");
   const textareaRef = useRef(null);
@@ -32,7 +33,7 @@ export default function WhatsAppMessageBodyBuilder({
 
   const insertText = (type) => {
 
-    if (!textareaRef.current) return;
+    if (!textareaRef.current || disabled) return;
 
     let wrapped = "";
     switch (type) {
@@ -56,6 +57,7 @@ export default function WhatsAppMessageBodyBuilder({
   };
 
   const addEmoji = (emoji) => {
+    if (disabled) return;
     textareaRef.current?.insertRaw(emoji.native);
   };
   
@@ -86,6 +88,7 @@ export default function WhatsAppMessageBodyBuilder({
           if (ref) ref.current = el;
         }}
         disableHydrate={true}
+        disabled={disabled}
         {...variableProps}
       />
 
@@ -93,7 +96,7 @@ export default function WhatsAppMessageBodyBuilder({
         <div className="flex items-center gap-1">
           <Popover>
             <PopoverTrigger asChild>
-              <button type="button" className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600 transition-colors">
+              <button type="button" disabled={disabled} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <Smile size={18} />
               </button>
             </PopoverTrigger>
@@ -104,18 +107,19 @@ export default function WhatsAppMessageBodyBuilder({
 
           <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1" />
 
-          <button type="button" onClick={() => insertText("bold")} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600"><Bold size={16} /></button>
-          <button type="button" onClick={() => insertText("italic")} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600"><Italic size={16} /></button>
-          <button type="button" onClick={() => insertText("strike")} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600"><Strikethrough size={16} /></button>
-          <button type="button" onClick={() => insertText("mono")} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600"><Code size={16} /></button>
+          <button type="button" disabled={disabled} onClick={() => insertText("bold")} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"><Bold size={16} /></button>
+          <button type="button" disabled={disabled} onClick={() => insertText("italic")} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"><Italic size={16} /></button>
+          <button type="button" disabled={disabled} onClick={() => insertText("strike")} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"><Strikethrough size={16} /></button>
+          <button type="button" disabled={disabled} onClick={() => insertText("mono")} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"><Code size={16} /></button>
 
           {allowVariables && (
             <>
               <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1" />
               <button
                 type="button"
+                disabled={disabled}
                 onClick={() => insertText("variable")}
-                className="flex items-center gap-1.5 px-2 py-1 hover:bg-primary/10 text-primary rounded-md transition-colors text-xs font-bold"
+                className="flex items-center gap-1.5 px-2 py-1 hover:bg-primary/10 text-primary rounded-md transition-colors text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <PlusCircle size={16} />
                 {t("addVariable")}

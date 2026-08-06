@@ -4,11 +4,13 @@ import { checkIfAssetUploadNeeded, handleAssetUpload } from "@/utils/whatsapp-he
 
 export const nodeProcessors = {
     send_whatsapp_message: async (node) => {
-        const message = node.data?.config?.messageData;
-        const accountId = node.data?.config?.accountId;
+        const config = node.data?.config;
+        const accountId = config?.accountId;
+        let newLinksIds = [];
+
+        const message = config?.messageData;
         const mediaInfo = checkIfAssetUploadNeeded(message);
         const needsMediaUpload = !!mediaInfo;
-        let newLinksIds = [];
         if (needsMediaUpload) {
             let uploadedAssetInfo = await handleAssetUpload(mediaInfo, accountId, message);
             

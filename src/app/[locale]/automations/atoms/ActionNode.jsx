@@ -6,6 +6,7 @@ import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
 import { useFlowStore } from '@/hook/useFlowStore';
 import { AUTOMATION_CONFIG } from './automation-config';
+import { businessMessageDefinitions } from './businessMessages';
 
 export function ActionNode({ id, data, selected }) {
     const tChats = useTranslations("chats");
@@ -105,7 +106,11 @@ export function ActionNode({ id, data, selected }) {
                                 <div className="flex items-center justify-between">
                                     <span className="opacity-50 font-bold">{t('nodes.messageType')}</span>
                                     <span className="font-black text-blue-700 dark:text-blue-400 truncate">
-                                        {data.config?.messageType ? tChats("messageTypes." + data.config?.messageType) : '—'}
+                                        {data.config?.messageMode === 'business'
+                                            ? (businessMessageDefinitions[data.config?.businessUseCase]
+                                                ? tChats(businessMessageDefinitions[data.config.businessUseCase].labelKey)
+                                                : '—')
+                                            : (data.config?.messageType ? tChats("messageTypes." + data.config?.messageType) : '—')}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">

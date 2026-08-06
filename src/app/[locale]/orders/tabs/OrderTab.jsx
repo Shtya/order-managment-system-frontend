@@ -2305,7 +2305,7 @@ export default function OrdersTab({
                 }
                 placeholder={t("postponed.datePlaceholder")}
                 dataSize="default"
-                minDate="today"
+                // minDate="today"
                 maxDate={null}
               />
             </FilterField>

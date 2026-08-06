@@ -23,10 +23,14 @@ export default function DateRangePicker({
     if (mode === "single") {
       return value ? new Date(value) : null;
     }
-    return [
-      value?.startDate ? new Date(value.startDate) : null,
-      value?.endDate ? new Date(value.endDate) : null,
-    ].filter(Boolean); // Filter out nulls if empty
+    const start = value?.startDate ? new Date(value.startDate) : null;
+    const end = value?.endDate ? new Date(value.endDate) : null;
+    // Stored endDate is local midnight of the day AFTER the picked end day
+    // (except same-day picks, where it equals startDate), so restore the display day.
+    if (start && end && end.getTime() !== start.getTime()) {
+      end.setDate(end.getDate() - 1);
+    }
+    return [start, end].filter(Boolean); // Filter out nulls if empty
   }, [value, mode]);
 
   const toDateString = (date) => {

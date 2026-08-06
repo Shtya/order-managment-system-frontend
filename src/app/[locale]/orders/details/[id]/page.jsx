@@ -297,16 +297,21 @@ export function OrderDetailsPage({ order, loading }) {
   const displayLocationAddress = order?.locationAddress || fetchedLocation?.address;
   const isAutoFetched = !order?.locationName && fetchedLocation?.name;
 
-  const formatDate = (date) => {
-    if (!date) return "—";
-    return new Date(date).toLocaleString("ar-EG", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatDate = (date, onlyDate = false) => {
+  if (!date) return "—";
+
+  return new Date(date).toLocaleString("ar-EG", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    ...(onlyDate
+      ? {}
+      : {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+  });
+};
   const { formatCurrency } = usePlatformSettings();
 
   if (loading) return <OrderDetailsPageSkeleton />;
@@ -914,6 +919,13 @@ export function OrderDetailsPage({ order, loading }) {
                   icon={Landmark}
                   label={t("fields.landmark")}
                   value={order.landmark}
+                />
+              )}
+              {order.postponedDate && (
+                <InfoRow
+                  icon={Calendar}
+                  label={t("fields.postponedDate")}
+                  value={formatDate(order.postponedDate, true)}
                 />
               )}
             </div>

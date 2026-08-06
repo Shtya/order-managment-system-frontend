@@ -6317,7 +6317,8 @@
       "providerShipmentId": "رقم الشحنة لدى المزود",
       "notes": "ملاحظات",
       "adminName": "الاسم",
-      "adminEmail": "الايميل"
+      "adminEmail": "الايميل",
+      "postponedDate": "تاريخ التأجيل"
     },
     "retry": {
       "locked": "مقفل"

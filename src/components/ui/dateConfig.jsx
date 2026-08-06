@@ -113,7 +113,8 @@ function MiniCardPattern({ selected = false }) {
 // locale when the settings provider isn't mounted (e.g. outside automations).
 export function useSettingsDefaultLang() {
     try {
-        return useOrdersSettings().settings?.defaultLang;
+        const settings = useOrdersSettings();
+        return settings?.defaultLang;
     } catch {
         return undefined;
     }
@@ -166,10 +167,10 @@ export function CompactDateConfig({
             <button
                 type="button"
                 onClick={onBack}
-                className="flex items-center self-end gap-1.5 rounded-lg border-2 border-border bg-background/80 px-3 py-1.5 text-xs font-bold text-muted-foreground transition-all hover:border-primary/60 hover:text-foreground hover:-translate-y-0.5"
+                className="flex items-center ms-auto gap-1.5 rounded-lg border-[1] border-border bg-background/80 px-3 py-1.5 text-xs font-bold text-muted-foreground transition-all hover:border-primary/60 hover:text-foreground hover:-translate-y-0.5"
             >
-                <ChevronLeft className="h-4 w-4" />
                 {labels.back || "Back"}
+                <ChevronLeft className="h-4 w-4" />
             </button>
 
             <div className="space-y-2">

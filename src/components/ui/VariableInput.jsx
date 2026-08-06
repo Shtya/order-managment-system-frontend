@@ -49,7 +49,7 @@ function buildChip(variable) {
     chip.className =
         "inline-flex items-center gap-1.5 align-middle whitespace-nowrap select-none " +
         "rounded-sm border border-border bg-foreground/5 pl-1 pr-2 py-0.5 mx-0.5 text-xs"
-
+    
     // Create icon container
     const iconContainer = document.createElement("span")
     iconContainer.className =
@@ -94,9 +94,56 @@ function buildChip(variable) {
     return chip
 }
 
+// React (non-DOM) version of the variable chip — mirrors buildChip's visuals
+// for read-only surfaces (e.g. template previews) that want the same chip look.
+const chipSizeClasses = {
+    normal: "pl-1 pr-2 py-0.5 text-xs",
+    small: "pl-1 pr-1.5 py-px text-[10px]",
+}
+
+const chipIconSizeClasses = {
+    normal: "h-4 w-4 text-[10px]",
+    small: "h-3.5 w-3.5 text-[9px]",
+}
+
+const VariableChip = React.memo(function VariableChip({ variable, example, showExample = false, size = "normal", className }) {
+    const Icon = variable?.icon
+    const label = variable?.label ?? ""
+    const preview = example ?? variable?.preview ?? variable?.example
+    
+    return (
+        <span className={cn(
+            "inline-flex items-center gap-1.5 align-middle whitespace-nowrap select-none",
+            "rounded-sm border border-border bg-foreground/5 mx-0.5",
+            chipSizeClasses[size] ?? chipSizeClasses.normal,
+            className
+        )}>
+            <span className={cn(
+                "flex shrink-0 items-center justify-center rounded-[4px] bg-[var(--primary)] font-bold text-white",
+                chipIconSizeClasses[size] ?? chipIconSizeClasses.normal
+            )}>
+                {Icon ? (
+                    <Icon className={cn("text-current", size === "small" ? "h-2 w-2" : "h-2.5 w-2.5")} />
+                ) : (
+                    label?.[0]?.toUpperCase() ?? "•"
+                )}
+            </span>
+            <span className="font-medium text-foreground">{label}</span>
+            {preview != null && preview !== "" && (
+                <span className={showExample ? "font-medium text-foreground" : "text-muted-foreground/80"}>
+                    {preview}
+                </span>
+            )}
+        </span>
+    )
+})
+VariableChip.displayName = "VariableChip"
+
+export { VariableChip, flattenVariables, findVariableForToken }
+
 // Appends text to a container, turning any \n into a real <br> element so
 // that pressing Enter (which we also normalize to <br>, see handleKeyDown)
-// round-trips correctly through hydrate() -> serialize().
+// round-trips correctly through hydrate () -> serialize().
 function appendTextWithBreaks(container, text) {
     const lines = text.split("\n")
     lines.forEach((line, i) => {
@@ -152,8 +199,10 @@ function flattenVariables(variables) {
 
 // Resolve a token id back to a variable for chip rendering. Configured
 // dynamic tokens (e.g. global.date.2.DD-MM-YYYY) don't exist verbatim in
-// the variable list, so we fall back to the base "date" variable.
-function findVariableForToken(flattened, id) {
+// the variable list, so we fall back to the base "date" variable. Date
+// tokens resolve to an actual formatted date (today + offset days) exactly
+// like the backend's resolveGlobalVariablePath / formatDateWithFormat.
+function findVariableForToken(flattened, id, lang = "en") {
     const direct = flattened.find((v) => v.id === id)
     if (direct) return direct
 
@@ -161,7 +210,11 @@ function findVariableForToken(flattened, id) {
     if (dateMatch) {
         const base = flattened.find((v) => v.type === "date")
         if (base) {
-            return { ...base, id, preview: `${dateMatch[1]} · ${dateMatch[2]}` }
+            const offset = Number.parseInt(dateMatch[1], 10)
+            const format = dateMatch[2] || "DD-MM-YYYY"
+            const date = new Date()
+            date.setDate(date.getDate() + (Number.isFinite(offset) ? offset : 0))
+            return { ...base, id, preview: formatDateWithFormat(date, format, lang) }
         }
     }
 
@@ -169,7 +222,7 @@ function findVariableForToken(flattened, id) {
 }
 
 // Turn a {{variable.path}} string into DOM content (text + chip + <br> nodes).
-function hydrate(container, value, flattened) {
+function hydrate(container, value, flattened, lang = "en") {
     container.innerHTML = ""
     if (!value) return
 
@@ -181,7 +234,9 @@ function hydrate(container, value, flattened) {
         if (match.index > lastIndex) {
             appendTextWithBreaks(container, value.slice(lastIndex, match.index))
         }
-        const variable = findVariableForToken(flattened, id)
+        
+        const variable = findVariableForToken(flattened, id, lang)
+        
         container.appendChild(variable ? buildChip(variable) : document.createTextNode(full))
         lastIndex = match.index + full.length
     }
@@ -248,13 +303,18 @@ const VariableInput = React.forwardRef(function VariableInput(
         disableHydrateRef.current = disableHydrate
     }, [disableHydrate])
 
+    const langRef = React.useRef(lang)
+    React.useEffect(() => {
+        langRef.current = lang
+    }, [lang])
+
     const syncContent = React.useCallback((val) => {
         const el = editableRef.current
         if (!el) return
         if (disableHydrateRef.current) {
             setPlainContent(el, val ?? "")
         } else {
-            hydrate(el, val ?? "", flattenedVariablesRef.current)
+            hydrate(el, val ?? "", flattenedVariablesRef.current, langRef.current)
         }
     }, [])
 
@@ -576,6 +636,7 @@ const VariableInput = React.forwardRef(function VariableInput(
         const target = new Date()
         target.setDate(target.getDate() + (Number.isFinite(dateOffset) ? dateOffset : 0))
         const sample = formatDateWithFormat(target, dateFormat, lang)
+        
         insertVariable({ ...configNode, id: token, preview: sample })
         setConfigNode(null)
     }, [configNode, dateOffset, dateFormat, insertVariable, lang])

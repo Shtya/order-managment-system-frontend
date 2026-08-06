@@ -34,6 +34,100 @@ import {
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { FaLocationDot } from "react-icons/fa6";
 import { useClipboard } from "@/hook/useClipboard";
+import { VariableChip, flattenVariables, findVariableForToken } from "@/components/ui/VariableInput";
+import { useDateLang } from "@/components/ui/dateConfig";
+import { useOrderProperties } from "@/app/[locale]/automations/atoms/OrderPropertySelector";
+
+// --- Variable chip helpers ---
+
+function extractTokenName(raw) {
+    const m = raw?.match(/^\{\{\s*([^}]+?)\s*\}\}$/);
+    return m ? m[1] : "";
+}
+
+function useFlattenedOrderProperties() {
+    const orderProperties = useOrderProperties();
+    const locale = useLocale();
+    return useMemo(() => flattenVariables(orderProperties), [locale]); // eslint-disable-line react-hooks/exhaustive-deps
+}
+
+// Normalize an `examples[name]` entry to a display string. Callers may pass
+// either a plain string (legacy / chat previews) or the full variable config
+// object ({ type, value, label, example, variablePath }) from the automation
+// step editor.
+function exampleTextFor(entry) {
+    if (entry == null) return undefined;
+    if (typeof entry === "string") return entry;
+    if (typeof entry === "object") {
+        if (entry.type === "variable") return entry.example || (entry.label ? `[${entry.label}]` : undefined);
+        return entry.value || undefined;
+    }
+    return undefined;
+}
+
+function makeChipProps(part, flatList, examples, showExamples, lang = "en", enableChipReplacer = true) {
+    if (!enableChipReplacer) return null;
+    const name = part.variableName || extractTokenName(part.raw);
+    const prop = name ? findVariableForToken(flatList, name, lang) : undefined;
+    if (!prop && !part.isValid) return null;
+    const showExample = showExamples && part.isValid;
+    const example = showExample
+        ? (part.exampleValue ?? exampleTextFor(examples?.[name]) ?? part.raw)
+        : undefined;
+    const variable = prop
+        ? { label: prop.label, icon: prop.icon, example: prop.example, preview: prop.preview }
+        : { label: name || part.raw, icon: null };
+    return { variable, example, showExample };
+}
+
+function InlineVariables({ text, examples = {}, showExamples = false, enableChipReplacer = true }) {
+    const orderPropertiesFlat = useFlattenedOrderProperties();
+    const appLang = useLocale();
+    const dateLang = useDateLang(appLang);
+
+
+    if (!enableChipReplacer) {
+        return <>{text}</>;
+    }
+
+    const parts = useMemo(() => {
+        if (text == null || text === "") return [];
+        return String(text).split(/(\{[^{}]*\}|\{\{[^{}]*\}\})/g).map((part) => {
+            if (isCorrectVariableFormat(part, "positional")) {
+                const m = part.match(VAR_REGEX.positional);
+                return { type: "variable", variableName: m?.[1], raw: part, isValid: true };
+            }
+            if (isCorrectVariableFormat(part, "named")) {
+                const m = part.match(VAR_REGEX.named);
+                return { type: "variable", variableName: m?.[1], raw: part, isValid: true };
+            }
+            if (isPotentialVariable(part)) return { type: "variable", raw: part, isValid: false };
+            return { type: "text", value: part };
+        });
+    }, [text]);
+
+    return (
+        <>
+            {parts.map((part, index) => {
+                if (part.type === "text") {
+                    return <React.Fragment key={index}>{part.value}</React.Fragment>;
+                }
+                const chipProps = makeChipProps(part, orderPropertiesFlat, examples, showExamples, dateLang, enableChipReplacer);
+                if (!chipProps) {
+                    return (
+                        <span
+                            key={index}
+                            className="inline-block px-1 rounded mx-0.5 align-baseline bg-red-100 text-red-600 border border-red-200 font-mono text-[10px]"
+                        >
+                            {part.raw}
+                        </span>
+                    );
+                }
+                return <VariableChip key={index} size="small" variable={chipProps.variable} example={chipProps.example} showExample={chipProps.showExample} />;
+            })}
+        </>
+    );
+}
 
 // --- Sub-components ---
 
@@ -52,7 +146,9 @@ export function WhatsAppButtonMenu({
     sections = [],
     seeAllOptionsLabel,
     isPortal = false,
+    enableChipReplacer = true,
 }) {
+    
     const t = useTranslations("whatsApp.templates.preview");
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [mounted, setMounted] = useState(false);
@@ -64,31 +160,37 @@ export function WhatsAppButtonMenu({
 
     const displayTitle = title || t("allOptions");
 
-    const actionButtons = buttons.filter(btn => btn.type !== "CUSTOM");
-    const customButtons = buttons.filter(btn => btn.type === "CUSTOM");
-
+    const actionButtons = buttons.filter((btn) => btn.type !== "CUSTOM");
+    const customButtons = buttons.filter((btn) => btn.type === "CUSTOM");
+    
     const menuContent = (
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    // 1. Made the background a motion.div for a rapid fade out
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                    exit={{
+                        opacity: 0,
+                        transition: { duration: 0.1 },
+                    }}
                     className={cn(
-                        isPortal ? "fixed inset-0 z-[100]" : "absolute inset-0 z-[100]",
-                        "flex items-center justify-center bg-black/40 overflow-hidden"
+                        isPortal
+                            ? "fixed inset-0 z-[100] p-4 sm:p-6"
+                            : "absolute inset-0 z-[100]",
+                        "flex items-center justify-center bg-black/40"
                     )}
                     onClick={onClose}
                 >
                     <motion.div
                         initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        // 2. Overriding the exit animation to be very fast (100ms)
                         exit={{
                             opacity: 0,
                             scale: 0.97,
-                            transition: { duration: 0.1, ease: "easeOut" }
+                            transition: {
+                                duration: 0.1,
+                                ease: "easeOut",
+                            },
                         }}
                         transition={{
                             type: "spring",
@@ -97,92 +199,245 @@ export function WhatsAppButtonMenu({
                             damping: 35,
                             mass: 0.5,
                         }}
-                        className="bg-white dark:bg-slate-950 rounded-xl p-4 shadow-2xl max-h-[80%] w-[90%] max-w-md flex flex-col"
+                        dir={locale === "ar" ? "rtl" : "ltr"}
+                        className={cn(
+                            "flex flex-col overflow-hidden border border-[#e2e2e2] bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950",
+
+                            isPortal
+                                ? "w-full max-w-[420px] max-h-[min(700px,90vh)] rounded-2xl"
+                                : "w-[90%] max-w-md max-h-[80%] rounded-lg",
+                        )}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="flex items-start justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">
-                            <button onClick={onClose} className="p-1 mt-0.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
-                                <X size={20} className="text-slate-500" />
+                        <div className="relative flex min-h-[58px] items-center border-b border-[#e5e5e5] px-4 dark:border-slate-800">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className={cn(
+                                    "absolute flex h-8 w-8 items-center justify-center rounded-full",
+                                    "text-[#667781] transition-colors",
+                                    "hover:bg-[#f0f2f5] dark:hover:bg-white/5",
+                                    locale === "ar" ? "left-3" : "right-3",
+                                )}
+                            >
+                                <X size={19} />
                             </button>
-                            <div className="flex-1 px-4 text-center">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-[15px] leading-tight">{displayTitle}</h3>
-                                {subtitle && <p className="text-[12.5px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">{subtitle}</p>}
+
+                            <div className="w-full px-10 text-center">
+                                <h3 className="text-[15px] font-semibold leading-5 text-[#111b21] dark:text-slate-100">
+                                    <InlineVariables text={displayTitle} enableChipReplacer={enableChipReplacer} />
+                                </h3>
+
+                                {subtitle && (
+                                    <p className="mt-0.5 text-[12px] font-normal leading-[18px] text-[#667781] dark:text-slate-400">
+                                        <InlineVariables text={subtitle} enableChipReplacer={enableChipReplacer} />
+                                    </p>
+                                )}
                             </div>
-                            <div className="w-8" /> {/* Spacer */}
                         </div>
 
                         {/* Content */}
-                        <div className="overflow-y-auto space-y-1 custom-scrollbar pb-2">
+                        <div
+                            className={cn(
+                                "custom-scrollbar overflow-y-auto",
+                                isPortal ? "py-2" : ""
+                            )}
+                        >
                             {type === "LIST" ? (
                                 <div className="flex flex-col">
                                     {sections.map((section, sIdx) => (
-                                        <div key={sIdx} className="flex flex-col mb-4 last:mb-0">
+                                        <div
+                                            key={sIdx}
+                                            className={cn(
+                                                "flex flex-col",
+                                                sIdx > 0 &&
+                                                "",
+                                            )}
+                                        >
                                             {section.title && (
-                                                <div className="px-2 py-1.5 text-[13px] font-bold text-[#00a884] uppercase tracking-wider">
-                                                    {section.title}
+                                                <div className="border-b border-[#e5e5e5] px-4 py-2.5 dark:border-slate-800">
+                                                    <p className="text-[13px] font-medium leading-5 text-[#667781] dark:text-slate-400">
+                                                        <InlineVariables
+                                                            text={section.title}
+                                                            enableChipReplacer={enableChipReplacer}
+                                                        />
+                                                    </p>
                                                 </div>
                                             )}
-                                            <div className="space-y-1">
-                                                {section.rows?.map((row, rIdx) => (
-                                                    <div key={rIdx} className="px-2 py-3 hover:bg-gray-100 dark:hover:bg-[#182229] rounded-lg transition-colors cursor-default group">
-                                                        <p className="text-[15px] text-slate-700 dark:text-slate-200 font-medium group-hover:text-[#00a884]">{row.title}</p>
-                                                        {row.description && (
-                                                            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">{row.description}</p>
-                                                        )}
-                                                    </div>
-                                                ))}
+
+                                            <div className="flex flex-col">
+                                                {section.rows?.map(
+                                                    (row, rIdx) => (
+                                                        <div
+                                                            key={rIdx}
+                                                            className={cn(
+                                                                "cursor-default px-4 py-3 transition-colors",
+                                                                "hover:bg-[#f7f8f8] dark:hover:bg-[#182229]",
+                                                                rIdx !==
+                                                                section.rows
+                                                                    .length -
+                                                                1 &&
+                                                                "border-b border-[#e5e5e5] dark:border-slate-800",
+                                                            )}
+                                                        >
+                                                            <p className="text-[15px] font-semibold leading-[21px] text-[#111b21] dark:text-slate-100">
+                                                                <InlineVariables
+                                                                    text={
+                                                                        row.title
+                                                                    }
+                                                                    enableChipReplacer={enableChipReplacer}
+                                                                />
+                                                            </p>
+
+                                                            {row.description && (
+                                                                <p className="mt-0.5 text-[13px] font-normal leading-[19px] text-[#667781] dark:text-slate-400">
+                                                                    <InlineVariables
+                                                                        text={
+                                                                            row.description
+                                                                        }
+                                                                        enableChipReplacer={enableChipReplacer}
+                                                                    />
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    ),
+                                                )}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : type === "BUTTONS" ? (
-                                <>
+                                <div className="flex flex-col">
                                     {/* Action Buttons */}
                                     {actionButtons.map((btn, idx) => (
-                                        <div key={btn.id || `action-${idx}`} className="flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-[#182229] rounded-lg cursor-default transition-colors group">
-                                            <div className="text-slate-500 group-hover:text-[#00a884]">
-                                                {btn.type === "PHONE_NUMBER" && <Phone size={18} />}
-                                                {btn.type === "VISIT_WEBSITE" && <ExternalLink size={18} />}
-                                                {btn.type === "WHATSAPP_CALL" && <Phone size={18} />}
+                                        <div
+                                            key={
+                                                btn.id || `action-${idx}`
+                                            }
+                                            className={cn(
+                                                "flex min-h-[58px] cursor-default items-center gap-3 px-4 py-3",
+                                                "transition-colors hover:bg-[#f7f8f8] dark:hover:bg-[#182229]",
+                                                (idx !==
+                                                    actionButtons.length - 1 ||
+                                                    customButtons.length >
+                                                    0) &&
+                                                "border-b border-[#e5e5e5] dark:border-slate-800",
+                                            )}
+                                        >
+                                            <div className="shrink-0 text-[#667781] dark:text-slate-400">
+                                                {btn.type ===
+                                                    "PHONE_NUMBER" && (
+                                                        <Phone size={18} />
+                                                    )}
+
+                                                {btn.type ===
+                                                    "VISIT_WEBSITE" && (
+                                                        <ExternalLink size={18} />
+                                                    )}
+
+                                                {btn.type ===
+                                                    "WHATSAPP_CALL" && (
+                                                        <Phone size={18} />
+                                                    )}
                                             </div>
-                                            <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || t("actionButtonPlaceholder")}</span>
+
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-[15px] font-semibold leading-[21px] text-[#111b21] dark:text-slate-100">
+                                                    {btn.text ? (
+                                                        <InlineVariables
+                                                            text={btn.text}
+                                                            enableChipReplacer={enableChipReplacer}
+                                                        />
+                                                    ) : (
+                                                        t(
+                                                            "actionButtonPlaceholder",
+                                                        )
+                                                    )}
+                                                </p>
+                                            </div>
                                         </div>
                                     ))}
-
-                                    {/* Separator if both types exist */}
-                                    {actionButtons.length > 0 && customButtons.length > 0 && (
-                                        <div className="h-px bg-[#e8f5e9] dark:bg-slate-800 my-2 mx-2" />
-                                    )}
 
                                     {/* Custom Buttons */}
                                     {customButtons.map((btn, idx) => (
-                                        <div key={btn.id || `custom-${idx}`} className="flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-[#182229] rounded-lg cursor-default transition-colors group">
-                                            <div className="text-slate-500 group-hover:text-[#00a884]">
-                                                <Reply size={18} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
+                                        <div
+                                            key={
+                                                btn.id || `custom-${idx}`
+                                            }
+                                            className={cn(
+                                                "flex min-h-[58px] cursor-default items-center gap-3 px-4 py-3",
+                                                "transition-colors hover:bg-[#f7f8f8] dark:hover:bg-[#182229]",
+                                                idx !==
+                                                customButtons.length - 1 &&
+                                                "border-b border-[#e5e5e5] dark:border-slate-800",
+                                            )}
+                                        >
+                                            <div className="shrink-0 text-[#667781] dark:text-slate-400">
+                                                <Reply
+                                                    size={18}
+                                                    className={cn(
+                                                        locale === "ar" &&
+                                                        "scale-x-[-1]",
+                                                    )}
+                                                />
                                             </div>
-                                            <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || t("quickReplyPlaceholder")}</span>
+
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-[15px] font-semibold leading-[21px] text-[#111b21] dark:text-slate-100">
+                                                    {btn.text ? (
+                                                        <InlineVariables
+                                                            text={btn.text}
+                                                            enableChipReplacer={enableChipReplacer}
+                                                        />
+                                                    ) : (
+                                                        t(
+                                                            "quickReplyPlaceholder",
+                                                        )
+                                                    )}
+                                                </p>
+                                            </div>
                                         </div>
                                     ))}
-                                </>
+                                </div>
                             ) : (
-                                <div className="space-y-4 py-2">
+                                <div className="flex flex-col">
                                     {radioOptions.map((option, idx) => (
                                         <div
                                             key={idx}
-                                            onClick={() => setSelectedIndex(idx)}
-                                            className="flex items-center justify-between px-2 py-1 cursor-pointer group"
+                                            onClick={() =>
+                                                setSelectedIndex(idx)
+                                            }
+                                            className={cn(
+                                                "flex min-h-[58px] cursor-pointer items-center justify-between px-4 py-3",
+                                                "transition-colors hover:bg-[#f7f8f8] dark:hover:bg-[#182229]",
+                                                idx !==
+                                                radioOptions.length - 1 &&
+                                                "border-b border-[#e5e5e5] dark:border-slate-800",
+                                            )}
                                         >
-                                            <span className={cn(
-                                                "text-[15px] transition-colors",
-                                                selectedIndex === idx ? "text-[#00a884] font-medium" : "text-slate-700 dark:text-slate-200"
-                                            )}>
+                                            <span
+                                                className={cn(
+                                                    "text-[15px] font-semibold leading-[21px]",
+                                                    selectedIndex === idx
+                                                        ? "text-[#00a884]"
+                                                        : "text-[#111b21] dark:text-slate-100",
+                                                )}
+                                            >
                                                 {option.label}
                                             </span>
-                                            <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                                                selectedIndex === idx ? "border-[#00a884]" : "border-slate-300 dark:border-slate-600"
-                                            )}>
-                                                {selectedIndex === idx && <div className="w-2.5 h-2.5 rounded-full bg-[#00a884]" />}
+
+                                            <div
+                                                className={cn(
+                                                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                                                    selectedIndex === idx
+                                                        ? "border-[#00a884]"
+                                                        : "border-[#8696a0] dark:border-slate-600",
+                                                )}
+                                            >
+                                                {selectedIndex === idx && (
+                                                    <div className="h-2.5 w-2.5 rounded-full bg-[#00a884]" />
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -266,6 +521,8 @@ export default function TemplatePreview({
     isChatBubble = false,
     isUploading = false,
     onMediaLoad = () => { },
+    headerVariables = {},
+    enableChipReplacer = false,
 }) {
     const showToggleAction = (!isInteractive && !hideToggleAction);
     const t = useTranslations("whatsApp.templates");
@@ -281,6 +538,52 @@ export default function TemplatePreview({
         if (forceShowExamples) setShowExamples(true);
     }, [forceShowExamples]);
 
+    const chipRoleActive = !showToggleAction || (showToggleAction && showExamples);
+    const orderPropertiesFlat = useFlattenedOrderProperties();
+    const dateLang = useDateLang(locale);
+
+    // Automation step editor mode (showToggleAction && showExamples) for
+    // header/body text only. `examples[name]` there is the full variable
+    // config object ({ type, value, label, example, variablePath }):
+    //  - direct + value  -> render the literal value as plain text (no chip)
+    //  - variable + path -> render a chip resolved via variablePath
+    //  - nothing set     -> render the raw {{token}} as-is
+    // Returns null when not applicable so the caller falls through to the
+    // generic chip/example rendering.
+    
+     const renderSpecialVariable = (enableChipReplacer, part, index, source) => {
+         if (!enableChipReplacer) return null;
+         
+        if (!(showToggleAction && showExamples)) return null;
+        const name = part.variableName || extractTokenName(part.raw);
+        const cfg = (source ?? examples)?.[name];
+        if (!cfg || typeof cfg !== "object") return null;
+        if (cfg.type === "direct" && cfg.value) {
+            return <React.Fragment key={index}>{cfg.value}</React.Fragment>;
+        }
+        if (cfg.type === "variable" && cfg.variablePath) {
+            const prop = findVariableForToken(orderPropertiesFlat, cfg.variablePath, dateLang);
+            if (prop) {
+                return (
+                    <VariableChip
+                        key={index}
+                        size="small"
+                        variable={{ label: prop.label, icon: prop.icon, example: prop.example, preview: prop.preview }}
+                        example={cfg.example || undefined}
+                        showExample
+                    />
+                );
+            }
+        }
+        return (
+            <span
+                key={index}
+                className="inline-block px-1 rounded mx-0.5 align-baseline bg-slate-100 dark:bg-slate-800 text-[#282828] dark:text-slate-200 font-mono text-[10px]"
+            >
+                {part.raw}
+            </span>
+        );
+    };
 
 
     const raw = template || {};
@@ -321,6 +624,8 @@ export default function TemplatePreview({
             ? { bodyText: "", buttons: [], examples: {}, ...cfgSource }
             : { bodyText: "", buttons: [], examples: {} };
 
+
+
     const isPositional = parameterFormat === "positional";
     const isArabic = /[\u0600-\u06FF]/.test(bodyText || "");
     const language = !!raw.language ? raw.language : isArabic ? "ar" : "en";
@@ -331,13 +636,16 @@ export default function TemplatePreview({
                 ? bodyText
                 : t("preview.bodyPlaceholder");
 
-      
+
         const parts = text.split(/(\{[^{}]*\}|\{\{[^{}]*\}\})/g).map((part) => {
-            if(!showToggleAction && isPotentialVariable(part)) {
+            if (!showToggleAction && isPotentialVariable(part)) {
+                const name = extractTokenName(part);
                 return {
                     type: "variable",
+                    variableName: name,
                     raw: part,
                     isValid: true,
+                    exampleValue: exampleTextFor(examples?.[name]) ?? part,
                 };
             }
             if (isPositional && isCorrectVariableFormat(part, "positional")) {
@@ -348,7 +656,7 @@ export default function TemplatePreview({
                     variableName,
                     raw: part,
                     isValid: true,
-                    exampleValue: examples?.[variableName] ?? `{{${variableName}}}`,
+                    exampleValue: exampleTextFor(examples?.[variableName]) ?? `{{${variableName}}}`,
                 };
             }
             if (!isPositional && isCorrectVariableFormat(part, "named")) {
@@ -359,7 +667,7 @@ export default function TemplatePreview({
                     variableName,
                     raw: part,
                     isValid: true,
-                    exampleValue: examples?.[variableName] ?? part,
+                    exampleValue: exampleTextFor(examples?.[variableName]) ?? part,
                 };
             }
             if (isPotentialVariable(part)) {
@@ -384,13 +692,16 @@ export default function TemplatePreview({
         if (!headerText) return [];
 
         const text = headerText;
-        
+
         const parts = text.split(/(\{[^{}]*\}|\{\{[^{}]*\}\})/g).map((part) => {
-           if(!showToggleAction && isPotentialVariable(part)) {
+            if (!showToggleAction && isPotentialVariable(part)) {
+                const name = extractTokenName(part);
                 return {
                     type: "variable",
+                    variableName: name,
                     raw: part,
                     isValid: true,
+                    exampleValue: headerExample ?? exampleTextFor(headerVariables?.[name] ?? examples?.[name]) ?? part,
                 };
             }
             if (isPositional && isCorrectVariableFormat(part, "positional")) {
@@ -401,7 +712,7 @@ export default function TemplatePreview({
                     variableName,
                     raw: part,
                     isValid: true,
-                    exampleValue: headerExample ?? examples?.[variableName] ?? `{{${variableName}}}`,
+                    exampleValue: headerExample ?? exampleTextFor(headerVariables?.[variableName] ?? examples?.[variableName]) ?? `{{${variableName}}}`,
                 };
             }
             if (!isPositional && isCorrectVariableFormat(part, "named")) {
@@ -412,7 +723,7 @@ export default function TemplatePreview({
                     variableName,
                     raw: part,
                     isValid: true,
-                    exampleValue: headerExample ?? examples?.[variableName] ?? part,
+                    exampleValue: headerExample ?? exampleTextFor(headerVariables?.[variableName] ?? examples?.[variableName]) ?? part,
                 };
             }
             if (isPotentialVariable(part)) {
@@ -432,10 +743,12 @@ export default function TemplatePreview({
             return part;
         });
     }, [headerText, headerExample, examples, isPositional, t, showToggleAction]);
+
     useEffect(() => {
         setMediaLoading(true);
         setMediaError(false);
     }, [headerUrl, headerType]);
+
     const renderHeader = () => {
         const mediaClass = "aspect-video w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-sm overflow-hidden border-b border-slate-100 dark:border-slate-800 mb-2 relative";
 
@@ -636,7 +949,28 @@ export default function TemplatePreview({
                                 );
                             }
 
+                            const special = renderSpecialVariable(enableChipReplacer, part, index, headerVariables);
+                            if (special) return special;
+
+                            
+
                             // Variable Rendering
+                            if (chipRoleActive && enableChipReplacer) {
+
+                                const chipProps = makeChipProps(part, orderPropertiesFlat, examples, showExamples, dateLang, enableChipReplacer);
+                                if (chipProps) {
+                                    return (
+                                        <VariableChip
+                                            key={index}
+                                            size="small"
+                                            variable={chipProps.variable}
+                                            example={chipProps.example}
+                                            showExample={chipProps.showExample}
+                                        />
+                                    );
+                                }
+                            }
+
                             if (showExamples && part.isValid) {
                                 return (
                                     <React.Fragment key={index}>
@@ -671,7 +1005,6 @@ export default function TemplatePreview({
     const otpPreviewLabel =
         (otpCopyButtonText && String(otpCopyButtonText).trim()) ||
         t("preview.copyCode");
-
     return (
         <div className={cn(
             "w-full mx-auto overflow-hidden flex flex-col",
@@ -736,7 +1069,25 @@ export default function TemplatePreview({
                                         );
                                     }
 
+                                    const special = renderSpecialVariable(enableChipReplacer, part, index);
+                                    if (special) return special;
+                                  
                                     // Variable Rendering
+                                    if (chipRoleActive && enableChipReplacer) {
+                                        const chipProps = makeChipProps(part, orderPropertiesFlat, examples, showExamples, dateLang, enableChipReplacer);
+                                        if (chipProps) {
+                                            return (
+                                                <VariableChip
+                                                    key={index}
+                                                    size="small"
+                                                    variable={chipProps.variable}
+                                                    example={chipProps.example}
+                                                    showExample={chipProps.showExample}
+                                                />
+                                            );
+                                        }
+                                    }
+
                                     if (showExamples && part.isValid) {
                                         return (
                                             <React.Fragment key={index}>
@@ -764,7 +1115,7 @@ export default function TemplatePreview({
 
                         {footerText && (
                             <div className="text-[11.5px] font-light text-[#00000073] dark:text-[#8696a0] mt-2.5 leading-tight">
-                                {footerText}
+                                <InlineVariables text={footerText} examples={examples} showExamples={showExamples} enableChipReplacer={enableChipReplacer} />
                             </div>
                         )}
 
@@ -826,7 +1177,9 @@ export default function TemplatePreview({
                                                     />}
                                                     {btn.type === "COPY_CODE" && <Copy size={14} />}
 
-                                                    {btnText || (
+                                                    {btnText ? (
+                                                        <InlineVariables text={btnText} examples={examples} showExamples={showExamples} enableChipReplacer={enableChipReplacer} />
+                                                    ) : (
                                                         <span className="opacity-40 italic">{t("preview.actionButtonPlaceholder")}</span>
                                                     )}
                                                 </ButtonComponent>)
@@ -842,7 +1195,7 @@ export default function TemplatePreview({
                                                     )}
                                                 >
                                                     <List size={14} />
-                                                    {seeAllOptionsLabel || t("preview.seeAllOptions")}
+                                                    <InlineVariables text={seeAllOptionsLabel || t("preview.seeAllOptions")} enableChipReplacer={enableChipReplacer} />
                                                 </button>
                                             )}
                                         </>
@@ -884,6 +1237,7 @@ export default function TemplatePreview({
                             locale={locale}
                             seeAllOptionsLabel={seeAllOptionsLabel || t("preview.seeAllOptions")}
                             isPortal={isChatBubble}
+                            enableChipReplacer={enableChipReplacer}
                         />
                     )}
                 </AnimatePresence>
@@ -904,6 +1258,7 @@ export default function TemplatePreview({
                             ]}
                             locale={locale}
                             isPortal={isChatBubble}
+                            enableChipReplacer={enableChipReplacer}
                         />
                     )}
                 </AnimatePresence>

@@ -30,12 +30,12 @@ function SortableRow({
   sIdx,
   rIdx,
   row,
-  tc,
   handleRowChange,
   handleRemoveRow,
   errors,
   variableProps
 }) {
+  const t = useTranslations("chats");
   const {
     attributes,
     listeners,
@@ -81,7 +81,7 @@ function SortableRow({
         <div className="space-y-1">
           <VariableInput
             name={`row-${sIdx}-${rIdx}-title`}
-            placeholder={tc("rowTitle")}
+            placeholder={t("rowTitle")}
             maxLength={24}
             value={row.title}
             onChange={(val) => handleRowChange(sIdx, rIdx, "title", val)}
@@ -94,7 +94,7 @@ function SortableRow({
         </div>
         <VariableInput
           name={`row-${sIdx}-${rIdx}-description`}
-          placeholder={tc("rowDescription")}
+          placeholder={t("rowDescription")}
           maxLength={72}
           multiline={true}
           value={row.description}
@@ -324,7 +324,7 @@ export default function ListMessageBuilder({
                 "text-xs font-bold px-2 py-1 rounded-full",
                 totalRows >= config.maxRows ? "bg-red-50 text-red-500" : "bg-primary/5 text-primary"
               )}>
-                {totalRows} / {config.maxRows} Rows
+                {tc("rowsCount", { count: totalRows, max: config.maxRows })}
               </span>
               {sections.length < config.maxSections && (
                 <button
@@ -333,7 +333,7 @@ export default function ListMessageBuilder({
                   className="text-xs font-bold flex items-center gap-1 text-primary hover:text-primary/80"
                 >
                   <Plus size={14} />
-                  Add Section
+                  {tc("addSection")}
                 </button>
               )}
             </div>
@@ -393,7 +393,6 @@ export default function ListMessageBuilder({
                           sIdx={sIdx}
                           rIdx={rIdx}
                           row={row}
-                          tc={tc}
                           handleRowChange={handleRowChange}
                           handleRemoveRow={handleRemoveRow}
                           variableProps={variableProps}

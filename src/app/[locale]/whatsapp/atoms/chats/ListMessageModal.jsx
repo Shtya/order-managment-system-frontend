@@ -199,6 +199,9 @@ export const ListMessageForm = forwardRef(({
                             isInteractive={true}
                             isList={true}
                             seeAllOptionsLabel={watchAllFields.menuLabel}
+                            enableChipReplacer={
+                                !!variableProps && Object.keys(variableProps).length > 0
+                            }
                             template={{
                                 headerType: watchAllFields.headerType,
                                 headerText: watchAllFields.headerText,

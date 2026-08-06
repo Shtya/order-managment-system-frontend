@@ -621,7 +621,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         setHeaderMediaFile(null);
         setIsTemplateDialogOpen(false);
     };
-
+    
     const handleVariableChange = (type, num, updates) => {
         const key = type === 'header' ? 'headerVariables' : type === 'body' ? 'bodyVariables' : type === 'location' ? 'locationData' : 'buttonVariables';
         if (type === 'location') {
@@ -976,12 +976,13 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                 preview: {
                                                     ...tempValue.templateData,
                                                     examples: {
-                                                        ...Object.keys(tempValue.headerVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.headerVariables[k].value || (tempValue.headerVariables[k].type === 'variable' ? `[${tempValue.headerVariables[k].label}]` : '') }), {}),
-                                                        ...Object.keys(tempValue.bodyVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.bodyVariables[k].value || (tempValue.bodyVariables[k].type === 'variable' ? `[${tempValue.bodyVariables[k].label}]` : '') }), {}),
+                                                        ...Object.keys(tempValue.bodyVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.bodyVariables[k] }), {}),
                                                     }
                                                 }
                                             }}
+                                            headerVariables={Object.keys(tempValue.headerVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.headerVariables[k] }), {})}
                                             flat
+                                            enableChipReplacer={true}
                                             forceShowExamples={true}
                                         />
                                     </div>

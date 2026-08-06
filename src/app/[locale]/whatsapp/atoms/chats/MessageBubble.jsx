@@ -483,6 +483,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                 // Map actual values from components to examples for the preview
                 const dynamicExamples = {};
                 let headerMediaUrl = templateConfig.headerUrl;
+                let headerTextValue = templateConfig.headerExample || "";
                 let locationData = null;
 
                 if (content.template?.components) {
@@ -492,6 +493,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                 if (param.type === "text") {
                                     const key = param.parameter_name || (idx + 1);
                                     dynamicExamples[key] = param.text;
+                                    headerTextValue = param.text;
                                 } else if (["image", "video", "document"].includes(param.type?.toLowerCase())) {
                                     headerMediaUrl =  param[param.type]?.id || param[param.type]?.link || headerMediaUrl;
                                 } else if (param.type === "location") {
@@ -522,6 +524,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                 locationData,
                                 language: templateMetadata.language || "en",
                                 subCategory: templateMetadata.subCategory,
+                                headerExample: headerTextValue, // Use the actual sent header value, not the config example
                                 examples: dynamicExamples // Use the actual sent values as "examples"
                             }}
                         />

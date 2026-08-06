@@ -63,82 +63,83 @@ export const InteractiveMessageForm = forwardRef(({
         }
     });
 
-    const {  handleSubmit: handleSubmitForm, watch, setValue, reset, getValues, trigger, formState: { errors } } = form;
+    const { handleSubmit: handleSubmitForm, watch, setValue, reset, getValues, trigger, formState: { errors } } = form;
 
     const watchAllFields = watch();
 
     const preparePayload = (data) => {
         const mediaId = data?.id ? data?.id : isMediaId(data.headerUrl) ? data.headerUrl : undefined;
         return {
-        type: "interactive",
-        interactive: {
-            type: "button",
-            header: data.headerType !== "NONE" ? {
-                type: data.headerType.toLowerCase(),
-                [data.headerType.toLowerCase()]: data.headerType === "TEXT"
-                    ? data.headerText
-                    : mediaId
-                        ? {
-                            id: mediaId,
-                        }
-                        : {
-                            link: data.headerUrl,
-                            file: headerMediaFile || undefined,
-                        },
-            } : undefined,
-            body: { text: data.bodyText },
-            footer: data.footerText ? { text: data.footerText } : undefined,
-            action: {
-                buttons: data.buttons.map((btn, idx) => ({
-                    type: "reply",
-                    reply: { id: `btn_${idx}`, title: btn.text }
-                }))
+            type: "interactive",
+            interactive: {
+                type: "button",
+                header: data.headerType !== "NONE" ? {
+                    type: data.headerType.toLowerCase(),
+                    [data.headerType.toLowerCase()]: data.headerType === "TEXT"
+                        ? data.headerText
+                        : mediaId
+                            ? {
+                                id: mediaId,
+                            }
+                            : {
+                                link: data.headerUrl,
+                                file: headerMediaFile || undefined,
+                            },
+                } : undefined,
+                body: { text: data.bodyText },
+                footer: data.footerText ? { text: data.footerText } : undefined,
+                action: {
+                    buttons: data.buttons.map((btn, idx) => ({
+                        type: "reply",
+                        reply: { id: `btn_${idx}`, title: btn.text }
+                    }))
+                }
             }
         }
-    }};
+    };
 
     const restore = (payload) => {
-    const interactive = payload?.interactive;
-    if (!interactive) return;
+        const interactive = payload?.interactive;
+        if (!interactive) return;
 
-    const header = interactive.header;
+        const header = interactive.header;
 
-    if (header) {
-        const headerType = header.type;
+        if (header) {
+            const headerType = header.type;
 
-        if (headerType) {
-            setValue("headerType", headerType.toUpperCase());
+            if (headerType) {
+                setValue("headerType", headerType.toUpperCase());
 
-            if (headerType === "text") {
-                setValue("headerText", header.text ?? "");
-            } else {
-                const media = header[headerType];
+                if (headerType === "text") {
+                    setValue("headerText", header.text ?? "");
+                } else {
+                    const media = header[headerType];
 
-                setValue(
-                    "headerUrl",
-                    media?.id ?? media?.link ?? ""
-                );
+                    setValue(
+                        "headerUrl",
+                        media?.id ?? media?.link ?? ""
+                    );
+                }
             }
         }
-    }
 
-    setValue("bodyText", interactive.body?.text ?? "");
-    setValue("footerText", interactive.footer?.text ?? "");
+        setValue("bodyText", interactive.body?.text ?? "");
+        setValue("footerText", interactive.footer?.text ?? "");
 
-    if (Array.isArray(interactive.action?.buttons)) {
-        setValue(
-            "buttons",
-            interactive.action.buttons.map(btn => ({
-                text: btn.reply?.title ?? "",
-            }))
-        );
-    }
-};
+        if (Array.isArray(interactive.action?.buttons)) {
+            setValue(
+                "buttons",
+                interactive.action.buttons.map(btn => ({
+                    text: btn.reply?.title ?? "",
+                }))
+            );
+        }
+    };
 
     useImperativeHandle(ref, () => ({
         setValue,
         getValues,
-          reset: (values) => {
+        reset: (values) => {
             if (!values && setHeaderMediaFile)
                 setHeaderMediaFile(null);
             reset(values);
@@ -190,6 +191,9 @@ export const InteractiveMessageForm = forwardRef(({
                         <TemplatePreview
                             isInteractive={true}
                             seeAllOptionsLabel={t("viewOptions")}
+                            enableChipReplacer={
+                                !!variableProps && Object.keys(variableProps).length > 0
+                            }
                             template={{
                                 headerType: watchAllFields.headerType,
                                 headerText: watchAllFields.headerText,
@@ -220,13 +224,13 @@ export default function InteractiveMessageModal({
     const {
         handleSendMessage,
     } = useConversation();
-    
+
     const [headerMediaFile, setHeaderMediaFile] = useState(null);
     const formRef = React.useRef(null);
 
     const handleSubmitClick = async () => {
         const payload = await formRef.current?.submit();
-        
+
         if (payload) {
             handleSendMessage(payload);
             formRef.current?.reset({});
@@ -261,7 +265,7 @@ export default function InteractiveMessageModal({
                         type="button"
                         variant="outline"
                         onClick={() => {
-                             formRef.current?.reset?.();
+                            formRef.current?.reset?.();
                             onOpenChange(false)
                         }}
                         label={t("cancel")}

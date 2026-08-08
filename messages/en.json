@@ -7405,7 +7405,7 @@
         "duration": "Duration type",
         "customDays": "Duration in days",
         "includedOrders": "Orders per month count",
-        "extraOrderFee": "Extra order fee",
+        "extraOrderFee": "Order Price",
         "usersLimit": "Users Limit",
         "storesLimit": "Stores limit",
         "shippingLimit": "Shipping Companies Limit",
@@ -7633,7 +7633,7 @@
       "storeLimitLabel": "Allowed Stores",
       "shippingLimitLabel": "Allowed Shipping Companies",
       "orderLimitLabel": "Orders per month",
-      "extraFeeLabel": "Extra Order Fee (after exceeding limit)",
+      "extraFeeLabel": "Order Price (after exceeding limit)",
       "bulkUploadLabel": "Allowed Monthly Order Uploads",
       "currency": "EGP",
       "colors": {
@@ -7714,7 +7714,7 @@
       "stores": "Stores",
       "shipping": "Shipping companies",
       "orders": "Orders per month",
-      "extraFee": "Extra order fee",
+      "extraFee": "Order Price",
       "bulkUpload": "Order uploads / month",
       "unlimited": "Unlimited",
       "notAllowed": "Not allowed"
@@ -7861,7 +7861,8 @@
       "cancelSuccess": "Subscription cancelled successfully",
       "cancelError": "An error occurred while cancelling the subscription, please try again later",
       "error": "An unexpected error occurred",
-      "whatsappInterested": "Hello, I am interested in the {planName} plan and would like more details."
+      "ticketTitle": "Question about the {planName} plan",
+      "ticketMessage": "Hello, I am interested in the {planName} plan and would like more details."
     }
   },
   "pagination": {
@@ -8597,7 +8598,7 @@
           "prefix": "Pricing plans",
           "highlight": "simple and transparent"
         },
-        "extraFee": "{fee} extra order fee",
+        "extraFee": "{fee} Order Price",
         "subheading": "Choose the plan that fits your business size and needs.",
         "perMonth": "month",
         "cta": "Start now",
@@ -8619,7 +8620,7 @@
           "unlimitedShipping": "Unlimited shipping companies",
           "orders": "{count} Orders per month",
           "unlimitedOrders": "Unlimited orders",
-          "extraFee": "{fee} {currency} extra order fee",
+          "extraFee": "{fee} {currency} Order Price",
           "bulkUpload": "{count} bulk uploads/month"
         },
         "negotiated": "Negotiated"
@@ -8673,6 +8674,8 @@
       "price_per_month": "EGP / month",
       "cancel_btn": "Cancel subscription",
       "contact_us": "Contact us",
+      "ticket_title": "Question about the {planName} plan",
+      "ticket_message": "Hello, I am interested in the {planName} plan and would like more details.",
       "start_now": "Start now",
       "unavailable": "Unavailable",
       "active_already": "Already subscribed",
@@ -8688,7 +8691,7 @@
         "unlimited_shipping_companies": "Unlimited shipping companies",
         "included_orders": "Orders per month",
         "unlimited_orders": "Unlimited orders",
-        "extra_order_fee": "Extra order fee (EGP)",
+        "extra_order_fee": "Order Price (EGP)",
         "bulk_upload": "Bulk upload/month",
         "extra_order_fee_badge": "{fee} {currency} Additional fees for the order"
       },
@@ -8723,9 +8726,11 @@
         "stores": "stores",
         "shipping": "shipping companies",
         "orders": "Orders per month",
-        "extraFee": "extra order fee",
+        "extraFee": "Order Price",
         "bulkUpload": "orders upload/month",
-        "unlimited": "Unlimited"
+        "unlimited": "Unlimited",
+        "unlimitedOrder": "Unlimited Orders",
+        "unlimitedOrders": "Unlimited orders"
       },
       "actions": {
         "subscribe": "Choose this plan",
@@ -12528,14 +12533,14 @@
         "description": "The total number of active products in your inventory",
         "example": "If you have 150 products created in your store and none are deactivated, totalProducts will display 150."
       },
-"customerDamagedItems": {
-  "description": "The total quantity of damaged products from customer returns that were classified as damaged due to your internal processes.",
-  "example": "If a customer returns a delivered order, and you select one item from this returned order to be processed back into inventory, then mark that item as damaged due to your internal processes, its quantity will be counted as internally damaged items."
-},
-"companyDamagedItems": {
-  "description": "The total quantity of damaged products from customer returns that were classified as damaged by the shipping company.",
-  "example": "If a customer returns a delivered order, and you select one item from this returned order to be processed back into inventory, then mark that item as damaged by the shipping company and select the responsible shipping company, its quantity will be counted as shipping company damaged items."
-},
+      "customerDamagedItems": {
+        "description": "The total quantity of damaged products from customer returns that were classified as damaged due to your internal processes.",
+        "example": "If a customer returns a delivered order, and you select one item from this returned order to be processed back into inventory, then mark that item as damaged due to your internal processes, its quantity will be counted as internally damaged items."
+      },
+      "companyDamagedItems": {
+        "description": "The total quantity of damaged products from customer returns that were classified as damaged by the shipping company.",
+        "example": "If a customer returns a delivered order, and you select one item from this returned order to be processed back into inventory, then mark that item as damaged by the shipping company and select the responsible shipping company, its quantity will be counted as shipping company damaged items."
+      },
       "totalStock": {
         "description": "Total quantity of products purchased and added to your inventory from accepted purchase invoices, minus returned quantities from accepted return invoices",
         "example": "If you received 1000 items from accepted purchase invoices and returned 50 items from accepted return invoices, totalStock will be 1000 - 50 = 950."

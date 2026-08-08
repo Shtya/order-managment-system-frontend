@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import AttachmentUploader from "./AttachmentUploader";
 
-export default function CreateTicketDialog({ open, onOpenChange, onCreate }) {
+export default function CreateTicketDialog({ open, onOpenChange, onCreate, defaultValues }) {
   const t = useTranslations("supportTickets");
   const [files, setFiles] = useState([]);
 
@@ -45,10 +45,13 @@ export default function CreateTicketDialog({ open, onOpenChange, onCreate }) {
 
   useEffect(() => {
     if (open) {
-      reset({ title: "", message: "" });
+      reset({
+        title: defaultValues?.title || "",
+        message: defaultValues?.message || "",
+      });
       setFiles([]);
     }
-  }, [open, reset]);
+  }, [open, reset, defaultValues?.title, defaultValues?.message]);
 
   const onSubmit = async (values) => {
     const ok = await onCreate?.({ ...values, files });

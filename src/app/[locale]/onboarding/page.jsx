@@ -17,12 +17,12 @@ import {
   ExternalLink,
   HelpCircle,
   Loader2,
-  MessageCircle,
   Package,
   RefreshCw,
   RotateCcw,
   Settings2,
   Store,
+  Ticket,
   Truck,
   Upload,
   Users,
@@ -55,7 +55,6 @@ import { useSocket } from "@/context/SocketContext";
 import { CustomTooltip } from "@/components/atoms/Actions";
 import { useSubscriptionsApi } from "../plans/page";
 import { cn } from "@/utils/cn";
-import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
 import { MadarLogo } from "@/components/atoms/BrandLogo";
 /* ─── CSS ─────────────────────────────────────────────────── */
@@ -1441,8 +1440,7 @@ function BtnPrimary({ children, onClick, disabled, loading, ...props }) {
 function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
   const t = useTranslations("onboarding.plans");
   const locale = useLocale();
-  const { settings, isLoading: isSettingsLoading } = usePlatformSettings();
-  const whatsapp = settings?.whatsapp;
+  const router = useRouter();
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const {
     loading,
@@ -1466,9 +1464,11 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 
     // Build features array with limits
     let features = [];
-    if (plan.includedOrders !== null) {
+    if (plan.includedOrders === null) {
+      features.push(t("limits.unlimitedOrders"));
+    } else if (plan.includedOrders !== 0) {
       features.push(`${plan.includedOrders} ${t("features.included_orders")}`);
-    } 
+    }
     features.push(...(Array.isArray(plan.features) ? plan.features : []));
 
     // Add limit details
@@ -1480,10 +1480,10 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 
     if (plan.storesLimit !== null) {
       features.push(`${plan.storesLimit} ${t("features.stores")}`);
-    } 
+    }
     if (plan.shippingCompaniesLimit !== null) {
       features.push(`${plan.shippingCompaniesLimit} ${t("features.shipping_companies")}`);
-    } 
+    }
 
 
     const extraOrderFee =
@@ -1929,15 +1929,18 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                     >
                       <X size={14} /> {t("cancel_btn")}
                     </button>
-                  ) : p.type === "negotiated" && whatsapp != '0' && !!whatsapp ? (
-                    <a
-                      href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
-                        `مرحباً، أنا مهتم بخطة ${p.name}`,
-                      )}`}
-                      disabled={isSettingsLoading}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
+                  ) : p.type === "negotiated" ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(
+                          `/support-tickets?title=${encodeURIComponent(
+                            t("ticket_title", { planName: p.name }),
+                          )}&message=${encodeURIComponent(
+                            t("ticket_message", { planName: p.name }),
+                          )}`,
+                        );
+                      }}
                       style={{
                         width: "100%",
                         padding: "9px 0",
@@ -1949,15 +1952,14 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         cursor: "pointer",
                         marginBottom: 14,
                         marginTop: 4,
-                        background: "#25D366",
+                        background: "var(--p)",
                         color: "#fff",
-                        boxShadow: "0 4px 16px rgba(37,211,102,.35)",
+                        boxShadow: "0 4px 16px rgba(103,99,175,.35)",
                         transition: "opacity .18s, transform .18s",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         gap: 6,
-                        textDecoration: "none",
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.opacity = ".88";
@@ -1968,8 +1970,8 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         e.currentTarget.style.transform = "none";
                       }}
                     >
-                      <MessageCircle size={14} /> {t("contact_us")}
-                    </a>
+                      <Ticket size={14} /> {t("contact_us")}
+                    </button>
                   ) : (
                     <button
                       style={{

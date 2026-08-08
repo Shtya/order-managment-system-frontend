@@ -431,7 +431,7 @@ function SubItem({ child, isActive, isRTL, index }) {
     </motion.div>
   );
 }
-export const excludedSubcriptionPaths = ["/plans", "/wallet", "/onboarding"];
+export const excludedSubcriptionPaths = ["/plans", "/wallet", "/onboarding", '/support-tickets'];
 const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
   const { isDirectShippingEnabled } = useOrdersSettings();
 

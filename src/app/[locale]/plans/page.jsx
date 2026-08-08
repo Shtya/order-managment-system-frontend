@@ -15,7 +15,7 @@ import {
   Package,
   Upload,
   AlertCircle,
-  MessageCircle,
+  Ticket,
   Loader2,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -28,7 +28,6 @@ import PurchasedFeaturesTab from "./purchasedFeaturesTab";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import SubscriptionsTab from "../dashboard/plans/tabs/subscriptionsTab";
-import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
 import { dollorSign } from "@/utils/healpers";
 
@@ -83,7 +82,7 @@ export function useSubscriptionsApi() {
 
   // Fetch active subscription
   const fetchActiveSubscription = useCallback(async () => {
-    if(!accessToken) return;
+    if (!accessToken) return;
     try {
       const { data } = await api.get("/subscriptions/me/active");
       setActiveSubscription(data);
@@ -241,11 +240,10 @@ function PlanCard({
   isLoading,
   idx = 0,
 }) {
-  
-  const { settings, isLoading: isSettingsLoading } = usePlatformSettings();
-  const whatsapp = settings?.whatsapp;
+
   const t = useTranslations("subscriptions");
   const locale = useLocale();
+  const router = useRouter();
   const isRTL = locale === "ar";
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
@@ -312,7 +310,7 @@ function PlanCard({
   const description = isRTL ? plan.description : plan.descriptionEn;
   const name = isRTL ? plan.name : plan.nameEn;
   const features = isRTL ? plan.features : plan.featuresEn;
-  
+
   return (
     <>
       <motion.article
@@ -379,7 +377,7 @@ function PlanCard({
           </div>
 
           {/* Price */}
-          {(!!plan.price && plan.price > 0)  || plan.type === "negotiated" ? (<div className="flex items-baseline gap-1.5">
+          {(!!plan.price && plan.price > 0) || plan.type === "negotiated" ? (<div className="flex items-baseline gap-1.5">
             {plan.type === "negotiated" ? (
               <span className="text-3xl font-black text-slate-900 dark:text-white">
                 {t("card.negotiated")}
@@ -400,31 +398,37 @@ function PlanCard({
               </>
             )}
           </div>
-        ) : null}
+          ) : null}
 
           {/* Divider */}
           <div className="h-px bg-slate-50 dark:bg-slate-800" />
-           {plan.extraOrderFee !== null ? (
-              <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800">
-                <span className="text-[12px] font-bold text-slate-500 dark:text-slate-400">{t("limits.extraFee")}</span>
-                <span className="text-[12px] font-black text-primary">
-                  {plan.extraOrderFee} {dollorSign}
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-rose-50/50 dark:bg-rose-500/5 border-rose-100/50 dark:border-rose-500/10">
-                <span className="text-[12px] font-bold text-rose-500/70">{t("limits.extraFee")}</span>
-                <span className="text-[11px] font-black text-rose-500 uppercase">{t("limits.notAllowed")}</span>
-              </div>
-            )}
+          {plan.extraOrderFee !== null ? (
+            <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800">
+              <span className="text-[12px] font-bold text-slate-500 dark:text-slate-400">{t("limits.extraFee")}</span>
+              <span className="text-[12px] font-black text-primary">
+                {plan.extraOrderFee} {dollorSign}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-rose-50/50 dark:bg-rose-500/5 border-rose-100/50 dark:border-rose-500/10">
+              <span className="text-[12px] font-bold text-rose-500/70">{t("limits.extraFee")}</span>
+              <span className="text-[11px] font-black text-rose-500 uppercase">{t("limits.notAllowed")}</span>
+            </div>
+          )}
           {/* Limits Display */}
           <div className="grid grid-cols-1 gap-3">
             {[
               { icon: Users, label: t("limits.users"), value: plan.usersLimit === null ? t("limits.unlimited") : plan.usersLimit },
               { icon: Store, label: t("limits.stores"), value: plan.storesLimit === null ? t("limits.unlimited") : plan.storesLimit },
               { icon: Truck, label: t("limits.shipping"), value: plan.shippingCompaniesLimit === null ? t("limits.unlimited") : plan.shippingCompaniesLimit },
-              { icon: Package, label: t("limits.orders"), value: plan.includedOrders === null ? t("limits.unlimited") : plan.includedOrders },
-            ].map((item, i) => (
+              plan.includedOrders !== 0 && {
+                icon: Package,
+                label: t("limits.orders"),
+                value: plan.includedOrders === null ? t("limits.unlimited") : plan.includedOrders,
+              },
+            ]
+            .filter(Boolean)
+            .map((item, i) => (
               <div key={i} className="flex items-center justify-between group/item">
                 <div className="flex items-center gap-2.5">
                   <div className={cn(
@@ -439,7 +443,7 @@ function PlanCard({
               </div>
             ))}
 
-           
+
           </div>
 
           {/* Features */}
@@ -481,18 +485,24 @@ function PlanCard({
                   {t("actions.cancel")}
                 </span>
               </button>
-            ) : plan.type === "negotiated" && whatsapp != '0' && !!whatsapp ? (
-              <a
-                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(t("messages.whatsappInterested", { planName: name }))}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center w-full h-11 rounded-xl font-black text-[13px] tracking-wide transition-all duration-300 bg-[#25D366] text-white shadow-lg shadow-[#25D366]/20 hover:scale-[1.02] active:scale-[0.98]"
+            ) : plan.type === "negotiated" ? (
+              <button
+                onClick={() =>
+                  router.push(
+                    `/support-tickets?title=${encodeURIComponent(
+                      t("messages.ticketTitle", { planName: name }),
+                    )}&message=${encodeURIComponent(
+                      t("messages.ticketMessage", { planName: name }),
+                    )}`,
+                  )
+                }
+                className="flex items-center justify-center w-full h-11 rounded-xl font-black text-[13px] tracking-wide transition-all duration-300 bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="flex items-center justify-center gap-2">
-                  <MessageCircle size={18} fill="currentColor" />
+                  <Ticket size={18} />
                   {t("actions.contactToSubscribe")}
                 </span>
-              </a>
+              </button>
             ) : (
               <button
                 onClick={() => !isSubscribeDisabled && onSubscribe(plan.id)}

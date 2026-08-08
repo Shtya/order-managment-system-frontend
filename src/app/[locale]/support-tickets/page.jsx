@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useLocale,
   useTranslations,
@@ -57,7 +57,18 @@ export default function SupportTicketsPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(12);
   const [createOpen, setCreateOpen] = useState(false);
+  const [createDefaults, setCreateDefaults] = useState(null);
   const searchTimer = useRef(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const title = searchParams.get("title");
+    const message = searchParams.get("message");
+    if (title || message) {
+      setCreateDefaults({ title: title || "", message: message || "" });
+      setCreateOpen(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     clearTimeout(searchTimer.current);
@@ -161,7 +172,10 @@ export default function SupportTicketsPage() {
         buttons={
           <button
             type="button"
-            onClick={() => setCreateOpen(true)}
+            onClick={() => {
+              setCreateDefaults(null);
+              setCreateOpen(true);
+            }}
             className="btn btn-sm btn-solid gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -208,6 +222,7 @@ export default function SupportTicketsPage() {
       <CreateTicketDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
+        defaultValues={createDefaults}
         onCreate={async (values) => {
           const res = await createTicket(values);
           if (res) {

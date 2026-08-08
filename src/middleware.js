@@ -16,7 +16,7 @@ export default function middleware(req) {
   const accessToken = req?.cookies?.get("accessToken")?.value; // your JWT cookie name
   const locale = pathname?.startsWith("/en") ? "en" : "ar";
 
-  
+
   if (pathname.startsWith("/queues")) {
     let user = null;
 
@@ -91,13 +91,25 @@ export default function middleware(req) {
     return NextResponse.redirect(new URL(`/${locale}/dashboard/users`, req.url));
   }
 
-  const isAtOnboarding = getCleanPath(pathname) === "/onboarding";
+  const ONBOARDING_ALLOWED_PATHS = [
+    "/onboarding",
+    "/support-tickets",
+  ];
+
+  const cleanPath = getCleanPath(pathname);
+
+  const isOnboardingAllowed = ONBOARDING_ALLOWED_PATHS.some(
+    (path) => cleanPath === path || cleanPath.startsWith(`${path}/`)
+  );
+
   if (
     userRole === "admin" &&
     user?.onboardingStatus !== "completed" &&
-    !isAtOnboarding
+    !isOnboardingAllowed
   ) {
-    return NextResponse.redirect(new URL(`/${locale}/onboarding`, req.url));
+    return NextResponse.redirect(
+      new URL(`/${locale}/onboarding`, req.url)
+    );
   }
 
   return intlMiddleware(req);

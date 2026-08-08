@@ -183,10 +183,13 @@ export default function PricingSection() {
       const description = isRTL ? plan.description : plan.descriptionEn;
       const localizedFeatures = isRTL ? plan.features : plan.featuresEn;
       let features = [];
-      
-      if (plan.includedOrders !== null) {
-        features.push(tWel("limits.orders", { count: plan.includedOrders }));
-      } 
+
+      if (plan.includedOrders === null) {
+        features.push(tWel("limits.unlimitedOrders"));
+      } else if (plan.includedOrders !== 0)  {
+         features.push(tWel("limits.orders", { count: plan.includedOrders }));
+      }
+
       if (Array.isArray(localizedFeatures)) {
         features.push(...localizedFeatures);
       }
@@ -210,8 +213,8 @@ export default function PricingSection() {
       const extraOrderFee =
         plan.extraOrderFee !== null && plan.extraOrderFee > 0
           ? tWel("extraFee", {
-              fee: formatCurrency(plan.extraOrderFee, dollorSign),
-            })
+            fee: formatCurrency(plan.extraOrderFee, dollorSign),
+          })
           : null;
 
       // if (plan.bulkUploadPerMonth > 0) {
@@ -244,18 +247,18 @@ export default function PricingSection() {
       };
     });
   }, [rawPlans, t, tWel, isRTL, formatCurrency]);
-  
+
   // Popular plan sits in the center once there are 3+ plans.
   const arranged = plans;
-// useMemo(() => {
-//     const result = [...plans];
-//     const popularIndex = result.findIndex((p) => p.featured);
-//     if (popularIndex > -1 && result.length >= 3) {
-//       const [popularPlan] = result.splice(popularIndex, 1);
-//       result.splice(1, 0, popularPlan);
-//     }
-//     return result;
-//   }, [plans]);
+  // useMemo(() => {
+  //     const result = [...plans];
+  //     const popularIndex = result.findIndex((p) => p.featured);
+  //     if (popularIndex > -1 && result.length >= 3) {
+  //       const [popularPlan] = result.splice(popularIndex, 1);
+  //       result.splice(1, 0, popularPlan);
+  //     }
+  //     return result;
+  //   }, [plans]);
   if (isLoading) return null;
   if (!arranged.length) return null;
 

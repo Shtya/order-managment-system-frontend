@@ -143,16 +143,16 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                 },
                 initialPayload: {}
             }
-             // Find the trigger item in any category
-             let trigger = null;
-             for (const category of BASE_CONFIG.TRIGGERS.categories) {
-                 const found = category.items.find(item => item.id === payload.trigger.type);
-                 if (found) {
-                     trigger = found;
-                     break;
-                 }
-             }
-             
+            // Find the trigger item in any category
+            let trigger = null;
+            for (const category of BASE_CONFIG.TRIGGERS.categories) {
+                const found = category.items.find(item => item.id === payload.trigger.type);
+                if (found) {
+                    trigger = found;
+                    break;
+                }
+            }
+
             const prev = {
                 ...payload,
                 previewId,
@@ -277,15 +277,26 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
         try {
             // Show processing steps toast
             toast.loading(t('toolbar.processingSteps'), { id: processingToastId });
-            console.log("nodes", nodes);
+            
             // 1. Run all async node setups concurrently
             const { processedNodes, allNewLinksIds } = await processNodesBeforeSave(nodes);
             console.log("processedNodes", processedNodes);
 
             // Collect deletedOldUrls from all nodes
             const nodeDeletedOldUrls = processedNodes.flatMap(n => n.data?.config?.deletedOldUrls || []);
-            const allDeleted = [...new Set([...nodeDeletedOldUrls].filter(url => url))];
+            const allDeleted = [
+                ...new Set(
+                    nodeDeletedOldUrls.filter(
+                        url => typeof url === 'string' && url.trim().length > 0
+                    )
+                ),
+            ];
 
+            const validNewIds = allNewLinksIds.filter(
+                id => typeof id === 'string' && id.trim().length > 0
+            );
+
+            
             // Update flow store with processed nodes
             useFlowStore.setState({ nodes: processedNodes });
 
@@ -320,10 +331,18 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                         targetHandle: e.targetHandle
                     }))
                 },
-                orphanFiles: {
-                    deletedOldUrls: allDeleted,
-                    newIds: allNewLinksIds.filter(id => id)
-                },
+                ...(allDeleted.length > 0 || validNewIds.length > 0
+                    ? {
+                        orphanFiles: {
+                            ...(allDeleted.length > 0 && {
+                                deletedOldUrls: allDeleted,
+                            }),
+                            ...(validNewIds.length > 0 && {
+                                newIds: validNewIds,
+                            }),
+                        },
+                    }
+                    : {}),
                 ...(!isEditMode && {
                     publish,
                     triggerType: triggerNode.data.type,

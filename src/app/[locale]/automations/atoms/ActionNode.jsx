@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { Position, useUpdateNodeInternals } from '@xyflow/react';
-import { MessageSquare, RefreshCw, Send, Loader2, Zap, Users, MessageCircle } from 'lucide-react';
+import { MessageSquare, RefreshCw, Send, Loader2, Zap, Users, MessageCircle, Hourglass } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
@@ -19,6 +19,7 @@ export function ActionNode({ id, data, selected }) {
         'send_upsell': { label: t('actionTypes.send_upsell'), subtitle: t('nodes.action.upsell'), icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'assign_order_to_employee': { label: t('actionTypes.assign_order_to_employee'), subtitle: t('nodes.action.management'), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'send_sms': { label: t('actionTypes.send_sms'), subtitle: t('nodes.action.subtitle'), icon: Send, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-500/10', },
+        'wait': { label: t('actionTypes.wait'), subtitle: t('nodes.action.management'), icon: Hourglass, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-500/10' },
     }), [t]);
 
     const updateNodeInternals = useUpdateNodeInternals();
@@ -141,6 +142,12 @@ export function ActionNode({ id, data, selected }) {
                                         <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{data.config.toNumber}</span>
                                     </div>
                                 )}
+                            </div>
+                        )}
+                        {data.type === 'wait' && (
+                            <div className="flex items-center justify-between">
+                                <span className="opacity-50 font-bold">{t('nodes.waitFor')}</span>
+                                <span className="font-black text-blue-700 dark:text-blue-400">{data.config?.waitMinutes} {t('nodes.minutes')}</span>
                             </div>
                         )}
                     </>

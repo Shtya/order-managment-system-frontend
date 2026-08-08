@@ -201,7 +201,7 @@ export default function InteractiveMessageBuilder({
                       disabled={disabled.buttons}
                       // {...variableProps}
                       error={btnError}
-                      className="h-11"
+                      className={cn("h-11", disabled.buttons && "opacity-50 cursor-not-allowed")}
                     />
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
                       {btn.text?.length || 0}/20

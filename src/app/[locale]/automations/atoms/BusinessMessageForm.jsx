@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, { useMemo, useState, useRef, useEffect, forwardRef, useImperativeHandle, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -66,7 +66,8 @@ export const BusinessMessageForm = forwardRef(({
     const locale = useLocale();
     const lang = useDateLang(locale);
     const formRef = useRef(null);
-    const [step, setStep] = useState("options"); // 'options' | 'message'
+    const hasBusinessConfig = (definition?.businessConfigFields || []).length > 0;
+    const [step, setStep] = useState(hasBusinessConfig ? "options" : "message"); // 'options' | 'message'
     const [businessConfig, setBusinessConfig] = useState(() => getDefaultBusinessConfig(definition?.businessConfigFields));
     const savedConfigRef = useRef(null);
     const messageValuesRef = useRef(null);
@@ -96,14 +97,10 @@ export const BusinessMessageForm = forwardRef(({
         return (values, config) => builder(values, config, ctx);
     }, [definition, locale, lang, t]);
 
-    useEffect(() => {
-        onStepChange?.(step);
-    }, [step, onStepChange]);
-
-    useEffect(() => {
-        if (step !== "message" || !formRef.current) return;
+    // Builds the full message-step values (form shape) from a saved payload base
+    // merged over the business builder output. Shared by the step effect and restore.
+    const buildMessageValues = useCallback((base = {}) => {
         const messageValues = buildFinal(definition?.messageValues || {}, businessConfig);
-        const base = messageValuesRef.current || (savedConfigRef.current ? getBaseFromPayload(savedConfigRef.current) : {});
         const values = {
             headerType: base.headerType ?? messageValues.headerType ?? "NONE",
             headerText: base.headerText ?? messageValues.headerText ?? "",
@@ -118,8 +115,18 @@ export const BusinessMessageForm = forwardRef(({
                 ? messageValues.sections
                 : [{ title: t("businessMessages.generatedRows"), rows: definition?.previewRows || [] }];
         }
-        formRef.current.reset(values);
-    }, [step, definition, t, buildFinal, businessConfig]);
+        return values;
+    }, [definition, buildFinal, businessConfig, t]);
+
+    useEffect(() => {
+        onStepChange?.(step);
+    }, [step, onStepChange]);
+
+    useEffect(() => {
+        if (step !== "message" || !formRef.current) return;
+        const base = messageValuesRef.current || (savedConfigRef.current ? getBaseFromPayload(savedConfigRef.current) : {});
+        formRef.current.reset(buildMessageValues(base));
+    }, [step, buildMessageValues]);
 
     const submit = async () => {
         if (step !== "message" || !formRef.current) return null;
@@ -132,13 +139,16 @@ export const BusinessMessageForm = forwardRef(({
         restore: ({ messageData: md, businessConfig: bc } = {}) => {
             if (md) savedConfigRef.current = md;
             if (bc) setBusinessConfig((prev) => ({ ...getDefaultBusinessConfig(definition?.businessConfigFields), ...prev, ...bc }));
+            if (step === "message" && md && formRef.current) {
+                formRef.current.reset(buildMessageValues(getBaseFromPayload(md)));
+            }
         },
         next: () => {
             if (step !== "options" || !isOptionsValid) return;
             setStep("message");
         },
         prev: () => {
-            if (step !== "message") return;
+            if (!hasBusinessConfig || step !== "message") return;
             messageValuesRef.current = formRef.current?.getValues?.() || null;
             setStep("options");
         },
@@ -148,7 +158,7 @@ export const BusinessMessageForm = forwardRef(({
         reset: (values) => {
             savedConfigRef.current = null;
             messageValuesRef.current = null;
-            setStep("options");
+            setStep(hasBusinessConfig ? "options" : "message");
             setHeaderMediaFile(null);
             if (values) {
                 const { messageData: md, businessConfig: bc } = values;
@@ -278,7 +288,9 @@ export const BusinessMessageForm = forwardRef(({
                     {...formProps}
                     localHeaderMediaFile={headerMediaFile}
                     setLocalHeaderMediaFile={setHeaderMediaFile}
-                />
+                >
+                    {children}
+                </ListMessageForm>
             ) : (
                 <InteractiveMessageForm
                     {...formProps}

@@ -450,6 +450,70 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
 }
 
 /**
+ * Action: Wait
+ */
+const MAX_WAIT_MINUTES = 7 * 24 * 60;
+
+export function WaitConfig({ value, onChange, errors, setDisabled }) {
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+
+    const WAIT_PRESETS = [
+        // { minutes: 1, label: tConfig('waitPresets.oneMinute') },
+        { minutes: 5, label: tConfig('waitPresets.fiveMinutes') },
+        { minutes: 60, label: tConfig('waitPresets.oneHour') },
+        { minutes: 6 * 60, label: tConfig('waitPresets.sixHours') },
+        { minutes: 20 * 60, label: tConfig('waitPresets.twentyHours') },
+        { minutes: 24 * 60, label: tConfig('waitPresets.oneDay') },
+        { minutes: 2 * 24 * 60, label: tConfig('waitPresets.twoDays') },
+    ];
+
+    const waitMinutes = Number(value?.waitMinutes);
+    const isValid = waitMinutes >= 1 && waitMinutes <= MAX_WAIT_MINUTES;
+
+    useEffect(() => {
+        setDisabled(!isValid);
+    }, [isValid, setDisabled]);
+
+    const waitError =
+        (value?.waitMinutes !== undefined && value?.waitMinutes !== '' && !isValid)
+            ? tConfig('waitMinutesError', { min: 1, max: MAX_WAIT_MINUTES })
+            : errors.waitMinutes;
+
+    return (
+        <div className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {WAIT_PRESETS.map((preset) => (
+                    <button
+                        key={preset.minutes}
+                        type="button"
+                        onClick={() => onChange({ ...value, waitMinutes: preset.minutes })}
+                        className={cn(
+                            "rounded-xl border px-3 py-2 text-sm font-bold transition-colors",
+                            waitMinutes === preset.minutes
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-slate-200 dark:border-slate-700 hover:border-primary/40"
+                        )}
+                    >
+                        {preset.label}
+                    </button>
+                ))}
+            </div>
+            <FormGroup label={tConfig('waitMinutes')} description={tConfig('waitMinutesDesc')} error={waitError}>
+                <Input
+                    type="number"
+                    min={1}
+                    max={MAX_WAIT_MINUTES}
+                    value={value?.waitMinutes ?? ''}
+                    onChange={(e) => onChange({ ...value, waitMinutes: Number(e.target.value) })}
+                    placeholder={tConfig('waitMinutesPlaceholder')}
+                    className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none"
+                />
+            </FormGroup>
+        </div>
+    );
+}
+
+/**
  * Action: Assign Order to Employee
  */
 export function AssignOrderToEmployeeConfig({ value, onChange, errors, setDisabled, onClose, mode }) {
@@ -1100,6 +1164,10 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     const [tempValue, setTempValue] = useState(value || {});
     const [accounts, setAccounts] = useState([]);
     const configuredType = tempValue.messageType;
+    const selectedBusinessDefinition = selectedMessage?.mode === 'business'
+        ? businessMessageDefinitions[selectedMessage.businessUseCase]
+        : null;
+    const hasBusinessConfig = (selectedBusinessDefinition?.businessConfigFields || []).length > 0;
     const [localHeaderMediaFile, setLocalHeaderMediaFile] = useState(null);
     const [headerMediaFile, setHeaderMediaFile] = useState(null);
     const formRef = useRef(null);
@@ -1109,12 +1177,14 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     const [addClientResponseToOrder, setAddClientResponseToOrder] = useState({
         location_request: true,
         interactive: true,
+        list: true,
     });
 
     // Temporary state for form interaction
     const [tempAddClientResponseToOrder, setTempAddClientResponseToOrder] = useState({
         location_request: true,
         interactive: true,
+        list: true,
     });
 
     const customMessageTypes = [
@@ -1124,7 +1194,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
         { icon: Video, label: tChats("messageTypes.video"), description: tChats("messageTypes.descriptions.video"), color: "text-red-500", type: "video" },
         { icon: MapPin, label: tChats("messageTypes.location"), description: tChats("messageTypes.descriptions.location"), color: "text-green-500", type: "location" },
         { icon: UserCircle, label: tChats("messageTypes.contact"), description: tChats("messageTypes.descriptions.contact"), color: "text-amber-500", type: "contact" },
-        { icon: List, label: tChats("messageTypes.list"), description: tChats("messageTypes.descriptions.list"), color: "text-teal-500", type: "list" },
+        { icon: List, label: tChats("messageTypes.list"), description: tChats("messageTypes.descriptions.list"), color: "text-teal-500", type: "list", actionIntent: "branches" },
         { icon: LayoutGrid, label: tChats("messageTypes.interactive"), description: tChats("messageTypes.descriptions.interactive"), color: "text-blue-600", type: "interactive", actionIntent: "branches" },
         { icon: MapIcon, label: tChats("messageTypes.location_request"), description: tChats("messageTypes.descriptions.location_request"), color: "text-emerald-600", type: "location_request", actionIntent: "location_request" },
     ];
@@ -1317,6 +1387,15 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                     })) || [];
                 }
             }
+
+            if (tempValue.messageType === 'list') {
+                const addBranches = !!addClientResponseToOrder.list;
+                actionIntent = addBranches ? 'branches' : null;
+                if (addBranches) {
+                    branches = [{ id: 'any_option', label: tChats('addBranchesIntoAutomationListRespond'), isCatchAll: true }];
+                }
+            }
+            
         } else {
             const typeDate = customMessageTypes.find(t => t.type === tempValue.messageType);
             const hasActionIntent = typeDate && addClientResponseToOrder[tempValue.messageType];
@@ -1327,6 +1406,9 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                     label: btn.reply.title,
                     sourceButton: btn,
                 })) || [];
+            }
+            if (tempValue && tempValue.messageType === 'list' && addClientResponseToOrder.list) {
+                branches = [{ id: 'any_option', label: tChats('addBranchesIntoAutomationListRespond'), isCatchAll: true }];
             }
         }
         handleCloseDialog({
@@ -1382,6 +1464,26 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                 className="text-sm font-medium text-foreground cursor-pointer"
                             >
                                 {tChats("addBranchesIntoAutomation")}
+                            </label>
+                        </div>
+                    )}
+                    {definition.messageType === 'list' && (
+                        <div className="mt-4 flex items-center gap-2">
+                            <Checkbox
+                                id="addClientResponseToList"
+                                checked={tempAddClientResponseToOrder?.list}
+                                onCheckedChange={(checked) => {
+                                    setTempAddClientResponseToOrder((prev) => ({
+                                        ...prev,
+                                        list: checked,
+                                    }));
+                                }}
+                            />
+                            <label
+                                htmlFor="addClientResponseToList"
+                                className="text-sm font-medium text-foreground cursor-pointer"
+                            >
+                                {tChats("addBranchesIntoAutomationList")}
                             </label>
                         </div>
                     )}
@@ -1449,7 +1551,26 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                         localHeaderMediaFile={localHeaderMediaFile}
                         variableProps={variableProps}
                         accountId={tempValue?.accountId}
-                    />
+                    >
+                        <div className="mt-4 flex items-center gap-2">
+                            <Checkbox
+                                id="addClientResponseToList"
+                                checked={tempAddClientResponseToOrder?.list}
+                                onCheckedChange={(checked) => {
+                                    setTempAddClientResponseToOrder((prev) => ({
+                                        ...prev,
+                                        list: checked,
+                                    }));
+                                }}
+                            />
+                            <label
+                                htmlFor="addClientResponseToList"
+                                className="text-sm font-medium text-foreground cursor-pointer"
+                            >
+                                {tChats("addBranchesIntoAutomationList")}
+                            </label>
+                        </div>
+                    </ListMessageForm>
                 );
             case 'interactive':
                 return (
@@ -1613,7 +1734,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                 label={tCommon('back')}
                                 className="w-full sm:w-auto"
                             />
-                            {selectedMessage?.mode === 'business' && businessStep === 'options' && (
+                            {selectedMessage?.mode === 'business' && hasBusinessConfig && businessStep === 'options' && (
                                 <Button_
                                     type="button"
                                     onClick={() => formRef.current?.next?.()}
@@ -1621,7 +1742,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                     className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                                 />
                             )}
-                            {selectedMessage?.mode === 'business' && businessStep === 'message' && (
+                            {selectedMessage?.mode === 'business' && hasBusinessConfig && businessStep === 'message' && (
                                 <Button_
                                     type="button"
                                     variant="outline"
@@ -1635,7 +1756,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                 onClick={handleSubmitClick}
                                 className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                                 label={tChats('save')}
-                                disabled={selectedMessage?.mode === 'business' && businessStep === 'options'}
+                                disabled={selectedMessage?.mode === 'business' && hasBusinessConfig && businessStep === 'options'}
                             /> </>}
                 </DialogFooter>
             </DialogContent>

@@ -1,4 +1,4 @@
-import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck } from 'lucide-react';
+import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -140,6 +140,13 @@ export const BASE_CONFIG = {
                         configComponent: 'SendSmsConfig',
                         className: 'max-w-xl!',
                         hasCustom: true
+                    },
+                    {
+                        id: 'wait',
+                        icon: Hourglass,
+                        type: 'action',
+                        configComponent: 'WaitConfig',
+                        className: 'max-w-xl!'
                     }
                 ]
             }

@@ -8,6 +8,7 @@ import { DEFAULT_DATE_FORMATS } from "@/components/ui/dateConfig";
 
 const POSTPONE_NS = "businessMessages.orderPostponeDateTexts";
 const DISCOUNT_NS = "businessMessages.offerDiscountTexts";
+const PAYMENT_NS = "businessMessages.paymentMethodTexts";
 
 // Matches the backend's computeOffsetDate: offset N = the N-th working day
 // after the base (weekends Fri/Sat don't count when excludeWeekends is on),
@@ -95,6 +96,26 @@ export const businessMessageBuilders = {
             buttons: (messageValues.buttons || []).map((btn, i) => ({
                 ...btn,
                 text: inject(buttonTexts[i] || btn.text),
+            })),
+        };
+    },
+
+    order_payment_method: (messageValues, businessConfig, ctx) => {
+        const { t } = ctx;
+        const buttonTexts = [
+            t(`${PAYMENT_NS}.buttonCod`),
+            t(`${PAYMENT_NS}.buttonWallet`),
+            t(`${PAYMENT_NS}.buttonCard`),
+        ];
+        return {
+            ...messageValues,
+            headerType: messageValues.headerType || "TEXT",
+            headerText: t(`${PAYMENT_NS}.headerText`),
+            bodyText: t(`${PAYMENT_NS}.bodyText`),
+            footerText: t(`${PAYMENT_NS}.footerText`),
+            buttons: (messageValues.buttons || []).map((btn, i) => ({
+                ...btn,
+                text: buttonTexts[i] || btn.text,
             })),
         };
     },

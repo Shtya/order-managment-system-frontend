@@ -1,4 +1,4 @@
-import { CalendarDays, BadgePercent } from "lucide-react";
+import { CalendarDays, BadgePercent, Wallet } from "lucide-react";
 import { DEFAULT_DATE_FORMATS } from "@/components/ui/dateConfig";
 
 // Registry only (no React logic). Adding a future business message =
@@ -64,6 +64,25 @@ export const businessMessageDefinitions = {
             { key: 'discountType', type: 'select', options: ['percentage', 'fixed'], labelKey: 'businessConfig.discountType', defaultValue: 'percentage' },
         ],
         businessCommand: 'order.apply_discount',
+    },
+
+    order_payment_method: {
+        id: 'order_payment_method',
+        labelKey: 'businessMessages.paymentMethod',
+        descriptionKey: 'businessMessages.descriptions.paymentMethod',
+        icon: Wallet,
+        color: 'text-emerald-500',
+        messageType: 'interactive',
+        // fixed 3 buttons; text/add/remove all disabled, texts come from
+        // localization via the builder.
+        disabledFields: ['buttons', 'addButton', 'removeButton'],
+        messageValues: {
+            headerType: 'TEXT',
+            bodyText: 'How would you like to pay for your order?',
+            buttons: [{ text: 'Cash on delivery' }, { text: 'E-Wallet' }, { text: 'Credit Card' }],
+        },
+        businessConfigFields: [],
+        businessCommand: 'order.set_payment_method',
     },
 };
 

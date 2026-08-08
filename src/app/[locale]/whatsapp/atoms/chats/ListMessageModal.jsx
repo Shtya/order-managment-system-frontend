@@ -53,6 +53,7 @@ export const ListMessageForm = forwardRef(({
     localHeaderMediaFile,
     accountId = null,
     disabledFields: disabledFieldsProp,
+    children,
 }, ref) => {
     const t = useTranslations("chats");
     const locale = useLocale();
@@ -196,6 +197,7 @@ export const ListMessageForm = forwardRef(({
                     variableProps={variableProps}
                     disabled={disabledFields}
                 />
+                {children}
             </div>
 
             {/* Preview Section */}

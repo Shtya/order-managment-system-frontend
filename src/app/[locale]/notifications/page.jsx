@@ -86,6 +86,14 @@ export function getNotificationLink(entity, id, type) {
     return id ? `/orders/failedOrders/${id}` : "/orders?tab=failedOrders";
   }
 
+  if (
+    entity === "issue" ||
+    (type && type.startsWith("issue"))
+  ) {
+    return id ? `/issues?id=${id}` : "/issues";
+  }
+
+
   if (entity === "subscription" || (type && type.startsWith("subscription"))) {
     return "/plans?tab=subscriptions";
   }

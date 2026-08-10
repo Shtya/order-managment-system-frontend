@@ -81,6 +81,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import api, { BASE_URL } from "@/utils/api";
+import { normalizeAxiosError } from "@/utils/axios";
 import UserSelect, { avatarSrc } from "@/components/atoms/UserSelect";
 import Flatpickr from "react-flatpickr";
 
@@ -91,6 +92,7 @@ import { generateBgColors, getIconForStatus } from "../page";
 import DistributionModal from "../atoms/DistrubtionModal";
 import BulkUploadModal from "../atoms/BulkUploadModal";
 import CancelAssignmentsModal from "../atoms/CancelAssignmentsModal";
+import IssueFormDialog from "../../issues/atoms/IssueFormDialog";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import SettingsModal from "../atoms/SettingsModal";
@@ -743,6 +745,7 @@ export default function OrdersTab({
   const tTutorial = useTranslations("tutorial.orders");
   const { formatCurrency } = usePlatformSettings();
   const t = useTranslations("orders");
+  const locale = useLocale();
   const { user, isSuperAdmin } = useAuth();
   const restrictedSet = useMemo(() => {
     return new Set(restrictedStatuses || []);
@@ -809,6 +812,14 @@ export default function OrdersTab({
   const [upsellHistoryModalOpen, setUpsellHistoryModalOpen] = useState(false);
   const [upsellHistoryOrder, setUpsellHistoryOrder] = useState(null);
 
+  const [issueDialog, setIssueDialog] = useState({ open: false, order: null });
+  const [issueOptions, setIssueOptions] = useState({
+    statuses: [],
+    causes: [],
+    roles: [],
+    users: [],
+  });
+
   // State for assignments tab
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
   const [cancelModalOpen, setCancelModalOpen] = useState({ open: false, ids: [] });
@@ -848,6 +859,19 @@ export default function OrdersTab({
       toast.error("Failed to cancel assignment");
     } finally {
       setCancelLoading(false);
+    }
+  };
+
+  const createIssue = async (payload, callbacks = {}) => {
+    try {
+      const { data } = await api.post("/issues", payload);
+      toast.success(data?.message || "Issue created");
+      callbacks.onSuccess?.(data?.data);
+      return data;
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+      callbacks.onError?.(e);
+      return null;
     }
   };
 
@@ -1177,6 +1201,45 @@ export default function OrdersTab({
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    api
+      .get("/issues/statuses")
+      .then((res) =>
+        setIssueOptions((p) => ({
+          ...p,
+          statuses: Array.isArray(res.data) ? res.data : [],
+        }))
+      )
+      .catch(() => {});
+    api
+      .get("/issues/causes")
+      .then((res) =>
+        setIssueOptions((p) => ({
+          ...p,
+          causes: Array.isArray(res.data) ? res.data : [],
+        }))
+      )
+      .catch(() => {});
+    api
+      .get("/roles")
+      .then((res) => setIssueOptions((p) => ({ ...p, roles: res.data || [] })))
+      .catch(() => {});
+    api
+      .get("/users", { params: { limit: 1000 } })
+      .then((res) =>
+        setIssueOptions((p) => ({
+          ...p,
+          users: res.data?.records || res.data || [],
+        }))
+      )
+      .catch(() => {});
+  }, []);
+
+  const openIssueStatusId = useMemo(
+    () => issueOptions.statuses.find((s) => s.code === "open")?.id || "",
+    [issueOptions.statuses]
+  );
 
   const getStatusBadge = (statusCode) => {
     const status = statusesMap[statusCode];
@@ -2019,7 +2082,13 @@ export default function OrdersTab({
                 description: tTutorial("actions.edit.description"),
                 example: tTutorial("actions.edit.example"),
               },
-
+              {
+                icon: <AlertTriangle size={18} />,
+                tooltip: t("actions.escalateIssue"),
+                onClick: (r) => setIssueDialog({ open: true, order: r }),
+                variant: "orange",
+                permission: "issues.create",
+              },
               {
                 icon: <Trash2 />,
                 tooltip: t("actions.delete"),
@@ -2609,6 +2678,17 @@ export default function OrdersTab({
           setUpsellHistoryOrder(null);
         }}
         order={upsellHistoryOrder}
+      />
+
+      <IssueFormDialog
+        open={issueDialog.open}
+        onOpenChange={(o) =>
+          setIssueDialog((d) => ({ open: o, order: o ? d.order : null }))
+        }
+        fetchers={{ createIssue }}
+        options={{ ...issueOptions, locale }}
+        initialStatusId={openIssueStatusId}
+        order={issueDialog.order}
       />
     </div>
   );

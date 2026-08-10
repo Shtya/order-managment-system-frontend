@@ -250,6 +250,28 @@ export const SocketProvider = ({ children }) => {
       publish({ type: "SUPPORT_TICKET_READ", payload });
     });
 
+    // ------------------ ISSUES ------------------
+
+    socket.on("issue:created", (payload) => {
+      publish({ type: "ISSUE_CREATED", payload });
+    });
+
+    socket.on("issue:updated", (payload) => {
+      publish({ type: "ISSUE_UPDATED", payload });
+    });
+
+    socket.on("issue:message-created", (payload) => {
+      publish({ type: "ISSUE_MESSAGE_CREATED", payload });
+    });
+
+    socket.on("issue:message-updated", (payload) => {
+      publish({ type: "ISSUE_MESSAGE_UPDATED", payload });
+    });
+
+    socket.on("issue:read", (payload) => {
+      publish({ type: "ISSUE_READ", payload });
+    });
+
     // Cleanup listeners
     return () => {
       socket.off("connect");
@@ -261,15 +283,22 @@ export const SocketProvider = ({ children }) => {
       socket.off("failed-order:update");
       socket.off("shipment:status");
       socket.off("automation:run-status");
+      socket.off("automation:preview:update");
       socket.off("whatsapp:message-new");
       socket.off("whatsapp:message-updated");
       socket.off("whatsapp:conversation-new");
       socket.off("whatsapp:customer-new");
+      socket.off("whatsapp:signup-status");
       socket.off("support_ticket:created");
       socket.off("support_ticket:updated");
       socket.off("support_ticket:message-created");
       socket.off("support_ticket:message-updated");
       socket.off("support_ticket:read");
+      socket.off("issue:created");
+      socket.off("issue:updated");
+      socket.off("issue:message-created");
+      socket.off("issue:message-updated");
+      socket.off("issue:read");
 
       socket.disconnect();
       socketRef.current = null;

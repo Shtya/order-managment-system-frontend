@@ -72,8 +72,8 @@ function normalizeAxiosError(err) {
 export default function SuppliersPage() {
 	const tCommon = useTranslations("common");
 	const tCountries = useTranslations("countries");
-	const t = useTranslations("suppliers");
 	const tTutorial = useTranslations("tutorial.suppliers");
+	const t = useTranslations("suppliers");
 	const router = useRouter();
 
 	const [search, setSearch] = useState("");

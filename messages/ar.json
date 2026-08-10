@@ -565,7 +565,10 @@
     "orders-assign-to-you": "الطلبات الموزعة إليك",
     "productSuggestions": "اقتراح المنتجات",
     "supportTickets": "تذاكر الدعم",
-    "supportTicketsAdmin": "إدارة تذاكر الدعم"
+    "supportTicketsAdmin": "إدارة تذاكر الدعم",
+    "issues": "مشكلة",
+    "issuesAndStatuses": "إدارة المشكلات",
+    "manageCauses": "إدارة أنواع المشكلات"
   },
   "supportTickets": {
     "title": "تذاكر الدعم",
@@ -796,6 +799,300 @@
       "nonEmpty": "الردود",
       "changes": "التغييرات",
       "attachments": "الملفات"
+    }
+  },
+  "issueCauses": {
+    "title": "إدارة أنواع المشكلات",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "issues": "المشكلات",
+      "causes": "إدارة أنواع المشكلات"
+    },
+    "table": {
+      "searchPlaceholder": "ابحث باسم نوع المشكلة...",
+      "emptyTitle": "لا توجد أنواع مشكلات بعد",
+      "emptySubtitle": "أضف نوع مشكلة جديدًا لتصنيف مشكلاتك."
+    },
+    "columns": {
+      "nameEn": "الاسم (إنجليزي)",
+      "nameAr": "الاسم (عربي)",
+      "type": "النوع",
+      "sortOrder": "الترتيب",
+      "issueCount": "المشكلات"
+    },
+    "type": {
+      "system": "نظامي",
+      "custom": "مخصص"
+    },
+    "actions": {
+      "addCause": "إضافة نوع مشكلة",
+      "export": "تصدير إكسل",
+      "view": "عرض",
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "dialog": {
+      "addTitle": "إضافة نوع مشكلة",
+      "editTitle": "تعديل نوع المشكلة",
+      "subtitle": "صنّف المشكلات لتتبع أسبابها الجذرية.",
+      "detailsTitle": "تفاصيل نوع المشكلة",
+      "nameEn": "الاسم (إنجليزي)",
+      "nameEnPlaceholder": "مثال: Client Not Responding",
+      "nameAr": "الاسم (عربي)",
+      "nameArPlaceholder": "مثال: العميل لا يرد",
+      "type": "النوع",
+      "sortOrder": "الترتيب",
+      "issueCount": "عدد المشكلات",
+      "id": "المعرف",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "close": "إغلاق"
+    },
+    "validation": {
+      "nameEnRequired": "اسم نوع المشكلة (بالإنجليزية) مطلوب",
+      "nameEnMax": "يجب ألا يتجاوز الاسم 200 حرف",
+      "nameArMax": "يجب ألا يتجاوز الاسم 200 حرف"
+    },
+    "toast": {
+      "saved": "تم حفظ نوع المشكلة بنجاح",
+      "deleted": "تم حذف نوع المشكلة بنجاح"
+    },
+    "delete": {
+      "title": "حذف نوع المشكلة",
+      "desc": "هل أنت متأكد من حذف هذا النوع من المشكلات؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "stats": {
+      "totalCauses": "إجمالي أنواع المشكلات",
+      "systemCauses": "أنواع المشكلات النظامية",
+      "customCauses": "أنواع مشكلات مخصصة",
+      "mostIssuedCause": "نوع المشكلة الأكثر استخدامًا",
+      "mostIssuedLast7Days": "نوع المشكلة الأعلى (آخر 7 أيام)",
+      "issuesCount": "المشكلات: {count}"
+    },
+    "updated_at": "تاريخ التعديل"
+  },
+  "issues": {
+    "title": "مركز المشكلات",
+    "subtitle": "تتبّع المشكلات وفرزها وحلّها في مكان واحد",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "issues": "المشكلات"
+    },
+    "stats": {
+      "total": "إجمالي المشكلات",
+      "newToday": "جديدة اليوم",
+      "delayed": "متأخرة",
+      "delayedDesc": "{count} مشكلات متأخرة نشطة"
+    },
+    "actions": {
+      "new": "مشكلة جديدة",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "export": "تصدير",
+      "exportAll": "تصدير الكل",
+      "addStatus": "إضافة حالة",
+      "save": "حفظ",
+      "saveChanges": "حفظ التغييرات",
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "clear": "مسح",
+      "apply": "تطبيق"
+    },
+    "filters": {
+      "title": "الفلاتر",
+      "subtitle": "قم بتضييق نطاق نتائج المشكلات",
+      "search": "بحث",
+      "searchPlaceholder": "ابحث في المشكلات...",
+      "status": "الحالة",
+      "allStatuses": "كل الحالات",
+      "noStatuses": "لا توجد حالات",
+      "cause": "نوع المشكلة",
+      "allCauses": "كل أنواع المشكلات",
+      "noCauses": "لا توجد أنواع مشكلات",
+      "priority": "الأولوية",
+      "allPriorities": "كل الأولويات",
+      "assignedRole": "الفريق المختص",
+      "allRoles": "كل الفرق",
+      "noRoles": "لا توجد فرق",
+      "assignedEmployee": "الموظف المسؤول",
+      "allEmployees": "كل الموظفين المسؤولين",
+      "noEmployees": "لا يوجد موظفون مسؤولون",
+      "isDelayed": "متأخرة",
+      "yes": "نعم",
+      "no": "لا",
+      "dateRange": "نطاق التاريخ",
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ"
+    },
+    "priority": {
+      "low": "منخفضة",
+      "medium": "متوسطة",
+      "high": "عالية",
+      "urgent": "عاجلة"
+    },
+    "statuses": {
+      "system": "حالة النظام",
+      "add": "إضافة حالة",
+      "create": "إنشاء حالة",
+      "edit": "تعديل حالة",
+      "createDesc": "أضف حالة مشكلة جديدة إلى النظام.",
+      "editDesc": "حدّث تفاصيل الحالة بالأسفل.",
+      "nameEn": "الاسم بالإنجليزية",
+      "nameEnPlaceholder": "مثال: In Progress",
+      "nameAr": "الاسم بالعربية",
+      "nameArPlaceholder": "مثال: قيد المعالجة",
+      "description": "الوصف",
+      "descriptionPlaceholder": "وصف اختياري...",
+      "color": "اللون",
+      "sortOrder": "ترتيب الفرز",
+      "deleteTitle": "حذف حالة \"{name}\"؟",
+      "deleteUsedDesc": "تُستخدم هذه الحالة بواسطة {count} مشكلات. قم بإزالتها أولًا.",
+      "deleteDesc": "لا يمكن التراجع عن هذا الإجراء.",
+      "validation": {
+        "nameEnRequired": "الاسم بالإنجليزية مطلوب",
+        "nameEnMax": "يجب ألا يتجاوز الاسم بالإنجليزية 50 حرفًا",
+        "nameArMax": "يجب ألا يتجاوز الاسم بالعربية 50 حرفًا",
+        "sortOrderInteger": "يجب أن يكون ترتيب الفرز رقمًا صحيحًا",
+        "sortOrderMin": "يجب أن يكون ترتيب الفرز 0 أو أكبر",
+        "saveFailed": "فشل حفظ الحالة"
+      }
+    },
+    "kanban": {
+      "empty": "لا توجد مشكلات — اسحب هنا",
+      "loadMore": "تحميل المزيد",
+      "loading": "جارٍ التحميل…",
+      "newIssue": "مشكلة جديدة",
+      "delayed": "متأخرة",
+      "remaining": "المتبقي",
+      "overdue": "متأخرة عن الموعد",
+      "dayUnit": "ي",
+      "untitled": "مشكلة بدون عنوان",
+      "assignees": "مُسندة",
+      "users": "مستخدمون"
+    },
+    "sheet": {
+      "issueNumber": "مشكلة #{id}",
+      "tabs": {
+        "details": "التفاصيل",
+        "messages": "الرسائل",
+        "activity": "النشاط"
+      },
+      "loading": "جارٍ تحميل المشكلة...",
+      "notFound": "المشكلة غير موجودة.",
+      "noMessages": "لا توجد رسائل بعد.",
+      "noActivity": "لا يوجد نشاط مسجّل.",
+      "replyPlaceholder": "اكتب ردًا...",
+      "send": "إرسال",
+      "loadMore": "تحميل المزيد",
+      "loadingMore": "جارٍ التحميل...",
+      "unknown": "غير معروف",
+      "edited": "تم التعديل",
+      "deleted": "تم الحذف",
+      "system": "النظام",
+      "fields": {
+        "title": "العنوان",
+        "description": "الوصف",
+        "status": "الحالة",
+        "cause": "نوع المشكلة",
+        "priority": "الأولوية",
+        "estMinutes": "الوقت المستغرق لحل المشكلة",
+        "estMinutesSuffix": "{count} دقيقة",
+        "linkedOrder": "الطلب المرتبط بالمشكلة",
+        "createdBy": "أنشأها",
+        "created": "تاريخ الإنشاء",
+        "assignedRole": "الفريق المختص",
+        "assignedEmployees": "الموظفين المسؤولين",
+        "selectStatus": "اختر الحالة",
+        "selectCause": "اختر نوع المشكلة",
+        "unassigned": "غير مسند",
+        "noneAssigned": "لا يوجد مُسند",
+        "addEmployees": "إضافة موظفين مسؤولين"
+      },
+      "actions": {
+        "edit": "تعديل",
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "delete": "حذف",
+        "deleting": "جارٍ الحذف...",
+        "export": "تصدير",
+        "close": "إغلاق",
+        "confirmDelete": "هل تريد حذف هذه المشكلة نهائيًا؟ لا يمكن التراجع عن هذا الإجراء."
+      },
+      "sending": "جاري الارسال..."
+    },
+    "activity": {
+      "changedStatusTo": "{who} غيّر الحالة إلى {value}",
+      "setPriorityTo": "{who} حدّد الأولوية إلى {value}",
+      "assignedTo": "{who} أسند إلى {value}",
+      "addedComment": "{who} أضاف تعليقًا",
+      "createdIssue": "{who} أنشأ هذه المشكلة",
+      "updatedIssue": "{who} حدّث تفاصيل المشكلة",
+      "fallback": "{who}: {type}",
+      "by": "بواسطة {name}"
+    },
+    "form": {
+      "title": "مشكلة جديدة",
+      "editTitle": "تعديل المشكلة",
+      "subtitle": "أنشئ مشكلة جديدة لتتبّعها وحلّها.",
+      "create": "إنشاء المشكلة",
+      "update": "حفظ التغييرات",
+      "saving": "جارٍ الحفظ...",
+      "fields": {
+        "title": "العنوان",
+        "titlePlaceholder": "مثال: العميل لم يستلم طلبه",
+        "description": "الوصف",
+        "descriptionPlaceholder": "صِف المشكلة بالتفصيل...",
+        "order": "الطلب المرتبط بالمشكلة",
+        "cause": "نوع المشكلة",
+        "selectCause": "اختر نوع المشكلة",
+        "priority": "الأولوية",
+        "status": "الحالة",
+        "selectStatus": "اختر الحالة",
+        "estimatedMinutes": "الوقت المستغرق لحل المشكلة",
+        "estimatedMinutesPlaceholder": "مثال: 120",
+        "assignedRole": "الفريق المختص",
+        "selectRole": "اختر الفريق",
+        "unassigned": "غير مسند",
+        "employees": "الموظفين المسؤولين"
+      }
+    },
+    "validation": {
+      "titleRequired": "العنوان مطلوب",
+      "orderRequired": "الطلب المرتبط مطلوب",
+      "titleMax": "لا يمكن أن يتجاوز العنوان 250 حرفًا",
+      "causeRequired": "نوع المشكلة مطلوب",
+      "priorityRequired": "الأولوية مطلوبة",
+      "statusRequired": "الحالة مطلوبة",
+      "roleRequired": "الفريق المختص مطلوب",
+      "estimatedMinutesType": "يجب أن يكون الوقت رقمًا",
+      "estimatedMinutesInteger": "يجب أن يكون الوقت عددًا صحيحًا",
+      "estimatedMinutesMin": "يجب أن يكون الوقت دقيقة واحدة أو أكثر"
+    },
+    "toast": {
+      "created": "تم إنشاء المشكلة",
+      "updated": "تم تعديل المشكلة",
+      "deleted": "تم حذف المشكلة",
+      "statusChanged": "تم تغيير الحالة",
+      "priorityChanged": "تم تغيير الأولوية",
+      "assigned": "تم الإسناد",
+      "messageSent": "تم إرسال الرسالة",
+      "messageUpdated": "تم تعديل الرسالة",
+      "messageDeleted": "تم حذف الرسالة",
+      "statusCreated": "تم إنشاء الحالة",
+      "statusUpdated": "تم تعديل الحالة",
+      "statusDeleted": "تم حذف الحالة",
+      "causeCreated": "تم إنشاء السبب",
+      "causeUpdated": "تم تعديل السبب",
+      "causeDeleted": "تم حذف السبب",
+      "dragged": "تم تحديث الحالة عبر السحب"
+    },
+    "accessDenied": {
+      "title": "الوصول مرفوض",
+      "desc": "ليس لديك صلاحية لعرض المشكلات."
     }
   },
   "header": {
@@ -1772,7 +2069,28 @@
       "sms_send": "إرسال رسالة (SMS)",
       "sms_logs_read": "عرض سجلات الرسائل (SMS)",
       "sms_logs_resend": "إعادة إرسال رسالة (SMS)",
-      "sms_logs_export": "تصدير سجلات الرسائل (SMS)"
+      "sms_logs_export": "تصدير سجلات الرسائل (SMS)",
+      "issues_create": "إنشاء المشكلات",
+      "issues_read": "عرض المشكلات",
+      "issues_update": "تعديل المشكلات",
+      "issues_delete": "حذف المشكلات",
+      "issues_reply": "الرد على المشكلات",
+      "issues_assign": "إسناد المشكلات",
+      "issues_change_status": "تغيير حالة المشكلة",
+      "issues_change_priority": "تغيير أولوية المشكلة",
+      "issues_export": "تصدير المشكلات",
+      "issues_statuses_create": "إنشاء حالات المشكلة",
+      "issues_statuses_update": "تعديل حالات المشكلة",
+      "issues_statuses_delete": "حذف حالات المشكلة",
+      "issues_causes_create": "إنشاء أسباب المشكلة",
+      "issues_causes_update": "تعديل أسباب المشكلة",
+      "issues_causes_delete": "حذف أسباب المشكلة",
+      "support_tickets_create": "إنشاء تذاكر الدعم",
+      "support_tickets_read": "عرض تذاكر الدعم",
+      "support_tickets_reply": "الرد على تذاكر الدعم",
+      "support_tickets_close": "إغلاق تذاكر الدعم",
+      "support_tickets_reopen": "إعادة فتح تذاكر الدعم",
+      "support_tickets_export": "تصدير تذاكر الدعم"
     },
     "group": {
       "accounting": "المحاسبة",
@@ -5250,7 +5568,8 @@
       "cancelAssignment": "إلغاء الإسناد",
       "bulkCancelAssignments": "إلغاء الإسنادات",
       "bulkCancelAssignmentsCount": "إلغاء الإسنادات ({count})",
-      "viewReplace": "عرض الطلب الجديد"
+      "viewReplace": "عرض الطلب الجديد",
+      "escalateIssue": "تصعيد مشكلة"
     },
     "shipmentLogs": {
       "title": "سجلات الشحنة",
@@ -11343,7 +11662,8 @@
           "send_upsell": "إرسال عرض",
           "assign_order_to_employee": "تعيين الطلب لموظف",
           "send_sms": "إرسال رسالة ٍ SMS",
-          "wait": "انتظار"
+          "wait": "انتظار",
+          "create_issue": "إنشاء مشكلة"
         },
         "conditionTypes": {
           "order_check": "فحص بيانات الطلب",
@@ -11398,7 +11718,9 @@
           "phoneMessagePlaceholder": "أدخل الرقم أو اترك فارغاً لاستخدام رقم العميل من الطلب",
           "provider": "المزود",
           "waitFor": "الانتظار لمدة",
-          "minutes": "دقيقة"
+          "minutes": "دقيقة",
+          "noTitle": "بدون عنوان",
+          "priority": "الأولوية"
         },
         "sidebar": {
           "title": "بناء الأتمتة",
@@ -11614,6 +11936,10 @@
             "orderStatusCheckNotFound": "حالة الطلب  ({status}) لم تعد موجودة.",
             "whatsappAccountUpdated": "تم تحديث حساب واتساب من \"{oldName}\" إلى \"{newName}\"",
             "whatsappAccountNotFound": "حساب واتساب المحدد ({account}) لم يعد موجوداً أو غير مفعل حالياً.",
+            "createIssueCauseUpdated": "تم تحديث سبب المشكلة من \"{oldName}\" إلى \"{newName}\"",
+            "createIssueCauseNotFound": "سبب المشكلة المحدد ({cause}) لم يعد موجوداً أو غير مفعل حالياً.",
+            "createIssueStatusNotFound": "حالة المشكلة المحددة ({status}) لم تعد موجودة أو غير مفعلة حالياً.",
+            "createIssueRoleNotFound": "الدور المحدد ({role}) لم يعد موجوداً أو غير مفعل حالياً.",
             "generalError": "فشل التحقق من صحة شروط الطلب. يرجى المحاولة مرة أخرى.",
             "fieldNames": {
               "shippingCompany": "شركة الشحن",

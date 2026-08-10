@@ -34,6 +34,7 @@ import WhatsAppAccountSelect from "../../whatsapp/atoms/WhatsAppAccountSelect";
 import Button_ from "@/components/atoms/Button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SendSmsModal } from "../../sms/atoms/SendSmsModal";
+import IssueFormDialog from "../../issues/atoms/IssueFormDialog";
 
 
 function normalizeAxiosError(err) {
@@ -1812,12 +1813,11 @@ export function SendSmsConfig({ isOpen, value, onChange, errors, setDisabled, on
             integrationId: ctx?.integrationId || tempValue?.integrationId || null,
             providerName: providerName || tempValue?.providerName || null,
             providerCode: providerCode || tempValue?.providerCode || null,
-            branches: tempValue?.branches || defaultBranches,
         };
 
         onChange(nextValue);
         onClose(nextValue);
-    }, [defaultBranches, onChange, onClose, tempValue]);
+    }, [ onChange, onClose, tempValue]);
 
     return (
         <SendSmsModal
@@ -2388,5 +2388,129 @@ export function QuickOrderStatusConfig({ value, onChange, errors, setDisabled })
                 </Select>
             </FormGroup>
         </div>
+    );
+}
+
+export function CreateIssueConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tNodes = useTranslations("whatsApp.automations.builder.nodes");
+    const tIssues = useTranslations("issues");
+    const { locale = "en" } = usePlatformSettings();
+    const orderProperties = useOrderProperties();
+    const didSubmitRef = useRef(false);
+
+    const [options, setOptions] = useState({
+        statuses: [],
+        causes: [],
+        roles: [],
+        users: [],
+        locale,
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                setLoading(true);
+                const [statusesRes, causesRes, rolesRes, usersRes] = await Promise.all([
+                    api.get("/issues/statuses"),
+                    api.get("/issues/causes"),
+                    api.get("/roles"),
+                    api.get("/users", { params: { limit: 1000 } }),
+                ]);
+                setOptions({
+                    statuses: Array.isArray(statusesRes.data) ? statusesRes.data : statusesRes.data.records || [],
+                    causes: Array.isArray(causesRes.data) ? causesRes.data : causesRes.data.records || [],
+                    roles: rolesRes.data || [],
+                    users: usersRes.data?.records || usersRes.data || [],
+                    locale,
+                });
+            } catch (e) {
+                toast.error(normalizeAxiosError(e));
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (isOpen) fetchOptions();
+    }, [isOpen, locale]);
+
+    useEffect(() => {
+        setDisabled(loading);
+    }, [loading, setDisabled]);
+
+    const variableProps = useMemo(() => ({
+        disableHydrate: false,
+        variables: orderProperties,
+        popupTitle: tConfig('orderProperties'),
+    }), [orderProperties, tConfig]);
+
+    const createIssueFetcher = useCallback(async (payload, callbacks = {}) => {
+        didSubmitRef.current = true;
+        const cause = options.causes.find(c => c.id === payload.causeId) || null;
+        const nextValue = {
+            ...(value || {}),
+            ...payload,
+            cause,
+        };
+        onChange(nextValue);
+        callbacks.onSuccess?.(payload);
+        setTimeout(() => onClose(nextValue), 0);
+        return {
+            success: true,
+            message: "Config saved",
+            data: payload,
+        };
+    }, [value, onChange,options, onClose]);
+
+    const fetchers = useMemo(() => ({
+        createIssue: createIssueFetcher,
+    }), [createIssueFetcher]);
+
+    const handleDialogOpenChange = useCallback((open) => {
+        if (!open) {
+            setTimeout(() => {
+                if (!didSubmitRef.current) {
+                    onClose(null);
+                }
+            }, 0);
+        }
+    }, [onClose]);
+
+    const openIssueStatusId = useMemo(() => {
+        if (value?.statusId) return value.statusId;
+        return options.statuses.find((s) => s.code === "open")?.id || "";
+    }, [options.statuses, value?.statusId]);
+
+    const initialData = useMemo(() => {
+        if (!value || Object.keys(value).length === 0) return null;
+        const role = options.roles.find(r => r.id === value.assignedRoleId);
+        return {
+            // id: `template-${Date.now()}`,
+            title: value.title || "",
+            description: value.description || "",
+            causeId: value.causeId || null,
+            cause: options.causes.find(c => c.id === value.causeId) || null,
+            priority: value.priority || "medium",
+            statusId: value.statusId || "",
+            assignedRoleId: value.assignedRoleId || "",
+            assignedRole: role || null,
+            estimatedMinutes: value.estimatedMinutes || "",
+            assignedEmployeeIds: value.employeeIds || [],
+            __isTemplate: true,
+        };
+    }, [value, options]);
+
+    return (
+        <IssueFormDialog
+            open={isOpen}
+            onOpenChange={handleDialogOpenChange}
+            fetchers={fetchers}
+            options={options}
+            initialStatusId={openIssueStatusId}
+            initialData={initialData}
+            order={null}
+            variableProps={variableProps}
+            hideOrderSection={true}
+        />
     );
 }

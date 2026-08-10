@@ -849,6 +849,26 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       ],
     },
     {
+      icon: FaBug,
+      labelKey: "issuesAndStatuses",
+      href: "/issues",
+      permission: "issues.read",
+      children: [
+        {
+          icon: AlertCircle,
+          labelKey: "issuesAndStatuses",
+          href: "/issues",
+          permission: "issues.read",
+        },
+        {
+          icon: FolderTree,
+          labelKey: "manageCauses",
+          href: "/issues/causes",
+          permission: "issues.read",
+        },
+      ],
+    },
+    {
       icon: Ticket,
       labelKey: "supportTickets",
       href: "/support-tickets",
@@ -960,7 +980,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
     return menuItems.filter((item) => {
 
       const role = userRole?.toUpperCase();
-
+      
       // ✅ SPECIAL RULE: SUPER_ADMIN sees ONLY explicitly allowed items
       if (role === 'SUPER_ADMIN') {
         return item.roles?.includes('SUPER_ADMIN');

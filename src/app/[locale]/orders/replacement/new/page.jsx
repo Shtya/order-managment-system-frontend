@@ -163,7 +163,7 @@ function StyledSelect({
 // ─────────────────────────────────────────────
 // STEP 1 — Order search + selection
 // ─────────────────────────────────────────────
-function OrderSearchSection({
+export function OrderSearchSection({
   errors,
   selectedOrder,
   onSelect,

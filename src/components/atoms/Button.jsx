@@ -106,7 +106,7 @@ export function PrimaryBtn({
 	);
 }
 
-export function GhostBtn({ children, onClick, className = "", permission }) {
+export function GhostBtn({ children, onClick, type = "button", className = "", permission }) {
 	const { hasPermission } = useAuth();
 
 	if (permission && !hasPermission(permission)) {
@@ -115,6 +115,7 @@ export function GhostBtn({ children, onClick, className = "", permission }) {
 
 	return (
 		<button
+			type={type}
 			onClick={onClick}
 			className={`flex items-center justify-center gap-2 rounded-xl py-2 px-4 text-sm font-medium border border-[var(--border)] text-[var(--foreground)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all ${className}`}
 		>

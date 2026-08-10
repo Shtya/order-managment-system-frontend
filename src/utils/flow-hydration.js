@@ -273,6 +273,63 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                 break;
             }
 
+            case 'create_issue': {
+                const causeId = config.causeId;
+                const statusId = config.statusId;
+                const roleId = config.assignedRoleId;
+                if (!causeId && !statusId && !roleId) break;
+
+                try {
+                    const [causesRes, statusesRes, rolesRes] = await Promise.all([
+                        api.get("/issues/causes"),
+                        api.get("/issues/statuses"),
+                        api.get("/roles"),
+                    ]);
+
+                    const causes = Array.isArray(causesRes.data) ? causesRes.data : causesRes.data.records || [];
+                    const statuses = Array.isArray(statusesRes.data) ? statusesRes.data : statusesRes.data.records || [];
+                    const roles = Array.isArray(rolesRes.data) ? rolesRes.data : rolesRes.data.records || [];
+
+                    let hasErrors = false;
+                    let hasChanges = false;
+
+                    if (causeId) {
+                        const freshCause = causes.find(c => String(c.id) === String(causeId));
+                        if (!freshCause) {
+                            hasErrors = true;
+                            result.error = t("whatsApp.automations.builder.config.hydration.createIssueCauseNotFound", { cause: config.cause?.nameAr || config.cause?.nameEn || causeId });
+                        } else if (config.cause && (config.cause.nameAr !== freshCause.nameAr || config.cause.nameEn !== freshCause.nameEn)) {
+                            hasChanges = true;
+                            result.changes.push(t("whatsApp.automations.builder.config.hydration.createIssueCauseUpdated", { oldName: config.cause.nameAr || config.cause.nameEn, newName: freshCause.nameAr || freshCause.nameEn }));
+                            result.newConfig.cause = freshCause;
+                        }
+                    }
+
+                    if (statusId && !hasErrors) {
+                        const freshStatus = statuses.find(s => String(s.id) === String(statusId));
+                        if (!freshStatus) {
+                            hasErrors = true;
+                            result.error = t("whatsApp.automations.builder.config.hydration.createIssueStatusNotFound", { status: statusId });
+                        }
+                    }
+
+                    if (roleId && !hasErrors) {
+                        const freshRole = roles.find(r => String(r.id) === String(roleId));
+                        if (!freshRole) {
+                            hasErrors = true;
+                            result.error = t("whatsApp.automations.builder.config.hydration.createIssueRoleNotFound", { role: roleId });
+                        }
+                    }
+
+                    if (hasErrors) {
+                        result.isValid = false;
+                    }
+                } catch (e) {
+                    console.error("Create Issue Hydration Error:", e);
+                }
+                break;
+            }
+
             case 'send_whatsapp_message': {
                 if (!config.accountId) break;
 

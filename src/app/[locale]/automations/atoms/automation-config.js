@@ -1,4 +1,4 @@
-import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass } from 'lucide-react';
+import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -147,6 +147,14 @@ export const BASE_CONFIG = {
                         type: 'action',
                         configComponent: 'WaitConfig',
                         className: 'max-w-xl!'
+                    },
+                    {
+                        id: 'create_issue',
+                        icon: AlertTriangle,
+                        type: 'action',
+                        configComponent: 'CreateIssueConfig',
+                        className: 'max-w-4xl!',
+                        hasCustom: true
                     }
                 ]
             }

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { Position, useUpdateNodeInternals } from '@xyflow/react';
-import { MessageSquare, RefreshCw, Send, Loader2, Zap, Users, MessageCircle, Hourglass } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { MessageSquare, RefreshCw, Send, Loader2, Zap, Users, MessageCircle, Hourglass, AlertTriangle } from 'lucide-react';
+import { useLocale, useTranslations } from "next-intl";
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
 import { useFlowStore } from '@/hook/useFlowStore';
@@ -10,8 +10,9 @@ import { businessMessageDefinitions } from './businessMessages';
 
 export function ActionNode({ id, data, selected }) {
     const tChats = useTranslations("chats");
+    const tIssues = useTranslations("issues");
     const t = useTranslations("whatsApp.automations.builder");
-
+    const locale = useLocale();
     const ACTION_TYPES = useMemo(() => ({
         'send_whatsapp_template': { label: t('actionTypes.send_whatsapp_template'), subtitle: t('nodes.action.subtitle'), icon: MessageSquare, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         "send_whatsapp_message": { label: t('actionTypes.send_whatsapp_message'), subtitle: t('nodes.action.subtitle'), icon: MessageCircle, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-500/10', },
@@ -20,6 +21,7 @@ export function ActionNode({ id, data, selected }) {
         'assign_order_to_employee': { label: t('actionTypes.assign_order_to_employee'), subtitle: t('nodes.action.management'), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'send_sms': { label: t('actionTypes.send_sms'), subtitle: t('nodes.action.subtitle'), icon: Send, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-500/10', },
         'wait': { label: t('actionTypes.wait'), subtitle: t('nodes.action.management'), icon: Hourglass, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+        'create_issue': { label: t('actionTypes.create_issue'), subtitle: t('nodes.action.management'), icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50 dark:bg-rose-500/10' },
     }), [t]);
 
     const updateNodeInternals = useUpdateNodeInternals();
@@ -38,12 +40,12 @@ export function ActionNode({ id, data, selected }) {
     }, [data.type]);
 
     const noEdit = config?.noEdit || false;
-
+    
     // Force React Flow to recalculate handle positions and edge paths when branches change
     useEffect(() => {
         updateNodeInternals(id);
     }, [id, data.config?.branches?.length, updateNodeInternals]);
-
+    
 
     return (
         <BaseNode
@@ -148,6 +150,20 @@ export function ActionNode({ id, data, selected }) {
                             <div className="flex items-center justify-between">
                                 <span className="opacity-50 font-bold">{t('nodes.waitFor')}</span>
                                 <span className="font-black text-blue-700 dark:text-blue-400">{data.config?.waitMinutes} {t('nodes.minutes')}</span>
+                            </div>
+                        )}
+                        {data.type === 'create_issue' && (
+                            <div className="flex flex-col gap-1.5">
+                                <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-bold">
+                                    <AlertTriangle size={10} />
+                                    <span className="truncate">{locale ? data?.config?.cause?.nameAr: data?.config?.cause?.nameEn}</span>
+                                </div>
+                                {data.config?.priority && (
+                                    <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                        <span className="opacity-50 text-[9px]">{t('nodes.priority')}</span>
+                                        <span className="font-mono font-bold text-rose-600 dark:text-rose-400 uppercase tracking-tight">{tIssues(`priority.${data.config.priority}`)}</span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>

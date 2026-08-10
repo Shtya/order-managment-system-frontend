@@ -34,6 +34,8 @@ import { alarmToast } from "@/utils/healpers";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import { Label } from "@/components/ui/label";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
+import IssueFormDialog from "../../../issues/atoms/IssueFormDialog";
+import { normalizeAxiosError } from "@/utils/axios";
 
 
 
@@ -474,6 +476,9 @@ export default function OrderConfirmationWorkPage() {
   const [upsellProd, setUpsellProd] = useState(null);
   const [removedIds, setRemovedIds] = useState([]);
 
+  const [issueDialog, setIssueDialog] = useState({ open: false, order: null });
+  const [issueOptions, setIssueOptions] = useState({ statuses: [], causes: [], roles: [], users: [] });
+
   // ── Geo States ───────────────────────────────────────────────────────────
   const [providerErrors, setProviderErrors] = useState({});
   const [providerMeta, setProviderMeta] = useState({ cityId: "", zoneId: "", districtId: "", locationId: "" });
@@ -497,6 +502,58 @@ export default function OrderConfirmationWorkPage() {
   const fetchStatuses = async () => {
     try { const r = await api.get("/orders/allowed-confirmation"); setAllowedStatuses(r.data || []); } catch { }
   };
+
+  useEffect(() => {
+    api
+      .get("/issues/statuses")
+      .then((res) =>
+        setIssueOptions((p) => ({
+          ...p,
+          statuses: Array.isArray(res.data) ? res.data : [],
+        }))
+      )
+      .catch(() => {});
+    api
+      .get("/issues/causes")
+      .then((res) =>
+        setIssueOptions((p) => ({
+          ...p,
+          causes: Array.isArray(res.data) ? res.data : [],
+        }))
+      )
+      .catch(() => {});
+    api
+      .get("/roles")
+      .then((res) => setIssueOptions((p) => ({ ...p, roles: res.data || [] })))
+      .catch(() => {});
+    api
+      .get("/users", { params: { limit: 1000 } })
+      .then((res) =>
+        setIssueOptions((p) => ({
+          ...p,
+          users: res.data?.records || res.data || [],
+        }))
+      )
+      .catch(() => {});
+  }, []);
+
+  const createIssue = async (payload, callbacks = {}) => {
+    try {
+      const { data } = await api.post("/issues", payload);
+      toast.success(data?.message || "Issue created");
+      callbacks.onSuccess?.(data?.data);
+      return data;
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+      callbacks.onError?.(e);
+      return null;
+    }
+  };
+
+  const openIssueStatusId = useMemo(
+    () => issueOptions.statuses.find((s) => s.code === "open")?.id || "",
+    [issueOptions.statuses]
+  );
 
   const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({ resolver: yupResolver(mkSchema(t)), mode: "onChange" });
   const w = watch();
@@ -839,8 +896,20 @@ export default function OrderConfirmationWorkPage() {
         ? <SaveBar onSave={handleSubmit(onSave)} onCancel={cancelChanges} loading={saving} {...sh} />
         : <ActionBar order={originalOrder} allowedStatuses={allowedStatuses} changingStatus={changingStatus}
           selStatusId={selStatusId} isLocked={isLocked} decided={decided} refetching={refetching}
-          changeStatus={changeStatus} nextOrder={nextOrder} loading={loading} {...sh} />
+          changeStatus={changeStatus} nextOrder={nextOrder} loading={loading} {...sh}
+          onEscalate={() => setIssueDialog({ open: true, order: originalOrder })} />
       }
+
+      <IssueFormDialog
+        open={issueDialog.open}
+        onOpenChange={(o) =>
+          setIssueDialog((d) => ({ open: o, order: o ? d.order : null }))
+        }
+        fetchers={{ createIssue }}
+        options={{ ...issueOptions, locale }}
+        initialStatusId={openIssueStatusId}
+        order={issueDialog.order}
+      />
     </div>
   );
 }
@@ -1670,7 +1739,7 @@ function SaveBar({ onSave, onCancel, loading, t }) {
 }
 
 // ─── ACTION BAR ────────────────────────────────────────────────────────────
-function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLocked, decided, refetching, changeStatus, nextOrder, loading, t, isRtl }) {
+function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLocked, decided, refetching, changeStatus, nextOrder, loading, t, isRtl, onEscalate }) {
   const canNext = decided && !loading && !changingStatus && !refetching;
   const tOrders = useTranslations("orders");
 
@@ -1711,6 +1780,15 @@ function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLock
             </div>
 
             <div style={{ width: 1, alignSelf: "stretch", background: "var(--border)", flexShrink: 0 }} />
+
+            {/* Escalate issue */}
+            <motion.button type="button" onClick={onEscalate}
+              whileHover={{ y: -2, boxShadow: `0 8px 24px ${rgba(HEX.red, .35)}` }}
+              whileTap={{ scale: .96 }}
+              style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", borderRadius: "var(--radius)", border: `1.5px solid ${rgba(HEX.red, .35)}`, background: rgba(HEX.red, .08), fontSize: 13, fontWeight: 700, color: HEX.red, cursor: "pointer", boxShadow: "none", transition: "all .2s" }}>
+              <AlertTriangle size={13} />
+              {tOrders("actions.escalateIssue")}
+            </motion.button>
 
             {/* Next order */}
             <motion.button type="button" onClick={nextOrder} disabled={!canNext}

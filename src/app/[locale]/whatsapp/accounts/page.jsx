@@ -458,7 +458,7 @@ const WHATSAPP_GUIDE_CONFIG = {
               ar: "اختيار Business Portfolio"
             },
             desc: {
-              en: "Select your existing Business Portfolio that you created earlier.",
+              en: "Select your existing Business Portfolio that.",
               ar: "اختر Business Portfolio الذي أنشأته مسبقاً."
             },
             image: "/whatsapp/app/step-5-business-portfolio.png"
@@ -540,8 +540,8 @@ const WHATSAPP_GUIDE_CONFIG = {
               ar: "فتح إعداد API"
             },
             desc: {
-              en: "Select API Setup and choose the WhatsApp Business Account phone number you created earlier.",
-              ar: "اختر API Setup ثم حدد رقم الهاتف المرتبط بحساب WhatsApp Business الذي أنشأته سابقاً."
+              en: "Select API Setup and choose the WhatsApp Business Account phone number.",
+              ar: "اختر API Setup ثم حدد رقم الهاتف المرتبط بحساب WhatsApp Business."
             },
             tip: {
               en: "If no phone number is connected yet, click 'Add Phone Number' and complete the setup.",
@@ -640,8 +640,8 @@ const WHATSAPP_GUIDE_CONFIG = {
               ar: "اختيار مستخدم النظام الإداري"
             },
             desc: {
-              en: "Select the Admin System User you created earlier.",
-              ar: "اختر مستخدم النظام الإداري الذي أنشأته سابقاً."
+              en: "Select the Admin System User.",
+              ar: "اختر مستخدم النظام الإداري."
             },
             image: "/whatsapp/token/step-3-select-user.png"
           },
@@ -663,8 +663,8 @@ const WHATSAPP_GUIDE_CONFIG = {
               ar: "ربط التطبيق ومنح التحكم الكامل"
             },
             desc: {
-              en: "Click 'Assign Assets', choose Apps, select the Meta App you created earlier, then enable Full Control permissions and save your changes.",
-              ar: "اضغط على 'Assign Assets' ثم اختر Apps وحدد تطبيق Meta الذي أنشأته سابقاً، وبعد ذلك فعّل صلاحية Full Control واحفظ التغييرات."
+              en: "Click 'Assign Assets', choose Apps, select the MADAR App, then enable Full Control permissions and save your changes.",
+              ar: "اضغط على 'Assign Assets' ثم اختر Apps وحدد تطبيق MADAR، وبعد ذلك فعّل صلاحية Full Control واحفظ التغييرات."
             },
             image: "/whatsapp/token/step-5-assign-app-full-control.png"
           },
@@ -683,12 +683,12 @@ const WHATSAPP_GUIDE_CONFIG = {
 
           {
             title: {
-              en: "Select Your Meta App",
-              ar: "اختيار تطبيق Meta"
+              en: "Select MADAR App",
+              ar: "اختيار تطبيق MADAR"
             },
             desc: {
-              en: "Choose the Meta App you created earlier. The access token will be generated for this app.",
-              ar: "اختر تطبيق Meta الذي أنشأته سابقاً. سيتم إنشاء رمز الوصول لهذا التطبيق."
+              en: "Choose the MADAR App. The access token will be generated for this app.",
+              ar: "اختر تطبيق MADAR. سيتم إنشاء رمز الوصول لهذا التطبيق."
             },
             image: "/whatsapp/token/step-7-select-app.png"
           },
@@ -749,8 +749,8 @@ const WHATSAPP_GUIDE_CONFIG = {
               ar: "فتح تطبيق Meta"
             },
             desc: {
-              en: "Go to https://developers.facebook.com/apps/ and select the Meta App you created earlier.",
-              ar: "اذهب إلى الرابط واختر تطبيق Meta الذي أنشأته سابقاً."
+              en: "Go to https://developers.facebook.com/apps/ and select the Meta App.",
+              ar: "اذهب إلى الرابط واختر تطبيق Meta."
             },
             url: "https://developers.facebook.com/apps/",
             image: "/whatsapp/final/step-1-open-app.png"

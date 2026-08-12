@@ -729,8 +729,8 @@ const WHATSAPP_GUIDE_CONFIG = {
               ar: "حفظ رمز الوصول"
             },
             desc: {
-              en: "Copy and save the generated Access Token. You will need it later when connecting your WhatsApp account to MADAR.",
-              ar: "انسخ واحفظ Access Token الذي تم إنشاؤه لأنك ستحتاجه لاحقاً عند ربط حساب WhatsApp مع MADAR."
+              en: "Copy and save the generated Access Token.",
+              ar: "انسخ واحفظ Access Token."
             },
             image: "/whatsapp/token/step-10-save-token.png"
           }
@@ -997,6 +997,7 @@ function ManualAddAccountModal({ open, onOpenChange, onSuccess, account }) {
 function ReplaceAccessTokenModal({ open, onOpenChange, onSuccess, account }) {
   const t = useTranslations("whatsApp.accounts.replaceAccessToken");
   const [loading, setLoading] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
 
   const schema = yup.object({
     accessToken: yup.string().trim().required(t("accessTokenRequired")),
@@ -1033,55 +1034,326 @@ function ReplaceAccessTokenModal({ open, onOpenChange, onSuccess, account }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{t("account")}:</span>{" "}
-            {account?.name || account?.mobileNumber || ""}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {t("accessTokenLabel")} *
-            </label>
-            <Input
-              {...register("accessToken")}
-              placeholder={t("accessTokenPlaceholder")}
-            />
-            {errors.accessToken && (
-              <p className="text-xs text-destructive">
-                {errors.accessToken.message}
-              </p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button_
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogDescription>{t("description")}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+            <div className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{t("account")}:</span>{" "}
+              {account?.name || account?.mobileNumber || ""}
+            </div>
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              label={t("common.cancel")}
-            />
-            <Button_
-              type="submit"
-              size="sm"
-              disabled={loading}
-              label={
-                loading ? (
-                  <Loader2 className="animate-spin" size={18} />
-                ) : (
-                  t("submit")
-                )
-              }
-            />
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+              onClick={() => setGuideOpen(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+            >
+              <HelpCircle size={14} />
+              {t("howToSteps")}
+            </button>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {t("accessTokenLabel")} *
+              </label>
+              <Input
+                {...register("accessToken")}
+                placeholder={t("accessTokenPlaceholder")}
+              />
+              {errors.accessToken && (
+                <p className="text-xs text-destructive">
+                  {errors.accessToken.message}
+                </p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button_
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                label={t("common.cancel")}
+              />
+              <Button_
+                type="submit"
+                size="sm"
+                disabled={loading}
+                label={
+                  loading ? (
+                    <Loader2 className="animate-spin" size={18} />
+                  ) : (
+                    t("submit")
+                  )
+                }
+              />
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ReplaceTokenGuideModal
+        open={guideOpen}
+        onOpenChange={setGuideOpen}
+      />
+    </>
+  );
+}
+
+function ReplaceTokenGuideModal({ open, onOpenChange }) {
+  const locale = useLocale();
+  const t = useTranslations("whatsApp.accounts.replaceAccessToken.guide");
+  const meta = WHATSAPP_GUIDE_CONFIG;
+
+  const steps =
+    meta?.guide?.tabs?.find(
+      (tab) => tab?.label?.en === "Create Permanent Access Token"
+    )?.steps || [];
+
+  const [activeStep, setActiveStep] = useState(0);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+
+  const currentStep = steps[activeStep] || {};
+  const isLast = activeStep >= steps.length - 1;
+
+  useEffect(() => {
+    if (!open) {
+      setActiveStep(0);
+      setPreviewImage(null);
+      setImgLoaded(false);
+    }
+  }, [open]);
+
+  const handlePrev = useCallback(() => {
+    setActiveStep((prev) => Math.max(0, prev - 1));
+  }, []);
+
+  const handleNext = useCallback(() => {
+    setActiveStep((prev) => Math.min(steps.length - 1, prev + 1));
+  }, [steps.length]);
+
+  const isAr = locale?.startsWith("ar");
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e) => {
+      if (previewImage) {
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        if (isAr) handleNext();
+        else handlePrev();
+      } else if (e.key === "ArrowRight") {
+        if (isAr) handlePrev();
+        else handleNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, activeStep, previewImage, handlePrev, handleNext, isAr]);
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={(v) => !v && onOpenChange()}>
+        <DialogContent
+          onEscapeKeyDown={(e) => {
+            if (previewImage) {
+              e.preventDefault();
+              setPreviewImage(null);
+            }
+          }}
+          onPointerDownOutside={(e) => {
+            if (previewImage) {
+              e.preventDefault();
+            }
+          }}
+          onInteractOutside={(e) => {
+            if (previewImage) {
+              e.preventDefault();
+            }
+          }}
+          className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                <HelpCircle size={20} />
+              </div>
+              {t("title")}
+            </DialogTitle>
+            <DialogDescription>{t("subtitle")}</DialogDescription>
+          </DialogHeader>
+
+          <div className="overflow-y-auto max-h-[calc(90vh-110px)] p-6 pt-0!">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeStep}
+                initial={{ opacity: 0, x: isAr ? -12 : 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: isAr ? 12 : -12 }}
+                transition={{ duration: 0.2 }}
+                className="p-6 space-y-4"
+              >
+                <div className="flex items-start gap-3">
+                  <span
+                    className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
+                    style={{
+                      background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
+                    }}
+                  >
+                    {activeStep + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--card-foreground)]">
+                      {pick(currentStep?.title, locale)}
+                    </p>
+                    <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">
+                      {pick(currentStep?.desc, locale)}
+                    </p>
+                    {currentStep?.url && (
+                      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
+                        <a
+                          href={currentStep.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline break-all"
+                        >
+                          {currentStep.url}
+                        </a>
+                        <button
+                          onClick={() =>
+                            navigator.clipboard.writeText(currentStep.url)
+                          }
+                          className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
+                        >
+                          <Copy size={12} className="text-primary" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {currentStep?.image && (
+                  <div
+                    className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative cursor-zoom-in hover:ring-2 hover:ring-[var(--primary)]/30 transition-all"
+                    style={{ minHeight: 250 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewImage(currentStep.image);
+                    }}
+                  >
+                    {!imgLoaded && (
+                      <div className="absolute inset-0 flex items-center justify-center p-4">
+                        <div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
+                      </div>
+                    )}
+                    <img
+                      src={currentStep.image}
+                      alt={pick(currentStep.title, locale)}
+                      loading="lazy"
+                      width={1200}
+                      height={700}
+                      onLoad={() => setImgLoaded(true)}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        setImgLoaded(false);
+                      }}
+                      className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                      style={{ display: "block" }}
+                    />
+                  </div>
+                )}
+
+                {currentStep?.tip && (
+                  <div className="flex flex-col gap-3 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
+                    <div className="flex gap-2.5">
+                      <Info
+                        size={14}
+                        className="text-[var(--primary)] flex-shrink-0 mt-0.5"
+                      />
+                      <p className="text-xs text-[var(--foreground)] leading-relaxed">
+                        {pick(currentStep.tip, locale)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep.copyableTip && (
+                  <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-dashed border-[var(--primary)]/20 ml-6">
+                    <span className="text-[10px] font-mono text-[var(--muted-foreground)] truncate">
+                      {pick(currentStep.copyableTip, locale)}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const textToCopy = pick(currentStep.copyableTip, locale);
+                        navigator.clipboard.writeText(textToCopy);
+                      }}
+                      className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
+                    >
+                      <Copy size={12} className="text-primary" />
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            <div className="border-t border-[var(--border)] py-4 flex items-center justify-between gap-3">
+              <GhostBtn
+                onClick={handlePrev}
+                className={activeStep === 0 ? "opacity-30 pointer-events-none" : ""}
+              >
+                <ChevronLeft
+                  size={14}
+                  className="rtl:-rotate-180 rtl:transition-transform ltr:transition-transform"
+                />{" "}
+                {t("prev")}
+              </GhostBtn>
+
+              <div className="flex items-center gap-1.5">
+                {steps.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveStep(i)}
+                    className="rounded-full transition-all duration-200"
+                    style={{
+                      width: i === activeStep ? "16px" : "6px",
+                      height: "6px",
+                      background:
+                        i === activeStep
+                          ? `rgb(var(--primary-from))`
+                          : "var(--border)",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {!isLast ? (
+                <PrimaryBtn onClick={handleNext}>
+                  {t("next")}
+                  <ChevronRight
+                    size={14}
+                    className="rtl:rotate-180 rtl:transition-transform ltr:transition-transform"
+                  />
+                </PrimaryBtn>
+              ) : (
+                <PrimaryBtn onClick={() => onOpenChange()}>
+                  {t("done")}
+                </PrimaryBtn>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <ImagePreviewModal
+        src={previewImage}
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+      />
+    </>
   );
 }
 

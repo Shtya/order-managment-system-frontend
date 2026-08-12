@@ -563,12 +563,75 @@
     "callCenter": "الكول سنتر",
     "moderator": "مودريتور",
     "orders-assign-to-you": "الطلبات الموزعة إليك",
+    "getting_started": "ابدأ مع مدار",
     "productSuggestions": "اقتراح المنتجات",
     "supportTickets": "تذاكر الدعم",
     "supportTicketsAdmin": "إدارة تذاكر الدعم",
     "issues": "مشكلة",
     "issuesAndStatuses": "إدارة المشكلات",
     "manageCauses": "إدارة أنواع المشكلات"
+  },
+  "gettingStarted": {
+    "title": "ابدأ مع مدار",
+    "subtitle": "أكمل هذه الخطوات الأساسية لتهيئة حسابك والبدء باستخدام مدار بكفاءة.",
+    "types": {
+      "first_product_created": "المنتج",
+      "first_warehouse_created": "المخزن",
+      "first_warehouse_stock_created": "مخزون المخزن",
+      "first_order_created": "الطلب",
+      "shipping_integration_connected": "شركة الشحن",
+      "whatsapp_connected": "واتساب",
+      "store_connected": "المتجر",
+      "first_team_member_created": "عضو الفريق",
+      "first_automation_created": "الأتمتة",
+      "first_safe_created": "الخزنة",
+      "first_purchase_accepted": "المشتريات",
+      "first_supplier_created": "المورد",
+      "first_order_assignment_automation_rule_created": "أتمتة التوزيع",
+      "first_order_bundle_created": "الباندل",
+      "first_custom_role_created": "الدور المخصص"
+    },
+    "progress": {
+      "label": "تقدم الإعداد",
+      "completed": "مكتملة",
+      "of": "من",
+      "items": "خطوة"
+    },
+    "status": {
+      "completed": "مكتملة",
+      "startNow": "ابدأ الآن",
+      "locked": "مقفلة",
+      "viewDependencies": "عرض المتطلبات",
+      "prerequisites": "المتطلبات السابقة",
+      "prerequisitesHint": "أكمل العناصر التالية قبل البدء في هذه الخطوة",
+      "viewRequirements": "عرض المتطلبات",
+      "pendingBadge": "مُعلق: متطلب مسبق",
+      "pendingTag": "مُعلق",
+      "unlockHint": "أكمل المتطلبات لفتح هذه الخطوة",
+      "completedTag": "مكتمل"
+    },
+    "sidebar": {
+      "title": "متطلبات",
+      "empty": "لا توجد متطلبات سابقة مطلوبة.",
+      "backToParent": "العودة",
+      "dependenciesOf": "المتطلبات",
+      "close": "إغلاق",
+      "infoBanner": "هذه المتطلبات تساعدك على تجهيز كل ما تحتاجه لإنشاء {type} بنجاح.",
+      "requirementsLabel": "المتطلبات",
+      "countLabel": "({count})",
+      "startStep": "ابدأ هذه الخطوة",
+      "shortExplanation": "عرض شرح مختصر",
+      "subtitle": "أكمل العناصر التالية قبل البدء في هذه الخطوة."
+    },
+    "tour": {
+      "starting": "جاري بدء الجولة...",
+      "placeholder": "سيتم تنفيذ ميزة الجولة التفاعلية في مرحلة لاحقة.",
+      "notReadyTitle": "الجولة غير متاحة بعد",
+      "itemHint": "ميزة الجولة الإرشادية قادمة قريباً."
+    },
+    "loading": "جاري تحميل عناصر البدء...",
+    "empty": "لا توجد عناصر بدء متاحة.",
+    "footer": "يمكنك إكمال هذه العناصر بأي ترتيب، ولكن البعض منها يتطلب إكمال الخطوات السابقة أولاً."
   },
   "supportTickets": {
     "title": "تذاكر الدعم",
@@ -11148,7 +11211,21 @@
         "confirmDelete": "هل أنت متأكد من حذف هذا الربط؟",
         "openSettings": "الإعدادات",
         "syncTemplates": "مزامنة القوالب",
-        "edit": "تعديل"
+        "edit": "تعديل",
+        "replaceAccessToken": "استبدال رمز الوصول"
+      },
+      "replaceAccessToken": {
+        "title": "استبدال رمز الوصول",
+        "description": "قم بتحديث رمز الوصول لهذا الحساب.",
+        "account": "الحساب",
+        "accessTokenLabel": "رمز الوصول الجديد",
+        "accessTokenPlaceholder": "الصق رمز الوصول الجديد...",
+        "accessTokenRequired": "رمز الوصول مطلوب",
+        "submit": "استبدال",
+        "success": "تم تحديث رمز الوصول بنجاح",
+        "common": {
+          "cancel": "إلغاء"
+        }
       },
       "delete": {
         "title": "حذف حساب واتساب",

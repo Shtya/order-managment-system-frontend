@@ -563,12 +563,75 @@
     "callCenter": "Call center",
     "moderator": "Moderator",
     "orders-assign-to-you": "Orders Assigned to You",
+    "getting_started": "Get Started with Madar",
     "productSuggestions": "Product Suggestions",
     "supportTickets": "Support Tickets",
     "supportTicketsAdmin": "Support Desk",
     "issues": "Issues",
     "issuesAndStatuses": "Manage Issues",
     "manageCauses": "Manage Issue Types"
+  },
+  "gettingStarted": {
+    "title": "Get Started with Madar",
+    "subtitle": "Complete these essential steps to set up your store and start managing orders efficiently.",
+    "types": {
+      "first_product_created": "Product",
+      "first_warehouse_created": "Warehouse",
+      "first_warehouse_stock_created": "Warehouse Stock",
+      "first_order_created": "Order",
+      "shipping_integration_connected": "Shipping Integration",
+      "whatsapp_connected": "WhatsApp",
+      "store_connected": "Store",
+      "first_team_member_created": "Team Member",
+      "first_automation_created": "Automation",
+      "first_safe_created": "Safe",
+      "first_purchase_accepted": "Purchase",
+      "first_supplier_created": "Supplier",
+      "first_order_assignment_automation_rule_created": "Assignment Automation",
+      "first_order_bundle_created": "Bundle",
+      "first_custom_role_created": "Custom Role"
+    },
+    "progress": {
+      "label": "Progress",
+      "completed": "Completed",
+      "of": "of",
+      "items": "items"
+    },
+    "status": {
+      "completed": "Completed",
+      "startNow": "Start Now",
+      "locked": "Locked",
+      "viewDependencies": "View Dependencies",
+      "prerequisites": "Prerequisites",
+      "prerequisitesHint": "Complete the following items before starting",
+      "viewRequirements": "View Requirements",
+      "pendingBadge": "Locked: Prerequisite required",
+      "pendingTag": "Locked",
+      "unlockHint": "Complete prerequisites to unlock this step",
+      "completedTag": "Done"
+    },
+    "sidebar": {
+      "title": "Prerequisites",
+      "empty": "No prerequisites required.",
+      "backToParent": "Back",
+      "dependenciesOf": "Prerequisites",
+      "close": "Close",
+      "infoBanner": "These prerequisites help you set up everything you need to create a {type} successfully.",
+      "requirementsLabel": "Prerequisites",
+      "countLabel": "({count})",
+      "startStep": "Start this step",
+      "shortExplanation": "View brief summary",
+      "subtitle": "Complete the following items before you start this step."
+    },
+    "tour": {
+      "starting": "Starting tour...",
+      "placeholder": "Tour feature will be implemented in a future phase.",
+      "notReadyTitle": "Tour not available yet",
+      "itemHint": "This guided tour feature coming soon."
+    },
+    "loading": "Loading getting started items...",
+    "empty": "No getting started items available.",
+    "footer": "You can complete these items in any order, but some require previous steps to be finished first."
   },
   "supportTickets": {
     "title": "Support Tickets",
@@ -11127,7 +11190,21 @@
         "confirmDelete": "Are you sure you want to delete this connection?",
         "openSettings": "Settings",
         "syncTemplates": "Sync Templates",
-        "edit": "Edit"
+        "edit": "Edit",
+        "replaceAccessToken": "Replace Access Token"
+      },
+      "replaceAccessToken": {
+        "title": "Replace Access Token",
+        "description": "Update the access token for this WhatsApp account.",
+        "account": "Account",
+        "accessTokenLabel": "New Access Token",
+        "accessTokenPlaceholder": "Paste the new access token...",
+        "accessTokenRequired": "Access token is required",
+        "submit": "Replace",
+        "success": "Access token updated successfully",
+        "common": {
+          "cancel": "Cancel"
+        }
       },
       "delete": {
         "title": "Delete WhatsApp account",

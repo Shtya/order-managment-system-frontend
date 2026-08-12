@@ -11202,6 +11202,15 @@
         "accessTokenRequired": "Access token is required",
         "submit": "Replace",
         "success": "Access token updated successfully",
+        "howToSteps": "How to create a permanent access token?",
+        "guide": {
+          "title": "Create Permanent Access Token",
+          "subtitle": "Follow these steps to generate a new permanent access token for your WhatsApp Business account.",
+          "prev": "Previous",
+          "next": "Next",
+          "done": "Done",
+          "imagePlaceholder": "Image preview"
+        },
         "common": {
           "cancel": "Cancel"
         }

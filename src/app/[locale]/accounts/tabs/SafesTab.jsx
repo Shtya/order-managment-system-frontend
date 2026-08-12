@@ -374,6 +374,8 @@ export default function SafesTab({ onRefresh }) {
                             className="bg-teal-500 hover:bg-teal-600 border-none text-white"
                             size="sm"
                             onClick={handleAddAccount}
+                            data-getting-started="safes.create"
+                            data-getting-started-type="button"
                         />
                     </div>
                 </Card>
@@ -1297,7 +1299,7 @@ export function AccountModal({ open, onOpenChange, editingAccount, onSave }) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" data-getting-started="safes.create_dialog" data-getting-started-type="dialog">
                 <DialogHeader><DialogTitle>{editingAccount ? t("safes.accounts.edit") : t("safes.accounts.add")}</DialogTitle></DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -1354,7 +1356,7 @@ export function AccountModal({ open, onOpenChange, editingAccount, onSave }) {
                         </Field>
                     )}
                     <Field label="Notes" error={errors.notes?.message}><Textarea {...register("notes")} /></Field>
-                    <DialogFooter><Button_ type="submit" disabled={loading} label={loading ? <Loader2 className="animate-spin" size={18} /> : "Save"} className="bg-teal-500 hover:bg-teal-600 text-white" /></DialogFooter>
+                    <DialogFooter><Button_ type="submit" disabled={loading} label={loading ? <Loader2 className="animate-spin" size={18} /> : "Save"} className="bg-teal-500 hover:bg-teal-600 text-white" data-getting-started="safes.create_save" data-getting-started-type="button" /></DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>

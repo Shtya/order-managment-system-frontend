@@ -1263,13 +1263,18 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							variant="solid"
 							onClick={handleSubmit(onSubmit)}
 							icon={isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={16} />}
-
+							data-getting-started="product_save"
+							data-getting-started-type="button"
 						/>
 					</>
 				}
 			/>
 
-			<form onSubmit={handleSubmit(onSubmit)}>
+			<form
+				onSubmit={handleSubmit(onSubmit)}
+				data-getting-started="product_dialog"
+				data-getting-started-type="dialog"
+			>
 				<motion.div
 					variants={staggerContainer}
 					initial="initial"

@@ -356,6 +356,8 @@ export default function AutomationsPage() {
                 onClick={() => router.push("/automations/builder")}
                 icon={<Plus size={18} />}
                 permission="automation.create"
+                data-getting-started="automations.create"
+                data-getting-started-type="button"
               />
             </>
           }

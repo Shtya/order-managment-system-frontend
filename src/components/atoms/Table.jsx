@@ -190,6 +190,8 @@ export const TableToolbar = memo(function TableToolbar({
               onClick={action.onClick}
               type="button"
               disabled={action.disabled}
+              data-getting-started={action.dataGettingStarted}
+              data-getting-started-type={action.dataGettingStartedType}
               className={cn(
                 ACTION_COLORS[action.color ?? "default"] ?? ACTION_COLORS.default,
                 "disabled:opacity-50 disabled:cursor-not-allowed gap-1.5",

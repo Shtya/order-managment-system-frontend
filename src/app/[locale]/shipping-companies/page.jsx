@@ -83,7 +83,7 @@ export function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 	} = useShippingSettings(company?.code, { onClose, onFirstSetup, onSaved });
 
 	return (
-		<ModalShell onClose={onClose}>
+		<ModalShell onClose={onClose} data-getting-started="shipping_company.settings_dialog" data-getting-started-type="dialog">
 			<ModalHeader icon={Settings2} title={t("settings.title", { name: company.name })} subtitle={t("settings.subtitle")} onClose={onClose} />
 
 			<div className="p-6 space-y-5">
@@ -153,7 +153,7 @@ export function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 					</div>
 				)} */}
 
-				<PrimaryBtn onClick={handleSave} disabled={!isFormValid()} loading={saving} className="w-full">
+				<PrimaryBtn onClick={handleSave} disabled={!isFormValid()} loading={saving} className="w-full" data-getting-started="shipping_company.settings_save" data-getting-started-type="button">
 					{!saving && <Check size={14} />}
 					{saving ? t("settings.saving") : t("settings.save")}
 				</PrimaryBtn>
@@ -235,7 +235,9 @@ export function GuideModal({ company, onClose }) {
 							e.preventDefault();
 						}
 					}}
-					className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+					className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!"
+					data-getting-started="shipping_company.integration_dialog"
+					data-getting-started-type="dialog">
 					<DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
 						<DialogTitle className="flex items-center gap-2">
 							<div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
@@ -808,6 +810,8 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 							className={fbCls}
 							onMouseEnter={onEnter}
 							onMouseLeave={onLeave}
+							data-getting-started="shipping_company.settings"
+							data-getting-started-type="button"
 						>
 							<Settings2 size={12} />
 							{t("card.settings")}
@@ -821,6 +825,8 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						className={`cursor-pointer ${fbCls}`}
 						onMouseEnter={onEnter}
 						onMouseLeave={onLeave}
+						data-getting-started="shipping_company.add"
+						data-getting-started-type="button"
 					>
 						<HelpCircle size={12} />
 						{t("card.guide")}

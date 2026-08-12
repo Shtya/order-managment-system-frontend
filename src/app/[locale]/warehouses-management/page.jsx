@@ -12,7 +12,7 @@ import StorageLocationsTab from "./atoms/StorageLocationsTab";
 import { normalizeAxiosError } from "@/utils/axios";
 const TAB_ITEMS = [
     { id: "warehouses", labelKey: "warehousesManagement.tabs.warehouses", icon: Warehouse },
-    { id: "storageLocations", labelKey: "warehousesManagement.tabs.storageLocations", icon: MapPin },
+    { id: "storageLocations", labelKey: "warehousesManagement.tabs.storageLocations", icon: MapPin, gettingStartedKey: "warehouse.storage_locations", gettingStartedType: "section_locations" },
 ];
 
 const WAREHOUSE_STATS_CONFIG = [
@@ -80,6 +80,8 @@ export default function WarehousesManagementPage() {
             id: tab.id,
             label: t(`tabs.${tab.id === "warehouses" ? "warehouses" : "storageLocations"}`),
             icon: tab.icon,
+            gettingStartedKey: tab.gettingStartedKey,
+            gettingStartedType: tab.gettingStartedType,
         })),
     [t]);
 

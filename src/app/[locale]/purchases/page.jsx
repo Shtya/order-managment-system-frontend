@@ -1763,6 +1763,8 @@ export default function PurchasesPage() {
 								className="flex items-center gap-2 cursor-pointer"
 								disabled={row.status === "accepted" || row.closingId !== null}
 								permission="purchases.update"
+								data-getting-started="purchase.accept"
+								data-getting-started-type="button"
 							>
 								<Check size={16} className="text-green-600" />
 								<span>{t("actions.accept")}</span>
@@ -1813,6 +1815,8 @@ export default function PurchasesPage() {
 							icon={<Plus size={18} />}
 							variant="solid"
 							permission="purchases.create"
+							data-getting-started="purchases.create"
+							data-getting-started-type="button"
 						/>
 						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} permission="purchases.read" />
 					</>
@@ -1820,6 +1824,10 @@ export default function PurchasesPage() {
 				stats={statsCards}
 			/>
 
+			<div
+				data-getting-started="purchases.table"
+				data-getting-started-type="section"
+			>
 			<Table
 				searchValue={search}
 				onSearchChange={setSearch}
@@ -1928,6 +1936,7 @@ export default function PurchasesPage() {
 				}}
 				onPageChange={({ page, per_page }) => fetchPurchases(page, per_page)}
 			/>
+			</div>
 
 
 			{detailsModal.isOpen && (

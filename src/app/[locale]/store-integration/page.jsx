@@ -71,7 +71,7 @@ export default function StoresIntegrationPage() {
     const params = new URLSearchParams(window.location.search);
     const error = params.get("error");
     const errorMessage = params.get("errorMessage");
-    if(errorMessage) {
+    if (errorMessage) {
       toast.error(errorMessage);
       return;
     }
@@ -201,7 +201,7 @@ export default function StoresIntegrationPage() {
           transition={{ duration: 0.3 }}
           className="main-card min-h-[500px] "
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-getting-started="stores.available" data-getting-started-type="section">
             {loading
               ? PROVIDERS.map((provider, i) => (
                 <SkeletonCard key={provider || i} />
@@ -367,7 +367,7 @@ function StoreCard({
     e.currentTarget.style.borderColor = "";
     e.currentTarget.style.color = "";
   };
-
+  const isFirst = index == 1
   return (
     <motion.div
       whileHover={{ y: -3, boxShadow: "0 20px 48px 0 rgba(0,0,0,0.11)" }}
@@ -539,6 +539,10 @@ function StoreCard({
               className={fbCls}
               onMouseEnter={onEnter}
               onMouseLeave={onLeave}
+              {...(isFirst ? {
+                'data-getting-started': 'store.integrate',
+                'data-getting-started-type': 'button',
+              } : {})}
             >
               {cancelling ? (
                 <Loader2 size={12} className="animate-spin" />
@@ -549,12 +553,17 @@ function StoreCard({
               )}
               {isIntegrated ? t("card.cancelIntegration") || "Cancel Integration" : t("card.integrate") || "Integrate"}
             </button>
+
             {hasStore && hasPermission("stores.update") && (
               <button
                 onClick={() => onConfigure(provider, store)}
                 className={fbCls}
                 onMouseEnter={onEnter}
                 onMouseLeave={onLeave}
+                {...(isFirst ? {
+                  'data-getting-started': 'store.settings',
+                  'data-getting-started-type': 'button',
+                } : {})}
               >
                 <Settings2 size={12} />
                 {t("card.settings")}
@@ -568,6 +577,10 @@ function StoreCard({
               className={fbCls}
               onMouseEnter={onEnter}
               onMouseLeave={onLeave}
+              {...(isFirst ? {
+                'data-getting-started': hasStore ? 'store.settings' : 'stores.add',
+                'data-getting-started-type': 'button',
+              } : {})}
             >
               <Settings2 size={12} />
               {hasStore ? t("card.settings") : t("card.configureSettings")}
@@ -581,6 +594,10 @@ function StoreCard({
             className={fbCls}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
+            {...(isFirst ? {
+              'data-getting-started': 'store.how_to_integrate',
+              'data-getting-started-type': 'button',
+            } : {})}
           >
             <HelpCircle size={12} />
             {t("card.guide")}
@@ -594,6 +611,10 @@ function StoreCard({
             style={{ textDecoration: "none" }}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
+            {...(isFirst ? {
+              'data-getting-started': 'store.how_to_integrate',
+              'data-getting-started-type': 'button',
+            } : {})}
           >
             <HelpCircle size={12} />
             {t("card.guide")}
@@ -681,7 +702,7 @@ export function StoreConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!" data-getting-started="store.settings_dialog" data-getting-started-type="dialog">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
           <DialogTitle className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
@@ -1267,7 +1288,9 @@ export function StoreGuideModal({ provider, onClose }) {
               e.preventDefault();
             }
           }}
-          className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+          className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!"
+          data-getting-started="store.integration_steps_dialog"
+          data-getting-started-type="dialog">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
             <DialogTitle className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-slate-10 flex items-center justify-center text-slate-600">

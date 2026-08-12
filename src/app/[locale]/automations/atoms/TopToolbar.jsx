@@ -472,6 +472,8 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                                 onClick={() => handleSave(true)}
                                 primary
                                 disabled={saving}
+                                data-getting-started="automation.save"
+                                data-getting-started-type="button"
                             />
                         </>
                     )}
@@ -515,9 +517,9 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
     );
 }
 
-function ToolbarButton({ icon, label, onClick, className, primary, danger, disabled }) {
+function ToolbarButton({ icon, label, onClick, className, primary, danger, disabled, ...props }) {
     return (
-        <div className="group relative flex flex-col items-center">
+        <div className="group relative flex flex-col items-center" {...props}>
             <button
                 onClick={onClick}
                 disabled={disabled}

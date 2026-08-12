@@ -11,6 +11,7 @@ import { SocketProvider } from "../../context/SocketContext";
 import { ThemeProvider } from "next-themes";
 import { isPublicRoute } from "@/utils/route-utils";
 import { PlatformSettingsProvider } from "@/context/PlatformSettingsContext";
+import { GettingStartedProvider } from "@/context/GettingStartedContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import SubscriptionLock from "@/components/atoms/SubscriptionLock";
@@ -33,8 +34,10 @@ export default function LayoutShell({ children }) {
               <SocketProvider>
                 <NotificationProvider>
                   <PlatformSettingsProvider>
-                    <GTMPageView />
-                    <DashboardLayout>{children}</DashboardLayout>
+                    <GettingStartedProvider>
+                      <GTMPageView />
+                      <DashboardLayout>{children}</DashboardLayout>
+                    </GettingStartedProvider>
                   </PlatformSettingsProvider>
                 </NotificationProvider>
               </SocketProvider>
@@ -187,6 +190,7 @@ function DashboardLayout({ children }) {
       <Sidebar
         isRTL={isRTL}
         onOpenSidebar={() => setIsSidebarOpen((v) => !v)}
+        openSidebar={()=> setIsSidebarOpen((v) => true)}
         isOpen={isSidebarOpen}
         isMobile={isMobile}
       />

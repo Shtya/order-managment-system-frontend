@@ -71,6 +71,7 @@ import {
   Boxes,
   MessageSquare,
   Ticket,
+  Rocket,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -279,6 +280,11 @@ function MenuItem({
     </>
   );
 
+  const menuItemAttrs = {
+    ...(item.gettingStartedKey && { "data-getting-started": item.gettingStartedKey }),
+    ...(item.gettingStartedType && { "data-getting-started-type": item.gettingStartedType }),
+  };
+
   const wrappedInTooltip = (trigger) => {
     const labelToDisplay = item.isLocked ? `${label} (${t("locked")})` : label;
     if (isOpen) {
@@ -326,6 +332,7 @@ function MenuItem({
         }}
         className={sharedClass}
         style={active ? activeStyle : inactiveStyle}
+        {...menuItemAttrs}
       >
         {inner}
       </button>,
@@ -345,6 +352,7 @@ function MenuItem({
       }}
       className={sharedClass}
       style={active ? activeStyle : inactiveStyle}
+      {...menuItemAttrs}
     >
       {inner}
     </Link>,
@@ -368,6 +376,8 @@ function SubItem({ child, isActive, isRTL, index }) {
     >
       <Link
         href={child.href}
+        data-getting-started={child.gettingStartedKey}
+        data-getting-started-type={child.gettingStartedType}
         className={`
           relative flex items-center gap-2 py-[5.5px] rounded-xl
           transition-all duration-150 group overflow-hidden
@@ -432,7 +442,7 @@ function SubItem({ child, isActive, isRTL, index }) {
   );
 }
 export const excludedSubcriptionPaths = ["/plans", "/wallet", "/onboarding", '/support-tickets'];
-const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
+const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
   const { isDirectShippingEnabled } = useOrdersSettings();
 
 
@@ -496,6 +506,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
   const menuItems = useMemo(() => [
     {
+      icon: Rocket,
+      labelKey: "getting_started",
+      href: "/getting-started",
+      roles: ["ADMIN"],
+    },
+    {
       icon: LayoutDashboard,
       labelKey: "dashboard",
       href: "/dashboard",
@@ -508,6 +524,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       href: "/call-center",
       // roles: ["ADMIN"],
       permission: "orders.distribution",
+      gettingStartedKey: "call_center",
+      gettingStartedType: "sidebar_item",
     },
     {
       icon: PackageCheck,
@@ -523,7 +541,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       // roles: ["ADMIN"],
       permission: "orders.read",
       children: [
-        { icon: Package, labelKey: "orders", permission: "orders.read", href: "/orders?tab=orders" },
+        { icon: Package, labelKey: "orders", permission: "orders.read", href: "/orders?tab=orders", gettingStartedKey: "sidebar_item_orders", gettingStartedType: "sidebar_item" },
         // {
         //   icon: FileSearch,
         //   labelKey: "ordersUnderReview",
@@ -618,10 +636,10 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       // permission: "products.read",
       children: [
         { icon: Package, labelKey: "products", permission: "products.read", href: "/products" },
-        { icon: PackagePlus, labelKey: "newProduct", permission: "products.read", href: "/products/new" },
-        { icon: Layers, labelKey: "newBundle", permission: "products.read", href: "/bundles/new" },
+        { icon: PackagePlus, labelKey: "newProduct", permission: "products.read", href: "/products/new", gettingStartedKey: "sidebar_item_products_add", gettingStartedType: "sidebar_item" },
+        { icon: Layers, labelKey: "newBundle", permission: "products.read", href: "/bundles/new", gettingStartedKey: "products.add_bundle", gettingStartedType: "sidebar_item" },
         { icon: Package, labelKey: "categories", permission: "categories.read", href: "/products/categories" },
-        { icon: Boxes , labelKey: "warehousesManagement", permission: "warehouses.read", href: "/warehouses-management" },
+        { icon: Boxes, labelKey: "warehousesManagement", permission: "warehouses.read", href: "/warehouses-management", gettingStartedKey: "products.warehouses_management", gettingStartedType: "sidebar_item_products_warehouse" },
       ],
     },
 
@@ -635,12 +653,16 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "shippingCompanies",
           permission: "shipping-companies.read",
           href: "/shipping-companies",
+          gettingStartedKey: "integrations.shipping_companies",
+          gettingStartedType: "sidebar_item",
         },
         {
           icon: Store,
           labelKey: "stores",
           permission: "stores.read",
           href: "/store-integration",
+          gettingStartedKey: "integrations.stores",
+          gettingStartedType: "sidebar_item",
         },
         {
           icon: AlertTriangle,
@@ -664,6 +686,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "whatsAppAccounts",
           href: "/whatsapp/accounts",
           icon: FaWhatsapp,
+          gettingStartedKey: "whatsapp.accounts",
+          gettingStartedType: "sidebar_item",
         },
         {
           labelKey: "templates",
@@ -719,6 +743,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "automationsPaths",
           href: "/automations",
           icon: FaBolt,
+          gettingStartedKey: "automation.automations",
+          gettingStartedType: "sidebar_item",
         },
         {
           labelKey: "automationLogs",
@@ -773,6 +799,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           icon: Landmark, // 🏦 safes = physical/secure storage
           labelKey: "safes",
           href: "/accounts?tab=safes",
+          gettingStartedKey: "accounts.safes",
+          gettingStartedType: "sidebar_item",
         },
         {
           icon: CheckSquare, // ✅ collected = done/confirmed
@@ -796,12 +824,16 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "suppliers",
           permission: "suppliers.read",
           href: "/suppliers",
+          gettingStartedKey: "purchases.suppliers",
+          gettingStartedType: "sidebar_item",
         },
         {
           icon: FileText,
           labelKey: "purchases",
           permission: "purchases.read",
           href: "/purchases",
+          gettingStartedKey: "purchases.purchases",
+          gettingStartedType: "sidebar_item",
         },
         { icon: PackagePlus, labelKey: "newPurchase", permission: "purchases.read", href: "/purchases/new" },
         { icon: Undo2, labelKey: "purchasesReturn", permission: "purchase_returns.read", href: "/purchases/return" },
@@ -839,12 +871,16 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "employees",
           permission: "users.read",
           href: "/employees",
+          gettingStartedKey: "teams.add_employees",
+          gettingStartedType: "sidebar_item",
         },
         {
           icon: Shield,
           labelKey: "roles",
           permission: "roles.read",
           href: "/roles",
+          gettingStartedKey: "teams.roles_permissions",
+          gettingStartedType: "sidebar_item",
         },
       ],
     },
@@ -972,6 +1008,32 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
     if (active) setExpandedItems((prev) => new Set([...prev, active.href]));
   }, [pathname, currentSearch, isActive]);
 
+  // Expand a parent section on demand for getting-started sidebar steps
+  // (e.g. whatsapp.accounts) so the targeted sub-item renders in the DOM.
+  useEffect(() => {
+    const expand = (e) => {
+      const key = e.detail?.key;
+
+      if (!key) return;
+      const parent = menuItems.find((item) =>
+        item.children?.some((c) => c.gettingStartedKey === key),
+      );
+
+      if (parent) {
+        if (!isOpen) {
+          openSidebar?.();
+
+          setExpandedItems((prev) => new Set([...prev, parent.href]));
+        } else {
+          setExpandedItems((prev) => new Set([...prev, parent.href]));
+        }
+      }
+    };
+    window.addEventListener("getting-started:expand-sidebar-item", expand);
+    return () =>
+      window.removeEventListener("getting-started:expand-sidebar-item", expand);
+  }, [menuItems, isOpen]);
+
   const filteredItems = useMemo(() => {
     if (!user) return [];
 
@@ -980,7 +1042,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
     return menuItems.filter((item) => {
 
       const role = userRole?.toUpperCase();
-      
+
       // ✅ SPECIAL RULE: SUPER_ADMIN sees ONLY explicitly allowed items
       if (role === 'SUPER_ADMIN') {
         return item.roles?.includes('SUPER_ADMIN');

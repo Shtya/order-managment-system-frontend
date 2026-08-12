@@ -97,6 +97,10 @@ export function getNotificationLink(entity, id, type) {
   if (entity === "subscription" || (type && type.startsWith("subscription"))) {
     return "/plans?tab=subscriptions";
   }
+  console.log(entity)
+  if (entity === "getting_started_achievements") {
+    return "/getting-started";
+  }
 
   const isOrderRelated = ["order", "shipment", "replacement", "return"].includes(entity) ||
     (type && (type.includes("order") || type.includes("shipment")));

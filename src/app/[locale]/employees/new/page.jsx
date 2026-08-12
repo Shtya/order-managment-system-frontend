@@ -276,13 +276,15 @@ export default function AddEmployeePage() {
 						label={isSubmitting ? t("actions.saving") || t("actions.save") : t("actions.save")}
 						variant="solid"
 						icon={<Save size={18} />}
+						data-getting-started="employee_save"
+						data-getting-started-type="button"
 					/>
 				}
 			/>
 
 
 			{/* Form Content - Two Columns */}
-			<div className="flex max-md:flex-col gap-6">
+			<div className="flex max-md:flex-col gap-6" data-getting-started="employee_form" data-getting-started-type="page">
 				<div className="flex-1 space-y-6">
 					<motion.div
 						className="main-card"

@@ -2211,6 +2211,8 @@ export default function WhatsAppAccountsPage() {
                     permission="whatsapp.manage"
                     icon={<Plus size={18} />}
                     onClick={launchWhatsAppSignup}
+                    data-getting-started="whatsapp.integrate_meta_business_account"
+                    data-getting-started-type="button"
                   />
                 )}
                 {settings?.whatsappIntegrationMode === "manual" && (
@@ -2221,6 +2223,8 @@ export default function WhatsAppAccountsPage() {
                     permission="whatsapp.manage"
                     icon={<Plus size={18} />}
                     onClick={() => setManualModalOpen(true)}
+                    data-getting-started="whatsapp.integrate_meta_business_account"
+                    data-getting-started-type="button"
                   />
                 )}
               </>

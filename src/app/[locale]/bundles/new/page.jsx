@@ -408,12 +408,14 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 							variant="solid"
 							onClick={handleSubmit(onSubmit)}
 							icon={isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={16} />}
+							data-getting-started="product_bundle.save"
+							data-getting-started-type="button"
 						/>
 					</>
 				}
 			/>
 
-			<form onSubmit={handleSubmit(onSubmit)}>
+			<form onSubmit={handleSubmit(onSubmit)} data-getting-started="product_bundle_form" data-getting-started-type="page">
 				<motion.div
 					variants={staggerContainer}
 					initial="initial"

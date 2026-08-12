@@ -399,6 +399,8 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default", style = 
 							key={item.id}
 							type="button"
 							onClick={() => onChange?.(item.id)}
+							data-getting-started={item.gettingStartedKey}
+							data-getting-started-type={item.gettingStartedType}
 							className={cn(
 								"relative shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] font-medium transition-colors outline-none z-10",
 								isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
@@ -451,6 +453,8 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default", style = 
 							key={item.id}
 							type="button"
 							onClick={() => onChange?.(item.id)}
+							data-getting-started={item.gettingStartedKey}
+							data-getting-started-type={item.gettingStartedType}
 							// Removed flex-1 so width is based on content
 							className={cn(
 								"relative shrink-0 flex items-center justify-center gap-2 px-6 py-4 text-[13px] outline-none transition-colors z-10",
@@ -525,6 +529,8 @@ function SwitcherTabsCompact({ items, activeId, onChange, variant = "default", s
 							key={item.id}
 							type="button"
 							onClick={() => onChange?.(item.id)}
+							data-getting-started={item.gettingStartedKey}
+							data-getting-started-type={item.gettingStartedType}
 							className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[11px] md:text-[12.5px] font-semibold transition-all outline-none"
 							style={{
 								background: isActive ? "var(--card)" : "transparent",
@@ -579,6 +585,8 @@ function SwitcherTabsCompact({ items, activeId, onChange, variant = "default", s
 						key={item.id}
 						type="button"
 						onClick={() => onChange?.(item.id)}
+						data-getting-started={item.gettingStartedKey}
+						data-getting-started-type={item.gettingStartedType}
 						className="relative shrink-0 flex items-center gap-2 px-4 py-3 md:px-5 md:py-3.5 text-[12px] md:text-[13px] font-semibold bg-transparent border-none cursor-pointer outline-none transition-colors"
 						style={{ color: isActive ? "var(--primary)" : "var(--muted-foreground)" }}
 					>

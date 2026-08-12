@@ -156,6 +156,13 @@ export const SocketProvider = ({ children }) => {
       incrementUnread();
     });
 
+    socket.on("getting_started:achievement", (payload) => {
+      publish({
+        type: "GETTING_STARTED_ACHIEVEMENT",
+        payload,
+      });
+    });
+
     socket.on("store:sync-status", (payload) => {
       publish({
         type: "STORE_SYNC_STATUS",
@@ -279,6 +286,7 @@ export const SocketProvider = ({ children }) => {
       socket.off("reconnect");
       socket.off("reconnect_error");
       socket.off("new_notification");
+      socket.off("getting_started:achievement");
       socket.off("store:sync-status");
       socket.off("failed-order:update");
       socket.off("shipment:status");

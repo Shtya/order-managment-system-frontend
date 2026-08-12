@@ -19,8 +19,10 @@ import {
   List,
   GraduationCap,
   XCircle,
+  Rocket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import {
   Popover,
   PopoverContent,
@@ -32,6 +34,7 @@ import api from "@/utils/api";
 import { getNotificationLink } from "@/app/[locale]/notifications/page";
 import { useNotification } from "@/context/NotificationContext";
 import { useAuth } from "@/context/AuthContext";
+import { useGettingStarted } from "@/context/GettingStartedContext";
 import { useTutorial } from "@/context/TutorialContext";
 import toast from "react-hot-toast";
 import BrandLogo from "../atoms/BrandLogo";
@@ -112,12 +115,14 @@ function PulseDot() {
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isAdmin } = useAuth();
+  const { achievementPercent } = useGettingStarted();
+  const tProgress = useTranslations("gettingStarted.progress");
   const t = useTranslations("header");
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
-  const {  resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
   const { isTutorialMode, toggleTutorialMode } = useTutorial();
@@ -157,16 +162,46 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
 
       <div className="relative h-full px-4 flex items-center justify-between gap-3">
         {/* ── LEFT: Toggle + Brand ── */}
-        <div
-          className={`flex items-center gap-2.5 ${(isSidebarOpen && !isMobile) && "opacity-0"} duration-300`}
-        >
+        <div className="flex items-center gap-2.5">
           {isMobile && (
             <IconBtn onClick={toggleSidebar} label={t("toggleSidebar")}>
               <Menu size={16} />
             </IconBtn>
           )}
 
-          <BrandLogo className="text-[#672DAD]" />
+
+          {!(isSidebarOpen && !isMobile) && <BrandLogo className="text-[#672DAD]" />}
+
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => router.push("/getting-started")}
+              aria-label={tProgress("label")}
+              title={tProgress("label")}
+              // FIXED: Replaced muddy background/border with a crisp, soft primary tint
+              className="group flex items-center gap-2.5 rounded-full border border-primary/15 bg-primary/[0.03] hover:bg-primary/[0.08] hover:border-primary/30 px-3 py-1.5 transition-all duration-200 text-start"
+            >
+              {/* Rocket Icon Container */}
+              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
+                <Rocket className="size-3.5" />
+              </div>
+
+              {/* Label, Percentage & Progress Bar */}
+              <div className="flex flex-col gap-1 min-w-[90px]">
+                <div className="flex items-center justify-between gap-2 leading-none">
+                  <span className="font-semibold text-slate-700 dark:text-slate-200 text-[11px] truncate">
+                    {tProgress("label")}
+                  </span>
+                  <span className="font-bold text-primary text-[10px] shrink-0">
+                    {Math.round(achievementPercent)}%
+                  </span>
+                </div>
+
+                {/* FIXED: Removed `bg-muted` so the component's internal `bg-primary/20` track color works correctly */}
+                <Progress value={achievementPercent} className="h-1.5 w-full rotate-180" />
+              </div>
+            </button>
+          )}
         </div>
 
         {/* ── RIGHT: Actions ── */}
@@ -199,11 +234,11 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
           {/* Jobs (Queues) for Super Admin only */}
           {isSuperAdmin && (
             <IconBtn
-            onClick={() => window.open("/queues", "_blank")}
-            label={t("queues")}
-          >
-            <List size={14} />
-          </IconBtn>
+              onClick={() => window.open("/queues", "_blank")}
+              label={t("queues")}
+            >
+              <List size={14} />
+            </IconBtn>
           )}
 
           {/* Theme */}

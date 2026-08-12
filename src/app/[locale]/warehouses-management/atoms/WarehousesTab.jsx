@@ -189,7 +189,7 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
                     </>
                 }
                 actions={[
-                    { key: "create", label: t("actions.createWarehouse"), icon: <Plus size={15} />, color: "primary", onClick: openCreate, permission: "warehouses.create" },
+                    { key: "create", label: t("actions.createWarehouse"), icon: <Plus size={15} />, color: "primary", onClick: openCreate, permission: "warehouses.create", dataGettingStarted: "warehouses.create", dataGettingStartedType: "add_button_warehouse" },
                     { key: "export", label: tc("export"), icon: exportLoading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "warehouses.read" },
                 ]}
                 columns={columns}
@@ -288,11 +288,15 @@ function WarehouseFormDialog({ open, onOpenChange, warehouse, onSuccess }) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-lg! w-full">
+            <DialogContent className="max-w-lg! w-full" data-getting-started="warehouses.create_dialog" data-getting-started-type="warehouse_dialog">
+                
                 <DialogHeader>
                     <DialogTitle>{isEdit ? t("actions.editWarehouse") : t("actions.createWarehouse")}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form
+                  onSubmit={handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
                     <div className="space-y-2">
                         <Label className="text-sm font-semibold">{t("form.name")} <span className="text-red-500">*</span></Label>
                         <Input {...register("name")} placeholder={t("form.namePlaceholder")} className="rounded-xl h-[50px]" />

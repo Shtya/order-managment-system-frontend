@@ -410,6 +410,8 @@ export default function SuppliersPage() {
 							variant="solid"
 							icon={<Plus size={18} />}
 							permission="suppliers.create"
+							data-getting-started="suppliers.create"
+							data-getting-started-type="button"
 						/>
 						<Button_ size="sm" label={t("actions.howToUse")} tone="outline" variant="ghost" icon={<Info size={15} />} permission="suppliers.read" />
 					</>
@@ -684,7 +686,7 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }) 
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="!max-w-3xl max-h-[90vh] overflow-y-auto">
+			<DialogContent className="!max-w-3xl max-h-[90vh] overflow-y-auto" data-getting-started="suppliers.create_dialog" data-getting-started-type="dialog">
 				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
 					<DialogTitle className="text-xl font-bold flex items-center gap-2">
 						<User className="w-6 h-6 text-primary" />
@@ -833,10 +835,10 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }) 
 					</div>
 
 					<div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-						<Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="rounded-xl">
-							{t("form.cancel")}
-						</Button>
-						<Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+					<Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="rounded-xl">
+						{t("form.cancel")}
+					</Button>
+					<Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20" data-getting-started="suppliers.create_add" data-getting-started-type="button">
 							{isSubmitting ? (
 								<>
 									<Loader2 className="w-4 h-4 animate-spin mr-2" />

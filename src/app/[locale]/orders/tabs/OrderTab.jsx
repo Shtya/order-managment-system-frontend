@@ -2160,6 +2160,8 @@ export default function OrdersTab({
                   variant="solid"
                   icon={<Plus size={18} />}
                   permission="orders.create"
+                  data-getting-started="orders.create"
+                  data-getting-started-type="button"
                 />
                 <Button_
                   size="sm"

@@ -95,7 +95,7 @@ export function AuthProvider({ children }) {
         }
     }, [user]);
 
-    const handleAuthSuccess = useCallback(async (data) => {
+    const handleAuthSuccess = useCallback(async (data, route) => {
         if (data?.accessToken) {
             localStorage.setItem('accessToken', data.accessToken);
             setToken(data.accessToken);
@@ -137,7 +137,7 @@ export function AuthProvider({ children }) {
 
         if (typeof window !== "undefined") {
             setTimeout(() => {
-                window.location.href = targetPath;
+                window.location.href = route ? route : targetPath;
             }, 500);
         }
     }, [getDashboardRoute]);

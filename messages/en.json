@@ -572,6 +572,10 @@
     "manageCauses": "Manage Issue Types"
   },
   "gettingStarted": {
+    "allComplete": {
+      "title": "🎉 Awesome! You've completed Madar's setup",
+      "message": "You've completed all the essential steps and are now ready to use Madar to its full potential."
+    },
     "title": "Get Started with Madar",
     "subtitle": "Complete these essential steps to set up your store and start managing orders efficiently.",
     "types": {
@@ -600,6 +604,7 @@
     "status": {
       "completed": "Completed",
       "startNow": "Start Now",
+      "replay": "Start Again",
       "locked": "Locked",
       "viewDependencies": "View Dependencies",
       "prerequisites": "Prerequisites",
@@ -628,6 +633,15 @@
       "placeholder": "Tour feature will be implemented in a future phase.",
       "notReadyTitle": "Tour not available yet",
       "itemHint": "This guided tour feature coming soon."
+    },
+    "tutorial": {
+      "skip": "Skip tutorial",
+      "previous": "Previous",
+      "next": "Next",
+      "finish": "Finish",
+      "close": "Close tutorial",
+      "of": "of",
+      "step": "Step"
     },
     "loading": "Loading getting started items...",
     "empty": "No getting started items available.",

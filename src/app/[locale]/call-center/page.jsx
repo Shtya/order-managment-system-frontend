@@ -459,7 +459,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+            <DialogContent className="max-w-4xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950" data-getting-started="order_assignment_automation.create_dialog" data-getting-started-type="dialog">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
 
                     <DialogTitle className="flex items-center gap-3">
@@ -831,7 +831,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                             {t("form.cancel")}
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
+                        <Button type="submit" disabled={isSubmitting} data-getting-started="order_assignment_automation.save" data-getting-started-type="button">
                             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : t("form.save")}
                         </Button>
                     </div>
@@ -1081,6 +1081,29 @@ export default function CallCenterPage() {
     const { tempSettings, patch, saving, handleSave } = useOrdersSettings();
 
     const [viewMode, setViewMode] = useState("manual"); // "manual" | "automatic" | "assignments"
+
+    // Sync the initial tab from the URL (?tab=manual|automatic|assignments) so the
+    // page can be deep-linked, e.g. /call-center?tab=automatic.
+    useEffect(() => {
+        const tab = new URLSearchParams(window.location.search).get("tab");
+        if (tab === "manual" || tab === "automatic" || tab === "assignments") {
+            setViewMode(tab);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Keep the tab in sync when the user navigates back/forward.
+    useEffect(() => {
+        const onPopState = () => {
+            const tab = new URLSearchParams(window.location.search).get("tab");
+            if (tab === "manual" || tab === "automatic" || tab === "assignments") {
+                setViewMode(tab);
+            }
+        };
+        window.addEventListener("popstate", onPopState);
+        return () => window.removeEventListener("popstate", onPopState);
+    }, []);
+
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
@@ -1143,6 +1166,12 @@ export default function CallCenterPage() {
             per_page: 12,
             records: [],
         });
+
+        // Reflect the selected tab in the URL so it can be shared/bookmarked,
+        // e.g. /call-center?tab=automatic.
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", mode);
+        window.history.replaceState(null, "", url.toString());
     };
 
     const applyFilters = () => {
@@ -1765,6 +1794,8 @@ export default function CallCenterPage() {
                             }}
                             icon={<PlusCircle size={18} />}
                             permission="orders.assign"
+                            data-getting-started="order_assignment_automation.create"
+                            data-getting-started-type="button"
                         />
                     </div>
                 )}
@@ -1779,7 +1810,8 @@ export default function CallCenterPage() {
                     showBulkUpload={false}
                 />
             ) : (
-                <Table
+                <div data-getting-started="call_center.order_assignment_automation" data-getting-started-type="section">
+                    <Table
                     searchValue={search}
                     onSearchChange={setSearch}
                     onSearch={() => (viewMode === "manual" ? fetchEmployeeStats(1, pager.per_page) : fetchAutoAssignRules(1, pager.per_page))}
@@ -1895,7 +1927,9 @@ export default function CallCenterPage() {
                         per_page: pager.per_page,
                     }}
                     onPageChange={({ page, per_page }) => (viewMode === "manual" ? fetchEmployeeStats(page, per_page) : fetchAutoAssignRules(page, per_page))}
-                />)}
+                />
+                </div>
+            )}
 
             <DistributionModal
                 isOpen={distributionOpen}

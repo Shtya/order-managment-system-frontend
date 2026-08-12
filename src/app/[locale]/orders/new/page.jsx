@@ -1217,13 +1217,15 @@ export default function CreateOrderPageComplete({
 							}
 
 							disabled={loading || initialLoading}
+							data-getting-started="order_save"
+							data-getting-started-type="button"
 						/>
 					</>
 				}
 
 			></PageHeader>
 
-			<form onSubmit={handleSubmit(onSubmit)}>
+			<form onSubmit={handleSubmit(onSubmit)} data-getting-started="order_form" data-getting-started-type="page">
 				<div className="flex flex-col lg:flex-row gap-6">
 					<div className="flex-1 space-y-6">
 

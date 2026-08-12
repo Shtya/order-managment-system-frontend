@@ -373,13 +373,15 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 							variant="solid"
 							icon={<Save size={18} />}
 							disabled={loading || !isEditable}
+							data-getting-started="purchase_save"
+							data-getting-started-type="button"
 						/>
 
 					</>
 				}
 			/>
 
-			<form onSubmit={handleSubmit(onSubmit)}>
+			<form onSubmit={handleSubmit(onSubmit)} data-getting-started="purchase_form" data-getting-started-type="page">
 				<fieldset disabled={!isEditable} className="space-y-6 contents">
 					<div className="flex max-lg:flex-col gap-6">
 						<div className="flex-1 space-y-6">

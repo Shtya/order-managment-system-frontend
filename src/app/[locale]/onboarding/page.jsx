@@ -3387,7 +3387,7 @@ function FinishedStep({ open }) {
 
     try {
       const { data: authData } = await api.get(`/auth/sign`);
-      await handleAuthSuccess(authData);
+      await handleAuthSuccess(authData, "/getting-started");
       toast.success(t('success'), { id: tid });
     } catch (error) {
       // 7. Detailed Error Handling

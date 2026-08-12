@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { createPortal } from "react-dom";
 
-export function ModalShell({ children, onClose, maxWidth = "max-w-md", onBackdropClick }) {
+export function ModalShell({ children, onClose, maxWidth = "max-w-md", onBackdropClick, ...props }) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -21,9 +21,10 @@ export function ModalShell({ children, onClose, maxWidth = "max-w-md", onBackdro
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onBackdropClick || onClose}
-            />
+                />
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
                 <motion.div
+                {...props}
                     initial={{ opacity: 0, scale: 0.94, y: 14 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.94, y: 14 }}
@@ -60,6 +61,7 @@ export function ModalHeader({ icon: Icon, title, subtitle, onClose }) {
             </div>
             <button
                 onClick={onClose}
+                data-dialog-close
                 className="w-7 h-7 flex items-center justify-center rounded-xl text-[var(--muted-foreground)] hover:text-[var(--card-foreground)] hover:bg-[var(--border)] transition-all"
             >
                 <X size={15} />

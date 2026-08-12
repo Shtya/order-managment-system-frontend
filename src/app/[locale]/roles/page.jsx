@@ -416,7 +416,7 @@ function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent className="!max-w-3xl max-h-[92vh] overflow-y-auto ">
+			<DialogContent className="!max-w-3xl max-h-[92vh] overflow-y-auto " data-getting-started="roles.create_dialog" data-getting-started-type="dialog">
 				<DialogHeader>
 					<DialogTitle> {role ? t("dialog.editRole") : t("dialog.addRole")} </DialogTitle>
 					<DialogDescription> {t("dialog.roleDescription")}</DialogDescription>
@@ -492,6 +492,8 @@ function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading
 							tone="primary"
 							variant="solid"
 							label={t("dialog.save")}
+							data-getting-started="roles.create_save"
+							data-getting-started-type="button"
 						/>
 					</div>
 				</form>
@@ -822,6 +824,8 @@ export default function RolesPermissionsPage() {
 						variant="solid"
 						icon={<Plus size={15} />}
 						permission="roles.create"
+						data-getting-started="roles.create"
+						data-getting-started-type="button"
 					/>
 				}
 				stats={stats}

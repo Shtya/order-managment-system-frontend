@@ -30,6 +30,7 @@ import {
   ExternalLink,
   ImageIcon,
   Edit2,
+  KeyRound,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -993,6 +994,97 @@ function ManualAddAccountModal({ open, onOpenChange, onSuccess, account }) {
   );
 }
 
+function ReplaceAccessTokenModal({ open, onOpenChange, onSuccess, account }) {
+  const t = useTranslations("whatsApp.accounts.replaceAccessToken");
+  const [loading, setLoading] = useState(false);
+
+  const schema = yup.object({
+    accessToken: yup.string().trim().required(t("accessTokenRequired")),
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({ resolver: yupResolver(schema) });
+
+  useEffect(() => {
+    reset({ accessToken: "" });
+  }, [account, reset]);
+
+  const onSubmit = async ({ accessToken }) => {
+    if (!account?.id) return;
+    setLoading(true);
+
+    try {
+      await api.post("/whatsapp/replace-access-token", {
+        accountId: account.id,
+        accessToken,
+      });
+      toast.success(t("success"));
+      onSuccess();
+      reset();
+    } catch (err) {
+      toast.error(normalizeAxiosError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{t("account")}:</span>{" "}
+            {account?.name || account?.mobileNumber || ""}
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              {t("accessTokenLabel")} *
+            </label>
+            <Input
+              {...register("accessToken")}
+              placeholder={t("accessTokenPlaceholder")}
+            />
+            {errors.accessToken && (
+              <p className="text-xs text-destructive">
+                {errors.accessToken.message}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button_
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              label={t("common.cancel")}
+            />
+            <Button_
+              type="submit"
+              size="sm"
+              disabled={loading}
+              label={
+                loading ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  t("submit")
+                )
+              }
+            />
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function WhatsAppGuideModal({ open, onOpenChange }) {
   const t = useTranslations("whatsApp.accounts.guide");
   const { user } = useAuth();
@@ -1469,6 +1561,11 @@ export default function WhatsAppAccountsPage() {
   const [toggleState, setToggleState] = useState({ open: false, row: null });
   const [toggling, setToggling] = useState(false);
 
+  const [replaceTokenState, setReplaceTokenState] = useState({
+    open: false,
+    row: null,
+  });
+
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const [stats, setStats] = useState({
@@ -1651,6 +1748,14 @@ export default function WhatsAppAccountsPage() {
                 icon: <RefreshCw size={16} />,
                 tooltip: t("actions.syncTemplates"),
                 onClick: () => handleSyncTemplates(row.id),
+                variant: "primary",
+                permission: "whatsapp.manage",
+              },
+              {
+                icon: <KeyRound size={16} />,
+                tooltip: t("actions.replaceAccessToken"),
+                onClick: () =>
+                  setReplaceTokenState({ open: true, row }),
                 variant: "primary",
                 permission: "whatsapp.manage",
               },
@@ -1996,6 +2101,17 @@ export default function WhatsAppAccountsPage() {
           fetchAccounts({ page: 1, per_page: pager.per_page });
           fetchStats();
           refreshOrdersSettings();
+        }}
+      />
+      <ReplaceAccessTokenModal
+        open={replaceTokenState.open}
+        onOpenChange={(open) =>
+          setReplaceTokenState((s) => ({ ...s, open, row: open ? s.row : null }))
+        }
+        account={replaceTokenState.row}
+        onSuccess={() => {
+          setReplaceTokenState({ open: false, row: null });
+          fetchAccounts({ page: pager.current_page, per_page: pager.per_page });
         }}
       />
       <WhatsAppGuideModal

@@ -1001,6 +1001,11 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                 <span className="font-medium text-foreground/60 truncate">
                                     {account.name}
                                 </span>
+                                {account.mobileNumber && (
+                                    <span className="font-normal text-muted-foreground/60 truncate">
+                                        {account.mobileNumber}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     )}

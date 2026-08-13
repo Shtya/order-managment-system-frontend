@@ -554,7 +554,7 @@ function StoreCard({
               {isIntegrated ? t("card.cancelIntegration") || "Cancel Integration" : t("card.integrate") || "Integrate"}
             </button>
 
-            {hasStore && hasPermission("stores.update") && (
+            {hasPermission("stores.update") && (
               <button
                 onClick={() => onConfigure(provider, store)}
                 className={fbCls}

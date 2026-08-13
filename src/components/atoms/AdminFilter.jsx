@@ -15,11 +15,12 @@ export default function AdminFilter({
 	value,
 	onChange,
 	label,
+	labelNone = false,
 	title,
 	showAllOption = true,
 }) {
 	const t = useTranslations("common");
-	const fieldLabel = label ?? t("admin");
+	const fieldLabel = labelNone ? null : label ?? t("admin");
 	const [open, setOpen] = useState(false);
 	const [admins, setAdmins] = useState([]);
 	const [searchTerm, setSearchTerm] = useState("");

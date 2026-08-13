@@ -72,6 +72,7 @@ import {
   MessageSquare,
   Ticket,
   Rocket,
+  GraduationCap,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -921,6 +922,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
       icon: Users,
       labelKey: "users",
       href: "/dashboard/users",
+      roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: GraduationCap,
+      labelKey: "gettingStartedStatistics",
+      href: "/dashboard/getting-started",
       roles: ["SUPER_ADMIN"],
     },
     {

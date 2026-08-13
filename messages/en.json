@@ -569,7 +569,8 @@
     "supportTicketsAdmin": "Support Desk",
     "issues": "Issues",
     "issuesAndStatuses": "Manage Issues",
-    "manageCauses": "Manage Issue Types"
+    "manageCauses": "Manage Issue Types",
+    "gettingStartedStatistics": "Getting Started Statistics"
   },
   "gettingStarted": {
     "allComplete": {
@@ -646,6 +647,246 @@
     "loading": "Loading getting started items...",
     "empty": "No getting started items available.",
     "footer": "You can complete these items in any order, but some require previous steps to be finished first."
+  },
+  "gettingStartedStats": {
+    "pageTitle": "Learning Paths Statistics",
+    "pageSubtitle": "Track user progress through learning paths, identify completed setup tasks, and see where users stop before completing a path.",
+    "explainBtn": "Learning Paths Guide",
+    "breadcrumb": {
+      "home": "Home",
+      "dashboard": "Dashboard",
+      "stats": "Learning Paths Statistics"
+    },
+    "filters": {
+      "title": "Filters",
+      "description": "Filter the statistics by a specific learning path or user.",
+      "user": "User",
+      "userPlaceholder": "Select a user to view their progress",
+      "allUsers": "All Users",
+      "item": "Learning Path",
+      "itemPlaceholder": "Select a learning path",
+      "allItems": "All Learning Paths",
+      "apply": "Apply Filters",
+      "clear": "Clear Filters",
+      "refresh": "Refresh Data"
+    },
+    "kpi": {
+      "totalUsers": "Total Users",
+      "totalUsersDesc": "Total number of admin users registered in the system",
+      "notStarted": "No Learning Path Started",
+      "notStartedDesc": "Users who have not started any learning path",
+      "started": "Started a Learning Path",
+      "startedDesc": "Users who have started at least one learning path",
+      "completedAll": "Completed All Learning Paths",
+      "completedAllDesc": "Users who completed all required learning paths",
+      "completionRate": "Learning Paths Completion Rate",
+      "completionRateDesc": "Percentage of users who completed all required learning paths",
+      "selectedUser": "Selected User",
+      "selectedUserDesc": "View the detailed learning path progress of a specific user",
+      "selectUser": "Select a user to view their progress"
+    },
+    "charts": {
+      "progressState": "User Progress Status",
+      "progressStateDesc": "Distribution of users based on their progress through learning paths",
+      "completed": "Completed All Learning Paths",
+      "startedNotCompleted": "Started but Did Not Complete All Paths",
+      "notStarted": "No Learning Path Started",
+      "total": "Total Users",
+      "itemsCompletion": "Learning Path Completion Rate",
+      "itemsCompletionDesc": "Top learning paths by the percentage of users who completed them",
+      "topItems": "Top 5 Learning Paths",
+      "dropOffPoints": "Steps Where Users Stop Most Often",
+      "dropOffPointsDesc": "Steps where users stop before completing the learning path",
+      "topDropOffSteps": "Top 5 Steps by Drop-off Rate",
+      "dropOff": "Drop-off Rate",
+      "completion": "Completion Rate",
+      "users": "Users",
+      "viewAllItems": "View All Learning Paths",
+      "viewAllSteps": "View All Steps"
+    },
+    "tabs": {
+      "items": "Learning Paths",
+      "steps": "Learning Steps",
+      "users": "User Details"
+    },
+    "itemsTable": {
+      "title": "Learning Path Statistics",
+      "description": "Detailed performance of each learning path, including how many users started, completed, skipped, or stopped before completion.",
+      "columns": {
+        "item": "Learning Path",
+        "completion": "Completion Rate",
+        "completedCount": "Users Who Completed Setup",
+        "startedCount": "Users Who Started",
+        "finishedPath": "Users Who Finished the Path",
+        "skipped": "Users Who Skipped",
+        "abandoned": "Users Who Stopped Before Completion"
+      },
+      "viewDetails": "View Path Details",
+      "showMore": "Show More",
+      "showLess": "Show Less",
+      "noItems": "No learning paths are currently available"
+    },
+    "stepsTable": {
+      "title": "Learning Step Statistics",
+      "description": "Analyze step views, drop-offs, and skips within each learning path.",
+      "columns": {
+        "step": "Learning Step",
+        "sortOrder": "Step Order",
+        "item": "Learning Path",
+        "description": "Step Description",
+        "views": "Total Views",
+        "uniqueUsers": "Users Who Viewed",
+        "dropOff": "Drop-off Rate",
+        "dropOffCount": "Users Who Stopped",
+        "skipped": "Skip Count",
+        "skippedUsers": "Users Who Skipped"
+      },
+      "noSteps": "No learning steps are currently available"
+    },
+    "itemDetailDrawer": {
+      "title": "Learning Path Details",
+      "description": "View the performance of this learning path and the details of its learning steps.",
+      "completionRate": "Setup Completion Rate",
+      "startedCount": "Users Who Started",
+      "completedCount": "Users Who Completed Setup",
+      "skippedCount": "Users Who Skipped the Path",
+      "abandonedCount": "Users Who Stopped Before Setup Completion",
+      "stepsTitle": "Learning Path Steps",
+      "stepsDescription": "View step-level statistics for views, drop-offs, and skips.",
+      "views": "Total Views",
+      "uniqueViewers": "Users Who Viewed",
+      "dropOffPercent": "Step Drop-off Rate",
+      "dropOffCount": "Users Who Stopped",
+      "skipCount": "Skip Count",
+      "skippedUsers": "Users Who Skipped",
+      "noSteps": "No learning steps are associated with this path",
+      "firstStartedAt": "The date the track was first opened",
+      "completedAt": "Preparation implementation date"
+    },
+    "userSection": {
+      "title": "User Learning Path Progress",
+      "subtitle": "View the user's progress across learning paths, including paths they started, completed, skipped, or stopped.",
+      "noUserSelected": "Select a user to view their learning path progress.",
+      "noActivity": "This user has not recorded any activity in the learning paths yet.",
+      "kpi": {
+        "completionPercent": "Setup Completion Rate",
+        "completionPercentDesc": "Percentage of learning paths completed by this user",
+        "completedItems": "Completed Learning Paths",
+        "completedItemsDesc": "Number of learning paths completed by this user",
+        "startedItems": "Started Learning Paths",
+        "startedItemsDesc": "Number of learning paths this user has started",
+        "skippedItems": "Skipped Learning Paths",
+        "skippedItemsDesc": "Number of learning paths skipped by this user",
+        "overallProgress": "Overall Learning Progress",
+        "overallProgressDesc": "The user's overall progress across all learning paths"
+      },
+      "itemsProgress": {
+        "title": "User Progress by Learning Path",
+        "description": "View the status of each learning path and the user's progress through its steps.",
+        "columns": {
+          "item": "Learning Path",
+          "status": "Path Status",
+          "stepProgress": "Step Progress",
+          "openCount": "Path Opens",
+          "stepViews": "Step Views",
+          "lastStep": "Last Viewed Step",
+          "firstStarted": "Path Started",
+          "lastViewed": "Last Activity",
+          "completedAt": "Setup Completed"
+        },
+        "status": {
+          "completed": "Setup Completed",
+          "inProgress": "Setup in Progress",
+          "skipped": "Path Skipped",
+          "notStarted": "Not Started Yet"
+        },
+        "views": "view",
+        "viewsPlural": "views",
+        "opens": "open",
+        "opensPlural": "opens",
+        "noItems": "No learning paths are available to show this user's progress"
+      },
+      "stepsTimeline": {
+        "title": "Learning Step Details",
+        "description": "View the steps the user viewed or skipped, including their interaction times.",
+        "viewed": "Step Viewed",
+        "notViewed": "Step Not Viewed",
+        "skipped": "Step Skipped",
+        "viewCount": "View Count",
+        "skipCount": "Skip Count",
+        "firstViewed": "First Viewed",
+        "lastViewed": "Last Viewed",
+        "noSteps": "No learning step activity has been recorded for this user"
+      }
+    },
+    "status": {
+      "completed": "Setup Completed",
+      "inProgress": "Setup in Progress",
+      "skipped": "Skipped",
+      "notStarted": "Not Started Yet",
+      "started": "Path Started",
+      "finished": "Path Finished",
+      "abandoned": "Stopped Before Setup Completion",
+      "viewed": "Viewed",
+      "notViewed": "Not Viewed"
+    },
+    "badges": {
+      "completed": "Setup Completed",
+      "inProgress": "Setup in Progress",
+      "skipped": "Skipped",
+      "notStarted": "Not Started Yet",
+      "finished": "Path Finished",
+      "abandoned": "Stopped Before Completion",
+      "viewed": "Viewed",
+      "notViewed": "Not Viewed"
+    },
+    "empty": {
+      "noItems": "No learning paths are currently available.",
+      "noSteps": "No learning steps are currently available.",
+      "noData": "There is not enough data to display these statistics.",
+      "noResults": "No results match the selected filters.",
+      "noUserSelected": "Select a user to view their learning path progress."
+    },
+    "errors": {
+      "loadOverview": "Unable to load learning path statistics.",
+      "loadItems": "Unable to load learning path performance statistics.",
+      "loadSteps": "Unable to load learning step statistics.",
+      "loadUserOverview": "Unable to load the user's learning progress.",
+      "loadUserItems": "Unable to load the user's learning path progress.",
+      "loadUserSteps": "Unable to load the user's learning step details.",
+      "generic": "An error occurred while loading learning path statistics. Please try again.",
+      "retry": "Try Again"
+    },
+    "accessDenied": {
+      "title": "Access Denied",
+      "subtitle": "You do not have permission to access learning path statistics. This page is restricted to authorized Super Admin users."
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "retry": "Try Again",
+      "viewDetails": "View Details",
+      "close": "Close",
+      "back": "Back",
+      "clearFilters": "Clear Filters"
+    },
+    "labels": {
+      "percentage": "Percentage",
+      "count": "Count",
+      "total": "Total",
+      "users": "Users",
+      "items": "Learning Paths",
+      "steps": "Learning Steps",
+      "activity": "Activity",
+      "lastActivity": "Last Activity",
+      "date": "Date",
+      "time": "Time"
+    },
+    "dates": {
+      "startedAt": "Path Started At",
+      "lastViewedAt": "Last Viewed At",
+      "completedAt": "Setup Completed At",
+      "firstViewedAt": "First Viewed At"
+    }
   },
   "supportTickets": {
     "title": "Support Tickets",
@@ -1717,7 +1958,8 @@
       "options": "Actions",
       "plan": "Plan",
       "createdAt": "Created At",
-      "ownerAdmin": "Responsible Admin"
+      "ownerAdmin": "Responsible Admin",
+      "gettingStarted": "Getting Started Progress"
     },
     "actions": {
       "createUser": "Create User",
@@ -1739,7 +1981,8 @@
       "addSubscription": "Add New Subscription",
       "manageFeatures": "Manage Features",
       "manageWallet": "Manage Wallet",
-      "manualReset": "Manual password reset"
+      "manualReset": "Manual password reset",
+      "viewGettingStarted": "View Getting Started Progress"
     },
     "validation": {
       "nameRequired": "Name is required",

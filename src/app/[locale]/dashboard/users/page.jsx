@@ -18,6 +18,7 @@ import {
 	Pencil,
 	Plus,
 	KeyRound,
+	ListChecks,
 	Copy,
 	Send,
 	UserPlus,
@@ -607,6 +608,30 @@ export default function SuperAdminUsersPage() {
 				cell: (row) => statusBadge(row.isActive, tCommon),
 			},
 			{
+				key: "gettingStarted",
+				header: t("table.gettingStarted"),
+				cell: (row) => {
+					const gs = row.gettingStarted;
+					if (!gs || !gs.total) return <span className="text-gray-500">-</span>;
+					const percent = gs.percent ?? 0;
+					const color =
+						percent >= 100 ? "#22C55E" : percent >= 50 ? "#F59E0B" : "#0EA5E9";
+					return (
+						<div className="flex items-center gap-2 min-w-[150px]">
+							<div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+								<div
+									className="h-full rounded-full"
+									style={{ width: `${percent}%`, background: color }}
+								/>
+							</div>
+							<span className="text-[11px] font-bold tabular-nums text-slate-600 dark:text-slate-300 w-9 text-right">
+								{percent}%
+							</span>
+						</div>
+					);
+				},
+			},
+			{
 				key: "credentials",
 				header: t("table.credentials"),
 				cell: (row) => (
@@ -735,18 +760,26 @@ export default function SuperAdminUsersPage() {
 									},
 									variant: "primary",
 								},
-								{
-									icon: <KeyRound size={16} />,
-									tooltip: t("actions.manualReset"),
-									onClick: (r) => {
-										setSelectedUser(r);
-										setCredentials(null);
-										setCredAllowChange(true);
-										setCredOpen(true);
-									},
-									variant: "primary",
-									hidden: !isAdmin,
+							{
+								icon: <KeyRound size={16} />,
+								tooltip: t("actions.manualReset"),
+								onClick: (r) => {
+									setSelectedUser(r);
+									setCredentials(null);
+									setCredAllowChange(true);
+									setCredOpen(true);
 								},
+								variant: "primary",
+								hidden: !isAdmin,
+							},
+							{
+								icon: <ListChecks size={16} />,
+								tooltip: t("actions.viewGettingStarted"),
+								onClick: (r) => {
+									router.push(`/dashboard/getting-started?userId=${r.id}`);
+								},
+								variant: "primary",
+							},
 								{
 									icon: row.isActive ? <PowerOff size={16} /> : <Power size={16} />,
 									tooltip: row.isActive ? t("actions.deactivate") : t("actions.activate"),

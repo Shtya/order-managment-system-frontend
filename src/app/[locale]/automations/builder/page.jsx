@@ -251,9 +251,7 @@ export default function AutomationBuilderPage() {
         )}
 
         <ReactFlowProvider>
-          <div data-getting-started="automation_builder.canvas" data-getting-started-type="section">
             <BuilderCanvas />
-          </div>
         </ReactFlowProvider>
       </div>
     </div>

@@ -158,6 +158,7 @@ export function InternalTemplateDialog({ title, open, onOpenChange, defaultAccou
                                                     value={selectedAccountId}
                                                     allowAll={true}
                                                     onChange={setSelectedAccountId}
+                                                    showDuplicates={false}
                                                 />
                                             </div>
                                         )}

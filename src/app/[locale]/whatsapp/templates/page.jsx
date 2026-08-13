@@ -36,6 +36,7 @@ import { useRouter } from "@/i18n/navigation";
 import api from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 function normalizeAxiosError(err) {
   const msg =
@@ -364,7 +365,7 @@ export default function WhatsAppTemplatesPage() {
           return (
             <div className="flex flex-col">
               <span className="font-bold text-xs">{name}</span>
-              <span className="font-mono text-[10px] text-muted-foreground">{num}</span>
+              {/* <span className="font-mono text-[10px] text-muted-foreground">{num}</span> */}
             </div>
           );
         },

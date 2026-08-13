@@ -1,14 +1,12 @@
-
-import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue
+    SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Phone } from "lucide-react";
 import api from "@/utils/api";
 import { useTranslations } from "next-intl";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
@@ -20,7 +18,8 @@ export default function WhatsAppAccountSelect({
     onChange,
     allowAll = false,
     onLoaded,
-    onLoadChange
+    onLoadChange,
+    showDuplicates = true,
 }) {
     const t = useTranslations("whatsApp.accounts");
     const [accounts, setAccounts] = useState([]);
@@ -30,71 +29,156 @@ export default function WhatsAppAccountSelect({
 
     const displayLabel = label || t("defaultAccountLabel");
 
+    /**
+     * By default, show only one account for each WABA.
+     * When showDuplicates=true, show every account.
+     *
+     * Keep the newest account because accounts are sorted
+     * by createdAt descending.
+     */
+    const visibleAccounts = useMemo(() => {
+        if (showDuplicates) {
+            return accounts;
+        }
+
+        const seenWabaIds = new Set();
+
+        return accounts.filter((account) => {
+            // Accounts without a WABA ID should not be grouped together.
+            // Each one should remain visible.
+            if (!account.wabaId) {
+                return true;
+            }
+
+            if (seenWabaIds.has(account.wabaId)) {
+                return false;
+            }
+
+            seenWabaIds.add(account.wabaId);
+            return true;
+        });
+    }, [accounts, showDuplicates]);
 
     const fetchAccounts = useCallback(async () => {
         setAccountsLoading(true);
         onLoadChange?.(true);
+
         try {
-            const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1, isActive: "true" } });
-            const values = Array.isArray(res.data?.records) ? res.data.records : []
-            // desc by createdAt
-            values.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const res = await api.get("/whatsapp-accounts", {
+                params: {
+                    limit: 200,
+                    page: 1,
+                    isActive: "true",
+                },
+            });
+
+            const values = Array.isArray(res.data?.records)
+                ? res.data.records
+                : [];
+
+            // Newest first.
+            values.sort(
+                (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+            );
+
             setAccounts(values);
             onLoaded?.(values);
-            // Only set default if no value is currently selected and allowAll is false
-            // if (values.length > 0 && !value && !allowAll) {
-            //     onChange?.(values[0].id);
-            // }
         } catch (e) {
             console.error(e);
         } finally {
             setAccountsLoading(false);
             onLoadChange?.(false);
         }
-    }, [value, allowAll]);
+    }, [onLoaded, onLoadChange]);
 
-    // Set default value if it's not already set
+    // Set the configured default account if nothing is selected yet.
     useEffect(() => {
-        
-        if (!value && defaultWhatsAppAccountId && accounts.length > 0) {
-            const defaultAccount = accounts.find((acc) => acc.id === defaultWhatsAppAccountId);
-            onChange?.(defaultWhatsAppAccountId, defaultAccount);
+        if (
+            !value &&
+            defaultWhatsAppAccountId &&
+            accounts.length > 0
+        ) {
+            const defaultAccount = accounts.find(
+                (acc) => acc.id === defaultWhatsAppAccountId
+            );
+
+            if (defaultAccount) {
+                onChange?.(
+                    defaultWhatsAppAccountId,
+                    defaultAccount
+                );
+            }
         }
-    }, [value, defaultWhatsAppAccountId,accounts]);
+    }, [
+        value,
+        defaultWhatsAppAccountId,
+        accounts,
+        onChange,
+    ]);
 
     useEffect(() => {
         fetchAccounts();
     }, [fetchAccounts]);
 
-
-    
     return (
-        <div className="space-y-2 w-full ">
+        <div className="space-y-2 w-full">
             {displayLabel && !noLabel && (
                 <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
                     {displayLabel}
                 </Label>
             )}
-            <Select value={value} onValueChange={(accountId) => {
-                const selectedAccount = accounts.find((acc) => acc.id === accountId);
-                onChange?.(accountId, selectedAccount);
-            }}>
-                <SelectTrigger disabled={accountsLoading} className="h-[52px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl">
-                    <SelectValue placeholder={t("selectPlaceholder")} />
+
+            <Select
+                value={value}
+                onValueChange={(accountId) => {
+                    if (accountId === "all") {
+                        onChange?.("all", null);
+                        return;
+                    }
+
+                    const selectedAccount = visibleAccounts.find(
+                        (acc) => acc.id === accountId
+                    );
+
+                    onChange?.(accountId, selectedAccount);
+                }}
+            >
+                <SelectTrigger
+                    disabled={accountsLoading}
+                    className="h-[52px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl"
+                >
+                    <SelectValue
+                        placeholder={t("selectPlaceholder")}
+                    />
                 </SelectTrigger>
+
                 <SelectContent>
                     {allowAll && (
                         <SelectItem value="all">
-                            <span className="font-bold text-sm">{t("allAccounts")}</span>
+                            <span className="font-bold text-sm">
+                                {t("allAccounts")}
+                            </span>
                         </SelectItem>
                     )}
-                    {accounts.map((acc) => (
-                        <SelectItem key={acc.id} value={acc.id} className="py-2">
-                            <div className="flex items-center justify-start flex-col gap-0 text-nowrap">
-                                <span className="font-bold text-sm">{acc.name}</span>
-                                <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-                                    <Phone size={10} /> {acc.mobileNumber}
+
+                    {visibleAccounts.map((acc) => (
+                        <SelectItem
+                            key={acc.id}
+                            value={acc.id}
+                            className="py-2"
+                        >
+                            <div className="flex flex-col">
+                                <span className="font-bold text-sm">
+                                    {acc.name || acc.mobileNumber || "WhatsApp Account"}
                                 </span>
+
+                                {acc.name && acc.mobileNumber && showDuplicates && (
+                                    <span className="text-[11px] text-slate-400">
+                                        {acc.mobileNumber}
+                                    </span>
+                                )}
                             </div>
                         </SelectItem>
                     ))}

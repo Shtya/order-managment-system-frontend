@@ -15,6 +15,7 @@ export const STORE_PROVIDERS = [
     {
         key: 'easyorder',
         code: 'easyorder',
+        autoIntegrated: true,
         label: { ar: 'إيزي أوردر', en: 'EasyOrder' },
         img: "/integrate/easyorder.png",
         emoji: '🛒',
@@ -23,6 +24,7 @@ export const STORE_PROVIDERS = [
     {
         key: 'shopify',
         code: 'shopify',
+        autoIntegrated: true,
         label: { ar: 'Shopify', en: 'Shopify' },
         img: "/integrate/shopify.png",
         emoji: '🟢',
@@ -31,6 +33,7 @@ export const STORE_PROVIDERS = [
     {
         key: 'woocommerce',
         code: 'woocommerce',
+        showWebhook: true,
         label: { ar: 'WooCommerce', en: 'WooCommerce' },
         img: "/integrate/woocommerce1.png",
         emoji: '🛍️',
@@ -144,7 +147,9 @@ export const PROVIDER_CONFIG = {
                                 en: "Click 'Create'. Copy the webhook URL provided below and paste it into the URL field. Then select the type 'Orders' and click Save.",
                                 ar: "اضغط على 'إنشاء'. قم بنسخ رابط الـ Webhook الموضح بالأسفل وألصقه في حقل الرابط (URL)، ثم اختر النوع 'Orders' واضغط حفظ."
                             },
-                            url: (me) => `${BASE_URL}/stores/webhooks/${tenantId(me)}/easyorder/orders/create`,
+                            url: (me, storeId) => storeId
+                                ? `${BASE_URL}/stores/webhooks/${tenantId(me)}/${storeId}/easyorder/orders/create`
+                                : `${BASE_URL}/stores/webhooks/${tenantId(me)}/easyorder/orders/create`,
                             image: "/guide/easyorder/webhook-step3.png",
                         },
                         {
@@ -168,7 +173,9 @@ export const PROVIDER_CONFIG = {
                                 en: "Create another webhook. Copy the webhook URL provided below and paste it into the URL field. Then select the type 'Order Status Update' and click Save.",
                                 ar: "قم بإنشاء Webhook آخر. قم بنسخ رابط الـ Webhook الموضح بالأسفل وألصقه في حقل الرابط (URL)، ثم اختر النوع 'Order Status Update' واضغط حفظ."
                             },
-                            url: (me) => `${BASE_URL}/stores/webhooks/${tenantId(me)}/easyorder/orders/status`,
+                            url: (me, storeId) => storeId
+                                ? `${BASE_URL}/stores/webhooks/${tenantId(me)}/${storeId}/easyorder/orders/status`
+                                : `${BASE_URL}/stores/webhooks/${tenantId(me)}/easyorder/orders/status`,
                             image: "/guide/easyorder/webhook-step5.png",
                         },
                         {
@@ -192,8 +199,12 @@ export const PROVIDER_CONFIG = {
             // EasyOrder only needs name and storeUrl for initial upsert
         },
         webhookEndpoints: {
-            create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/easyorder/orders/create`,
-            update: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/easyorder/orders/status`,
+            create: (adminId, storeId) => storeId
+                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/easyorder/orders/create`
+                : `${BASE_URL}/stores/webhooks/${adminId}/easyorder/orders/create`,
+            update: (adminId, storeId) => storeId
+                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/easyorder/orders/status`
+                : `${BASE_URL}/stores/webhooks/${adminId}/easyorder/orders/status`,
         },
         instructions: {
             apiKey: [
@@ -289,7 +300,7 @@ export const PROVIDER_CONFIG = {
                                 en: "Add the URL shown below into the App URL field. Uncheck 'Embedded app'. Then add the required scopes and click Save.",
                                 ar: "أضف الرابط المعروض أدناه في حقل App URL. قم بإلغاء تحديد 'Embedded app'. ثم أضف الصلاحيات المطلوبة واضغط حفظ."
                             },
-                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/init`,
+                            url: (me,storeId) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/${storeId}/init`,
                             image: "/guide/shopify/step4.png",
                             tip: {
                                 en: "Click 'Add scopes' and include the required permissions",
@@ -405,8 +416,12 @@ export const PROVIDER_CONFIG = {
             // webhookSecret: { required: true },
         },
         webhookEndpoints: {
-            create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/shopify/orders/create`,
-            update: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/shopify/orders/status`,
+            create: (adminId, storeId) => storeId
+                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/shopify/orders/create`
+                : `${BASE_URL}/stores/webhooks/${adminId}/shopify/orders/create`,
+            update: (adminId, storeId) => storeId
+                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/shopify/orders/status`
+                : `${BASE_URL}/stores/webhooks/${adminId}/shopify/orders/status`,
         },
         instructions: {
             apiKey: [
@@ -522,7 +537,7 @@ export const PROVIDER_CONFIG = {
                                 en: "Click 'Add Webhook', fill the details, select topic 'Order created', set status 'Active', then click Save. Copy the generated Secret into our system webhook secret input.",
                                 ar: "اضغط 'Add Webhook'، املأ البيانات، اختر الموضوع 'Order created'، اجعل الحالة 'Active' ثم اضغط حفظ. انسخ الـ Secret وضعه في حقل Webhook Secret في نظامنا."
                             },
-                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/woocommerce/orders/create`,
+                            url: (me, storeId) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/${storeId}/orders/create`,
                             image: "/guide/woocommerce/webhook-step3.png",
                             tip: {
                                 en: "After saving, check that the message 'Webhook updated successfully' appears.",
@@ -535,7 +550,7 @@ export const PROVIDER_CONFIG = {
                                 en: "Create another webhook, fill details, select topic 'Order updated', set status 'Active', then click Save. Copy the generated Secret into our system webhook secret input.",
                                 ar: "قم بإنشاء Webhook آخر، املأ البيانات، اختر الموضوع 'Order updated'، اجعل الحالة 'Active' ثم اضغط حفظ. انسخ الـ Secret وضعه في حقل Webhook Secret في نظامنا."
                             },
-                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/woocommerce/orders/status`,
+                            url: (me, storeId) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/${storeId}/orders/status`,
                             image: "/guide/woocommerce/webhook-step4.png",
                             tip: {
                                 en: "After saving, check that the message 'Webhook updated successfully' appears.",
@@ -554,8 +569,12 @@ export const PROVIDER_CONFIG = {
             webhookUpdateStatusSecret: { readonly: true }, // System generates
         },
         webhookEndpoints: {
-            create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/create`,
-            update: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/status`,
+            create: (adminId, storeId) => storeId
+                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/woocommerce/orders/create`
+                : `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/create`,
+            update: (adminId, storeId) => storeId
+                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/woocommerce/orders/status`
+                : `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/status`,
         },
         instructions: {
             apiKey: [
@@ -574,20 +593,24 @@ export const PROVIDER_CONFIG = {
     },
 };
 
-export function generateEasyOrdersInstallUrl(adminId) {
+export function generateEasyOrdersInstallUrl(adminId, storeId) {
     const baseUrl = "https://app.easy-orders.net/#/install-app";
 
     const apiBase = process.env.NEXT_PUBLIC_BASE_URL;
     const appBase = process.env.NEXT_PUBLIC_FRONTEND_URL; // http://localhost:3000
     const iconURL = `${appBase}/logo.png`; // You can also use a NEXT_PUBLIC_ icon env here
 
+    const webhookBase = storeId
+        ? `${apiBase}/stores/webhooks/${adminId}/${storeId}`
+        : `${apiBase}/stores/webhooks/${adminId}/easyorder`;
+
     const params = new URLSearchParams({
         app_name: "Madar",
         app_description: "Madar System Integration",
         app_icon: iconURL,
-        callback_url: `${apiBase}/stores/webhooks/easyorder/callback?adminId=${adminId}`,
-        orders_webhook: `${apiBase}/stores/webhooks/${adminId}/easyorder/orders/create`,
-        order_status_webhook: `${apiBase}/stores/webhooks/${adminId}/easyorder/orders/status`,
+        callback_url: `${apiBase}/stores/webhooks/easyorder/callback?adminId=${adminId}${storeId ? `&storeId=${storeId}` : ''}`,
+        orders_webhook: `${webhookBase}/orders/create`,
+        order_status_webhook: `${webhookBase}/orders/status`,
         permissions: [
             "products:create", "products:read", "products:update", "products:delete",
             "orders:create", "orders:read", "orders:update", "orders:delete",
@@ -599,7 +622,7 @@ export function generateEasyOrdersInstallUrl(adminId) {
     return `${baseUrl}?${params.toString()}`;
 };
 
-export function generateShopifyInstallUrl(shopifyUrl, appId, adminId) {
+export function generateShopifyInstallUrl(shopifyUrl, appId, adminId, storeId) {
     const apiBase = process.env.NEXT_PUBLIC_BASE_URL;
 
     const scope = scopes.join(",");
@@ -609,13 +632,12 @@ export function generateShopifyInstallUrl(shopifyUrl, appId, adminId) {
         .replace(/^https?:\/\//, "")
         .replace(/\/$/, "");
 
-    const redirectUri = `${apiBase}/stores/webhooks/${adminId}/shopify/init`;
+    const redirectUri = `${apiBase}/stores/webhooks/${adminId}/${storeId}/shopify/init`;
 
     const params = new URLSearchParams({
         client_id: appId,
         scope: scope,
         redirect_uri: redirectUri,
-        state: crypto.randomUUID(), // or any nonce you generate/store
     });
 
     return `https://${shop}/admin/oauth/authorize?${params.toString()}`;
@@ -624,10 +646,10 @@ export function generateShopifyInstallUrl(shopifyUrl, appId, adminId) {
 export function generateInstallUrl({ provider, adminId, store }) {
     switch (provider) {
         case 'easyorder':
-            return generateEasyOrdersInstallUrl(adminId);
+            return generateEasyOrdersInstallUrl(adminId, store?.id);
         case 'shopify':
             if (store?.storeUrl && store?.credentials?.apiKey) {
-                return generateShopifyInstallUrl(store.storeUrl, store.credentials.apiKey, adminId);
+                return generateShopifyInstallUrl(store.storeUrl, store.credentials.apiKey, adminId, store?.id);
             }
             return null;
         default:
@@ -635,15 +657,10 @@ export function generateInstallUrl({ provider, adminId, store }) {
     }
 }
 
-export function getCancelIntegrationEndpoint(provider) {
-    switch (provider) {
-        case 'easyorder':
-            return '/stores/easyorder/cancel-integration';
-        case 'shopify':
-            return '/stores/shopify/cancel-integration';
-        default:
-            return null;
-    }
+export function getCancelIntegrationEndpoint(store) {
+    const target = store?.id || store?.provider;
+    if (!target) return null;
+    return `/stores/${target}/cancel-integration`;
 }
 
 export function useStoreWebhook({ store, provider, onClose, open }) {
@@ -942,12 +959,14 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
 
             if (provider === "easyorder") {
                 // EasyOrder uses the upsert endpoint
-                await api.post("/stores/integrations", { ...payload, provider: "easyorder" });
+                const res = await api.post("/stores/integrations", { ...payload, provider: "easyorder", storeId: existingStore?.id });
                 onClose();
                 await fetchStores();
-                // Redirect to install URL only in create mode
+                // Redirect to install URL only in create mode; embed the new store id
+                // so the webhooks are registered against this specific store.
                 if (!isEdit) {
-                    window.location.href = generateEasyOrdersInstallUrl(user?.id);
+                    const newStoreId = res?.data?.id;
+                    window.location.href = generateEasyOrdersInstallUrl(user?.id, newStoreId);
                 } else {
                     toast.success(t("form.updateSuccess"));
                 }
@@ -961,12 +980,14 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 });
 
                 // EasyOrder uses the upsert endpoint
-                await api.post("/stores/integrations", { ...payload, credentials, provider: "shopify" });
+                const res = await api.post("/stores/integrations", { ...payload, credentials, provider: "shopify", storeId: existingStore?.id });
                 onClose();
                 await fetchStores();
-                // Redirect to install URL only in create mode
+                // Redirect to install URL only in create mode; embed the new store id
+                // so the OAuth callback initializes this specific store.
                 if (!isEdit) {
-                    window.location.href = generateShopifyInstallUrl(payload.storeUrl, credentials.apiKey, user?.id);
+                    const newStoreId = res?.data?.id;
+                    window.location.href = generateShopifyInstallUrl(payload.storeUrl, credentials.apiKey, user?.id, newStoreId);
                 } else {
                     toast.success(t("form.updateSuccess"));
                 }

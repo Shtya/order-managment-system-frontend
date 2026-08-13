@@ -15,18 +15,18 @@ export default function ImportExternalProductPage() {
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
 
-    const { provider } = params;
+    const { storeId } = params;
 
     const [loading, setLoading] = useState(true);
     const [mappedProduct, setMappedProduct] = useState(null);
 
     useEffect(() => {
-        if (!provider || !id) return;
+        if (!storeId || !id) return;
 
         (async () => {
             setLoading(true);
             try {
-                const res = await api.get(`/stores/external/${provider}`, {
+                const res = await api.get(`/stores/external/${storeId}`, {
                     params: { id },
                 });
 
@@ -41,8 +41,7 @@ export default function ImportExternalProductPage() {
                 setLoading(false);
             }
         })();
-    }, [provider, id]);
-
+    }, [storeId, id]);
 
 
 

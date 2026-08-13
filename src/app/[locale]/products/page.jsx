@@ -193,11 +193,7 @@ export default function ProductsPage() {
 	}, []);
 
 	const filteredStores = useMemo(() => {
-		return stores.filter((s) => {
-			if (active !== "bundles") return true;
-			const provider = storeProviders.find((p) => p.code === s.provider);
-			return provider?.supportBundle;
-		});
+		return stores;
 	}, [stores, active, storeProviders]);
 
 	const stats = useMemo(() => {
@@ -438,7 +434,7 @@ export default function ProductsPage() {
 		}
 	}, [t, active]);
 
-	const [externalModal, setExternalModal] = useState({ isOpen: false, remoteId: null, provider: null });
+	const [externalModal, setExternalModal] = useState({ isOpen: false, remoteId: null, storeId: null });
 	const [externalCache, setExternalCache] = useState({});
 	const productsLogic = useProductsTab({
 		t,
@@ -479,11 +475,11 @@ export default function ProductsPage() {
 	});
 
 
-	const handleFetchExternalProduct = async (remoteId, provider) => {
+	const handleFetchExternalProduct = async (remoteId, target) => {
 		if (externalCache[remoteId]?.data || externalCache[remoteId]?.loading) return;
 		try {
 			setExternalCache(prev => ({ ...prev, [remoteId]: { loading: true } }));
-			const res = await api.get(`/stores/external/${provider}?id=${remoteId}`);
+			const res = await api.get(`/stores/external/${target}?id=${remoteId}`);
 			setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, data: res.data } }));
 		} catch (err) {
 			setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, error: true } }));
@@ -782,9 +778,9 @@ export default function ProductsPage() {
 
 			<ExternalProductModal
 				isOpen={externalModal.isOpen}
-				onClose={() => setExternalModal({ isOpen: false, remoteId: null, provider: null })}
+				onClose={() => setExternalModal({ isOpen: false, remoteId: null, storeId: null })}
 				remoteId={externalModal.remoteId}
-				provider={externalModal.provider}
+				storeId={externalModal.storeId}
 				cache={externalCache[externalModal.remoteId]}
 				onFetch={handleFetchExternalProduct}
 				formatCurrency={formatCurrency}

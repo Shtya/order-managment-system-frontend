@@ -45,6 +45,7 @@ import {
   StoreConfigDialog,
   StoreWebhookModal,
   StoreGuideModal,
+  StoresTable,
 } from "../store-integration/page";
 import {
   SettingsModal as ShippingSettingsModal,
@@ -2606,10 +2607,12 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
   const tp = useTranslations("onboarding.plans");
   const t = useTranslations("storeIntegrations");
   const locale = useLocale();
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
 
   const [stores, setStores] = useState([]);
   const [listLoading, setListLoading] = useState(true);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [tableLoading, setTableLoading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -2646,11 +2649,37 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
       setListLoading(true);
       const res = await api.get("/stores");
       setStores(res.data?.records || []);
+      setTotalRecords(res.data?.total_records || 0);
     } catch (e) {
       // toast.error(normalizeAxiosError(e));
     } finally {
       setListLoading(false);
     }
+  };
+
+  const fetchTableStores = async (params = {}) => {
+    try {
+      setTableLoading(true);
+      const res = await api.get("/stores", { params: { limit: 12, ...params } });
+      setStores(res.data?.records || []);
+      setTotalRecords(res.data?.total_records || 0);
+    } catch (e) {
+      // ignore
+    } finally {
+      setTableLoading(false);
+    }
+  };
+
+  const handleTableFetch = (params) => fetchTableStores(params);
+
+  const handleToggleStore = async (store) => {
+    try {
+      await api.patch(`/stores/${store.id}`, { isActive: !store.isActive });
+      toast.success(t("messages.statusUpdated"));
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    }
+    fetchTableStores();
   };
 
   useEffect(() => {
@@ -2677,6 +2706,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
   const handleCloseWebhookModal = () => {
     setWebhookModalProvider(null);
     setModalStore(null);
+    fetchTableStores();
   };
 
   const handleOpenGuide = (provider, store) => {
@@ -2712,7 +2742,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
       // Cancel integration
       setCancelling(true);
       try {
-        const cancelEndpoint = getCancelIntegrationEndpoint(provider);
+        const cancelEndpoint = getCancelIntegrationEndpoint(store);
         if (cancelEndpoint) {
           await api.patch(cancelEndpoint);
         }
@@ -2852,68 +2882,69 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                       </div>
                     </div>
 
-                    {/* Actions Group */}
+                    {/* Actions Group (read-only card logic, same as store page) */}
                     <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto sm:justify-end">
-                      {config.autoIntegrated && (
+                      {config?.guide?.showSteps ? (
                         <button
-                          onClick={() => handleAutoIntegratedAction(p.key, store)}
-                          disabled={cancelling}
-                          className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
-                          onMouseEnter={onEnter}
-                          onMouseLeave={onLeave}
-                        >
-                          {cancelling ? (
-                            <Loader2 size={12} className="animate-spin" />
-                          ) : isIntegrated ? (
-                            <X size={12} className="text-red-500" />
-                          ) : (
-                            <Zap size={12} className="text-amber-500" />
-                          )}
-                          <span className="truncate">
-                            {isIntegrated ? t("card.cancelIntegration") || "Cancel Integration" : t("card.integrate") || "Integrate"}
-                          </span>
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => handleConfigure(p.key, store)}
-                        className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
-                        onMouseEnter={onEnter}
-                        onMouseLeave={onLeave}
-                      >
-                        <Settings2 size={12} />
-                        <span className="truncate">
-                          {isConnected ? t("card.settings") : t("card.configureSettings")}
-                        </span>
-                      </button>
-
-                      {config?.guide?.showSteps && (
-                        <button
-                          onClick={() => handleOpenGuide(p.key, store)}
+                          onClick={() => handleOpenGuide(p.key, null)}
                           className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
                           onMouseEnter={onEnter}
                           onMouseLeave={onLeave}
                         >
                           <HelpCircle size={12} />
-                          <span className="hidden sm:inline">{t("card.guide")}</span>
+                          <span className="truncate">{t("card.guide")}</span>
                         </button>
-                      )}
+                      ) : config?.guide?.docsUrl ? (
+                        <a
+                          href={config.guide.docsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
+                          style={{ textDecoration: "none" }}
+                          onMouseEnter={onEnter}
+                          onMouseLeave={onLeave}
+                        >
+                          <HelpCircle size={12} />
+                          <span className="truncate">{t("card.guide")}</span>
+                        </a>
+                      ) : null}
 
-                      {isConnected && config?.showWebhook && (
+                      {hasPermission("stores.create") && (
                         <button
-                          onClick={() => handleOpenWebhook(p.key, store)}
+                          onClick={() => handleConfigure(p.key, null)}
                           className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
                           onMouseEnter={onEnter}
                           onMouseLeave={onLeave}
                         >
-                          <Webhook size={12} />
-                          <span className="hidden sm:inline">Webhook</span>
+                          <Settings2 size={12} />
+                          <span className="truncate">
+                            {t("card.configureSettings")}
+                          </span>
                         </button>
                       )}
                     </div>
                   </div>
                 );
               })}
+            </div>
+
+            <div className="my-6">
+              <StoresTable
+                compact
+                t={t}
+                stores={stores}
+                totalRecords={totalRecords}
+                loading={tableLoading}
+                onFetch={handleTableFetch}
+                onConfigure={handleConfigure}
+                onOpenGuide={handleOpenGuide}
+                onOpenWebhook={handleOpenWebhook}
+                onToggleStore={handleToggleStore}
+                onSync={handleSync}
+                onAutoIntegratedAction={(store) =>
+                  handleAutoIntegratedAction(store.provider, store)
+                }
+              />
             </div>
 
             <div

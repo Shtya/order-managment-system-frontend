@@ -242,7 +242,7 @@ export default function useBundlesTab({ setExternalModal, searchDebounced, filte
                 description: tTutorial("products.tableActions.fetchExternal.description"),
                 example: tTutorial("products.tableActions.fetchExternal.example"),
                 permission: "products.read",
-                onClick: () => setExternalModal({ isOpen: true, remoteId: row?.syncStates?.[0]?.remoteProductId, provider: row?.store?.provider })
+                onClick: () => setExternalModal({ isOpen: true, remoteId: row?.syncStates?.[0]?.remoteProductId, storeId: row?.store?.id })
               },
               {
                 icon: <Edit2 />,

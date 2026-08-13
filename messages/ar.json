@@ -1789,14 +1789,15 @@
       "next": "التالي",
       "docs": "التوثيق الرسمي",
       "site": "الموقع",
-      "imagePlaceholder": "سيظهر لقطة الشاشة هنا"
+      "imagePlaceholder": "سيظهر لقطة الشاشة هنا",
+      "selectStore": "اختر المتجر"
     },
     "title": "تكاملات المتاجر",
     "subtitle": "اربط متاجرك وزامن الطلبات تلقائيًا",
     "refresh": "تحديث",
     "card": {
       "editSettings": "تعديل الإعدادات",
-      "configureSettings": "إعداد التكامل",
+      "configureSettings": "أضف متجرك",
       "settings": "الإعدادات",
       "sync": " مزامنة من المتجر",
       "connected": "متصل",
@@ -1809,6 +1810,30 @@
       "configureFirst": "يرجى إعداد التكامل أولاً",
       "integrate": "ربط المتجر",
       "cancelIntegration": "إلغاء الربط"
+    },
+    "table": {
+      "title": "المتاجر",
+      "storeName": "المتجر",
+      "provider": "مزود الخدمة",
+      "status": "الحالة",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "integrated": "مدمج",
+      "syncStatus": "حالة المزامنة",
+      "lastSyncedAt": "آخر مزامنة",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "الإجراءات",
+      "export": "تصدير",
+      "webhooks": "ويب هوك",
+      "allProviders": "كل المزودين",
+      "activate": "تفعيل",
+      "deactivate": "إيقاف التفعيل",
+      "syncInProgress": "جاري المزامنة",
+      "searchPlaceholder": "ابحث عن المتاجر بالاسم أو الرابط...",
+      "emptyTitle": "لا توجد متاجر",
+      "emptySubtitle": "اربط متجرًا باستخدام البطاقات أعلاه للبدء",
+      "filters": "عوامل التصفية",
+      "apply": "تطبيق"
     },
     "webhook": {
       "title": "إعداد Webhook",

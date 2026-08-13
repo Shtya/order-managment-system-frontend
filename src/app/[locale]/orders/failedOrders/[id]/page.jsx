@@ -86,13 +86,14 @@ function formatDate(dateStr) {
 // ─────────────────────────────────────────────────────────────────────────────
 // External Product Modal Component
 // ─────────────────────────────────────────────────────────────────────────────
-export function ExternalProductModal({ isOpen, onClose, remoteId, provider, cache, onFetch, formatCurrency }) {
+export function ExternalProductModal({ isOpen, onClose, remoteId, storeId, provider, cache, onFetch, formatCurrency }) {
     const t = useTranslations('orders.failedOrders');
+    const target = storeId || provider;
     useEffect(() => {
-        if (isOpen && remoteId && provider && !cache?.data && !cache?.loading) {
-            onFetch(remoteId, provider);
+        if (isOpen && remoteId && target && !cache?.data && !cache?.loading) {
+            onFetch(remoteId, target);
         }
-    }, [isOpen, remoteId, provider]);
+    }, [isOpen, remoteId, target]);
 
     const description = cache?.data?.description;
     return (
@@ -122,7 +123,7 @@ export function ExternalProductModal({ isOpen, onClose, remoteId, provider, cach
                                 <AlertCircle size={32} className="text-red-500" />
                             </div>
                             <p className="font-bold text-red-600">{t('errors.failedToLoadProductDetails')}</p>
-                            <Button variant="outline" onClick={() => onFetch(remoteId, provider)}>
+                            <Button variant="outline" onClick={() => onFetch(remoteId, target)}>
                                 <RefreshCw size={14} className="mr-2" /> {t('actions.retry')}
                             </Button>
                         </div>
@@ -391,7 +392,7 @@ export default function FailedOrderDetailsPage() {
     const [selectedSkus, setSelectedSkus] = useState([]);
 
     // External Modal State
-    const [externalModal, setExternalModal] = useState({ isOpen: false, remoteId: null, provider: null });
+    const [externalModal, setExternalModal] = useState({ isOpen: false, remoteId: null, storeId: null });
     const [externalCache, setExternalCache] = useState({});
 
     // SKU Selector Modal State
@@ -463,11 +464,11 @@ export default function FailedOrderDetailsPage() {
         router.push(`/purchases/new?skus=${selectedSkus.join(',')}`);
     };
 
-    const handleFetchExternalProduct = async (remoteId, provider) => {
+    const handleFetchExternalProduct = async (remoteId, storeId) => {
         if (externalCache[remoteId]?.data || externalCache[remoteId]?.loading) return;
         try {
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: true } }));
-            const res = await api.get(`/stores/external/${provider}?id=${remoteId}`);
+            const res = await api.get(`/stores/external/${storeId}?id=${remoteId}`);
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, data: res.data } }));
         } catch (err) {
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, error: true } }));
@@ -659,7 +660,7 @@ export default function FailedOrderDetailsPage() {
                 });
 
                 const remoteId = row?.remoteProductId || problem?.remoteId;
-                const provider = failure?.store?.provider;
+                const storeId = failure?.store?.id;
                 const cartItemIdx = i;
 
                 // if (failure.status === 'success') return [];
@@ -670,7 +671,7 @@ export default function FailedOrderDetailsPage() {
                     icon: <Eye size={16} />,
                     tooltip: t('actions.fetchExternalDetails'),
                     variant: "warning",
-                    onClick: () => setExternalModal({ isOpen: true, remoteId, provider: failure?.store?.provider })
+                    onClick: () => setExternalModal({ isOpen: true, remoteId, storeId: failure?.store?.id })
                 });
 
                 if (problem?.code === WebhookOrderProblem.PRODUCT_NOT_FOUND && !isSuccess) {
@@ -679,7 +680,7 @@ export default function FailedOrderDetailsPage() {
                         tooltip: t('actions.createProduct'),
                         variant: "outline",
                         permission: "orders.restoreFailed",
-                        onClick: () => router.push(`/products/external/${provider}?id=${remoteId}`)
+                        onClick: () => router.push(`/products/external/${storeId}?id=${remoteId}`)
                     });
                 }
                 const localProductId = row.variant?.localProductId || problem?.productId;
@@ -983,9 +984,9 @@ export default function FailedOrderDetailsPage() {
             {/* External Product Modal */}
             <ExternalProductModal
                 isOpen={externalModal.isOpen}
-                onClose={() => setExternalModal({ isOpen: false, remoteId: null, provider: null })}
+                onClose={() => setExternalModal({ isOpen: false, remoteId: null, storeId: null })}
                 remoteId={externalModal.remoteId}
-                provider={externalModal.provider}
+                storeId={externalModal.storeId}
                 cache={externalCache[externalModal.remoteId]}
                 onFetch={handleFetchExternalProduct}
                 formatCurrency={formatCurrency}

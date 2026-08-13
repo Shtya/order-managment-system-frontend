@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronLeft,
@@ -19,6 +19,9 @@ import {
   ImageIcon,
   X,
   Zap,
+  Check,
+  Download,
+  Power,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -35,6 +38,7 @@ import {
   useStoreWebhook,
   generateInstallUrl,
   getCancelIntegrationEndpoint,
+  STORE_PROVIDERS,
 } from '@/hook/stores';
 import { useAuth } from "@/context/AuthContext";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -42,6 +46,11 @@ import { Controller } from "react-hook-form";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ImagePreviewModal } from "@/components/atoms/ImagePreviewModal";
+import Table, { FilterField } from "@/components/atoms/Table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
+import { ActionButtons } from "@/components/atoms/Actions";
+import { useExport } from "@/hook/useExport";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -62,9 +71,12 @@ const PROVIDERS = ["easyorder", "shopify", "woocommerce"];
 
 export default function StoresIntegrationPage() {
   const t = useTranslations("storeIntegrations");
+  const { user } = useAuth();
 
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const lastTableParams = useRef({ page: 1, limit: 12 });
 
   // Handle EasyOrder error from URL
   useEffect(() => {
@@ -122,20 +134,24 @@ export default function StoresIntegrationPage() {
     return unsubscribe;
   }, [subscribe]);
 
-  useEffect(() => {
-    fetchStores();
-  }, []);
-
-  const fetchStores = async () => {
+  const fetchStores = async (params = {}) => {
     try {
       setLoading(true);
-      const res = await api.get("/stores");
+      const res = await api.get("/stores", {
+        params: { limit: 12, ...params },
+      });
       setStores(res.data?.records || []);
+      setTotalRecords(res.data?.total_records || 0);
     } catch (e) {
       // toast.error(normalizeAxiosError(e));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTableFetch = (params) => {
+    lastTableParams.current = params;
+    fetchStores(params);
   };
 
   const handleConfigure = async (provider, store) => {
@@ -174,9 +190,40 @@ export default function StoresIntegrationPage() {
     try {
       await api.post(`/stores/${storeId}/sync`);
       toast.success(t("messages.syncStarted"));
-      await fetchStores();
+      await fetchStores(lastTableParams.current);
     } catch (e) {
       toast.error(normalizeAxiosError(e));
+    }
+  };
+
+  const handleToggleStore = async (store) => {
+    try {
+      await api.patch(`/stores/${store.id}`, { isActive: !store.isActive });
+      toast.success(t("messages.statusUpdated"));
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    }
+    fetchStores(lastTableParams.current);
+  };
+
+  const handleAutoIntegratedAction = async (store) => {
+    const provider = store.provider;
+    if (store.isIntegrated) {
+      try {
+        const cancelEndpoint = getCancelIntegrationEndpoint(store);
+        if (cancelEndpoint) await api.patch(cancelEndpoint);
+        toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
+      } catch (e) {
+        toast.error(normalizeAxiosError(e));
+      }
+      fetchStores(lastTableParams.current);
+    } else {
+      const installUrl = generateInstallUrl({ provider, adminId: user?.id, store });
+      if (installUrl) {
+        window.location.href = installUrl;
+      } else {
+        handleConfigure(provider, store);
+      }
     }
   };
 
@@ -199,40 +246,43 @@ export default function StoresIntegrationPage() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="main-card min-h-[500px] "
+          className="main-card "
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-getting-started="stores.available" data-getting-started-type="section">
-            {loading
-              ? PROVIDERS.map((provider, i) => (
-                <SkeletonCard key={provider || i} />
-              ))
-              : PROVIDERS.map((provider, index) => {
-                const store = stores.find((s) => s.provider === provider);
-
-                return (
-                  <motion.div
-                    key={provider}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <StoreCard
-                      provider={provider}
-                      store={store}
-                      t={t}
-                      onConfigure={handleConfigure}
-                      onSync={handleSync}
-                      onOpenWebhook={handleOpenWebhook}
-                      onOpenGuide={handleOpenGuide}
-                      fetchStores={fetchStores}
-                      index={index}
-                    />
-                  </motion.div>
-                );
-              })}
+            {PROVIDERS.map((provider, index) => (
+              <motion.div
+                key={provider}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <StoreCard
+                  provider={provider}
+                  t={t}
+                  onConfigure={handleConfigure}
+                  onOpenGuide={handleOpenGuide}
+                  index={index}
+                />
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       </AnimatePresence>
+
+      {/* Stores Management Table */}
+      <StoresTable
+        t={t}
+        stores={stores}
+        totalRecords={totalRecords}
+        loading={loading}
+        onFetch={handleTableFetch}
+        onConfigure={handleConfigure}
+        onOpenGuide={handleOpenGuide}
+        onOpenWebhook={handleOpenWebhook}
+        onToggleStore={handleToggleStore}
+        onSync={handleSync}
+        onAutoIntegratedAction={handleAutoIntegratedAction}
+      />
       {/* Configuration Dialog */}
       {dialogOpen && currentProvider && (
         <StoreConfigDialog
@@ -252,6 +302,7 @@ export default function StoresIntegrationPage() {
       {guideProvider && (
         <StoreGuideModal
           provider={{ code: guideProvider }}
+          store={modalStore}
           onClose={handleCloseGuide}
         />
       )}
@@ -272,91 +323,15 @@ export default function StoresIntegrationPage() {
 }
 
 
-function StoreCard({
-  provider,
-  store,
-  t,
-  onOpenGuide,
-  onConfigure,
-  onSync,
-  onOpenWebhook,
-  fetchStores,
-  index,
-}) {
-  const { user, hasPermission } = useAuth();
+function StoreCard({ provider, t, onConfigure, onOpenGuide, index }) {
+  const { hasPermission } = useAuth();
   const config = PROVIDER_CONFIG[provider];
-  const hasStore = !!store;
-  const isSyncing = store?.syncStatus === "syncing";
-  const isActive = store?.isActive ?? false;
-  const isIntegrated = store?.isIntegrated ?? false;
-  const autoIntegrated = store?.autoIntegrated ?? false;
   const locale = useLocale();
   const isArabic = locale === "ar";
-  const [toggling, setToggling] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
-
-  async function handleToggle() {
-    if (!hasStore) {
-      onConfigure(provider, store);
-      return;
-    }
-
-    setToggling(true);
-    try {
-      await api.patch(`/stores/${store.id}`, {
-        isActive: !isActive,
-      });
-      await fetchStores();
-      toast.success(t("messages.statusUpdated"));
-    } catch (e) {
-      toast.error(normalizeAxiosError(e));
-    } finally {
-      setToggling(false);
-    }
-  }
-
-
-  const handleAutoIntegratedAction = async () => {
-    if (!hasStore) {
-      onConfigure(provider, null);
-      return;
-    }
-
-    if (isIntegrated) {
-      // Cancel integration
-      setCancelling(true);
-      try {
-        const cancelEndpoint = getCancelIntegrationEndpoint(provider);
-        if (cancelEndpoint) {
-          await api.patch(cancelEndpoint);
-        }
-        await fetchStores();
-        toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
-      } catch (e) {
-        toast.error(normalizeAxiosError(e));
-      } finally {
-        setCancelling(false);
-      }
-    } else {
-      // Integrate: redirect to install URL
-      const installUrl = generateInstallUrl({
-        provider,
-        adminId: user?.id,
-        store,
-      });
-      if (installUrl) {
-        window.location.href = installUrl;
-      } else {
-        onConfigure(provider, store);
-      }
-    }
-  };
-
-  // accent shortcuts from the three new PROVIDER_CONFIG tokens
   const accent = config.accent;
   const accentBg = config.accentBg;
+  const isFirst = index === 1;
 
-  // shared footer ghost-button base classes; hover tints border+text to accent
   const fbCls =
     "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-[var(--muted)] border border-white/60 dark:border-[var(--border)] text-gray-600 dark:text-gray-300 shadow-sm";
   const onEnter = (e) => {
@@ -367,7 +342,7 @@ function StoreCard({
     e.currentTarget.style.borderColor = "";
     e.currentTarget.style.color = "";
   };
-  const isFirst = index == 1
+
   return (
     <motion.div
       whileHover={{ y: -3, boxShadow: "0 20px 48px 0 rgba(0,0,0,0.11)" }}
@@ -431,173 +406,24 @@ function StoreCard({
               </a>
             </div>
           </div>
-
-          {/* Toggle */}
-          {hasPermission("stores.update") && (
-            <div className="flex flex-col items-end gap-1 flex-shrink-0">
-              <button
-                onClick={handleToggle}
-                disabled={toggling || isSyncing || (config.autoIntegrated && !isIntegrated)}
-                className="relative rounded-full transition-all duration-300"
-                style={{
-                  width: 40,
-                  height: 22,
-                  background: isActive ? accent : "rgba(0,0,0,0.13)",
-                  border: "none",
-                  opacity: toggling ? 0.7 : 1,
-                  cursor: toggling ? "not-allowed" : "pointer",
-                }}
-              >
-                <span
-                  className="absolute rounded-full bg-white transition-all duration-300 flex items-center justify-center"
-                  style={{
-                    top: 3,
-                    width: 16,
-                    height: 16,
-                    left: isActive ? "calc(100% - 19px)" : 3,
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
-                  }}
-                >
-                  {toggling && (
-                    <svg
-                      className="animate-spin h-2.5 w-2.5"
-                      viewBox="0 0 24 24"
-                      style={{ color: accent }}
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                      />
-                    </svg>
-                  )}
-                </span>
-              </button>
-              <span
-                className="font-semibold uppercase tracking-wide transition-colors duration-300"
-                style={{
-                  fontSize: 9,
-                  color: isActive ? accent : "rgba(0,0,0,0.3)",
-                }}
-              >
-                {toggling
-                  ? t("card.updating")
-                  : isActive
-                    ? t("card.connected")
-                    : t("card.notConnected")}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Description */}
         <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
           {isArabic ? config.description.ar : config.description.en}
         </p>
-
-        {/* Status Badge — configured keeps original emerald; not-configured uses provider accent */}
-        {hasStore ? (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full w-fit">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            {t("card.configured")}
-          </span>
-        ) : (
-          <span
-            className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full w-fit"
-            style={{
-              color: accent,
-              background: accentBg,
-              border: `1px solid ${accent}30`,
-            }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: accent }}
-            />
-            {t("card.notConfigured")}
-          </span>
-        )}
       </div>
 
       {/* Footer */}
       <div
         className="px-4 py-3 flex items-center gap-1.5 flex-wrap border-t border-white/50 dark:border-[var(--border)] bg-white/55 dark:bg-[var(--muted)]/80 backdrop-blur-md"
       >
-        {config.autoIntegrated ? (
-          <>
-            <button
-              onClick={handleAutoIntegratedAction}
-              disabled={cancelling}
-              className={fbCls}
-              onMouseEnter={onEnter}
-              onMouseLeave={onLeave}
-              {...(isFirst ? {
-                'data-getting-started': 'store.integrate',
-                'data-getting-started-type': 'button',
-              } : {})}
-            >
-              {cancelling ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : isIntegrated ? (
-                <X size={12} className="text-red-500" />
-              ) : (
-                <Zap size={12} className="text-amber-500" />
-              )}
-              {isIntegrated ? t("card.cancelIntegration") || "Cancel Integration" : t("card.integrate") || "Integrate"}
-            </button>
-
-            {hasPermission("stores.update") && (
-              <button
-                onClick={() => onConfigure(provider, store)}
-                className={fbCls}
-                onMouseEnter={onEnter}
-                onMouseLeave={onLeave}
-                {...(isFirst ? {
-                  'data-getting-started': 'store.settings',
-                  'data-getting-started-type': 'button',
-                } : {})}
-              >
-                <Settings2 size={12} />
-                {t("card.settings")}
-              </button>
-            )}
-          </>
-        ) : (
-          hasPermission(hasStore ? "stores.update" : "stores.create") && (
-            <button
-              onClick={() => onConfigure(provider, store)}
-              className={fbCls}
-              onMouseEnter={onEnter}
-              onMouseLeave={onLeave}
-              {...(isFirst ? {
-                'data-getting-started': hasStore ? 'store.settings' : 'stores.add',
-                'data-getting-started-type': 'button',
-              } : {})}
-            >
-              <Settings2 size={12} />
-              {hasStore ? t("card.settings") : t("card.configureSettings")}
-            </button>
-          )
-        )}
-
         {config?.guide?.showSteps ? (
           <button
-            onClick={() => onOpenGuide(provider, store)}
+            onClick={() => onOpenGuide(provider, null)}
             className={fbCls}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
-            {...(isFirst ? {
-              'data-getting-started': 'store.how_to_integrate',
-              'data-getting-started-type': 'button',
-            } : {})}
           >
             <HelpCircle size={12} />
             {t("card.guide")}
@@ -611,49 +437,25 @@ function StoreCard({
             style={{ textDecoration: "none" }}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
-            {...(isFirst ? {
-              'data-getting-started': 'store.how_to_integrate',
-              'data-getting-started-type': 'button',
-            } : {})}
           >
             <HelpCircle size={12} />
             {t("card.guide")}
           </a>
         ) : null}
 
-        {hasStore && hasPermission("stores.read") && config.showWebhook ? (
+        {hasPermission("stores.create") && (
           <button
-            onClick={() => onOpenWebhook(provider, store)}
-            className={`font-en ${fbCls}`}
+            onClick={() => onConfigure(provider, null)}
+            className={fbCls}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
+            {...(isFirst ? {
+              'data-getting-started': 'stores.add',
+              'data-getting-started-type': 'button',
+            } : {})}
           >
-            <Webhook size={12} />
-            Webhook
-          </button>
-        ) : null}
-
-        {/* Sync pushed to end; disabled state preserved from original */}
-        {hasPermission("stores.update") && (
-          <button
-            onClick={() => hasStore && onSync(store.id)}
-            disabled={isSyncing || !hasStore || !isActive}
-            className={`${fbCls} ml-auto`}
-            style={{
-              background: isSyncing ? accentBg : undefined,
-              color: isSyncing ? accent : undefined,
-              opacity: (!hasStore || !isActive) && !isSyncing ? 0.35 : 1,
-              cursor: !hasStore || !isActive ? "not-allowed" : "pointer",
-            }}
-            onMouseEnter={(e) => {
-              if (hasStore && isActive && !isSyncing) onEnter(e);
-            }}
-            onMouseLeave={(e) => {
-              if (!isSyncing) onLeave(e);
-            }}
-          >
-            <RefreshCw size={12} className={isSyncing ? "animate-spin" : ""} />
-            {t("card.sync")}
+            <Settings2 size={12} />
+            {t("card.configureSettings")}
           </button>
         )}
       </div>
@@ -894,7 +696,7 @@ export function StoreConfigDialog({
                           <div className="flex gap-2">
                             <input
                               readOnly
-                              value={config.webhookEndpoints?.create?.(user?.id) || ""}
+                              value={config.webhookEndpoints?.create?.(user?.id, existingStore?.id) || ""}
                               className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                             />
                             <button
@@ -902,7 +704,7 @@ export function StoreConfigDialog({
                               onClick={() =>
                                 navigator.clipboard.writeText(
                                   String(
-                                    config.webhookEndpoints?.create?.(user?.id) ||
+                                    config.webhookEndpoints?.create?.(user?.id, existingStore?.id) ||
                                     "",
                                   ),
                                 )
@@ -922,7 +724,7 @@ export function StoreConfigDialog({
                           <div className="flex gap-2">
                             <input
                               readOnly
-                              value={config.webhookEndpoints?.update?.(user?.id) || ""}
+                              value={config.webhookEndpoints?.update?.(user?.id, existingStore?.id) || ""}
                               className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                             />
                             <button
@@ -930,7 +732,7 @@ export function StoreConfigDialog({
                               onClick={() =>
                                 navigator.clipboard.writeText(
                                   String(
-                                    config.webhookEndpoints?.update?.(user?.id) ||
+                                    config.webhookEndpoints?.update?.(user?.id, existingStore?.id) ||
                                     "",
                                   ),
                                 )
@@ -1040,13 +842,13 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
                 <div className="flex gap-2">
                   <input
                     readOnly
-                    value={config.webhookEndpoints.create(user?.id)}
+                    value={config.webhookEndpoints.create(user?.id, store?.id)}
                     className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                   />
                   <button
                     type="button"
                     onClick={() =>
-                      copyToClipboard(config.webhookEndpoints.create(user?.id))
+                      copyToClipboard(config.webhookEndpoints.create(user?.id, store?.id))
                     }
                     className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                     title="Copy"
@@ -1062,13 +864,13 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
                 <div className="flex gap-2">
                   <input
                     readOnly
-                    value={config.webhookEndpoints.update(user?.id)}
+                    value={config.webhookEndpoints.update(user?.id, store?.id)}
                     className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                   />
                   <button
                     type="button"
                     onClick={() =>
-                      copyToClipboard(config.webhookEndpoints.update(user?.id))
+                      copyToClipboard(config.webhookEndpoints.update(user?.id, store?.id))
                     }
                     className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                     title="Copy"
@@ -1186,37 +988,12 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
   );
 }
 
-function SkeletonCard() {
-  return (
-    <div className="rounded-xl border border-[var(--border)] overflow-hidden animate-pulse bg-[var(--muted)]">
-      <div className="p-5 space-y-4">
-        <div className="flex items-start justify-between">
-          <div className="w-14 h-14 rounded-xl bg-[var(--border)]" />
-          <div className="w-11 h-6 rounded-full bg-[var(--border)]" />
-        </div>
-        <div className="space-y-1.5">
-          <div className="h-4 w-28 rounded bg-[var(--border)]" />
-          <div className="h-2.5 w-20 rounded bg-[var(--border)]" />
-        </div>
-        <div className="space-y-1.5">
-          <div className="h-2 w-full rounded bg-[var(--border)]" />
-          <div className="h-2 w-4/5 rounded bg-[var(--border)]" />
-        </div>
-      </div>
-      <div className="border-t border-[var(--border)] px-4 py-3 flex gap-2">
-        <div className="h-7 w-20 rounded-xl bg-[var(--border)]" />
-        <div className="h-7 w-20 rounded-xl bg-[var(--border)]" />
-        <div className="h-7 w-16 rounded-xl bg-[var(--border)] ml-auto" />
-      </div>
-    </div>
-  );
-}
 function pick(bilingualObj, locale) {
   if (!bilingualObj) return "";
   return locale?.startsWith("ar") ? bilingualObj.ar : bilingualObj.en;
 }
 
-export function StoreGuideModal({ provider, onClose }) {
+export function StoreGuideModal({ provider, store, onClose }) {
   const t = useTranslations("storeIntegrations");
   const { user } = useAuth();
   const locale = useLocale();
@@ -1229,6 +1006,35 @@ export function StoreGuideModal({ provider, onClose }) {
   const currentSteps = tabs[activeTab]?.steps || [];
   const currentStep = currentSteps[activeStep] || {};
   const p = (obj) => pick(obj, locale);
+
+  const [storeOptions, setStoreOptions] = useState([]);
+  const [storeLoading, setStoreLoading] = useState(false);
+  const [selectedStoreId, setSelectedStoreId] = useState(store?.id || "");
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        setStoreLoading(true);
+        const res = await api.get("/stores", {
+          params: { provider: provider.code, limit: 200 },
+        });
+        if (!active) return;
+        let records = res.data?.records || [];
+        if (store?.id && !records.some((s) => s.id === store.id)) {
+          records = [store, ...records];
+        }
+        setStoreOptions(records);
+      } catch (e) {
+        // ignore
+      } finally {
+        if (active) setStoreLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [provider?.code, store?.id]);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
 
@@ -1350,17 +1156,34 @@ export function StoreGuideModal({ provider, onClose }) {
                       {p(currentStep?.desc)}
                     </p>
                     {currentStep?.url && (
-                      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
+                      <div className="mt-3 space-y-2">
+                        <Select
+                          value={selectedStoreId}
+                          onValueChange={(v) => setSelectedStoreId(v)}
+                        >
+                          <SelectTrigger className="h-9 w-56 rounded-xl">
+                            <SelectValue placeholder={t("guide.selectStore")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {storeOptions.map((s) => (
+                              <SelectItem key={s.id} value={s.id}>
+                                {s.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
                         {(() => {
-                          // If URL is a function, call it with store/admin ID (replace with your param)
-                          console.log(user)
-                          const url =
-                            typeof currentStep.url === "function"
-                              ? currentStep.url(user) // or any param needed
-                              : currentStep.url;
+                          const isFn = typeof currentStep.url === "function";
+                          console.log(isFn, selectedStoreId)
+                          const storeId = selectedStoreId || store?.id;
+                          if (isFn && !storeId) return null;
+                          const url = isFn
+                            ? currentStep.url(user, storeId)
+                            : currentStep.url;
 
                           return (
-                            <>
+                            <div className="flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
                               <a
                                 href={url}
                                 target="_blank"
@@ -1376,7 +1199,7 @@ export function StoreGuideModal({ provider, onClose }) {
                               >
                                 <Copy size={12} className="text-primary" />
                               </button>
-                            </>
+                            </div>
                           );
                         })()}
                       </div>
@@ -1530,5 +1353,334 @@ export function StoreGuideModal({ provider, onClose }) {
         onClose={() => setPreviewImage(null)}
       />
     </>
+  );
+}
+
+// ─── Stores Management Table ──────────────────────────────────────────────
+export function StoresTable({
+  compact = false,
+  t,
+  stores,
+  totalRecords,
+  loading,
+  onFetch,
+  onConfigure,
+  onOpenGuide,
+  onOpenWebhook,
+  onToggleStore,
+  onSync,
+  onAutoIntegratedAction,
+}) {
+  const { handleExport, exportLoading } = useExport();
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [provider, setProvider] = useState("");
+  const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
+  const [providerDraft, setProviderDraft] = useState("");
+  const [dateRangeDraft, setDateRangeDraft] = useState({ startDate: null, endDate: null });
+  const [page, setPage] = useState(1);
+  const [loadingAction, setLoadingAction] = useState(null);
+  const searchTimer = useRef(null);
+  const [limit, setLimit] = useState(12);
+
+  const buildParams = (overrides = {}) => {
+    const params = { page, limit: limit, ...overrides };
+    if (debouncedSearch?.trim()) params.search = debouncedSearch.trim();
+    if (provider) params.provider = provider;
+    if (dateRange?.startDate) params.startDate = dateRange.startDate;
+    if (dateRange?.endDate) params.endDate = dateRange.endDate;
+    return params;
+  };
+
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(searchTimer.current);
+  }, [search]);
+
+  useEffect(() => {
+    onFetch(buildParams());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, provider, dateRange]);
+
+  const refresh = (overrides = {}) => {
+    onFetch(buildParams(overrides));
+  };
+
+  const runAction = async (type, store, fn) => {
+    setLoadingAction(`${store.id}:${type}`);
+    try {
+      await fn();
+    } catch (e) {
+      // errors are surfaced via toast inside the handlers
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const rowLoading = (store) => loadingAction?.startsWith(`${store.id}:`);
+  const actionLoading = (store, type) => loadingAction === `${store.id}:${type}`;
+
+  const handleSearch = () => {
+    setPage(1);
+    setDebouncedSearch(search);
+  };
+
+  const handleApplyFilters = () => {
+    setProvider(providerDraft);
+    setDateRange(dateRangeDraft);
+    setPage(1);
+  };
+
+  const onPageChange = ({ page: p, per_page: l }) => {
+    setPage(p);
+    setLimit(l);
+    refresh({ page: p, limit: l });
+  };
+
+  const handleExportClick = () => {
+    const params = buildParams();
+    delete params.page;
+    delete params.limit;
+    handleExport({ endpoint: "/stores/export", params, filename: `stores_${Date.now()}.xlsx` });
+  };
+
+  const hasActiveFilters = Boolean(
+    debouncedSearch?.trim() || provider || dateRange?.startDate || dateRange?.endDate
+  );
+
+  const getRowActions = (store) => {
+    const config = PROVIDER_CONFIG[store.provider];
+    const isIntegrated = store.isIntegrated;
+    const isActive = store.isActive;
+    const isSyncing = store.syncStatus === "syncing";
+    const loading = rowLoading(store);
+
+    const actions = [];
+
+    actions.push({
+      icon: actionLoading(store, "toggle") ? <Loader2 className="animate-spin" /> : <Power />,
+      tooltip: isIntegrated
+        ? isActive
+          ? t("table.deactivate")
+          : t("table.activate")
+        : t("table.activate"),
+      variant: isActive ? "slate" : "emerald",
+      disabled: !isIntegrated || loading,
+      onClick: () => runAction("toggle", store, () => onToggleStore(store)),
+    });
+
+    actions.push({
+      icon: actionLoading(store, "settings") ? <Loader2 className="animate-spin" /> : <Settings2 />,
+      tooltip: isIntegrated ? t("card.editSettings") : t("card.configureSettings"),
+      disabled: loading,
+      onClick: () => runAction("settings", store, () => onConfigure(store.provider, store)),
+    });
+
+    if (config?.showWebhook) {
+      actions.push({
+        icon: actionLoading(store, "webhook") ? <Loader2 className="animate-spin" /> : <Webhook />,
+        tooltip: t("table.webhooks"),
+        hidden: !isIntegrated,
+        disabled: loading,
+        onClick: () => runAction("webhook", store, () => onOpenWebhook(store.provider, store)),
+      });
+    }
+
+    if (isIntegrated) {
+      actions.push({
+        icon: actionLoading(store, "sync") ? <Loader2 className="animate-spin" /> : <RefreshCw className={isSyncing ? "animate-spin" : ""} />,
+        tooltip: isSyncing ? t("table.syncInProgress") : t("card.sync"),
+        variant: "blue",
+        disabled: isSyncing || !isActive || loading,
+        onClick: () => runAction("sync", store, () => onSync(store.id)),
+      });
+    }
+
+    if (config?.autoIntegrated) {
+      actions.push({
+        icon: actionLoading(store, "auto") ? <Loader2 className="animate-spin" /> : isIntegrated ? <X /> : <Zap />,
+        tooltip: isIntegrated ? t("card.cancelIntegration") : t("card.integrate"),
+        variant: isIntegrated ? "red" : "amber",
+        disabled: loading,
+        onClick: () => runAction("auto", store, () => onAutoIntegratedAction(store)),
+      });
+    }
+
+    return actions;
+  };
+
+  const allColumns = [
+    {
+      key: "name",
+      header: t("table.storeName"),
+      cell: (row) => (
+        <div className="flex flex-col">
+          <span className="font-semibold text-foreground">{row.name || "—"}</span>
+          {row.storeUrl ? (
+            <span className="text-[11px] text-muted-foreground truncate max-w-[220px]">
+              {row.storeUrl}
+            </span>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      key: "provider",
+      header: t("table.provider"),
+      cell: (row) => {
+        const config = PROVIDER_CONFIG[row.provider];
+
+        return (
+          <span className="inline-flex items-center gap-2">
+            {config?.logo ? (
+              <img
+                src={config.logo}
+                alt={config.label}
+                className="w-5 h-5 object-contain"
+                onError={(e) => (e.target.style.display = "none")}
+              />
+            ) : null}
+            {config?.label || row.provider}
+          </span>
+        );
+      },
+    },
+    {
+      key: "isActive",
+      header: t("table.status"),
+      cell: (row) => (
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 text-[13px] font-medium px-2 py-0.5 rounded-full",
+            row.isActive
+              ? "text-emerald-700 bg-emerald-500/10 border border-emerald-500/20"
+              : "text-muted-foreground bg-muted border border-border"
+          )}
+        >
+          {row.isActive ? t("table.active") : t("table.inactive")}
+        </span>
+      ),
+    },
+    {
+      key: "isIntegrated",
+      header: t("table.integrated"),
+      cell: (row) =>
+        row.isIntegrated ? (
+          <Check size={16} className="text-emerald-500" />
+        ) : (
+          <X size={16} className="text-muted-foreground/40" />
+        ),
+    },
+    {
+      key: "syncStatus",
+      header: t("table.syncStatus"),
+      cell: (row) => (
+        <span className="capitalize text-[13px]">
+          {row.syncStatus ? row.syncStatus.toLowerCase() : "—"}
+        </span>
+      ),
+    },
+    {
+      key: "lastSyncAttemptAt",
+      header: t("table.lastSyncedAt"),
+      cell: (row) =>
+        row.lastSyncAttemptAt
+          ? new Date(row.lastSyncAttemptAt).toLocaleDateString()
+          : "—",
+    },
+    {
+      key: "created_at",
+      header: t("table.createdAt"),
+      cell: (row) =>
+        row.created_at ? new Date(row.created_at).toLocaleDateString() : "—",
+    },
+    {
+      key: "actions",
+      header: t("table.actions"),
+      cell: (row) => <ActionButtons actions={getRowActions(row)} />,
+    },
+  ];
+
+  const columns = compact
+    ? allColumns.filter((c) => ["name", "provider", "isActive"].includes(c.key))
+    : allColumns;
+
+  const filters = (
+    <>
+      <FilterField label={t("table.provider")}>
+        <Select value={providerDraft || ""} onValueChange={(v) => setProviderDraft(v === "all" ? "" : v)}>
+          <SelectTrigger className="h-[38px] rounded-xl">
+            <SelectValue placeholder={t("table.allProviders")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("table.allProviders")}</SelectItem>
+            {PROVIDERS.map((p) => {
+              const config = STORE_PROVIDERS[p];
+              return (
+                <SelectItem key={p} value={p}>
+                  {config?.label || p}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+      </FilterField>
+      <FilterField label={t("table.createdAt")}>
+        <DateRangePicker value={dateRangeDraft} onChange={setDateRangeDraft} />
+      </FilterField>
+    </>
+  );
+
+  return (
+    <div className="mt-8">
+      {/* <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base font-bold text-foreground">{t("table.title")}</h2>
+      </div> */}
+      <Table
+        flat={!!compact}
+        className={compact ? "border border-border/50 rounded-2xl" : ""}
+        searchValue={search}
+        onSearchChange={setSearch}
+        onSearch={handleSearch}
+        hasSearch
+        actions={[
+          {
+            key: "export",
+            color: "primary",
+            label: t("table.export"),
+            icon: <Download size={14} />,
+            onClick: handleExportClick,
+            disabled: exportLoading,
+            permission: "stores.read",
+          },
+        ]}
+        filters={compact ? null : filters}
+        hasActiveFilters={hasActiveFilters}
+        onApplyFilters={handleApplyFilters}
+        labels={{
+          searchPlaceholder: t("table.searchPlaceholder"),
+          emptyTitle: t("table.emptyTitle"),
+          emptySubtitle: t("table.emptySubtitle"),
+          filter: t("table.filters"),
+          apply: t("table.apply"),
+        }}
+        columns={columns}
+        data={stores}
+        isLoading={loading}
+        // rowKey="id"
+        pagination={{
+          current_page: page,
+          per_page: limit,
+          total_records: totalRecords,
+          total_pages: Math.max(1, Math.ceil(totalRecords / limit)),
+        }}
+        onPageChange={onPageChange}
+        compact
+      />
+    </div>
   );
 }

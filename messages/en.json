@@ -1786,7 +1786,8 @@
       "next": "Next",
       "docs": "Official Documentation",
       "site": "Website",
-      "imagePlaceholder": "Screenshot will appear here"
+      "imagePlaceholder": "Screenshot will appear here",
+      "selectStore": "Select store"
     },
     "title": "Store Integrations",
     "subtitle": "Connect your stores and sync orders automatically",
@@ -1806,6 +1807,30 @@
       "configureFirst": "Please configure the integration first",
       "integrate": "Integrate",
       "cancelIntegration": "Cancel Integration"
+    },
+    "table": {
+      "title": "Stores",
+      "storeName": "Store",
+      "provider": "Provider",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "integrated": "Integrated",
+      "syncStatus": "Sync Status",
+      "lastSyncedAt": "Last Synced",
+      "createdAt": "Created At",
+      "actions": "Actions",
+      "export": "Export",
+      "webhooks": "Webhooks",
+      "allProviders": "All Providers",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "syncInProgress": "Sync in progress",
+      "searchPlaceholder": "Search stores by name or URL...",
+      "emptyTitle": "No stores found",
+      "emptySubtitle": "Connect a store using the cards above to get started",
+      "filters": "Filters",
+      "apply": "Apply"
     },
     "webhook": {
       "title": "Webhook Setup",

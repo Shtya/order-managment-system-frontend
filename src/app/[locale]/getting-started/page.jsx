@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   CheckCircle2,
@@ -165,9 +165,9 @@ function GettingStartedItemCard({
 
   return (
     <div
-      //  onClick={completed ? handleStart : undefined}
+      data-card
       className={cn(
-        "group w-full rounded-xl border p-4 flex items-center gap-4 text-start transition-all",
+        "group flex flex-col rounded-xl border p-4 text-start transition-all w-full h-full",
         "hover:shadow-sm active:scale-[0.998]",
         completed
           ? "border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/70 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10"
@@ -176,78 +176,64 @@ function GettingStartedItemCard({
             : "border-border bg-card hover:bg-accent/30",
       )}
     >
-      <StepNumberBadge n={index + 1} completed={completed} />
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <StepNumberBadge n={index + 1} completed={completed} />
 
-      <div
+        <div
+          className={cn(
+            "shrink-0 size-12 rounded-xl flex items-center justify-center",
+            completed
+              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+              : locked
+                ? "bg-muted text-muted-foreground"
+                : "bg-primary/12 text-primary",
+          )}
+        >
+          <Icon className="size-6" />
+        </div>
+      </div>
+
+      <p
         className={cn(
-          "shrink-0 size-12 rounded-xl flex items-center justify-center",
+          "font-semibold text-base leading-snug",
           completed
-            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-            : locked
-              ? "bg-muted text-muted-foreground"
-              : "bg-primary/12 text-primary",
+            ? "text-emerald-700 dark:text-emerald-400 line-through decoration-emerald-300/60 dark:decoration-emerald-500/40"
+            : "text-foreground",
         )}
       >
-        <Icon className="size-6" />
-      </div>
+        {getItemTitle(item, locale)}
+      </p>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <p
-            className={cn(
-              "font-semibold text-base truncate",
-              completed
-                ? "text-emerald-700 dark:text-emerald-400 line-through decoration-emerald-300/60 dark:decoration-emerald-500/40"
-                : "text-foreground",
-            )}
-          >
-            {getItemTitle(item, locale)}
-          </p>
+      <p className="text-sm text-muted-foreground mt-1 line-clamp-3 flex-1">
+        {getItemDescription(item, locale)}
+      </p>
 
-          {/* {locked && !completed && (
-          <div className="inline-flex items-center gap-1.5 shrink-0">
-            <Link2 className="size-3.5 text-muted-foreground" />
-            <Badge
-              variant="outline"
-              className="rounded-full text-xs font-normal px-2.5 py-0.5 border-amber-300/80 bg-amber-100/80 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
-            >
-              {tStatus("pendingBadge")}
-            </Badge>
-          </div>
-        )} */}
-        </div>
-
-        <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
-          {getItemDescription(item, locale)}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {completed ? (
-          <>
-            <Badge
-              variant="outline"
-              className="rounded-full text-xs h-8 px-3 border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
-            >
-              <CheckCircle2 className="size-3.5 -ms-0.5" />
-              <span>{tStatus("completed")}</span>
-            </Badge>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-full border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-transparent dark:border-emerald-500/30 dark:text-emerald-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleStart();
-              }}
-            >
-              <span>{tStatus("replay")}</span>
-              <ArrowRight className={cn("size-3.5", isRtl && "rotate-180")} />
-            </Button>
-          </>
-        ) : locked ? (
-          <div className="flex items-center gap-2">
+      <div className="mt-4 flex items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          {completed ? (
+            <>
+              <Badge
+                variant="outline"
+                className="rounded-full text-xs h-8 px-3 border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
+              >
+                <CheckCircle2 className="size-3.5 -ms-0.5" />
+                <span>{tStatus("completed")}</span>
+              </Badge>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-full border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-transparent dark:border-emerald-500/30 dark:text-emerald-400"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStart();
+                }}
+              >
+                <span>{tStatus("replay")}</span>
+                <ArrowRight className={cn("size-3.5", isRtl && "rotate-180")} />
+              </Button>
+            </>
+          ) : locked ? (
             <Button
               type="button"
               variant="outline"
@@ -255,33 +241,32 @@ function GettingStartedItemCard({
               className="h-8 rounded-full border-slate-300 bg-slate-100/80 text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
               onClick={(e) => {
                 e.stopPropagation();
-                onClick?.(e);
+                onClick?.();
               }}
             >
               <span>{tStatus("viewRequirements") || "عرض المتطلبات"}</span>
               <ArrowRight className={cn("size-3.5", isRtl && "rotate-180")} />
             </Button>
-            {/* <Info className="size-4 text-muted-foreground shrink-0" /> */}
-          </div>
-        ) : (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 rounded-full border-primary/30 bg-white text-primary hover:bg-primary hover:text-white dark:bg-transparent"
-            onClick={(e) => {
-              e.stopPropagation();
-              startTour(item).then((result) => onItemHandled?.(result));
-            }}
-          >
-            <span>{tStatus("startNow")}</span>
-            <ArrowRight className={cn("size-3.5", isRtl && "rotate-180")} />
-          </Button>
-        )}
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-full border-primary/30 bg-white text-primary hover:bg-primary hover:text-white dark:bg-transparent"
+              onClick={(e) => {
+                e.stopPropagation();
+                startTour(item).then((result) => onItemHandled?.(result));
+              }}
+            >
+              <span>{tStatus("startNow")}</span>
+              <ArrowRight className={cn("size-3.5", isRtl && "rotate-180")} />
+            </Button>
+          )}
+        </div>
 
         <div
           className={cn(
-            "size-9 rounded-xl grid place-items-center transition-colors",
+            "size-9 rounded-xl grid place-items-center transition-colors shrink-0",
             completed
               ? "bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500/20 dark:text-emerald-400"
               : locked
@@ -289,9 +274,213 @@ function GettingStartedItemCard({
                 : "bg-primary/10 text-primary group-hover:bg-primary/20",
           )}
         >
-          <Chevron className="size-4" />
+          <Chevron className={cn("size-4", !isRtl && "rotate-180")} />
         </div>
       </div>
+    </div>
+  );
+}
+
+function OnboardingCarousel({
+  items,
+  locale,
+  t,
+  tStatus,
+  onItemHandled,
+  openSidebarForItem,
+  pushSidebarItem,
+  getDependenciesForItem,
+  canStartItem,
+  startTour,
+  completedSet,
+  hasMoreGroups,
+}) {
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const isRtl = locale === "ar";
+  const drag = useRef({ down: false, startX: 0, startScroll: 0, moved: false });
+
+  const updateArrows = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    if (isRtl) {
+      // RTL scrollers report a negative scrollLeft: 0 at the right edge (start),
+      // scrolling toward the left pushes it below 0.
+      const maxLeft = scrollWidth - clientWidth;
+      setCanScrollLeft(scrollLeft < -4);
+      setCanScrollRight(scrollLeft > -maxLeft + 4);
+    } else {
+      setCanScrollLeft(scrollLeft > 4);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
+    }
+  }, [isRtl]);
+
+  useEffect(() => {
+    updateArrows();
+  }, [items, updateArrows]);
+
+  const scrollByCard = useCallback(
+    (dir) => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const card = el.querySelector("[data-card]");
+      const amount = card ? card.offsetWidth + 16 : el.clientWidth * 0.8;
+      el.scrollBy({ left: dir * amount, behavior: "smooth" });
+    },
+    [],
+  );
+
+  // Wheel over the cards: translate vertical wheel movement into horizontal
+  // scrolling (a plain overflow-x container ignores vertical deltaY).
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      const maxLeft = scrollWidth - clientWidth;
+      if (maxLeft <= 0) return;
+      // Horizontal wheel/trackpad input already scrolls natively.
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      const atStart = isRtl ? scrollLeft >= 0 : scrollLeft <= 0;
+      const atEnd = isRtl ? scrollLeft <= -maxLeft : scrollLeft >= maxLeft;
+      if (e.deltaY > 0 ? atEnd : atStart) return;
+      e.preventDefault();
+      el.scrollBy({ left: e.deltaY * (isRtl ? -1 : 1) });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [isRtl]);
+
+  const onPointerDown = (e) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    // Only the primary button/touch starts a drag. Do NOT use setPointerCapture
+    // here: capturing would retarget the derived click event to the scroller and
+    // break the buttons (Start Now / View Requirements) inside the cards.
+    if (e.button !== 0) return;
+    drag.current = {
+      down: true,
+      startX: e.clientX,
+      startScroll: el.scrollLeft,
+      moved: false,
+    };
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+  };
+
+  const onPointerMove = (e) => {
+    if (!drag.current.down) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const dx = e.clientX - drag.current.startX;
+    if (Math.abs(dx) > 4) drag.current.moved = true;
+    el.scrollLeft = drag.current.startScroll - dx;
+  };
+
+  const onPointerUp = () => {
+    if (!drag.current.down) return;
+    drag.current.down = false;
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", onPointerUp);
+    window.removeEventListener("pointercancel", onPointerUp);
+    updateArrows();
+    // The click event that follows a drag fires after this handler, so clear
+    // the flag asynchronously to keep suppressing that trailing click while
+    // not leaking the flag into the next real click.
+    window.setTimeout(() => {
+      drag.current.moved = false;
+    }, 0);
+  };
+
+  // Clean up window listeners if the component unmounts mid-gesture.
+  useEffect(() => {
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Suppress card clicks that happen at the end of a drag gesture.
+  const onCaptureClick = (e) => {
+    if (!drag.current.moved) return;
+    drag.current.moved = false;
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const ArrowBtn = ({ dir, disabled, children }) => (
+    <button
+      type="button"
+      aria-label={dir < 0 ? t("tutorial.previous") : t("tutorial.next")}
+      disabled={disabled}
+      onClick={() => scrollByCard(dir)}
+      className={cn(
+        "size-9 shrink-0 rounded-full grid place-items-center border border-border bg-card text-foreground shadow-sm transition-all",
+        "enabled:hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed",
+      )}
+    >
+      {children}
+    </button>
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-3">
+        <div
+          ref={scrollRef}
+          onScroll={updateArrows}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onClickCapture={onCaptureClick}
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1 select-none cursor-grab active:cursor-grabbing [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {items.map((item, index) => (
+            <div
+              key={item.key || item.id || index}
+              data-card
+              className="snap-start shrink-0 w-[78vw] sm:w-[320px]"
+            >
+              <GettingStartedItemCard
+                item={item}
+                index={index}
+                locale={locale}
+                t={t}
+                tStatus={tStatus}
+                onItemHandled={onItemHandled}
+                openSidebarForItem={openSidebarForItem}
+                pushSidebarItem={pushSidebarItem}
+                getDependenciesForItem={getDependenciesForItem}
+                canStartItem={canStartItem}
+                startTour={startTour}
+                completedSet={completedSet}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center gap-3">
+        <ArrowBtn dir={isRtl ? 1 : -1} disabled={!canScrollLeft}>
+          <ChevronRight className={cn("size-4", !isRtl && "rotate-180")} />
+        </ArrowBtn>
+        <ArrowBtn dir={isRtl ? -1 : 1} disabled={!canScrollRight}>
+          <ChevronLeft className={cn("size-4", !isRtl && "rotate-180")} />
+        </ArrowBtn>
+      </div>
+
+      {hasMoreGroups && (
+        <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <span className="size-1.5 rounded-full bg-primary/40" />
+          <span>{t("moreGroupsComing")}</span>
+        </p>
+      )}
     </div>
   );
 }
@@ -334,6 +523,44 @@ export default function GettingStartedPage() {
 
   const totalItems = sortedItems.length;
   const allComplete = items.length > 0 && totalCompleted === items.length;
+
+  // Group items by groupNumber (derived dynamically, never hardcoded) and
+  // compute progressive visibility: a group becomes visible only when every
+  // item in the previous group is completed. Once visible it stays visible.
+  const { visibleItems, hasMoreGroups } = useMemo(() => {
+    const groupsMap = new Map();
+    for (const item of sortedItems) {
+      const group = typeof item.groupNumber === "number" ? item.groupNumber : 1;
+      if (!groupsMap.has(group)) groupsMap.set(group, []);
+      groupsMap.get(group).push(item);
+    }
+
+    const groups = Array.from(groupsMap.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([groupNumber, groupItems]) => ({
+        groupNumber,
+        items: [...groupItems].sort((a, b) => {
+          const aOrder = typeof a.sortOrder === "number" ? a.sortOrder : 0;
+          const bOrder = typeof b.sortOrder === "number" ? b.sortOrder : 0;
+          return aOrder - bOrder;
+        }),
+      }));
+
+    if (groups.length === 0) return { visibleItems: [], hasMoreGroups: false };
+
+    const visible = [];
+    let prevGroupComplete = true;
+    for (const group of groups) {
+      if (!prevGroupComplete) break; // lock all future groups
+      visible.push(...group.items);
+      prevGroupComplete = group.items.every((it) => completedSet.has(it.key));
+    }
+
+    return {
+      visibleItems: visible,
+      hasMoreGroups: visible.length < sortedItems.length,
+    };
+  }, [sortedItems, completedSet]);
 
   return (
     <div className="w-full px-4 sm:px-6 py-6 sm:py-10">
@@ -400,25 +627,20 @@ export default function GettingStartedPage() {
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
-                {sortedItems.map((item, index) => (
-                  <GettingStartedItemCard
-                    key={item.key || item.id || index}
-                    item={item}
-                    index={index}
-                    locale={locale}
-                    t={t}
-                    tStatus={tStatus}
-                    onItemHandled={onItemHandled}
-                    openSidebarForItem={openSidebarForItem}
-                    pushSidebarItem={pushSidebarItem}
-                    getDependenciesForItem={getDependenciesForItem}
-                    canStartItem={canStartItem}
-                    startTour={startTour}
-                    completedSet={completedSet}
-                  />
-                ))}
-              </div>
+              <OnboardingCarousel
+                items={visibleItems}
+                locale={locale}
+                t={t}
+                tStatus={tStatus}
+                onItemHandled={onItemHandled}
+                openSidebarForItem={openSidebarForItem}
+                pushSidebarItem={pushSidebarItem}
+                getDependenciesForItem={getDependenciesForItem}
+                canStartItem={canStartItem}
+                startTour={startTour}
+                completedSet={completedSet}
+                hasMoreGroups={hasMoreGroups}
+              />
             )}
           </div>
 

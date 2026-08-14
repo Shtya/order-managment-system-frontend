@@ -423,6 +423,15 @@ export function OrderDetailsPage({ order, loading }) {
                   </span>
                 </MetaCell>
 
+                <MetaCell
+                  label={t("details.additionalFees")}
+                  icon={<Tag size={11} />}
+                >
+                  <span className="text-sm font-bold text-emerald-600 tabular-nums">
+                    +{formatCurrency(order.additionalFees)}
+                  </span>
+                </MetaCell>
+
                 {/* Hero: total */}
                 <MetaCell
                   label={t("details.total")}
@@ -689,6 +698,11 @@ export function OrderDetailsPage({ order, loading }) {
                       label: t("details.discount"),
                       value: `-${formatCurrency(order.discount)}`,
                       valueClass: "text-destructive",
+                    },
+                    order.additionalFees > 0 && {
+                      label: t("details.additionalFees"),
+                      value: `+${formatCurrency(order.additionalFees)}`,
+                      valueClass: "text-emerald-600",
                     },
                     order.deposit > 0 && {
                       label: t("details.deposit"),

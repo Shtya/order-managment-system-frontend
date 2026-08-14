@@ -323,14 +323,13 @@ export default function StoresIntegrationPage() {
 }
 
 
-function StoreCard({ provider, t, onConfigure, onOpenGuide, index }) {
+function StoreCard({ provider, t, onConfigure, onOpenGuide }) {
   const { hasPermission } = useAuth();
   const config = PROVIDER_CONFIG[provider];
   const locale = useLocale();
   const isArabic = locale === "ar";
   const accent = config.accent;
   const accentBg = config.accentBg;
-  const isFirst = index === 1;
 
   const fbCls =
     "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-[var(--muted)] border border-white/60 dark:border-[var(--border)] text-gray-600 dark:text-gray-300 shadow-sm";
@@ -424,6 +423,8 @@ function StoreCard({ provider, t, onConfigure, onOpenGuide, index }) {
             className={fbCls}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
+            data-getting-started="store.how_to_integrate"
+            data-getting-started-type="button"
           >
             <HelpCircle size={12} />
             {t("card.guide")}
@@ -449,10 +450,8 @@ function StoreCard({ provider, t, onConfigure, onOpenGuide, index }) {
             className={fbCls}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
-            {...(isFirst ? {
-              'data-getting-started': 'stores.add',
-              'data-getting-started-type': 'button',
-            } : {})}
+            data-getting-started="store.settings"
+            data-getting-started-type="button"
           >
             <Settings2 size={12} />
             {t("card.configureSettings")}

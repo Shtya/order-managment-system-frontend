@@ -69,6 +69,7 @@ const createSchema = (t) =>
 		storeId: yup.string().optional(),
 		shippingCost: yup.number().min(0).optional(),
 		discount: yup.number().min(0).optional(),
+		additionalFees: yup.number().min(0).optional(),
 		deposit: yup.number().min(0).optional(),
 		notes: yup.string().optional(),
 		customerNotes: yup.string().optional(),
@@ -729,6 +730,7 @@ export default function CreateOrderPageComplete({
 				storeId: existingOrder.storeId ? String(existingOrder.storeId) : "",
 				shippingCost: existingOrder.shippingCost || 0,
 				discount: !fromId ? existingOrder.discount || 0 : 0,
+				additionalFees: !fromId ? existingOrder.additionalFees || 0 : 0,
 				deposit: !fromId ? existingOrder.deposit || 0 : 0,
 				notes: !fromId ? existingOrder.notes || "" : "",
 				customerNotes: !fromId ? existingOrder.customerNotes || "" : "",
@@ -762,6 +764,7 @@ export default function CreateOrderPageComplete({
 			storeId: "",
 			shippingCost: 0,
 			discount: 0,
+			additionalFees: 0,
 			deposit: 0,
 			notes: "",
 			customerNotes: "",
@@ -788,13 +791,14 @@ export default function CreateOrderPageComplete({
 	const watchedItems = watch("items");
 	const watchedShippingCost = watch("shippingCost");
 	const watchedDiscount = watch("discount");
+	const watchedAdditionalFees = watch("additionalFees");
 	const watchedDeposit = watch("deposit");
 	const watchedShippingCompanyId = watch("shippingCompanyId");
 	const area = watch("area");
-	
+
 
 	useEffect(() => {
-		const nextTitle =  existingOrder?.orderNumber?.trim() || (isEditMode? t("breadcrumb.editOrder") : fromId ? t("breadcrumb.duplicateOrder") : t("breadcrumb.createOrder"));
+		const nextTitle = existingOrder?.orderNumber?.trim() || (isEditMode ? t("breadcrumb.editOrder") : fromId ? t("breadcrumb.duplicateOrder") : t("breadcrumb.createOrder"));
 		setDocumentTitle(nextTitle);
 	}, [existingOrder?.orderNumber, isEditMode, fromId]);
 
@@ -1087,18 +1091,20 @@ export default function CreateOrderPageComplete({
 		}, 0);
 		const shippingCost = parseFloat(watchedShippingCost) || 0;
 		const discount = parseFloat(watchedDiscount) || 0;
+		const additionalFees = parseFloat(watchedAdditionalFees) || 0;
 		const deposit = parseFloat(watchedDeposit) || 0;
-		const finalTotal = productsTotal + shippingCost - discount;
+		const finalTotal = productsTotal + shippingCost + additionalFees - discount;
 		return {
 			productCount: watchedItems.length,
 			productsTotal,
 			shippingCost,
 			discount,
+			additionalFees,
 			deposit,
 			finalTotal,
 			remaining: finalTotal - deposit,
 		};
-	}, [watchedItems, watchedShippingCost, watchedDiscount, watchedDeposit]);
+	}, [watchedItems, watchedShippingCost, watchedDiscount, watchedAdditionalFees, watchedDeposit]);
 
 	// ── Submit ───────────────────────────────────────────────────────────────
 	const onSubmit = async (data) => {
@@ -1128,6 +1134,7 @@ export default function CreateOrderPageComplete({
 					data.storeId && data.storeId !== "none" ? data.storeId : undefined,
 				shippingCost: Number(data.shippingCost || 0),
 				discount: Number(data.discount || 0),
+				additionalFees: Number(data.additionalFees || 0),
 				deposit: Number(data.deposit || 0),
 				notes: data.notes || undefined,
 				customerNotes: data.customerNotes || undefined,
@@ -1196,7 +1203,7 @@ export default function CreateOrderPageComplete({
 					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.orders"), href: "/orders" },
 					{
-						name: isEditMode? t("breadcrumb.editOrder") : fromId ? t("breadcrumb.duplicateOrder") : t("breadcrumb.createOrder"),
+						name: isEditMode ? t("breadcrumb.editOrder") : fromId ? t("breadcrumb.duplicateOrder") : t("breadcrumb.createOrder"),
 					},
 				]}
 				buttons={
@@ -1481,6 +1488,27 @@ export default function CreateOrderPageComplete({
 									</Label>
 									<Controller
 										name="discount"
+										control={control}
+										render={({ field }) => (
+											<Input
+												{...field}
+												type="number"
+												min="0"
+
+												placeholder="0.00"
+
+											/>
+										)}
+									/>
+								</div>
+
+								{/* Additional Fees */}
+								<div className="space-y-2">
+									<Label className="text-sm text-gray-600 dark:text-slate-300">
+										{t("fields.additionalFees")}
+									</Label>
+									<Controller
+										name="additionalFees"
 										control={control}
 										render={({ field }) => (
 											<Input
@@ -1802,6 +1830,15 @@ function OrderSummary({ t, summary }) {
 							label={t("summary.discount")}
 							value={`-${formatCurrency(summary.discount)}`}
 							valueClassName="text-destructive"
+						/>
+					)}
+
+					{/* Additional Fees */}
+					{summary.additionalFees > 0 && (
+						<SummaryRow
+							label={t("summary.additionalFees")}
+							value={`+${formatCurrency(summary.additionalFees)}`}
+							valueClassName="text-emerald-600"
 						/>
 					)}
 

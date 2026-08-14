@@ -580,12 +580,12 @@ export default function OrderConfirmationWorkPage() {
 
   }, [originalOrder, editedOrder]);
 
-  const wItems = watch("items"), wShip = watch("shippingCost"), wDisc = watch("discount");
+  const wItems = watch("items"), wShip = watch("shippingCost"), wDisc = watch("discount"), wFees = watch("additionalFees");
   useEffect(() => {
     console.log("wShip", wShip);
 
-    if (wItems) { const pt = wItems.reduce((s, i) => s + (i.unitPrice * i.quantity), 0); setValue("productsTotal", pt); setValue("finalTotal", pt + Number(wShip || 0) - Number(wDisc || 0)); }
-  }, [wItems, wShip, wDisc, setValue]);
+    if (wItems) { const pt = wItems.reduce((s, i) => s + (i.unitPrice * i.quantity), 0); setValue("productsTotal", pt); setValue("finalTotal", pt + Number(wShip || 0) + Number(wFees || 0) - Number(wDisc || 0)); }
+  }, [wItems, wShip, wDisc, wFees, setValue]);
 
   const initOrder = data => {
     if (!data) return;
@@ -618,7 +618,7 @@ export default function OrderConfirmationWorkPage() {
     }
   };
 
-  const recalc = o => { const pt = o.items.reduce((s, i) => s + (i.unitPrice * i.quantity), 0); return { ...o, productsTotal: pt, finalTotal: pt + parseFloat(o.shippingCost || 0) - parseFloat(o.discount || 0) }; };
+  const recalc = o => { const pt = o.items.reduce((s, i) => s + (i.unitPrice * i.quantity), 0); return { ...o, productsTotal: pt, finalTotal: pt + parseFloat(o.shippingCost || 0) + parseFloat(o.additionalFees || 0) - parseFloat(o.discount || 0) }; };
 
   const handleQty = (item, delta) =>
     setEditedOrder(prev => recalc({
@@ -915,8 +915,9 @@ export default function OrderConfirmationWorkPage() {
 }
 
 // ─── HERO HEADER ───────────────────────────────────────────────────────────
-function Hero({ order, t, isRtl }) {
+function Hero({ order, isRtl }) {
   const tOrders = useTranslations("orders");
+  const t = useTranslations("orders-work");
   if (!order) return null;
 
   const status = order.status;
@@ -1033,6 +1034,8 @@ function Hero({ order, t, isRtl }) {
             { icon: User, label: t("customer"), value: order.customerName || "—", color: HEX.violet, delay: .06, plain: true },
             { icon: Phone, label: t("phone"), value: order.phoneNumber || "—", color: HEX.sky, delay: .1, plain: true },
             { icon: Banknote, label: t("finalTotal"), value: formatCurrency(order.finalTotal), color: HEX.orange, delay: .14 },
+            { icon: Minus, label: t("discount"), value: formatCurrency(order.discount), color: HEX.red, delay: .18 },
+            { icon: Plus, label: t("additionalFees"), value: formatCurrency(order.additionalFees), color: HEX.green, delay: .22 },
           ].map(p => <MetTile key={p.label} {...p} />)}
         </div>
 

@@ -29,6 +29,7 @@ export function useOrderProperties(customOverrides = {}) {
                 { id: "productsTotal", label: t("productsTotal"), icon: DollarSign, example: t("examples.productsTotal"), path: "productsTotal" },
                 { id: "shippingCost", label: t("shippingCost"), icon: DollarSign, example: t("examples.shippingCost"), path: "shippingCost" },
                 { id: "discount", label: t("discount"), icon: Tag, example: t("examples.discount"), path: "discount" },
+                { id: "additionalFees", label: t("additionalFees"), icon: Tag, example: t("examples.additionalFees"), path: "additionalFees" },
                 { id: "finalTotal", label: t("finalTotal"), icon: DollarSign, example: t("examples.finalTotal"), path: "finalTotal" },
                 { id: "status.name", label: t("status"), icon: Activity, example: t("examples.status"), path: "status.name" },
                 { id: "store.name", label: t("store"), icon: Store, example: t("examples.store"), path: "store.name" },

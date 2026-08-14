@@ -646,7 +646,8 @@
     },
     "loading": "Loading getting started items...",
     "empty": "No getting started items available.",
-    "footer": "You can complete these items in any order, but some require previous steps to be finished first."
+    "footer": "You can complete these items in any order, but some require previous steps to be finished first.",
+    "moreGroupsComing": "More steps will unlock as you complete the current group."
   },
   "gettingStartedStats": {
     "pageTitle": "Learning Paths Statistics",
@@ -2754,6 +2755,8 @@
         "paymentType": "Payment Method",
         "total": "Total",
         "shippingCost": "Shipping Cost",
+        "discount": "Discount",
+        "additionalFees": "Additional Fees",
         "allowOpenPackage": "Allow Opening",
         "allowReturn": "Allow Return",
         "customer": "Customer",
@@ -4616,6 +4619,7 @@
       "unitPrice": "Unit Price",
       "quantity": "Quantity",
       "discount": "Discount",
+      "additionalFees": "Additional Fees",
       "taxInclusive": "Tax Inclusive",
       "taxRate": "Tax Rate",
       "actions": "Actions"
@@ -6511,6 +6515,7 @@
       "subtotal": "Subtotal",
       "shippingCost": "Shipping Cost",
       "discount": "Discount",
+      "additionalFees": "Additional Fees",
       "deposit": "Deposit",
       "total": "Total",
       "finalTotal": "Final Amount",
@@ -7298,6 +7303,7 @@
       "shippingCompany": "Shipping Company",
       "shippingCost": "Shipping Cost",
       "discount": "Discount",
+      "additionalFees": "Additional Fees",
       "deposit": "Deposit",
       "notes": "Internal Notes",
       "customerNotes": "Customer Notes",
@@ -7352,6 +7358,7 @@
       "productsTotal": "Products Total",
       "shippingCost": "Shipping Cost",
       "discount": "Discount",
+      "additionalFees": "Additional Fees",
       "finalTotal": "Final Total",
       "deposit": "Paid Deposit",
       "remaining": "Remaining Amount"
@@ -7481,6 +7488,7 @@
       "newTotal": "New Total",
       "shipping": "Shipping",
       "discount": "Discount",
+      "additionalFees": "Additional Fees",
       "itemDifference": "Client Credit (Items)",
       "additionalDiscount": "Additional Discount",
       "refundDeposit": "Refund (Deposit)",
@@ -9740,6 +9748,7 @@
     }
   },
   "orders-work": {
+    "additionalFees": "Additional Fees",
     "description": "Description",
     "showMore": "Show More",
     "showLess": "Show Less",
@@ -9871,6 +9880,7 @@
     },
     "pieces": "Piece",
     "discount": "Discount",
+    "additionalFees": "Additional Fees",
     "collected": "Collected",
     "currentStatus": "Current Status",
     "clickToSet": "Click to set",
@@ -12340,6 +12350,7 @@
           "productsTotal": "Products Total",
           "shippingCost": "Shipping Cost",
           "discount": "Discount",
+      "additionalFees": "Additional Fees",
           "finalTotal": "Final Total",
           "status": "Order Status",
           "store": "Store",
@@ -12395,6 +12406,7 @@
             "productsTotal": "500",
             "shippingCost": "30",
             "discount": "50",
+            "additionalFees": "20",
             "finalTotal": "480",
             "status": "Processing",
             "store": "Shopify",

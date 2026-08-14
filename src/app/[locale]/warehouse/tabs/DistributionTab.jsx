@@ -376,6 +376,18 @@ export function OrderDetailModal({ open, onClose, order: initialOrder, hideNotes
       accent: "var(--primary)",
     },
     {
+      label: t("field.discount"),
+      value: `${formatCurrency(order.discount)}`,
+      icon: Tag,
+      accent: "var(--third)",
+    },
+    {
+      label: t("field.additionalFees"),
+      value: `${formatCurrency(order.additionalFees)}`,
+      icon: CreditCard,
+      accent: "var(--primary)",
+    },
+    {
       label: t("field.allowOpenPackage"),
       value: order.allowOpenPackage
         ? t("value.allowed")

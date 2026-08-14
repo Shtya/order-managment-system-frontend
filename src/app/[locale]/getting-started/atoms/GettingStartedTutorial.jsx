@@ -287,6 +287,30 @@ export default function GettingStartedTutorial({
     };
   }, [open, step?.target?.key, onTargetInteraction]);
 
+  /**
+   * Clicking anywhere outside the tooltip and its highlighted target dismisses
+   * the tutorial entirely (same as Skip/X). Without this, a tour stays active
+   * after being dismissed by a stray click and later forces navigation back to
+   * the step's page.
+   */
+  useEffect(() => {
+    if (!open || !step?.target?.key) return;
+
+    const targetKey = step.target.key;
+
+    const handleOutsideClick = (event) => {
+      const el = event.target;
+      if (!el || !el.closest) return;
+      if (popupRef.current?.contains(el)) return;
+      if (el.closest(`[data-getting-started="${targetKey}"]`)) return;
+      onSkip();
+    };
+
+    document.addEventListener("click", handleOutsideClick, true);
+    return () =>
+      document.removeEventListener("click", handleOutsideClick, true);
+  }, [open, step?.target?.key, onSkip]);
+
   const closeDialog = () => {
     const closeBtn = document.querySelector("[data-dialog-close]");
     if (closeBtn) closeBtn.click();

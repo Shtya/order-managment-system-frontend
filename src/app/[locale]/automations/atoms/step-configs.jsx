@@ -1411,6 +1411,9 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             if (tempValue && tempValue.messageType === 'list' && addClientResponseToOrder.list) {
                 branches = [{ id: 'any_option', label: tChats('addBranchesIntoAutomationListRespond'), isCatchAll: true }];
             }
+            if (tempValue && tempValue.messageType === 'location_request' && addClientResponseToOrder.location_request) {
+                branches = [{ id: 'any_option', label: tChats('addBranchesIntoAutomationListRespond'), isCatchAll: true }];
+            }
         }
         handleCloseDialog({
             ...tempValue,
@@ -1953,6 +1956,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
         },
         { id: "city", label: tBuilder('orderProperties.city'), type: "string", icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
         { id: "discount", label: tBuilder('orderProperties.discount'), type: "string", icon: Tag, color: "text-pink-500", bg: "bg-pink-50" },
+        { id: "additionalFees", label: tBuilder('orderProperties.additionalFees'), type: "number", icon: Tag, color: "text-pink-500", bg: "bg-pink-50" },
         { id: "status", label: tBuilder('orderProperties.status'), type: "select", icon: Activity, color: "text-cyan-500", bg: "bg-cyan-50", options: statuses.map(s => ({ id: s.id, label: s.system ? tOrders(`statuses.${s.code}`) : s.name })) },
         { id: "allowOpenPackage", label: tBuilder('orderProperties.allowOpenPackage'), type: "boolean", icon: PackageOpen, color: "text-slate-500", bg: "bg-slate-50" },
         { id: "deposit", label: tBuilder('orderProperties.deposit'), type: "number", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },

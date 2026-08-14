@@ -944,6 +944,20 @@ function ReplacementInfoSection({ form, setForm, errors, priceAdjustments, forma
             />
           </FieldInput>
 
+          {/* Additional Fees */}
+          <FieldInput label={tOrder("fields.additionalFees")}>
+            <StyledInput
+              type="number"
+              min="0"
+              value={form.additionalFees}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, additionalFees: e.target.value }))
+              }
+              placeholder="0.00"
+              className="font-mono"
+            />
+          </FieldInput>
+
           {/* Additional Discount (client pays extra) */}
           {/* <FieldInput label={t("fields.additionalDiscount")}>
             <div
@@ -1822,14 +1836,16 @@ function PriceSummaryCard({ replacementItems, form, selectedOrder, formatCurrenc
     }, 0);
     const shipping = Number(form.shippingCost) || 0;
     const discount = Number(form.discount) || 0;
+    const additionalFees = Number(form.additionalFees) || 0;
     const diff = newTotal - oldTotal;
-    const finalNew = newTotal + shipping - discount + priceAdjustments.discount - priceAdjustments.refund;
+    const finalNew = newTotal + shipping + additionalFees - discount + priceAdjustments.discount - priceAdjustments.refund;
 
     return {
       oldTotal,
       newTotal,
       shipping,
       discount,
+      additionalFees,
       diff,
       finalNew,
       itemCount: replacementItems.length,
@@ -1872,6 +1888,11 @@ function PriceSummaryCard({ replacementItems, form, selectedOrder, formatCurrenc
       value: `- ${formatCurrency(summary.discount)}`,
       color: "text-red-500",
     },
+    ...(summary.additionalFees > 0 ? [{
+      label: t("summary.additionalFees"),
+      value: `+ ${formatCurrency(summary.additionalFees)}`,
+      color: "text-emerald-600 font-bold",
+    }] : []),
     ...(priceAdjustments.discount > 0 ? [{
       label: t("summary.additionalDiscount"),
       value: `+ ${formatCurrency(priceAdjustments.discount)}`,
@@ -1962,6 +1983,7 @@ export default function CreateReplacementPage({
     paymentMethod: "cod",
     shippingCost: 0,
     discount: 0,
+    additionalFees: 0,
     internalNotes: "",
     customerNotes: "",
   });
@@ -2011,6 +2033,7 @@ export default function CreateReplacementPage({
           paymentMethod: data.replacementOrder?.paymentMethod ?? "cod",
           shippingCost: data.replacementOrder?.shippingCost ?? 0,
           discount: data.replacementOrder?.discount ?? 0,
+          additionalFees: data.replacementOrder?.additionalFees ?? 0,
           internalNotes: data.internalNotes ?? "",
           customerNotes: data.replacementOrder?.customerNotes ?? "",
         });
@@ -2115,6 +2138,7 @@ export default function CreateReplacementPage({
       }
       fd.append("shippingCost", Number(form.shippingCost) || 0);
       fd.append("discount", Number(form.discount) || 0);
+      fd.append("additionalFees", Number(form.additionalFees) || 0);
       fd.append("deposit", priceAdjustments.refund);
       if (form.internalNotes) fd.append("internalNotes", form.internalNotes);
       if (form.customerNotes) fd.append("customerNotes", form.customerNotes);

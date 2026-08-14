@@ -477,11 +477,13 @@ export function GettingStartedProvider({ children }) {
       return true;
     };
 
+    // Never force the user back to the step page from elsewhere. If we are not
+    // on the opener's page, do nothing (the pathname dep re-runs this effect and
+    // resumes the dialog if/when the user returns to the right page, or the tour
+    // is dismissed from the tooltip).
     if (openFromPreviousStep.page) {
       const current = stripLocale(pathname);
-      if (current !== openFromPreviousStep.page) {
-        router.push(`/${locale}${openFromPreviousStep.page}`);
-      }
+      if (current !== openFromPreviousStep.page) return;
     }
 
     if (tryOpen()) return;

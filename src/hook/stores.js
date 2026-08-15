@@ -570,10 +570,10 @@ export const PROVIDER_CONFIG = {
         },
         webhookEndpoints: {
             create: (adminId, storeId) => storeId
-                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/woocommerce/orders/create`
+                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/orders/create`
                 : `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/create`,
             update: (adminId, storeId) => storeId
-                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/woocommerce/orders/status`
+                ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/orders/status`
                 : `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/status`,
         },
         instructions: {

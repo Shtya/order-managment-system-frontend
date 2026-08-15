@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { motion } from "framer-motion";
 import {
   CheckCircle2,
   ChevronRight,
@@ -19,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
+import HorizontalScroll from "@/components/ui/HorizontalScroll";
 import { useGettingStarted } from "@/context/GettingStartedContext";
 import DependencySidebar, {
   getItemTitle,
@@ -27,19 +27,26 @@ import DependencySidebar, {
 
 function ItemsSkeleton() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex gap-3 overflow-hidden">
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-border bg-card p-4 flex items-center gap-4"
+          className="w-80 shrink-0 rounded-xl border border-border bg-card p-4 flex flex-col"
         >
-          <div className="skeleton rounded-xl size-12 shrink-0" />
-          <div className="flex-1 min-w-0 flex flex-col gap-2">
-            <div className="skeleton h-4 w-1/3 rounded-md" />
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="skeleton size-8 rounded-full shrink-0" />
+            <div className="skeleton size-12 rounded-xl shrink-0" />
+          </div>
+          <div className="skeleton h-4 w-1/2 rounded-md" />
+          <div className="mt-1 flex flex-col gap-2 flex-1">
+            <div className="skeleton h-3 w-full rounded-md" />
+            <div className="skeleton h-3 w-4/5 rounded-md" />
             <div className="skeleton h-3 w-2/3 rounded-md" />
           </div>
-          <div className="skeleton h-8 w-24 rounded-full shrink-0" />
-          <div className="skeleton size-8 rounded-xl shrink-0" />
+          <div className="mt-4 flex items-center justify-between gap-2 shrink-0">
+            <div className="skeleton h-8 w-24 rounded-full shrink-0" />
+            <div className="skeleton size-9 rounded-xl shrink-0" />
+          </div>
         </div>
       ))}
     </div>
@@ -144,7 +151,7 @@ function GettingStartedItemCard({
   completedSet,
 }) {
   const isRtl = locale === "ar";
-  const Chevron = isRtl ? ChevronLeft : ChevronRight;
+  const Chevron = isRtl ? ChevronRight : ChevronLeft;
 
   const completed = item?.completed === true || completedSet?.has(item?.key);
 
@@ -166,6 +173,7 @@ function GettingStartedItemCard({
 
   return (
     <div
+     dir={isRtl}
       data-card
       className={cn(
         "group flex flex-col rounded-xl border p-4 text-start transition-all w-full h-full",
@@ -296,243 +304,31 @@ function OnboardingCarousel({
   completedSet,
   hasMoreGroups,
 }) {
-  const isRtl = locale === "ar";
-  const viewportRef = useRef(null);
-  const viewportWidthRef = useRef(1);
-
-  const [perView, setPerView] = useState(1);
-  const [index, setIndex] = useState(0);
-  const [dragX, setDragX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-
-  useEffect(() => {
-    const update = () => {
-      const w = window.innerWidth;
-      setPerView(w >= 1024 ? 3 : w >= 768 ? 2 : 1);
-      if (viewportRef.current) {
-        viewportWidthRef.current = viewportRef.current.offsetWidth || 1;
-      }
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const maxIndex = Math.max(0, items.length - perView);
-
-  useEffect(() => {
-    setIndex((i) => Math.min(i, maxIndex));
-    const el = viewportRef.current;
-    if (el) viewportWidthRef.current = el.offsetWidth || 1;
-  }, [maxIndex]);
-
-  const clampedIndex = Math.min(index, maxIndex);
-
-  const next = useCallback(() => setIndex((i) => Math.min(i + 1, maxIndex)), [maxIndex]);
-  const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
-
-  /* smooth mouse-wheel scrolling over the cards */
-  const wheelLock = useRef(false);
-  const dragStateRef = useRef({
-    active: false,
-    startX: 0,
-    startIndex: 0,
-    stepPx: 1,
-    moved: false,
-  });
-
-  useEffect(() => {
-    const el = viewportRef.current;
-    if (!el) return;
-    const handler = (e) => {
-      if (wheelLock.current || dragStateRef.current.active) return;
-      const delta = e.deltaY;
-      if (Math.abs(delta) < 8) return;
-      const goingForward = delta > 0;
-      const canMove = goingForward ? clampedIndex < maxIndex : clampedIndex > 0;
-      if (!canMove) return;
-      e.preventDefault();
-      wheelLock.current = true;
-      setIndex((i) =>
-        goingForward ? Math.min(i + 1, maxIndex) : Math.max(i - 1, 0),
-      );
-      window.setTimeout(() => {
-        wheelLock.current = false;
-      }, 450);
-    };
-    el.addEventListener("wheel", handler, { passive: false });
-    return () => el.removeEventListener("wheel", handler);
-  }, [clampedIndex, maxIndex]);
-
-  /* hold a card and drag it to slide */
-  const onPointerDown = (e) => {
-    if (maxIndex <= 0) return;
-    if (e.button !== 0) return;
-    // Never start a drag from inside a button so Start Now / Replay still click.
-    if (e.target.closest && e.target.closest("button")) return;
-    dragStateRef.current = {
-      active: true,
-      startX: e.clientX,
-      startIndex: index,
-      stepPx: Math.max(viewportWidthRef.current, 1) / perView,
-      moved: false,
-    };
-    setIsDragging(true);
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("pointercancel", onPointerUp);
-  };
-
-  const onPointerMove = (e) => {
-    const s = dragStateRef.current;
-    if (!s.active) return;
-    const dx = e.clientX - s.startX;
-    if (Math.abs(dx) > 4) s.moved = true;
-    setDragX(dx);
-  };
-
-  const onPointerUp = (e) => {
-    const s = dragStateRef.current;
-    if (!s.active) return;
-    const dx = e.clientX - s.startX;
-    s.active = false;
-    setIsDragging(false);
-    setDragX(0);
-    window.removeEventListener("pointermove", onPointerMove);
-    window.removeEventListener("pointerup", onPointerUp);
-    window.removeEventListener("pointercancel", onPointerUp);
-    const slides = Math.round(-dx / s.stepPx);
-    if (slides !== 0) {
-      setIndex((i) => Math.max(0, Math.min(maxIndex, s.startIndex + slides)));
-    }
-    // Suppress the click that follows a drag without leaking the flag into the
-    // next real click.
-    window.setTimeout(() => {
-      s.moved = false;
-    }, 0);
-  };
-
-  // Clean up window listeners if the component unmounts mid-gesture.
-  useEffect(() => {
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Suppress card clicks that happen at the end of a drag gesture.
-  const onCaptureClick = (e) => {
-    if (!dragStateRef.current.moved) return;
-    dragStateRef.current.moved = false;
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const slideWidth = 100 / perView;
-  const stepPx = Math.max(viewportWidthRef.current, 1) / perView;
-  const trackX = -clampedIndex * stepPx + dragX;
-
-  const ArrowBtn = ({ label, disabled, onClick, children }) => (
-    <button
-      type="button"
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        "size-9 shrink-0 rounded-full grid place-items-center border border-border bg-card text-foreground shadow-sm transition-all",
-        "enabled:hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed",
-      )}
-    >
-      {children}
-    </button>
-  );
-
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-3">
-        <div
-          ref={viewportRef}
-          onPointerDown={onPointerDown}
-          onClickCapture={onCaptureClick}
-          className={cn(
-            "overflow-hidden touch-pan-y select-none",
-            isDragging ? "cursor-grabbing" : "cursor-grab",
-          )}
-        >
-          <motion.div
-            dir="ltr"
-            className="flex"
-            animate={{ x: trackX }}
-            transition={
-              isDragging
-                ? { duration: 0 }
-                : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
-            }
-          >
-            {items.map((item, index) => (
-              <div
-                key={item.key || item.id || index}
-                className="px-2"
-                style={{ flex: `0 0 ${slideWidth}%` }}
-              >
-                <GettingStartedItemCard
-                  item={item}
-                  index={index}
-                  locale={locale}
-                  t={t}
-                  tStatus={tStatus}
-                  onItemHandled={onItemHandled}
-                  openSidebarForItem={openSidebarForItem}
-                  pushSidebarItem={pushSidebarItem}
-                  getDependenciesForItem={getDependenciesForItem}
-                  canStartItem={canStartItem}
-                  startTour={startTour}
-                  completedSet={completedSet}
-                />
-              </div>
-            ))}
-          </motion.div>
-        </div>
-      </div>
-
-      {maxIndex > 0 && (
-        <div className="flex items-center justify-center gap-3">
-          <ArrowBtn
-            label={t("tutorial.previous")}
-            disabled={clampedIndex === 0}
-            onClick={prev}
-          >
-            <ChevronRight className={cn("size-4", !isRtl && "rotate-180")} />
-          </ArrowBtn>
-
-          {/* <div className="flex items-center gap-2">
-            {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Slide ${i + 1}`}
-                onClick={() => setIndex(i)}
-                className="h-2 rounded-full transition-all duration-300"
-                style={{
-                  width: i === clampedIndex ? 28 : 10,
-                  background:
-                    i === clampedIndex ? "var(--primary)" : "var(--border)",
-                }}
-              />
-            ))}
-          </div> */}
-
-          <ArrowBtn
-            label={t("tutorial.next")}
-            disabled={clampedIndex >= maxIndex}
-            onClick={next}
-          >
-            <ChevronLeft className={cn("size-4", !isRtl && "rotate-180")} />
-          </ArrowBtn>
-        </div>
-      )}
+      <HorizontalScroll
+        slideClassName="px-2"
+        prevLabel={t("tutorial.previous")}
+        nextLabel={t("tutorial.next")}
+      >
+        {items.map((item, index) => (
+          <GettingStartedItemCard
+            key={item.key || item.id || index}
+            item={item}
+            index={index}
+            locale={locale}
+            t={t}
+            tStatus={tStatus}
+            onItemHandled={onItemHandled}
+            openSidebarForItem={openSidebarForItem}
+            pushSidebarItem={pushSidebarItem}
+            getDependenciesForItem={getDependenciesForItem}
+            canStartItem={canStartItem}
+            startTour={startTour}
+            completedSet={completedSet}
+          />
+        ))}
+      </HorizontalScroll>
 
       {hasMoreGroups && (
         <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useRouter } from "@/i18n/navigation";
@@ -250,6 +250,109 @@ export default function PricingSection() {
 
   // Popular plan sits in the center once there are 3+ plans.
   const arranged = plans;
+
+  const [perView, setPerView] = useState(1);
+  const [index, setIndex] = useState(0);
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const viewportRef = useRef(null);
+  const viewportWidthRef = useRef(1);
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      setPerView(w >= 1024 ? 3 : w >= 768 ? 2 : 1);
+      if (viewportRef.current) {
+        viewportWidthRef.current = viewportRef.current.offsetWidth || 1;
+      }
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const maxIndex = Math.max(0, arranged.length - perView);
+
+  useEffect(() => {
+    setIndex((i) => Math.min(i, maxIndex));
+    const el = viewportRef.current;
+    if (el) viewportWidthRef.current = el.offsetWidth || 1;
+  }, [maxIndex]);
+
+  const clampedIndex = Math.min(index, maxIndex);
+
+  const next = useCallback(() => setIndex((i) => Math.min(i + 1, maxIndex)), [maxIndex]);
+  const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
+
+  /* smooth mouse-wheel scrolling over the cards */
+  const wheelLock = useRef(false);
+  const dragStateRef = useRef({ active: false, startX: 0, startIndex: 0, stepPx: 1 });
+
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const handler = (e) => {
+      if (wheelLock.current || dragStateRef.current.active) return;
+      const delta = e.deltaY;
+      if (Math.abs(delta) < 8) return;
+      const goingForward = delta > 0;
+      const canMove = goingForward ? clampedIndex < maxIndex : clampedIndex > 0;
+      if (!canMove) return;
+      e.preventDefault();
+      wheelLock.current = true;
+      setIndex((i) =>
+        goingForward ? Math.min(i + 1, maxIndex) : Math.max(i - 1, 0),
+      );
+      window.setTimeout(() => {
+        wheelLock.current = false;
+      }, 450);
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, [clampedIndex, maxIndex]);
+
+  /* hold a card and drag it to slide */
+  const onPointerDown = (e) => {
+    if (maxIndex <= 0) return;
+    if (e.target.closest && e.target.closest("button")) return;
+    dragStateRef.current = {
+      active: true,
+      startX: e.clientX,
+      startIndex: index,
+      stepPx: Math.max(viewportWidthRef.current, 1) / perView,
+    };
+    setIsDragging(true);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const onPointerMove = (e) => {
+    const s = dragStateRef.current;
+    if (!s.active) return;
+    setDragX(e.clientX - s.startX);
+  };
+
+  const onPointerUp = (e) => {
+    const s = dragStateRef.current;
+    if (!s.active) return;
+    const dx = e.clientX - s.startX;
+    s.active = false;
+    setIsDragging(false);
+    setDragX(0);
+    const slides = Math.round(-dx / s.stepPx);
+    if (slides !== 0) {
+      setIndex((i) => Math.max(0, Math.min(maxIndex, s.startIndex + slides)));
+    }
+  };
+
+  const onPointerCancel = () => {
+    dragStateRef.current.active = false;
+    setIsDragging(false);
+    setDragX(0);
+  };
+
+  const slideWidth = 100 / perView;
+  const stepPx = Math.max(viewportWidthRef.current, 1) / perView;
+  const trackX = -clampedIndex * stepPx + dragX;
   // useMemo(() => {
   //     const result = [...plans];
   //     const popularIndex = result.findIndex((p) => p.featured);
@@ -291,124 +394,168 @@ export default function PricingSection() {
           <p className="mt-4 text-lg text-gray-500">{t("subheading")}</p>
         </div>
 
-        {/* Cards */}
-        <div
-          className={`mx-auto grid max-w-5xl gap-6 sm:grid-cols-2 ${arranged.length >= 3 ? "lg:grid-cols-3" : "lg:grid-cols-2"
-            }`}
-        >
-          {arranged.map((plan, i) => (
+        {/* Cards — slider (like PainPointsSection) */}
+        <div className="max-w-[1300px] mx-auto">
+          {/* viewport */}
+          <div ref={viewportRef} className="overflow-hidden pt-5 pb-3">
             <motion.div
-              key={plan.id}
-              initial={{ opacity: 0, y: 24, scale: 0.97 }}
-              whileInView={{
-                opacity: 1,
-                y: plan.featured ? -12 : 0,
-                scale: plan.featured ? 1.02 : 1,
-              }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.45, delay: i * 0.08, ease: "easeOut" }}
-              className="relative flex flex-col rounded-2xl bg-white p-7"
-              style={{
-                boxShadow: plan.featured
-                  ? `0 20px 40px -12px ${plan.ring}, 0 0 0 1.5px ${plan.accent}`
-                  : "0 8px 24px -12px rgba(17,17,26,0.12)",
-              }}
+              dir="ltr"
+              className="flex"
+              animate={{ x: `${-clampedIndex * slideWidth}%` }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              {plan.featured && (
-                <span
-                  className={cn(
-                    "absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r",
-                    plan.accent
-                  )}
-                >
-                  {isRTL ? "الأكثر طلبًا" : "Most Popular"}
-                </span>
-              )}
-
-              {/* Tier color thread */}
-              <span
-                className="mb-4 h-1.5 w-10 rounded-full"
-                style={{ background: plan.accent }}
-              />
-
-              <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-              {plan.subtitle && (
-                <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
-                  {plan.subtitle}
-                </p>
-              )}
-
-              {plan.price > 0 && <div className="mt-6 flex items-baseline gap-1.5">
-                <span className="text-4xl font-black tracking-tight text-gray-900 tabular-nums">
-                  {formatCurrency(plan.price, PLATFORM_CURRENCY)}
-                </span>
-                <span className="text-sm font-medium text-gray-400">
-                  / {plan.tier}
-                </span>
-              </div>}
-
-              {plan.extraOrderFee && (
-                <div
-                  className="mt-4 flex items-center gap-2 self-start rounded-xl px-3 py-2.5"
-                  style={{
-                    background: plan.tint,
-                    border: `1px solid ${plan.ring}`,
-                  }}
-                >
-                  <CircleCheck
-                    size={16}
-                    className="flex-shrink-0"
-                    style={{ color: plan.accent }}
-                  />
-                  <span
-                    className="text-xs font-bold"
-                    style={{ color: plan.accent }}
+              {arranged.map((plan) => (
+                <div key={plan.id} className="px-3" style={{ flex: `0 0 ${slideWidth}%` }}>
+                  <div
+                    className="relative flex h-full flex-col rounded-2xl bg-white p-7"
+                    style={{
+                      boxShadow: plan.featured
+                        ? `0 20px 40px -12px ${plan.ring}, 0 0 0 1.5px ${plan.accent}`
+                        : "0 8px 24px -12px rgba(17,17,26,0.12)",
+                    }}
                   >
-                    {plan.extraOrderFee}
-                  </span>
-                </div>
-              )}
+                    {plan.featured && (
+                      <span
+                        className={cn(
+                          "absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r",
+                          plan.accent
+                        )}
+                      >
+                        {isRTL ? "الأكثر طلبًا" : "Most Popular"}
+                      </span>
+                    )}
 
-              <div
-                className="my-6 h-px w-full"
-                style={{ background: "#11111a0f" }}
-              />
-
-              <ul className="flex-1 space-y-3">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-sm text-gray-700">
-                    <CircleCheck
-                      size={18}
-                      strokeWidth={2}
-                      className="text-green-500 flex-shrink-0"
+                    {/* Tier color thread */}
+                    <span
+                      className="mb-4 h-1.5 w-10 rounded-full"
+                      style={{ background: plan.accent }}
                     />
-                    <span className="leading-snug">
-                      {feature.label}
-                      {feature.isNew && (
+
+                    <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
+                    {plan.subtitle && (
+                      <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+                        {plan.subtitle}
+                      </p>
+                    )}
+
+                    {plan.price > 0 && <div className="mt-6 flex items-baseline gap-1.5">
+                      <span className="text-4xl font-black tracking-tight text-gray-900 tabular-nums">
+                        {formatCurrency(plan.price, PLATFORM_CURRENCY)}
+                      </span>
+                      <span className="text-sm font-medium text-gray-400">
+                        / {plan.tier}
+                      </span>
+                    </div>}
+
+                    {plan.extraOrderFee && (
+                      <div
+                        className="mt-4 flex items-center gap-2 self-start rounded-xl px-3 py-2.5"
+                        style={{
+                          background: plan.tint,
+                          border: `1px solid ${plan.ring}`,
+                        }}
+                      >
+                        <CircleCheck
+                          size={16}
+                          className="flex-shrink-0"
+                          style={{ color: plan.accent }}
+                        />
                         <span
-                          className="ms-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
-                          style={{ background: plan.tint, color: plan.accent }}
+                          className="text-xs font-bold"
+                          style={{ color: plan.accent }}
                         >
-                          {isRTL ? "جديد" : "New"}
+                          {plan.extraOrderFee}
                         </span>
-                      )}
-                    </span>
-                  </li>
+                      </div>
+                    )}
+
+                    <div
+                      className="my-6 h-px w-full"
+                      style={{ background: "#11111a0f" }}
+                    />
+
+                    <ul className="flex-1 space-y-3">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5 text-sm text-gray-700">
+                          <CircleCheck
+                            size={18}
+                            strokeWidth={2}
+                            className="text-green-500 flex-shrink-0"
+                          />
+                          <span className="leading-snug">
+                            {feature.label}
+                            {feature.isNew && (
+                              <span
+                                className="ms-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                                style={{ background: plan.tint, color: plan.accent }}
+                              >
+                                {isRTL ? "جديد" : "New"}
+                              </span>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      onClick={() => router.push("/auth?mode=signup")}
+                      className="mt-6 w-full rounded-xl py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                      style={{
+                        background: "#6763AF",
+                        boxShadow: "0 6px 18px rgba(103, 99, 175, 0.28)",
+                      }}
+                    >
+                      {t("cta")}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* controls */}
+          {maxIndex > 0 && (
+            <div className="flex items-center justify-center gap-5 mt-8">
+              <button
+                onClick={prev}
+                disabled={clampedIndex === 0}
+                aria-label={isRTL ? "السابق" : "Previous"}
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-30 hover:scale-110"
+                style={{ background: "#6763AF12", color: "#6763AF" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ transform: isRTL ? "rotate(180deg)" : "none" }}>
+                  <path d="M15 5 L8 12 L15 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              <div className="flex items-center gap-2">
+                {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setIndex(i)}
+                    aria-label={`Slide ${i + 1}`}
+                    className="h-2 rounded-full transition-all duration-300"
+                    style={{
+                      width: i === clampedIndex ? 28 : 10,
+                      background: i === clampedIndex ? "#6763AF" : "#d6d3e6",
+                    }}
+                  />
                 ))}
-              </ul>
+              </div>
 
               <button
-                onClick={() => router.push("/auth?mode=signup")}
-                className="mt-6 w-full rounded-xl py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-                style={{
-                  background: "#6763AF",
-                  boxShadow: "0 6px 18px rgba(103, 99, 175, 0.28)",
-                }}
+                onClick={next}
+                disabled={clampedIndex >= maxIndex}
+                aria-label={isRTL ? "التالي" : "Next"}
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-30 hover:scale-110"
+                style={{ background: "#6763AF12", color: "#6763AF" }}
               >
-                {t("cta")}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ transform: isRTL ? "rotate(180deg)" : "none" }}>
+                  <path d="M9 5 L16 12 L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
-            </motion.div>
-          ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

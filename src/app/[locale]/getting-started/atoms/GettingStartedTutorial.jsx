@@ -301,8 +301,16 @@ export default function GettingStartedTutorial({
     const handleOutsideClick = (event) => {
       const el = event.target;
       if (!el || !el.closest) return;
+      // Programmatic clicks (e.g. the reopen effect clicking a dialog's opening
+      // button, or handleNext triggering the target's own click) must never be
+      // treated as a user "outside" click that dismisses the tour.
+      if (!event.isTrusted) return;
       if (popupRef.current?.contains(el)) return;
       if (el.closest(`[data-getting-started="${targetKey}"]`)) return;
+      // Radix dropdowns (Select content) render in their own portal and are not
+      // DOM children of the dialog, so interacting with them (e.g. picking the
+      // safe "type") must not dismiss the tour while a dialog is open.
+      if (document.querySelector('[role="dialog"]')) return;
       onSkip();
     };
 
@@ -320,7 +328,7 @@ export default function GettingStartedTutorial({
     const prevKey = prevStepKeyRef.current;
     if (prevKey) {
       const prevStep = steps.find((s) => s.key === prevKey);
-      if (prevStep?.target?.type === "DIALOG") {
+      if (prevStep?.target?.type?.toUpperCase() === "DIALOG") {
         const nextKey = step?.target?.key;
         const nextInsideDialog =
           !!nextKey &&

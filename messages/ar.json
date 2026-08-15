@@ -745,27 +745,26 @@
       "noSteps": "لا توجد خطوات تعليمية لعرض إحصائياتها"
     },
     "itemDetailDrawer": {
-  "title": "تفاصيل المسار التعليمي",
-  "description": "عرض أداء المسار وتفاصيل خطواته.",
-
-  "completionRate": "نسبة تنفيذ الإعداد",
-  "startedCount": "عدد المستخدمين الذين بدأوا المسار",
-  "completedCount": "عدد المستخدمين الذين نفذوا الإعداد",
-  "skippedCount": "عدد المستخدمين الذين بدأوا المسار ثم تخطوه مرة واحدة على الأقل مرة",
-  "abandonedCount": "عدد المستخدمين الذين بدأوا المسار ولم يسجلوا إكمال المسار أو تنفيذ الإعداد المطلوب",
-    "finishedPathCount": "عدد المستخدمين الذين أنهوا المسار",
-  "stepsTitle": "خطوات المسار التعليمي",
-  "stepsDescription": "إحصائيات المشاهدة والتوقف والتخطي لكل خطوة.",
-  "views": "إجمالي مرات مشاهدة الخطوة",
-  "uniqueViewers": "عدد المستخدمين الذين شاهدوا الخطوة",
-  "dropOffPercent": "نسبة المستخدمين الذين شاهدوا الخطوة ولم يكملوا المسار أو الإعداد",
-  "dropOffCount": "عدد المستخدمين الذين توقفوا عند الخطوة قبل الإكمال",
-  "skipCount": "إجمالي مرات تخطي الخطوة",
-  "skippedUsers": "عدد المستخدمين الذين تخطوا الخطوة",
-  "noSteps": "لا توجد خطوات مرتبطة بهذا المسار",
-  "firstStartedAt": "تاريخ بدء المسار لأول مرة",
-  "completedAt": "تاريخ تنفيذ الإعداد"
-},
+      "title": "تفاصيل المسار التعليمي",
+      "description": "عرض أداء المسار وتفاصيل خطواته.",
+      "completionRate": "نسبة تنفيذ الإعداد",
+      "startedCount": "عدد المستخدمين الذين بدأوا المسار",
+      "completedCount": "عدد المستخدمين الذين نفذوا الإعداد",
+      "skippedCount": "عدد المستخدمين الذين بدأوا المسار ثم تخطوه مرة واحدة على الأقل مرة",
+      "abandonedCount": "عدد المستخدمين الذين بدأوا المسار ولم يسجلوا إكمال المسار أو تنفيذ الإعداد المطلوب",
+      "finishedPathCount": "عدد المستخدمين الذين أنهوا المسار",
+      "stepsTitle": "خطوات المسار التعليمي",
+      "stepsDescription": "إحصائيات المشاهدة والتوقف والتخطي لكل خطوة.",
+      "views": "إجمالي مرات مشاهدة الخطوة",
+      "uniqueViewers": "عدد المستخدمين الذين شاهدوا الخطوة",
+      "dropOffPercent": "نسبة المستخدمين الذين شاهدوا الخطوة ولم يكملوا المسار أو الإعداد",
+      "dropOffCount": "عدد المستخدمين الذين توقفوا عند الخطوة قبل الإكمال",
+      "skipCount": "إجمالي مرات تخطي الخطوة",
+      "skippedUsers": "عدد المستخدمين الذين تخطوا الخطوة",
+      "noSteps": "لا توجد خطوات مرتبطة بهذا المسار",
+      "firstStartedAt": "تاريخ بدء المسار لأول مرة",
+      "completedAt": "تاريخ تنفيذ الإعداد"
+    },
     "userSection": {
       "title": "تفاصيل تقدم المستخدم",
       "subtitle": "اعرض حالة المستخدم بالتفصيل داخل مسارات التعلم، والمسارات التي بدأها أو أكملها أو تخطاها.",
@@ -1881,7 +1880,7 @@
       "webhooksSection": "إعداد Webhooks",
       "webhookSecret": "سر Webhook",
       "webhookCreateOrderSecret": "سر إنشاء الطلب",
-      "webhookUpdateStatusSecret": "سر تحديث الحالة",
+      "webhookUpdateStatusSecret": "سر تحديث الطلب",
       "regenerateSecrets": "إعادة إنشاء الأسرار",
       "cancel": "إلغاء",
       "create": "إنشاء",
@@ -1894,8 +1893,8 @@
     "instructions": {
       "apiKeyTitle": "كيفية الحصول على مفتاح API",
       "webhooksTitle": "تعليمات إعداد Webhooks",
-      "webhookCreateOrderLabel": "رابط webhook لإنشاء الطلب",
-      "webhookUpdateStatusLabel": "رابط webhook لتحديث الحالة",
+      "webhookCreateOrderLabel": "رابط الويب هوك لإنشاء الطلب",
+      "webhookUpdateStatusLabel": "رابط الويب هوك لتحديث الطلب",
       "systemSecretsTitle": "الأسرار المُنشأة لك",
       "systemSecretsDescription": "انسخ هذه الأسرار والصقها في إعدادات webhook في WooCommerce"
     },
@@ -8693,13 +8692,13 @@
         },
         {
           "img": "landing/service-2.png",
-          "title": "كل منتج في مكانه الصحيح… ويصل <span style='color:#f59e0b'>لعميلك بأمان</span>",
+          "title": "كل منتج في مكانه الصحيح… ويصل <span style='color:#c9824c'>لعميلك بأمان</span>",
           "desc": "يضمن نظام إدارة المخزون تنظيم المنتجات بدقة، مع تحديثات لحظية وتنبيهات فورية، بما يتيح تسليم كل طلب في موعده وبأعلى درجات الحماية ليصل إلى عميلك بنجاح.",
           "cta": "ابدأ تجربتك الآن"
         },
         {
           "img": "landing/service-3.png",
-          "title": "سيطر على <span style='color:#10b981'>كل حركة مالية</span>",
+          "title": "سيطر على <span style='color:#3fa37b'>كل حركة مالية</span>",
           "desc": "أنشئ عددًا غير محدود من المحافظ، سواء كانت حسابات بنكية أو محافظ إلكترونية مثل Vodafone Cash. يتم تسجيل كل عملية شراء، تحصيل، ربح أو تحويل تلقائيًا، مع إمكانية نقل الأموال بين المحافظ وتتبع جميع الحركات المالية بدقة.",
           "cta": "ابدأ الآن"
         }
@@ -9870,7 +9869,6 @@
     },
     "pieces": "قطعة",
     "discount": "خصم",
-    "additionalFees": "رسوم إضافية",
     "collected": "تم التحصيل",
     "currentStatus": "الحالة الحالية",
     "clickToSet": "انقر للتعيين",
@@ -12105,6 +12103,7 @@
           "provider": "المزود",
           "waitFor": "الانتظار لمدة",
           "minutes": "دقيقة",
+          "noResponseAfter": "لا رد بعد",
           "noTitle": "بدون عنوان",
           "priority": "الأولوية"
         },
@@ -12289,6 +12288,21 @@
             "oneDay": "يوم واحد",
             "twoDays": "يومان"
           },
+          "noResponseTitle": "في حالة لا يوجد رد من العميل",
+          "noResponseDesc": "إذا لم يرد العميل خلال هذه المدة، ستكمل الأتمتة من فرع \"لا رد\" الخاص بهذه الخطوة.",
+          "noResponseMinutes": "الدقائق",
+          "noResponseMinutesDesc": "المدة (بالدقائق) للانتظار حتى يرد العميل.",
+          "noResponsePlaceholder": "مثال: 30",
+          "noResponseEmptyHint": "اتركها فارغة أو 0 لتخطي إضافة فرع \"لا رد\".",
+          "noResponseMinutesError": "يجب أن تكون المدة بين {min} دقيقة و{max} دقيقة (7 أيام).",
+          "noResponseBranchLabel": "لا رد",
+          "noResponsePresets": {
+            "fiveMinutes": "5 دقائق",
+            "oneHour": "ساعة واحدة",
+            "sixHours": "6 ساعات",
+            "oneDay": "يوم واحد",
+            "threeDays": "3 أيام"
+          },
           "accounts": {
             "sales": "حساب المبيعات الرئيسي",
             "support": "حساب الدعم الفني"
@@ -12376,7 +12390,7 @@
           "productsTotal": "إجمالي المنتجات",
           "shippingCost": "تكلفة الشحن",
           "discount": "الخصم",
-      "additionalFees": "رسوم إضافية",
+          "additionalFees": "رسوم إضافية",
           "finalTotal": "الإجمالي النهائي",
           "status": "حالة الطلب",
           "store": "المتجر",

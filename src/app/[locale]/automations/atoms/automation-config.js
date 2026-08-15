@@ -121,7 +121,6 @@ export const BASE_CONFIG = {
                         id: 'send_upsell',
                         icon: Zap,
                         type: 'action',
-                        noEdit: true,
                         configComponent: 'SendUpsellConfig',
                         className: 'max-w-xl!'
                     },

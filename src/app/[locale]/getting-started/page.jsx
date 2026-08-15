@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { motion } from "framer-motion";
 import {
   CheckCircle2,
   ChevronRight,
@@ -295,103 +296,119 @@ function OnboardingCarousel({
   completedSet,
   hasMoreGroups,
 }) {
-  const scrollRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
   const isRtl = locale === "ar";
-  const drag = useRef({ down: false, startX: 0, startScroll: 0, moved: false });
+  const viewportRef = useRef(null);
+  const viewportWidthRef = useRef(1);
 
-  const updateArrows = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const { scrollLeft, scrollWidth, clientWidth } = el;
-    if (isRtl) {
-      // RTL scrollers report a negative scrollLeft: 0 at the right edge (start),
-      // scrolling toward the left pushes it below 0.
-      const maxLeft = scrollWidth - clientWidth;
-      setCanScrollLeft(scrollLeft < -4);
-      setCanScrollRight(scrollLeft > -maxLeft + 4);
-    } else {
-      setCanScrollLeft(scrollLeft > 4);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
-    }
-  }, [isRtl]);
+  const [perView, setPerView] = useState(1);
+  const [index, setIndex] = useState(0);
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    updateArrows();
-  }, [items, updateArrows]);
-
-  const scrollByCard = useCallback(
-    (dir) => {
-      const el = scrollRef.current;
-      if (!el) return;
-      const card = el.querySelector("[data-card]");
-      const amount = card ? card.offsetWidth + 16 : el.clientWidth * 0.8;
-      el.scrollBy({ left: dir * amount, behavior: "smooth" });
-    },
-    [],
-  );
-
-  // Wheel over the cards: translate vertical wheel movement into horizontal
-  // scrolling (a plain overflow-x container ignores vertical deltaY).
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const onWheel = (e) => {
-      const { scrollLeft, scrollWidth, clientWidth } = el;
-      const maxLeft = scrollWidth - clientWidth;
-      if (maxLeft <= 0) return;
-      // Horizontal wheel/trackpad input already scrolls natively.
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-      const atStart = isRtl ? scrollLeft >= 0 : scrollLeft <= 0;
-      const atEnd = isRtl ? scrollLeft <= -maxLeft : scrollLeft >= maxLeft;
-      if (e.deltaY > 0 ? atEnd : atStart) return;
-      e.preventDefault();
-      el.scrollBy({ left: e.deltaY * (isRtl ? -1 : 1) });
+    const update = () => {
+      const w = window.innerWidth;
+      setPerView(w >= 1024 ? 3 : w >= 768 ? 2 : 1);
+      if (viewportRef.current) {
+        viewportWidthRef.current = viewportRef.current.offsetWidth || 1;
+      }
     };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, [isRtl]);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
-  const onPointerDown = (e) => {
-    const el = scrollRef.current;
+  const maxIndex = Math.max(0, items.length - perView);
+
+  useEffect(() => {
+    setIndex((i) => Math.min(i, maxIndex));
+    const el = viewportRef.current;
+    if (el) viewportWidthRef.current = el.offsetWidth || 1;
+  }, [maxIndex]);
+
+  const clampedIndex = Math.min(index, maxIndex);
+
+  const next = useCallback(() => setIndex((i) => Math.min(i + 1, maxIndex)), [maxIndex]);
+  const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
+
+  /* smooth mouse-wheel scrolling over the cards */
+  const wheelLock = useRef(false);
+  const dragStateRef = useRef({
+    active: false,
+    startX: 0,
+    startIndex: 0,
+    stepPx: 1,
+    moved: false,
+  });
+
+  useEffect(() => {
+    const el = viewportRef.current;
     if (!el) return;
-    // Only the primary button/touch starts a drag. Do NOT use setPointerCapture
-    // here: capturing would retarget the derived click event to the scroller and
-    // break the buttons (Start Now / View Requirements) inside the cards.
+    const handler = (e) => {
+      if (wheelLock.current || dragStateRef.current.active) return;
+      const delta = e.deltaY;
+      if (Math.abs(delta) < 8) return;
+      const goingForward = delta > 0;
+      const canMove = goingForward ? clampedIndex < maxIndex : clampedIndex > 0;
+      if (!canMove) return;
+      e.preventDefault();
+      wheelLock.current = true;
+      setIndex((i) =>
+        goingForward ? Math.min(i + 1, maxIndex) : Math.max(i - 1, 0),
+      );
+      window.setTimeout(() => {
+        wheelLock.current = false;
+      }, 450);
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, [clampedIndex, maxIndex]);
+
+  /* hold a card and drag it to slide */
+  const onPointerDown = (e) => {
+    if (maxIndex <= 0) return;
     if (e.button !== 0) return;
-    drag.current = {
-      down: true,
+    // Never start a drag from inside a button so Start Now / Replay still click.
+    if (e.target.closest && e.target.closest("button")) return;
+    dragStateRef.current = {
+      active: true,
       startX: e.clientX,
-      startScroll: el.scrollLeft,
+      startIndex: index,
+      stepPx: Math.max(viewportWidthRef.current, 1) / perView,
       moved: false,
     };
+    setIsDragging(true);
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerUp);
   };
 
   const onPointerMove = (e) => {
-    if (!drag.current.down) return;
-    const el = scrollRef.current;
-    if (!el) return;
-    const dx = e.clientX - drag.current.startX;
-    if (Math.abs(dx) > 4) drag.current.moved = true;
-    el.scrollLeft = drag.current.startScroll - dx;
+    const s = dragStateRef.current;
+    if (!s.active) return;
+    const dx = e.clientX - s.startX;
+    if (Math.abs(dx) > 4) s.moved = true;
+    setDragX(dx);
   };
 
-  const onPointerUp = () => {
-    if (!drag.current.down) return;
-    drag.current.down = false;
+  const onPointerUp = (e) => {
+    const s = dragStateRef.current;
+    if (!s.active) return;
+    const dx = e.clientX - s.startX;
+    s.active = false;
+    setIsDragging(false);
+    setDragX(0);
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", onPointerUp);
     window.removeEventListener("pointercancel", onPointerUp);
-    updateArrows();
-    // The click event that follows a drag fires after this handler, so clear
-    // the flag asynchronously to keep suppressing that trailing click while
-    // not leaking the flag into the next real click.
+    const slides = Math.round(-dx / s.stepPx);
+    if (slides !== 0) {
+      setIndex((i) => Math.max(0, Math.min(maxIndex, s.startIndex + slides)));
+    }
+    // Suppress the click that follows a drag without leaking the flag into the
+    // next real click.
     window.setTimeout(() => {
-      drag.current.moved = false;
+      s.moved = false;
     }, 0);
   };
 
@@ -407,18 +424,22 @@ function OnboardingCarousel({
 
   // Suppress card clicks that happen at the end of a drag gesture.
   const onCaptureClick = (e) => {
-    if (!drag.current.moved) return;
-    drag.current.moved = false;
+    if (!dragStateRef.current.moved) return;
+    dragStateRef.current.moved = false;
     e.preventDefault();
     e.stopPropagation();
   };
 
-  const ArrowBtn = ({ dir, disabled, children }) => (
+  const slideWidth = 100 / perView;
+  const stepPx = Math.max(viewportWidthRef.current, 1) / perView;
+  const trackX = -clampedIndex * stepPx + dragX;
+
+  const ArrowBtn = ({ label, disabled, onClick, children }) => (
     <button
       type="button"
-      aria-label={dir < 0 ? t("tutorial.previous") : t("tutorial.next")}
+      aria-label={label}
       disabled={disabled}
-      onClick={() => scrollByCard(dir)}
+      onClick={onClick}
       className={cn(
         "size-9 shrink-0 rounded-full grid place-items-center border border-border bg-card text-foreground shadow-sm transition-all",
         "enabled:hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed",
@@ -432,48 +453,86 @@ function OnboardingCarousel({
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <div
-          ref={scrollRef}
-          onScroll={updateArrows}
+          ref={viewportRef}
           onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
           onClickCapture={onCaptureClick}
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1 select-none cursor-grab active:cursor-grabbing [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className={cn(
+            "overflow-hidden touch-pan-y select-none",
+            isDragging ? "cursor-grabbing" : "cursor-grab",
+          )}
         >
-          {items.map((item, index) => (
-            <div
-              key={item.key || item.id || index}
-              data-card
-              className="snap-start shrink-0 w-[78vw] sm:w-[320px]"
-            >
-              <GettingStartedItemCard
-                item={item}
-                index={index}
-                locale={locale}
-                t={t}
-                tStatus={tStatus}
-                onItemHandled={onItemHandled}
-                openSidebarForItem={openSidebarForItem}
-                pushSidebarItem={pushSidebarItem}
-                getDependenciesForItem={getDependenciesForItem}
-                canStartItem={canStartItem}
-                startTour={startTour}
-                completedSet={completedSet}
-              />
-            </div>
-          ))}
+          <motion.div
+            dir="ltr"
+            className="flex"
+            animate={{ x: trackX }}
+            transition={
+              isDragging
+                ? { duration: 0 }
+                : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+            }
+          >
+            {items.map((item, index) => (
+              <div
+                key={item.key || item.id || index}
+                className="px-2"
+                style={{ flex: `0 0 ${slideWidth}%` }}
+              >
+                <GettingStartedItemCard
+                  item={item}
+                  index={index}
+                  locale={locale}
+                  t={t}
+                  tStatus={tStatus}
+                  onItemHandled={onItemHandled}
+                  openSidebarForItem={openSidebarForItem}
+                  pushSidebarItem={pushSidebarItem}
+                  getDependenciesForItem={getDependenciesForItem}
+                  canStartItem={canStartItem}
+                  startTour={startTour}
+                  completedSet={completedSet}
+                />
+              </div>
+            ))}
+          </motion.div>
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-3">
-        <ArrowBtn dir={isRtl ? 1 : -1} disabled={!canScrollLeft}>
-          <ChevronRight className={cn("size-4", !isRtl && "rotate-180")} />
-        </ArrowBtn>
-        <ArrowBtn dir={isRtl ? -1 : 1} disabled={!canScrollRight}>
-          <ChevronLeft className={cn("size-4", !isRtl && "rotate-180")} />
-        </ArrowBtn>
-      </div>
+      {maxIndex > 0 && (
+        <div className="flex items-center justify-center gap-3">
+          <ArrowBtn
+            label={t("tutorial.previous")}
+            disabled={clampedIndex === 0}
+            onClick={prev}
+          >
+            <ChevronRight className={cn("size-4", !isRtl && "rotate-180")} />
+          </ArrowBtn>
+
+          {/* <div className="flex items-center gap-2">
+            {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Slide ${i + 1}`}
+                onClick={() => setIndex(i)}
+                className="h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: i === clampedIndex ? 28 : 10,
+                  background:
+                    i === clampedIndex ? "var(--primary)" : "var(--border)",
+                }}
+              />
+            ))}
+          </div> */}
+
+          <ArrowBtn
+            label={t("tutorial.next")}
+            disabled={clampedIndex >= maxIndex}
+            onClick={next}
+          >
+            <ChevronLeft className={cn("size-4", !isRtl && "rotate-180")} />
+          </ArrowBtn>
+        </div>
+      )}
 
       {hasMoreGroups && (
         <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">

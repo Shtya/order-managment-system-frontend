@@ -141,7 +141,7 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
 
                     // 2. Check buttons/branches (Breaking Change)
                     const freshButtons = freshTemplate.templateConfig?.buttons?.filter(btn => btn.type === 'CUSTOM') || [];
-                    const currentBranches = config.branches || [];
+                    const currentBranches = (config.branches || []).filter(b => !b.isNoResponse);
 
                     if (freshButtons.length !== currentBranches.length) {
                         result.isValid = false;

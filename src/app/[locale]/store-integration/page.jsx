@@ -833,129 +833,127 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
 
           {!loading && config && (
             <div className="space-y-4">
-              {/* Webhook URLs - create */}
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-[var(--card-foreground)]">
+              {/* Webhook URL - create order (label + field on one line) */}
+              <div className="flex items-center gap-2">
+                <label className="shrink-0 whitespace-nowrap text-sm font-medium text-[var(--card-foreground)]">
                   {t("instructions.webhookCreateOrderLabel")}
                 </label>
-                <div className="flex gap-2">
+                <input
+                  readOnly
+                  value={config.webhookEndpoints.create(user?.id, store?.id)}
+                  className="min-w-0 flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyToClipboard(config.webhookEndpoints.create(user?.id, store?.id))
+                  }
+                  className="shrink-0 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                  title="Copy"
+                >
+                  <Copy size={14} />
+                </button>
+              </div>
+
+              {/* WooCommerce: create order secret */}
+              {provider === "woocommerce" && cred.webhookCreateOrderSecret && (
+                <div className="flex items-center gap-2">
+                  <label className="shrink-0 whitespace-nowrap text-sm font-medium text-[var(--card-foreground)]">
+                    {t("form.webhookCreateOrderSecret")}
+                  </label>
                   <input
                     readOnly
-                    value={config.webhookEndpoints.create(user?.id, store?.id)}
-                    className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                    value={cred.webhookCreateOrderSecret}
+                    className="min-w-0 flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                   />
                   <button
                     type="button"
                     onClick={() =>
-                      copyToClipboard(config.webhookEndpoints.create(user?.id, store?.id))
+                      copyToClipboard(cred.webhookCreateOrderSecret)
                     }
-                    className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                    className="shrink-0 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                     title="Copy"
                   >
                     <Copy size={14} />
                   </button>
                 </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-[var(--card-foreground)]">
-                  {t("instructions.webhookUpdateStatusLabel")}
-                </label>
-                <div className="flex gap-2">
+              )}
+
+              {/* Update status webhook + update secret (same line) */}
+              <div
+                className={`space-y-4 `}
+              >
+                <div className="flex items-center gap-2">
+                  <label className="shrink-0 whitespace-nowrap text-sm font-medium text-[var(--card-foreground)]">
+                    {t("instructions.webhookUpdateStatusLabel")}
+                  </label>
                   <input
                     readOnly
                     value={config.webhookEndpoints.update(user?.id, store?.id)}
-                    className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                    className="min-w-0  flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                   />
                   <button
                     type="button"
                     onClick={() =>
                       copyToClipboard(config.webhookEndpoints.update(user?.id, store?.id))
                     }
-                    className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                    className="shrink-0 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                     title="Copy"
                   >
                     <Copy size={14} />
                   </button>
                 </div>
+
+                {provider === "woocommerce" && cred.webhookUpdateStatusSecret && (
+                  <div className="flex items-center gap-2">
+                    <label className="shrink-0 whitespace-nowrap text-sm font-medium text-[var(--card-foreground)]">
+                      {t("form.webhookUpdateStatusSecret")}
+                    </label>
+                    <input
+                      readOnly
+                      value={cred.webhookUpdateStatusSecret}
+                      className="min-w-0 flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyToClipboard(cred.webhookUpdateStatusSecret)
+                      }
+                      className="shrink-0 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                      title="Copy"
+                    >
+                      <Copy size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
+
               <p className="text-[11px] text-[var(--muted-foreground)]">
                 {t("webhook.urlHint")}
               </p>
 
-              {/* WooCommerce: system secrets (read-only + copy + regenerate) */}
+              {/* WooCommerce: security hint + regenerate */}
               {provider === "woocommerce" && (
-                <>
-                  <div className="grid gap-3 md:grid-cols-2 grid-cols-1">
-                    {cred.webhookCreateOrderSecret && (
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-[var(--card-foreground)]">
-                          {t("form.webhookCreateOrderSecret")}
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            readOnly
-                            value={cred.webhookCreateOrderSecret}
-                            className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              copyToClipboard(cred.webhookCreateOrderSecret)
-                            }
-                            className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
-                            title="Copy"
-                          >
-                            <Copy size={14} />
-                          </button>
-                        </div>
-                      </div>
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
+                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                    {t("webhook.securityHint")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={rotateWooCommerce}
+                    disabled={rotating}
+                    className="flex items-center gap-2 text-nowrap px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all disabled:opacity-50"
+                  >
+                    {rotating ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <RotateCcw size={14} />
                     )}
-                    {cred.webhookUpdateStatusSecret && (
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-[var(--card-foreground)]">
-                          {t("form.webhookUpdateStatusSecret")}
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            readOnly
-                            value={cred.webhookUpdateStatusSecret}
-                            className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              copyToClipboard(cred.webhookUpdateStatusSecret)
-                            }
-                            className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
-                            title="Copy"
-                          >
-                            <Copy size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
-                    <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                      {t("webhook.securityHint")}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={rotateWooCommerce}
-                      disabled={rotating}
-                      className="flex items-center gap-2 text-nowrap px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all disabled:opacity-50"
-                    >
-                      {rotating ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <RotateCcw size={14} />
-                      )}
-                      <span className="text-xs font-semibold">
-                        {t("webhook.rotate")}
-                      </span>
-                    </button>
-                  </div>
-                </>
+                    <span className="text-xs font-semibold">
+                      {t("webhook.rotate")}
+                    </span>
+                  </button>
+                </div>
               )}
             </div>
           )}

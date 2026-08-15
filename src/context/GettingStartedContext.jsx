@@ -482,8 +482,19 @@ export function GettingStartedProvider({ children }) {
     // resumes the dialog if/when the user returns to the right page, or the tour
     // is dismissed from the tooltip).
     if (openFromPreviousStep.page) {
+      // usePathname() never includes the query string, but some step pages carry
+      // one (e.g. "/accounts?tab=safes", "/call-center?tab=automatic"). Compare
+      // pathnames only, and when the opener isn't rendered yet on the current
+      // tab, navigate to the exact URL so it (and its dialog) can appear.
       const current = stripLocale(pathname);
-      if (current !== openFromPreviousStep.page) return;
+      const expectedPath = openFromPreviousStep.page.split("?")[0];
+      if (current !== expectedPath) return;
+      if (openFromPreviousStep.page.includes("?")) {
+        const openerSelector = `[data-getting-started="${openFromPreviousStep.targetKey}"]`;
+        if (!document.querySelector(openerSelector)) {
+          router.push(`/${locale}${openFromPreviousStep.page}`);
+        }
+      }
     }
 
     if (tryOpen()) return;

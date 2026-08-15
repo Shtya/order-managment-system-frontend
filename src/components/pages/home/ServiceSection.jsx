@@ -10,32 +10,49 @@ const BRAND = "#6763AF";
 const ease = [0.22, 1, 0.36, 1];
 
 
-const CARD_ACCENT = ["#6763AF", "#AF7F63", "#6394AF"];
-
-const ColorsBox = [
+/* Theme palette from preview (2).html — purple / orange / green */
+const THEMES = [
 	{
-		boxShadow: "0px 0px 0px 0px #00000014",
-		backdropFilter: "blur(35px)",
-		border: "1.5px solid #6763AF18",
-		background: "#f7f5fa",
-		glow: "#6763AF",
-		shimmer: "linear-gradient(135deg, #6763AF08, #a78bfa06, #6763AF04)",
+		border: "#e7e4f6",
+		bg: "linear-gradient(135deg, #ffffff 0%, #faf9fe 100%)",
+		hoverBorder: "#d8d3f1",
+		hoverShadow: "0 14px 38px rgba(103, 99, 175, 0.07)",
+		icon: Package,
+		iconColor: "#6763AF",
+		iconBg: "#f0effa",
+		iconBorder: "#e0dcf5",
+		accent: "#6763AF",
+		btnColor: "#6763AF",
+		btnBorder: "#d3cdf1",
+		btnHover: "#6763AF",
 	},
 	{
-		border: "1.5px solid #AF7F6318",
-		boxShadow: "0px 0px 0px 0px #00000014",
-		backdropFilter: "blur(35px)",
-		background: "#fff9f3",
-		glow: "#AF7F63",
-		shimmer: "linear-gradient(135deg, #AF7F6308, #fb923c06, #AF7F6304)",
+		border: "#f8eadc",
+		bg: "linear-gradient(135deg, #ffffff 0%, #fffdfb 100%)",
+		hoverBorder: "#f1d8c0",
+		hoverShadow: "0 14px 38px rgba(210, 126, 55, 0.07)",
+		icon: Truck,
+		iconColor: "#c9824c",
+		iconBg: "#fff7ef",
+		iconBorder: "#f6e4d2",
+		accent: "#c9824c",
+		btnColor: "#b96e38",
+		btnBorder: "#efd6bf",
+		btnHover: "#c9824c",
 	},
 	{
-		border: "1.5px solid #6394AF22",
-		boxShadow: "0px 0px 0px 0px #00000014",
-		backdropFilter: "blur(35px)",
-		background: "#f3fcff",
-		glow: "#6394AF",
-		shimmer: "linear-gradient(135deg, #6394AF08, #60a5fa06, #6394AF04)",
+		border: "#e0f2ea",
+		bg: "linear-gradient(135deg, #ffffff 0%, #fbfefc 100%)",
+		hoverBorder: "#cfeade",
+		hoverShadow: "0 14px 38px rgba(45, 160, 110, 0.07)",
+		icon: BarChart3,
+		iconColor: "#3fa37b",
+		iconBg: "#f0faf5",
+		iconBorder: "#dcefe6",
+		accent: "#3fa37b",
+		btnColor: "#328c68",
+		btnBorder: "#cfe9dc",
+		btnHover: "#3fa37b",
 	},
 ];
 
@@ -87,61 +104,50 @@ function StatPill({ value, label, delay, accent, position }) {
 /* ════════ SERVICE CARD ════════ */
 function ServiceCard({ item, index, inView, isRtl, img }) {
 	const Arrow = isRtl ? ArrowLeft : ArrowRight;
-	const accent = CARD_ACCENT[index];
-	const box = ColorsBox[index];
-
-
+	const theme = THEMES[index % THEMES.length];
+	const Icon = theme.icon;
+	const reversed = index % 2 === 0;
 
 	return (
-		<motion.div
-			initial={{ opacity: 0, y: 60, scale: 0.96 }}
-			animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+		<motion.article
+			initial={{ opacity: 0, y: 40 }}
+			animate={inView ? { opacity: 1, y: 0 } : {}}
 			transition={{ duration: 0.7, delay: 0.15 + index * 0.18, ease }}
-			whileHover={{ y: -6, boxShadow: `0 32px 70px ${accent}18, 0 8px 24px ${accent}0e` }}
-			className="relative rounded-xl p-4 sm:p-6 overflow-hidden flex flex-col lg:flex-row items-center lg:items-stretch transition-all duration-500 max-w-[1200px] mx-auto w-full"
+			whileHover={{ borderColor: theme.hoverBorder, boxShadow: theme.hoverShadow }}
+			className="relative grid grid-cols-1 lg:grid-cols-2 items-center gap-8 lg:gap-[60px] rounded-[22px] bg-white border p-6 lg:p-[28px_42px] overflow-hidden transition-[border-color,box-shadow] duration-300 max-w-[1200px] mx-auto w-full"
 			style={{
-				minHeight: 270,
-				background: box.background,
-				border: box.border,
-				backdropFilter: box.backdropFilter,
-				boxShadow: `0 2px 20px ${accent}0a`,
+				borderColor: theme.border,
+				background: theme.bg,
+				boxShadow: "0 8px 30px rgba(74, 48, 150, 0.035)",
+				"--btn-hover": theme.btnHover,
+				"--btn-color": theme.btnColor,
 			}}
 		>
-			{/* ── animated shimmer mesh background ── */}
+			{/* ── CONTENT SIDE ── */}
 			<motion.div
-				animate={{ opacity: [0.4, 0.75, 0.4] }}
-				transition={{ duration: 6 + index, repeat: Infinity, ease: "easeInOut" }}
-				className="absolute inset-0 pointer-events-none"
-				style={{ background: box.shimmer }}
-			/>
-
-
-			{/* ── left accent bar ── */}
-			<motion.div
-				initial={{ scaleY: 0 }}
-				animate={inView ? { scaleY: 1 } : {}}
-				transition={{ delay: 0.4 + index * 0.18, duration: 0.6 }}
-				className="absolute top-8 bottom-8  w-[3px] rounded-full"
-				style={{
-					[isRtl ? "right" : "left"]: 0,
-					background: `linear-gradient(to bottom, transparent, ${accent}, transparent)`,
-					transformOrigin: "top",
-				}}
-			/>
-
-			{/* ── TEXT SIDE ── */}
-			<div
-				className="flex flex-col justify-center p-4 sm:p-8 flex-1 relative z-10"
+				initial={{ opacity: 0, y: 8 }}
+				animate={inView ? { opacity: 1, y: 0 } : {}}
+				transition={{ delay: 0.3 + index * 0.18, duration: 0.55, ease }}
+				className={`flex flex-col justify-center ${reversed ? "lg:order-2" : "lg:order-1"}`}
 				style={{ textAlign: isRtl ? "right" : "left" }}
 			>
-
+				{/* feature icon */}
+				<motion.div
+					initial={{ scale: 0.6, opacity: 0 }}
+					animate={inView ? { scale: 1, opacity: 1 } : {}}
+					transition={{ delay: 0.4 + index * 0.18, type: "spring", stiffness: 220, damping: 18 }}
+					className="w-[58px] h-[58px] flex items-center justify-center rounded-[15px] mb-[18px]"
+					style={{ color: theme.iconColor, background: theme.iconBg, border: `1px solid ${theme.iconBorder}` }}
+				>
+					<Icon size={27} strokeWidth={2} />
+				</motion.div>
 
 				{/* title */}
 				<motion.h3
 					initial={{ opacity: 0, x: isRtl ? -20 : 20 }}
 					animate={inView ? { opacity: 1, x: 0 } : {}}
 					transition={{ delay: 0.3 + index * 0.18, duration: 0.55, ease }}
-					className="font-extrabold text-gray-800 leading-snug mb-3 text-2xl sm:text-3xl lg:text-3xl"
+					className="font-extrabold leading-[1.4] mb-[14px] text-[#18233a] text-[clamp(25px,3vw,36px)]"
 					dangerouslySetInnerHTML={{ __html: item.title }}
 				/>
 
@@ -150,49 +156,35 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 					initial={{ opacity: 0, y: 8 }}
 					animate={inView ? { opacity: 1, y: 0 } : {}}
 					transition={{ delay: 0.4 + index * 0.18 }}
-					className="text-gray-500 leading-relaxed mb-6 text-base sm:text-lg max-w-sm"
+					className="text-[#697286] text-base leading-[2] max-w-[500px] mb-6"
 				>
 					{item.desc}
 				</motion.p>
 
-				{/* CTA */}
+				{/* CTA pill */}
 				<Link href="/auth?mode=signup" passHref legacyBehavior>
 					<motion.button
 						initial={{ opacity: 0, y: 10 }}
 						animate={inView ? { opacity: 1, y: 0 } : {}}
 						transition={{ delay: 0.5 + index * 0.18 }}
-						whileHover={{ scale: 1.04, x: isRtl ? -4 : 4 }}
+						whileHover={{ scale: 1.04 }}
 						whileTap={{ scale: 0.97 }}
-						className="inline-flex items-center gap-2 text-white font-bold rounded-xl relative overflow-hidden w-fit"
-						style={{
-							padding: "10px 22px",
-							fontSize: 13,
-							background: `linear-gradient(135deg, ${accent}, ${accent}cc)`,
-							boxShadow: `0 4px 20px ${accent}35`,
-						}}
+						className="self-start inline-flex items-center gap-[10px] px-[22px] py-[10px] rounded-full bg-white font-bold text-[14px] text-[var(--btn-color)] transition-colors duration-200 hover:bg-[var(--btn-hover)] hover:text-white"
+						style={{ border: `1px solid ${theme.btnBorder}` }}
 					>
-						{/* shimmer sweep */}
-						<motion.div
-							className="absolute inset-0"
-							animate={{ x: ["-100%", "220%"] }}
-							transition={{ duration: 2.6, repeat: Infinity, repeatDelay: 2.2 }}
-							style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.32),transparent)", width: "55%" }}
-						/>
-						<span className="relative z-10">{item.cta}</span>
-						<Arrow size={16} className="relative z-10" />
+						<span>{item.cta}</span>
+						<Arrow size={16} />
 					</motion.button>
 				</Link>
-			</div>
+			</motion.div>
 
 			{/* ── IMAGE SIDE ── */}
 			<motion.div
 				initial={{ opacity: 0, x: isRtl ? 30 : -30 }}
 				animate={inView ? { opacity: 1, x: 0 } : {}}
 				transition={{ duration: 0.65, delay: 0.22 + index * 0.18, ease }}
-				className="relative max-w-[300px] sm:max-w-[360px] w-full overflow-hidden mt-6 lg:mt-0"
-
+				className={`relative w-full flex items-center justify-center ${reversed ? "lg:order-1" : "lg:order-2"}`}
 			>
-				{/* image */}
 				<motion.img
 					src={img}
 					alt={item.title}
@@ -200,26 +192,11 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 					animate={inView ? { scale: 1 } : {}}
 					transition={{ duration: 0.9, delay: 0.3 + index * 0.18, ease }}
 					whileHover={{ scale: 1.04 }}
-					style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", transition: "transform 0.5s" }}
-					onError={e => { e.currentTarget.style.display = "none"; }}
-				/>
-
-
-
-				{/* decorative accent line at image edge */}
-				<motion.div
-					initial={{ scaleY: 0 }}
-					animate={inView ? { scaleY: 1 } : {}}
-					transition={{ delay: 0.55 + index * 0.18, duration: 0.5 }}
-					className="absolute top-0 bottom-0 w-[2px]"
-					style={{
-						[isRtl ? "right" : "left"]: 0,
-						background: `linear-gradient(to bottom, transparent, ${accent}60, transparent)`,
-						transformOrigin: "top",
-					}}
+					className="w-full h-auto object-contain max-w-[540px]"
+					onError={(e) => { e.currentTarget.style.display = "none"; }}
 				/>
 			</motion.div>
-		</motion.div>
+		</motion.article>
 	);
 }
 

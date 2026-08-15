@@ -515,6 +515,84 @@ export function WaitConfig({ value, onChange, errors, setDisabled }) {
 }
 
 /**
+ * Reusable: "Client didn't respond within X" timeout configuration.
+ * Shared by template, list, interactive and location-request steps.
+ * When a value is set, a "no response" branch is added to the step so the
+ * automation can continue after the configured time passes.
+ */
+const MAX_NO_RESPONSE_MINUTES = 7 * 24 * 60;
+
+export function buildNoResponseBranch(minutes, label) {
+    if (minutes === undefined || minutes === null || minutes === '') return null;
+    const num = Number(minutes);
+    if (!(Number.isFinite(num) && num >= 1 && num <= MAX_NO_RESPONSE_MINUTES)) return null;
+    return { id: 'no_response', label, isNoResponse: true, timeoutMinutes: num };
+}
+
+export function NoResponseConfig({ value, onChange }) {
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+
+    const NO_RESPONSE_PRESETS = [
+        { minutes: 5, label: tConfig('noResponsePresets.fiveMinutes') },
+        { minutes: 60, label: tConfig('noResponsePresets.oneHour') },
+        { minutes: 6 * 60, label: tConfig('noResponsePresets.sixHours') },
+        { minutes: 24 * 60, label: tConfig('noResponsePresets.oneDay') },
+        { minutes: 3 * 24 * 60, label: tConfig('noResponsePresets.threeDays') },
+    ];
+
+    const minutes = Number(value);
+    const hasValue = value !== undefined && value !== null && value !== '';
+    const isValid = !hasValue || (minutes >= 1 && minutes <= MAX_NO_RESPONSE_MINUTES);
+    const error = hasValue && !isValid
+        ? tConfig('noResponseMinutesError', { min: 1, max: MAX_NO_RESPONSE_MINUTES })
+        : null;
+
+    return (
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 p-4 space-y-3 mt-3">
+            <div>
+                <Label className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">
+                    {tConfig('noResponseTitle')}
+                </Label>
+                <p className="text-[11px] text-slate-400 mt-1">{tConfig('noResponseDesc')}</p>
+            </div>
+
+
+            <FormGroup  description={tConfig('noResponseMinutesDesc')} error={error}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {NO_RESPONSE_PRESETS.map((preset) => (
+                        <button
+                            key={preset.minutes}
+                            type="button"
+                            onClick={() => onChange(String(preset.minutes))}
+                            className={cn(
+                                "rounded-xl border px-3 py-2 text-sm font-bold transition-colors",
+                                minutes === preset.minutes
+                                    ? "border-primary bg-primary/10 text-primary"
+                                    : "border-slate-200 dark:border-slate-700 hover:border-primary/40"
+                            )}
+                        >
+                            {preset.label}
+                        </button>
+                    ))}
+                </div>
+            </FormGroup>
+            <Input
+                type="number"
+                min={1}
+                max={MAX_NO_RESPONSE_MINUTES}
+                value={value ?? ''}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={tConfig('noResponsePlaceholder')}
+                className="w-full h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-black text-lg"
+            />
+            <p className="text-[10px] text-slate-400 font-medium mt-1.5">
+                {tConfig('noResponseEmptyHint')}
+            </p>
+        </div>
+    );
+}
+
+/**
  * Action: Assign Order to Employee
  */
 export function AssignOrderToEmployeeConfig({ value, onChange, errors, setDisabled, onClose, mode }) {
@@ -679,7 +757,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         const parameterFormat = config.parameterFormat || 'positional';
         const headerVars = extractVariableNames(config.headerText || '', parameterFormat);
         const bodyVars = extractVariableNames(config.bodyText || '', parameterFormat);
-        
+
         const headerVariables = {};
         headerVars.forEach(num => {
             headerVariables[num] = { type: 'direct', value: '', label: '', example: config.headerVariables?.[num] || '' };
@@ -737,7 +815,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         setHeaderMediaFile(null);
         setIsTemplateDialogOpen(false);
     };
-    
+
     const handleVariableChange = (type, num, updates) => {
         const key = type === 'header' ? 'headerVariables' : type === 'body' ? 'bodyVariables' : type === 'location' ? 'locationData' : 'buttonVariables';
         if (type === 'location') {
@@ -819,7 +897,16 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
 
             deletedOldUrls.push(oldLink);
         }
-        const nextValue = { ...tempValue, headerMediaFile, deletedOldUrls };
+        const noResponseBranch = buildNoResponseBranch(tempValue.noResponseMinutes, tConfig('noResponseBranchLabel'));
+        const otherBranches = (tempValue.branches || []).filter(b => !b.isNoResponse);
+        const nextValue = {
+            ...tempValue,
+            headerMediaFile,
+            deletedOldUrls,
+            branches: noResponseBranch
+                ? [...otherBranches, noResponseBranch]
+                : otherBranches,
+        };
         onChange(nextValue);
         onClose(nextValue);
     };
@@ -1006,42 +1093,42 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                                     {renderVariableInput('location', 'name', tConfig('locationName'))}
                                                                     {renderVariableInput('location', 'address', tConfig('locationAddress'))}
                                                                 </div>
-                                                    </div>
-                                                </div>
-                                            )}
+                                                            </div>
+                                                        </div>
+                                                    )}
 
-                                            {isMediaHeader && (
-                                                <div className="space-y-4">
-                                                    <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                        <ImageIcon size={12} /> {tConfig('mediaHeader')}
-                                                    </p>
-                                                    {tempValue.templateData?.headerType?.toLowerCase() === 'image' && (
-                                                        <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-3">
-                                                            <Checkbox
-                                                                checked={!!tempValue.useOrderFirstItemImage}
-                                                                onCheckedChange={handleUseOrderFirstItemImage}
-                                                            />
-                                                            <span className="flex flex-col gap-0.5">
-                                                                <span className="text-[10px] md:text-xs font-black text-slate-700 dark:text-slate-200">
-                                                                    {tConfig('useOrderFirstItemImage')}
-                                                                </span>
-                                                                <span className="text-[9px] md:text-[10px] text-slate-400 font-bold">
-                                                                    {tConfig('useOrderFirstItemImageNote')}
-                                                                </span>
-                                                            </span>
-                                                        </label>
+                                                    {isMediaHeader && (
+                                                        <div className="space-y-4">
+                                                            <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                                <ImageIcon size={12} /> {tConfig('mediaHeader')}
+                                                            </p>
+                                                            {tempValue.templateData?.headerType?.toLowerCase() === 'image' && (
+                                                                <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-3">
+                                                                    <Checkbox
+                                                                        checked={!!tempValue.useOrderFirstItemImage}
+                                                                        onCheckedChange={handleUseOrderFirstItemImage}
+                                                                    />
+                                                                    <span className="flex flex-col gap-0.5">
+                                                                        <span className="text-[10px] md:text-xs font-black text-slate-700 dark:text-slate-200">
+                                                                            {tConfig('useOrderFirstItemImage')}
+                                                                        </span>
+                                                                        <span className="text-[9px] md:text-[10px] text-slate-400 font-bold">
+                                                                            {tConfig('useOrderFirstItemImageNote')}
+                                                                        </span>
+                                                                    </span>
+                                                                </label>
+                                                            )}
+                                                            {!(tempValue.templateData?.headerType?.toLowerCase() === 'image' && tempValue.useOrderFirstItemImage) && (
+                                                                <MediaUpload
+                                                                    type={tempValue.templateData.headerType}
+                                                                    url={tempValue.headerUrl}
+                                                                    accountId={tempValue.accountId}
+                                                                    onUrlChange={handleMediaUrlChange}
+                                                                    onFileChange={handleMediaFileChange}
+                                                                />
+                                                            )}
+                                                        </div>
                                                     )}
-                                                    {!(tempValue.templateData?.headerType?.toLowerCase() === 'image' && tempValue.useOrderFirstItemImage) && (
-                                                        <MediaUpload
-                                                            type={tempValue.templateData.headerType}
-                                                            url={tempValue.headerUrl}
-                                                            accountId={tempValue.accountId}
-                                                            onUrlChange={handleMediaUrlChange}
-                                                            onFileChange={handleMediaFileChange}
-                                                        />
-                                                    )}
-                                                </div>
-                                            )}
 
                                                     {headerVars.length > 0 && (
                                                         <div className="space-y-4">
@@ -1074,6 +1161,14 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                         </div>
                                     )}
                                 </FormGroup>
+
+                                {/* No response timeout */}
+                                {tempValue.templateData && (
+                                    <NoResponseConfig
+                                        value={tempValue.noResponseMinutes}
+                                        onChange={(v) => setTempValue((prev) => ({ ...prev, noResponseMinutes: v }))}
+                                    />
+                                )}
                             </div>
                         </div>
 
@@ -1261,7 +1356,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             }
         } else if (messageType === 'interactive' && messageData?.interactive?.header) {
             const header = messageData.interactive.header;
-            
+
             return header[header?.type]?.link;
         } else if (['image', 'video', 'document'].includes(messageType)) {
             return messageData[messageType]?.link;
@@ -1368,7 +1463,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             const oldLink = getMediaLink(initialValueRef.current.messageData, initialValueRef.current.messageType);
             const newLink = getMediaLink(tempValue.messageData, tempValue.messageType);
             if (oldLink && oldLink !== newLink) {
-                
+
                 deletedOldUrls.push(oldLink);
             }
         }
@@ -1396,7 +1491,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                     branches = [{ id: 'any_option', label: tChats('addBranchesIntoAutomationListRespond'), isCatchAll: true }];
                 }
             }
-            
+
         } else {
             const typeDate = customMessageTypes.find(t => t.type === tempValue.messageType);
             const hasActionIntent = typeDate && addClientResponseToOrder[tempValue.messageType];
@@ -1414,6 +1509,16 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             if (tempValue && tempValue.messageType === 'location_request' && addClientResponseToOrder.location_request) {
                 branches = [{ id: 'any_option', label: tChats('addBranchesIntoAutomationListRespond'), isCatchAll: true }];
             }
+        }
+
+        const noResponseBranch = buildNoResponseBranch(tempValue.noResponseMinutes, tConfig('noResponseBranchLabel'));
+        const collectsResponse =
+            (tempValue.messageType === 'interactive' && addClientResponseToOrder.interactive) ||
+            (tempValue.messageType === 'list' && addClientResponseToOrder.list) ||
+            (tempValue.messageType === 'location_request' && addClientResponseToOrder.location_request);
+        if (collectsResponse) {
+            const baseBranches = (branches || []).filter(b => !b.isNoResponse);
+            branches = noResponseBranch ? [...baseBranches, noResponseBranch] : baseBranches;
         }
         handleCloseDialog({
             ...tempValue,
@@ -1491,6 +1596,18 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                             </label>
                         </div>
                     )}
+                    {definition.messageType === 'interactive' && tempAddClientResponseToOrder?.interactive && (
+                        <NoResponseConfig
+                            value={tempValue.noResponseMinutes}
+                            onChange={(v) => setTempValue((prev) => ({ ...prev, noResponseMinutes: v }))}
+                        />
+                    )}
+                    {definition.messageType === 'list' && tempAddClientResponseToOrder?.list && (
+                        <NoResponseConfig
+                            value={tempValue.noResponseMinutes}
+                            onChange={(v) => setTempValue((prev) => ({ ...prev, noResponseMinutes: v }))}
+                        />
+                    )}
                 </BusinessMessageForm>
             );
         }
@@ -1538,6 +1655,12 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                 {tChats("addClientResponseToOrder")}
                             </label>
                         </div>
+                        {tempAddClientResponseToOrder?.location_request && (
+                            <NoResponseConfig
+                                value={tempValue.noResponseMinutes}
+                                onChange={(v) => setTempValue((prev) => ({ ...prev, noResponseMinutes: v }))}
+                            />
+                        )}
                     </LocationRequestForm>
                 );
             case 'contact':
@@ -1574,6 +1697,12 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                 {tChats("addBranchesIntoAutomationList")}
                             </label>
                         </div>
+                        {tempAddClientResponseToOrder?.list && (
+                            <NoResponseConfig
+                                value={tempValue.noResponseMinutes}
+                                onChange={(v) => setTempValue((prev) => ({ ...prev, noResponseMinutes: v }))}
+                            />
+                        )}
                     </ListMessageForm>
                 );
             case 'interactive':
@@ -1603,6 +1732,12 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                 {tChats("addBranchesIntoAutomation")}
                             </label>
                         </div>
+                        {tempAddClientResponseToOrder?.interactive && (
+                            <NoResponseConfig
+                                value={tempValue.noResponseMinutes}
+                                onChange={(v) => setTempValue((prev) => ({ ...prev, noResponseMinutes: v }))}
+                            />
+                        )}
                     </InteractiveMessageForm>
                 );
             case 'text':
@@ -1799,7 +1934,7 @@ export function SendSmsConfig({ isOpen, value, onChange, errors, setDisabled, on
     }), []);
 
     const handleModalClose = useCallback((data = null) => {
-        
+
         if (didSubmitRef.current) return;
         onClose(null);
     }, [onClose]);
@@ -1820,7 +1955,7 @@ export function SendSmsConfig({ isOpen, value, onChange, errors, setDisabled, on
 
         onChange(nextValue);
         onClose(nextValue);
-    }, [ onChange, onClose, tempValue]);
+    }, [onChange, onClose, tempValue]);
 
     return (
         <SendSmsModal
@@ -1837,45 +1972,74 @@ export function SendSmsConfig({ isOpen, value, onChange, errors, setDisabled, on
 /**
  * Action: Send Upsell
  */
-export function SendUpsellConfig({ value, onChange, onClose }) {
+export function SendUpsellConfig({ value, onChange, onClose, setDisabled }) {
     const t = useTranslations("whatsApp.automations.builder.config.upsell");
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+
+    // The base upsell branches are fixed; the "no response" (timeout) branch is
+    // appended dynamically when the user configures a timeout.
+    const defaultBranches = [
+        {
+            id: "skipped",
+            label: t("none"),
+            condition: "skipped"
+        },
+        {
+            id: "reject",
+            label: t("system_reject"),
+            condition: "reject"
+        },
+        {
+            id: "accept",
+            label: t("accept"),
+            condition: "accept"
+        },
+        {
+            id: "client_reject",
+            label: t("client_reject"),
+            condition: "client_reject"
+        },
+    ];
+
+    // Ensure the base branches are present on open, preserving any existing
+    // "no response" branch, and enable the Save button.
     useEffect(() => {
-        const branches = [
-            {
-                id: "skipped",
-                label: t("none"),
-                condition: "skipped"
-            },
-            {
-                id: "reject",
-                label: t("system_reject"),
-                condition: "reject"
-            },
-            {
-                id: "accept",
-                label: t("accept"),
-                condition: "accept"
-            },
-            {
-                id: "client_reject",
-                label: t("client_reject"),
-                condition: "client_reject"
-            },
-        ];
-
-        // We only update if branches are not already set correctly to avoid infinite loops
-        const currentBranchLabels = value.branches?.map(b => b.label).join(',');
-        const targetBranchLabels = branches.map(b => b.label).join(',');
-
-        if (currentBranchLabels !== targetBranchLabels) {
-            onClose({
+        const existing = value.branches || [];
+        const preservedNoResponse = existing.filter(b => b.isNoResponse);
+        const hasDefaults = defaultBranches.every(d => existing.some(b => b.id === d.id));
+        if (!hasDefaults) {
+            onChange({
                 ...value,
-                branches
+                branches: [...defaultBranches, ...preservedNoResponse],
             });
         }
-    }, [value, onClose, t]);
+        if (setDisabled) setDisabled(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    return null; // This component doesn't render any UI, it just sets the branches
+    const noResponseMinutes = value?.noResponseMinutes ?? '';
+
+    const handleNoResponseChange = (v) => {
+        const baseBranches = (value.branches || []).filter(b => !b.isNoResponse);
+        const num = Number(v);
+        const branches = v !== '' && v !== undefined && v !== null && num >= 1
+            ? [...baseBranches, { id: 'no_response', label: tConfig('noResponseBranchLabel'), isNoResponse: true, timeoutMinutes: num }]
+            : baseBranches;
+        onChange({
+            ...value,
+            noResponseMinutes: v,
+            branches,
+        });
+    };
+
+    return (
+        <div className="space-y-6">
+            <NoResponseConfig
+                value={noResponseMinutes}
+                onChange={handleNoResponseChange}
+            />
+        </div>
+    );
 }
 
 /**
@@ -2464,7 +2628,7 @@ export function CreateIssueConfig({ isOpen, value, onChange, errors, setDisabled
             message: "Config saved",
             data: payload,
         };
-    }, [value, onChange,options, onClose]);
+    }, [value, onChange, options, onClose]);
 
     const fetchers = useMemo(() => ({
         createIssue: createIssueFetcher,

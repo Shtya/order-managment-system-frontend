@@ -8704,13 +8704,13 @@
         },
         {
           "img": "landing/service-2.png",
-          "title": "Every product in the right place… delivered <span style='color:#f59e0b'>safely to your customers</span>",
+          "title": "Every product in the right place… delivered <span style='color:#c9824c'>safely to your customers</span>",
           "desc": "Keep your inventory organized with real-time stock updates and instant alerts, ensuring every order is fulfilled on time and delivered securely to your customers.",
           "cta": "Start your free trial"
         },
         {
           "img": "landing/service-3.png",
-          "title": "Take control of <span style='color:#10b981'>every financial transaction</span>",
+          "title": "Take control of <span style='color:#3fa37b'>every financial transaction</span>",
           "desc": "Create unlimited wallets, including bank accounts and digital wallets. Every purchase, payment collection, profit, and transfer is recorded automatically, while allowing you to move funds between wallets and track every financial transaction with complete accuracy.",
           "cta": "Get Started"
         }
@@ -12079,6 +12079,7 @@
           "provider": "Provider",
           "waitFor": "Wait for",
           "minutes": "min",
+          "noResponseAfter": "No response after",
           "noTitle": "No title",
           "priority": "Priority"
         },
@@ -12262,6 +12263,21 @@
             "twentyHours": "20 hours",
             "oneDay": "1 day",
             "twoDays": "2 days"
+          },
+          "noResponseTitle": "In case of no response from client",
+          "noResponseDesc": "If the client doesn't respond within this time, the automation will continue from the \"No response\" branch on this step.",
+          "noResponseMinutes": "Minutes",
+          "noResponseMinutesDesc": "Time (in minutes) to wait for the client's response.",
+          "noResponsePlaceholder": "e.g. 30",
+          "noResponseEmptyHint": "Leave empty or 0 to skip adding the \"No response\" branch.",
+          "noResponseMinutesError": "Duration must be between {min} minute and {max} minutes (7 days).",
+          "noResponseBranchLabel": "No response",
+          "noResponsePresets": {
+            "fiveMinutes": "5 minutes",
+            "oneHour": "1 hour",
+            "sixHours": "6 hours",
+            "oneDay": "1 day",
+            "threeDays": "3 days"
           },
           "accounts": {
             "sales": "Main Sales Account",

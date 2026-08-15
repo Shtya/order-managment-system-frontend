@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
 import { useFlowStore } from '@/hook/useFlowStore';
+import { cn } from '@/utils/cn';
 import { AUTOMATION_CONFIG } from './automation-config';
 import { businessMessageDefinitions } from './businessMessages';
 
@@ -82,6 +83,16 @@ export function ActionNode({ id, data, selected }) {
                                         <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{data.config.recipientNumber}</span>
                                     </div>
                                 )}
+                                {(() => {
+                                    const noResponse = (data.config?.branches || []).find(b => b.isNoResponse);
+                                    if (!noResponse) return null;
+                                    return (
+                                        <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                            <span className="opacity-50 text-[9px]">{t('nodes.noResponseAfter')}</span>
+                                            <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{noResponse.timeoutMinutes} {t('nodes.minutes')}</span>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
                         {data.type === 'update_order_status' && (
@@ -91,9 +102,21 @@ export function ActionNode({ id, data, selected }) {
                             </div>
                         )}
                         {data.type === 'send_upsell' && (
-                            <div className="flex items-center justify-between">
-                                <span className="opacity-50 font-bold">{t('nodes.sendOffers')}</span>
-                                <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">{t('nodes.proposedForOrder')}</span>
+                            <div>
+                                <div className="flex items-center justify-between">
+                                    <span className="opacity-50 font-bold">{t('nodes.sendOffers')}</span>
+                                    <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">{t('nodes.proposedForOrder')}</span>
+                                </div>
+                                {(() => {
+                                    const noResponse = (data.config?.branches || []).find(b => b.isNoResponse);
+                                    if (!noResponse) return null;
+                                    return (
+                                        <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                            <span className="opacity-50 text-[9px]">{t('nodes.noResponseAfter')}</span>
+                                            <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{noResponse.timeoutMinutes} {t('nodes.minutes')}</span>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
                         {data.type === 'assign_order_to_employee' && (
@@ -128,6 +151,16 @@ export function ActionNode({ id, data, selected }) {
                                         <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{data.config.recipientNumber}</span>
                                     </div>
                                 )}
+                                {(() => {
+                                    const noResponse = (data.config?.branches || []).find(b => b.isNoResponse);
+                                    if (!noResponse) return null;
+                                    return (
+                                        <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                            <span className="opacity-50 text-[9px]">{t('nodes.noResponseAfter')}</span>
+                                            <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{noResponse.timeoutMinutes} {t('nodes.minutes')}</span>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
                         {data.type === 'send_sms' && (
@@ -192,7 +225,13 @@ export function ActionNode({ id, data, selected }) {
                                     nodeId={id}
                                     isConnected={isConnected}
                                 />
-                                <span className="text-[8px] font-black text-slate-400 tracking-tighter bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded-full border border-slate-100 dark:border-slate-800 shadow-sm whitespace-nowrap mt-2">
+                                <span className={cn(
+                                    "text-[8px] font-black tracking-tighter px-1.5 py-0.5 rounded-full border shadow-sm whitespace-nowrap mt-2",
+                                    branch.isNoResponse
+                                        ? "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30"
+                                        : "text-slate-400 bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                                )}>
+                                    {branch.isNoResponse && <Hourglass size={7} className="inline-block mr-1" />}
                                     {branch.label}
                                 </span>
                             </div>

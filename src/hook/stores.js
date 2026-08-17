@@ -416,6 +416,10 @@ export const PROVIDER_CONFIG = {
             clientSecret: { requiredCreateMote: true, masked: true, type: "password" },
             // webhookSecret: { required: true },
         },
+        integrationDetails: {
+            appUrl: (adminId) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${adminId}/shopify/init`,
+            scopes: scopes.join(","),
+        },
         webhookEndpoints: {
             create: (adminId, storeId) => storeId
                 ? `${BASE_URL}/stores/webhooks/${adminId}/${storeId}/shopify/orders/create`

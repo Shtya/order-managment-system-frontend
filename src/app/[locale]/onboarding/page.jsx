@@ -2928,24 +2928,34 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
               })}
             </div>
 
-            <div className="my-6">
-              <StoresTable
-                compact
-                t={t}
-                stores={stores}
-                totalRecords={totalRecords}
-                loading={tableLoading}
-                onFetch={handleTableFetch}
-                onConfigure={handleConfigure}
-                onOpenGuide={handleOpenGuide}
-                onOpenWebhook={handleOpenWebhook}
-                onToggleStore={handleToggleStore}
-                onSync={handleSync}
-                onAutoIntegratedAction={(store) =>
-                  handleAutoIntegratedAction(store.provider, store)
-                }
-              />
-            </div>
+            <AnimatePresence>
+              {stores.length > 0 && (
+                <motion.div
+                  className="my-6"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <StoresTable
+                    compact
+                    t={t}
+                    stores={stores}
+                    totalRecords={totalRecords}
+                    loading={tableLoading}
+                    onFetch={handleTableFetch}
+                    onConfigure={handleConfigure}
+                    onOpenGuide={handleOpenGuide}
+                    onOpenWebhook={handleOpenWebhook}
+                    onToggleStore={handleToggleStore}
+                    onSync={handleSync}
+                    onAutoIntegratedAction={(store) =>
+                      handleAutoIntegratedAction(store.provider, store)
+                    }
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div
               style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}

@@ -104,8 +104,8 @@ export const PROVIDER_CONFIG = {
                         {
                             title: { en: "Copy API Key", ar: "نسخ مفتاح API" },
                             desc: {
-                                en: "Click the Copy button to copy the API key and paste it into our store configuration form.",
-                                ar: "اضغط على زر النسخ ثم قم بلصق المفتاح داخل نموذج إعدادات المتجر لدينا."
+                                en: "Click the Copy button to copy the API key, paste it into our store configuration form, add your store, and then proceed to the Webhook section.",
+                                ar: "اضغط على زر النسخ ثم قم بلصق المفتاح داخل نموذج إعدادات المتجر لدينا و أضف متجرك ثم انتقل للويب هوك."
                             },
                             image: "/guide/easyorder/step5.png",
                         }
@@ -300,7 +300,8 @@ export const PROVIDER_CONFIG = {
                                 en: "Add the URL shown below into the App URL field. Uncheck 'Embedded app'. Then add the required scopes and click Save.",
                                 ar: "أضف الرابط المعروض أدناه في حقل App URL. قم بإلغاء تحديد 'Embedded app'. ثم أضف الصلاحيات المطلوبة واضغط حفظ."
                             },
-                            url: (me,storeId) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/${storeId}/init`,
+                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/init`,
+                            notNeedStored: true,
                             image: "/guide/shopify/step4.png",
                             tip: {
                                 en: "Click 'Add scopes' and include the required permissions",
@@ -622,7 +623,7 @@ export function generateEasyOrdersInstallUrl(adminId, storeId) {
     return `${baseUrl}?${params.toString()}`;
 };
 
-export function generateShopifyInstallUrl(shopifyUrl, appId, adminId, storeId) {
+export function generateShopifyInstallUrl(shopifyUrl, appId, adminId) {
     const apiBase = process.env.NEXT_PUBLIC_BASE_URL;
 
     const scope = scopes.join(",");
@@ -632,7 +633,7 @@ export function generateShopifyInstallUrl(shopifyUrl, appId, adminId, storeId) {
         .replace(/^https?:\/\//, "")
         .replace(/\/$/, "");
 
-    const redirectUri = `${apiBase}/stores/webhooks/${adminId}/${storeId}/shopify/init`;
+    const redirectUri = `${apiBase}/stores/webhooks/${adminId}/shopify/init`;
 
     const params = new URLSearchParams({
         client_id: appId,

@@ -1154,28 +1154,30 @@ export function StoreGuideModal({ provider, store, onClose }) {
                     </p>
                     {currentStep?.url && (
                       <div className="mt-3 space-y-2">
-                        <Select
-                          value={selectedStoreId}
-                          onValueChange={(v) => setSelectedStoreId(v)}
-                        >
-                          <SelectTrigger className="h-9 w-56 rounded-xl">
-                            <SelectValue placeholder={t("guide.selectStore")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {storeOptions.map((s) => (
-                              <SelectItem key={s.id} value={s.id}>
-                                {s.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        {!currentStep?.notNeedStored && (
+                          <Select
+                            value={selectedStoreId}
+                            onValueChange={(v) => setSelectedStoreId(v)}
+                          >
+                            <SelectTrigger className="h-9 w-56 rounded-xl">
+                              <SelectValue placeholder={t("guide.selectStore")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {storeOptions.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  {s.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
 
                         {(() => {
                           const isFn = typeof currentStep.url === "function";
-                          console.log(isFn, selectedStoreId)
+                          
                           const storeId = selectedStoreId || store?.id;
-                          if (isFn && !storeId) return null;
-                          const url = isFn
+                          if (isFn && !storeId && !currentStep?.notNeedStored ) return null;
+                          const url = isFn 
                             ? currentStep.url(user, storeId)
                             : currentStep.url;
 

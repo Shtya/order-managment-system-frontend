@@ -500,8 +500,8 @@ export const PROVIDER_CONFIG = {
                                 ar: "نسخ المفتاح والسر"
                             },
                             desc: {
-                                en: "After saving, the Key and Secret will appear. Copy them and paste into our store configuration form.",
-                                ar: "بعد الحفظ، سيظهر المفتاح والسر. انسخهم والصقهم داخل نموذج إعدادات المتجر لدينا."
+                                en: "Click the Copy button to copy the API key, paste it into our store configuration form, add your store, and then proceed to the Webhook section.",
+                                ar: "اضغط على زر النسخ ثم قم بلصق المفتاح داخل نموذج إعدادات المتجر لدينا و أضف متجرك ثم انتقل للويب هوك."
                             },
                             image: "/guide/woocommerce/step4.png",
                             tip: {

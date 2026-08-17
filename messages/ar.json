@@ -1879,7 +1879,7 @@
       "maskedPlaceholder": "••••••••••",
       "webhooksSection": "إعداد Webhooks",
       "integrationDetailsSection": "تفاصيل التكامل",
-      "integrationDetailsHint": "انسخ القيم أدناه إلى إعدادات مزود الخدمة",
+      "integrationDetailsHint": "انسخ القيم أدناه إلى إعدادات {provider}",
       "appUrl": "رابط التطبيق",
       "requiredScopes": "الصلاحيات المطلوبة",
       "webhookSecret": "سر Webhook",

@@ -683,7 +683,7 @@ export function StoreConfigDialog({
                     <div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-3">
                       <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
                         <Zap size={13} className="text-primary" />
-                        {t("form.integrationDetailsHint")}
+                        {t("form.integrationDetailsHint", { provider: config.label })}
                       </p>
 
                       <div className="space-y-3 pt-2">

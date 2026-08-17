@@ -51,6 +51,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { ActionButtons } from "@/components/atoms/Actions";
 import { useExport } from "@/hook/useExport";
+import { useClipboard } from "@/hook/useClipboard";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -474,6 +475,7 @@ export function StoreConfigDialog({
   onCreated,
 }) {
   const { user } = useAuth();
+  const { handleCopy: copyDetail, copied: copiedDetail } = useClipboard();
   const {
     config,
     isEdit,
@@ -701,15 +703,16 @@ export function StoreConfigDialog({
                               />
                               <button
                                 type="button"
-                                onClick={() =>
-                                  navigator.clipboard.writeText(
-                                    String(config.integrationDetails.appUrl(user?.id) || ""),
-                                  )
-                                }
+                                onClick={async () => {
+                                  await copyDetail(config.integrationDetails.appUrl(user?.id) || "", "appUrl");
+                                  toast.success(t("form.copied") || "Copied");
+                                }}
                                 className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                                 title="Copy"
                               >
-                                <Copy size={14} />
+                                {copiedDetail === (config.integrationDetails.appUrl(user?.id) || "") + "appUrl"
+                                  ? <Check size={14} className="text-green-600" />
+                                  : <Copy size={14} />}
                               </button>
                             </div>
                           </div>
@@ -729,15 +732,16 @@ export function StoreConfigDialog({
                               />
                               <button
                                 type="button"
-                                onClick={() =>
-                                  navigator.clipboard.writeText(
-                                    String(config.integrationDetails.scopes || ""),
-                                  )
-                                }
+                                onClick={async () => {
+                                  await copyDetail(config.integrationDetails.scopes || "", "scopes");
+                                  toast.success(t("form.copied") || "Copied");
+                                }}
                                 className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                                 title="Copy"
                               >
-                                <Copy size={14} />
+                                {copiedDetail === (config.integrationDetails.scopes || "") + "scopes"
+                                  ? <Check size={14} className="text-green-600" />
+                                  : <Copy size={14} />}
                               </button>
                             </div>
                           </div>
@@ -869,6 +873,7 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
     loading,
     error,
     rotating,
+    copied,
     copyToClipboard,
     rotateWooCommerce,
     cred,
@@ -928,7 +933,9 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
                   className="shrink-0 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                   title="Copy"
                 >
-                  <Copy size={14} />
+                  {copied === config.webhookEndpoints.create(user?.id, store?.id) + "webhook"
+                    ? <Check size={14} className="text-green-600" />
+                    : <Copy size={14} />}
                 </button>
               </div>
 

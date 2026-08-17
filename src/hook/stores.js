@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { tenantId } from '@/utils/healpers';
 import { useAuth } from '@/context/AuthContext';
+import { useClipboard } from '@/hook/useClipboard';
 
 export const STORE_PROVIDERS = [
     {
@@ -670,6 +671,7 @@ export function getCancelIntegrationEndpoint(store) {
 
 export function useStoreWebhook({ store, provider, onClose, open }) {
     const t = useTranslations("storeIntegrations");
+    const { handleCopy, copied } = useClipboard();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
@@ -765,10 +767,8 @@ export function useStoreWebhook({ store, provider, onClose, open }) {
 
     // --- Helper: Copy Utility ---
     const copyToClipboard = async (text) => {
-        try {
-            await navigator.clipboard.writeText(String(text || ""));
-            toast.success(t("form.copied") || "Copied");
-        } catch (_) { }
+        await handleCopy(text, "webhook");
+        toast.success(t("form.copied") || "Copied");
     };
 
     return {
@@ -779,6 +779,7 @@ export function useStoreWebhook({ store, provider, onClose, open }) {
         webhookFields,
         setWebhookFields,
         rotating,
+        copied,
         copyToClipboard,
         saveSecrets,
         rotateWooCommerce,

@@ -781,18 +781,17 @@ export function StoreConfigDialog({
                             />
                             <button
                               type="button"
-                              onClick={() =>
-                                navigator.clipboard.writeText(
-                                  String(
-                                    config.webhookEndpoints?.create?.(user?.id, existingStore?.id) ||
-                                    "",
-                                  ),
-                                )
-                              }
+                              onClick={async () => {
+                                const url = config.webhookEndpoints?.create?.(user?.id, existingStore?.id) || "";
+                                await copyDetail(url, "createUrl");
+                                toast.success(t("form.copied") || "Copied");
+                              }}
                               className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                               title="Copy"
                             >
-                              <Copy size={14} />
+                              {copiedDetail === (config.webhookEndpoints?.create?.(user?.id, existingStore?.id) || "") + "createUrl"
+                                ? <Check size={14} className="text-green-600" />
+                                : <Copy size={14} />}
                             </button>
                           </div>
                         </div>
@@ -809,18 +808,17 @@ export function StoreConfigDialog({
                             />
                             <button
                               type="button"
-                              onClick={() =>
-                                navigator.clipboard.writeText(
-                                  String(
-                                    config.webhookEndpoints?.update?.(user?.id, existingStore?.id) ||
-                                    "",
-                                  ),
-                                )
-                              }
+                              onClick={async () => {
+                                const url = config.webhookEndpoints?.update?.(user?.id, existingStore?.id) || "";
+                                await copyDetail(url, "updateUrl");
+                                toast.success(t("form.copied") || "Copied");
+                              }}
                               className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                               title="Copy"
                             >
-                              <Copy size={14} />
+                              {copiedDetail === (config.webhookEndpoints?.update?.(user?.id, existingStore?.id) || "") + "updateUrl"
+                                ? <Check size={14} className="text-green-600" />
+                                : <Copy size={14} />}
                             </button>
                           </div>
                         </div>
@@ -958,7 +956,9 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
                     className="shrink-0 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                     title="Copy"
                   >
-                    <Copy size={14} />
+                    {copied === cred.webhookCreateOrderSecret + "webhook"
+                      ? <Check size={14} className="text-green-600" />
+                      : <Copy size={14} />}
                   </button>
                 </div>
               )}
@@ -984,7 +984,9 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
                     className="shrink-0 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                     title="Copy"
                   >
-                    <Copy size={14} />
+                    {copied === config.webhookEndpoints.update(user?.id, store?.id) + "webhook"
+                      ? <Check size={14} className="text-green-600" />
+                      : <Copy size={14} />}
                   </button>
                 </div>
 
@@ -1006,7 +1008,9 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
                       className="shrink-0 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
                       title="Copy"
                     >
-                      <Copy size={14} />
+                      {copied === cred.webhookUpdateStatusSecret + "webhook"
+                        ? <Check size={14} className="text-green-600" />
+                        : <Copy size={14} />}
                     </button>
                   </div>
                 )}

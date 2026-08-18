@@ -2014,7 +2014,8 @@
       "manageFeatures": "إدارة المميزات",
       "manageWallet": "إدارة المحفظة",
       "manualReset": "إعادة تعيين يدوي لكلمة المرور\t",
-      "viewGettingStarted": "عرض تقدم البدء"
+      "viewGettingStarted": "عرض تقدم البدء",
+      "loginAs": "تسجيل الدخول كهذا المستخدم"
     },
     "validation": {
       "nameRequired": "الاسم مطلوب",

@@ -30,6 +30,7 @@ import {
 	Wallet,
 	Power,
 	PowerOff,
+	LogIn,
 } from "lucide-react";
 
 import InfoCard from "@/components/atoms/InfoCard";
@@ -89,6 +90,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import toast from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 /** =========================
  * WhatsApp Countries (same pattern)
@@ -219,6 +221,7 @@ export default function SuperAdminUsersPage() {
 	const tAuth = useTranslations("auth");
 	const t = useTranslations("users");
 	const router = useRouter()
+	const { handleAuthSuccess, isSuperAdmin } = useAuth();
 	const [activeTab, setActiveTab] = useState("all"); // all|active|inactive
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
@@ -780,6 +783,20 @@ export default function SuperAdminUsersPage() {
 								},
 								variant: "primary",
 							},
+							{
+								icon: <LogIn size={16} />,
+								tooltip: t("actions.loginAs"),
+								onClick: async (r) => {
+									try {
+										const res = await api.post(`/auth/super-admin-login`, { email: r.email });
+										await handleAuthSuccess(res.data);
+									} catch (e) {
+										toast.error(getApiMsg(e, tCommon));
+									}
+								},
+								variant: "blue",
+								hidden: !isSuperAdmin,
+							},
 								{
 									icon: row.isActive ? <PowerOff size={16} /> : <Power size={16} />,
 									tooltip: row.isActive ? t("actions.deactivate") : t("actions.activate"),
@@ -801,7 +818,7 @@ export default function SuperAdminUsersPage() {
 				,
 			},
 		];
-	}, [t, tOnboarding, tAuth]);
+	}, [t, tOnboarding, tAuth, isSuperAdmin, handleAuthSuccess]);
 
 	const openQueueBoard = async () => {
 		try {

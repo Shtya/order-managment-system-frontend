@@ -22,6 +22,7 @@ import {
   Check,
   Download,
   Power,
+  Trash2,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -44,6 +45,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Controller } from "react-hook-form";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { ImagePreviewModal } from "@/components/atoms/ImagePreviewModal";
 import Table, { FilterField } from "@/components/atoms/Table";
@@ -228,6 +230,16 @@ export default function StoresIntegrationPage() {
     }
   };
 
+  const handleDeleteStore = async (store) => {
+    try {
+      await api.delete(`/stores/${store.id}`);
+      toast.success(t("messages.deleteSuccess"));
+      fetchStores(lastTableParams.current);
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    }
+  };
+
   return (
     <div className="min-h-screen p-5 ">
       {/* Header */}
@@ -283,6 +295,7 @@ export default function StoresIntegrationPage() {
         onToggleStore={handleToggleStore}
         onSync={handleSync}
         onAutoIntegratedAction={handleAutoIntegratedAction}
+        onDelete={handleDeleteStore}
       />
       {/* Configuration Dialog */}
       {dialogOpen && currentProvider && (
@@ -1457,6 +1470,7 @@ export function StoresTable({
   onToggleStore,
   onSync,
   onAutoIntegratedAction,
+  onDelete,
 }) {
   const { handleExport, exportLoading } = useExport();
   const [search, setSearch] = useState("");
@@ -1469,6 +1483,8 @@ export function StoresTable({
   const [loadingAction, setLoadingAction] = useState(null);
   const searchTimer = useRef(null);
   const [limit, setLimit] = useState(12);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const buildParams = (overrides = {}) => {
     const params = { page, limit: limit, ...overrides };
@@ -1596,6 +1612,14 @@ export function StoresTable({
         onClick: () => runAction("auto", store, () => onAutoIntegratedAction(store)),
       });
     }
+
+    actions.push({
+      icon: actionLoading(store, "delete") ? <Loader2 className="animate-spin" /> : <Trash2 />,
+      tooltip: t("table.delete"),
+      variant: "red",
+      disabled: loading,
+      onClick: () => setDeleteTarget(store),
+    });
 
     return actions;
   };
@@ -1768,6 +1792,35 @@ export function StoresTable({
         onPageChange={onPageChange}
         compact
       />
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent className="rounded-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("table.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("table.deleteDesc")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full" disabled={deleteLoading}>{t("table.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-full bg-red-600 hover:bg-red-700"
+              disabled={deleteLoading}
+              onClick={async () => {
+                if (!deleteTarget) return;
+                setDeleteLoading(true);
+                try {
+                  await onDelete(deleteTarget);
+                  setDeleteTarget(null);
+                } catch {
+                  // error handled in parent
+                } finally {
+                  setDeleteLoading(false);
+                }
+              }}
+            >
+              {deleteLoading ? <Loader2 className="animate-spin" size={14} /> : t("table.confirmDelete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

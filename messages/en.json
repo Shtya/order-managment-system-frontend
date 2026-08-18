@@ -1831,7 +1831,12 @@
       "emptyTitle": "No stores found",
       "emptySubtitle": "Connect a store using the cards above to get started",
       "filters": "Filters",
-      "apply": "Apply"
+      "apply": "Apply",
+      "delete": "Delete",
+      "deleteTitle": "Delete Store?",
+      "deleteDesc": "This action cannot be undone. The store and all its data will be permanently removed.",
+      "cancel": "Cancel",
+      "confirmDelete": "Delete"
     },
     "webhook": {
       "title": "Webhook Setup",
@@ -1921,7 +1926,8 @@
       "integrationCancelled": "Integration cancelled successfully",
       "shopifySecurityFailed": "Shopify security verification failed. Please try again.",
       "shopifyConnectionFailed": "Failed to connect to Shopify store. Please check your settings and try again.",
-      "shopifyInvalidSession": "Shopify session is invalid. Please try again"
+      "shopifyInvalidSession": "Shopify session is invalid. Please try again",
+      "deleteSuccess": "Store deleted successfully"
     }
   },
   "integrated": {

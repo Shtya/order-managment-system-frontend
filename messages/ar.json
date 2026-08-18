@@ -1833,7 +1833,12 @@
       "emptyTitle": "لا توجد متاجر",
       "emptySubtitle": "اربط متجرًا باستخدام البطاقات أعلاه للبدء",
       "filters": "عوامل التصفية",
-      "apply": "تطبيق"
+      "apply": "تطبيق",
+      "delete": "حذف",
+      "deleteTitle": "حذف المتجر؟",
+      "deleteDesc": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف المتجر وجميع بياناته نهائياً.",
+      "cancel": "إلغاء",
+      "confirmDelete": "حذف"
     },
     "webhook": {
       "title": "إعداد Webhook",
@@ -1923,7 +1928,8 @@
       "integrationCancelled": "تم إلغاء الربط بنجاح",
       "shopifySecurityFailed": "فشل التحقق الأمني من Shopify، يرجى المحاولة مرة أخرى",
       "shopifyConnectionFailed": "تعذر الاتصال بمتجر شوبيفاي، يرجى التحقق من الإعدادات والمحاولة مرة أخرى",
-      "shopifyInvalidSession": "جلسة Shopify غير صالحة. يُرجى  المحاولة مرة أخرى"
+      "shopifyInvalidSession": "جلسة Shopify غير صالحة. يُرجى  المحاولة مرة أخرى",
+      "deleteSuccess": "تم حذف المتجر بنجاح"
     }
   },
   "integrated": {

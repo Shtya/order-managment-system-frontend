@@ -14659,12 +14659,14 @@
       "configure": "تهيئة",
       "enable": "تفعيل",
       "disable": "تعطيل",
-      "refresh": "تحديث"
+      "refresh": "تحديث",
+      "loadMore": "تحميل المزيد"
     },
     "tabs": {
       "providers": "مزودو الخدمة",
       "configurations": "الإعدادات",
       "models": "النماذج",
+      "allModels": "جميع النماذج",
       "usage": "الاستخدام",
       "integrations": "التكاملات"
     },
@@ -14678,9 +14680,9 @@
       "type": "نوع المزود",
       "protocol": "بروتوكول واجهة برمجة التطبيقات",
       "authType": "نوع المصادقة",
-      "baseUrl": "عنوان URL الأساسي",
+      "baseUrl": "عنوان API",
       "website": "الموقع الإلكتروني",
-      "apiKey": "api key",
+      "apiKey": "Api Key",
       "bearerToken": "رمز Bearer",
       "organization": "معرف المنظمة",
       "project": "معرف المشروع",
@@ -14711,7 +14713,7 @@
       "protocol": "اختر البروتوكول",
       "authType": "اختر نوع المصادقة",
       "baseUrl": "مثال: https://api.openai.com/v1",
-      "apiKey": "أدخل api key",
+      "apiKey": "أدخل Api Key",
       "bearerToken": "أدخل رمز Bearer",
       "organization": "أدخل معرف المنظمة (اختياري)",
       "project": "أدخل معرف المشروع (اختياري)",
@@ -14782,7 +14784,7 @@
       "custom": "مخصص"
     },
     "authType": {
-      "api_key": "api key",
+      "api_key": "Api Key",
       "bearer": "رمز Bearer",
       "oauth": "OAuth",
       "none": "بدون (عام)"
@@ -14811,7 +14813,7 @@
       "label": "الحالة"
     },
     "capability": {
-      "streaming": "بث مباشر",
+      "streaming": "بث مباشر للإجابة",
       "toolCalls": "استدعاء أدوات",
       "structured": "مخرجات منظمة",
       "vision": "رؤية"
@@ -14869,9 +14871,9 @@
       "authTypeRequired": "نوع المصادقة مطلوب",
       "invalidAuthType": "نوع مصادقة غير صالح",
       "invalidUrl": "يجب أن يكون عنوان URL صالحًا",
-      "baseUrlRequired": "عنوان URL الأساسي مطلوب للمزودين المخصصين",
-      "baseUrlInvalid": "يجب أن يكون عنوان URL الأساسي صالحًا",
-      "apiKeyRequired": " ال api key مطلوب للمصادقة",
+      "baseUrlRequired": "عنوان API مطلوب للمزودين المخصصين",
+      "baseUrlInvalid": "يجب أن يكون عنوان API صالحًا",
+      "apiKeyRequired": " ال Api Key مطلوب للمصادقة",
       "bearerTokenRequired": "رمز Bearer مطلوب لمصادقة Bearer",
       "maxRpmMin": "يجب أن يكون الحد الأقصى للطلبات في الدقيقة 1 على الأقل",
       "maxRpmMax": "لا يمكن أن يتجاوز الحد الأقصى للطلبات في الدقيقة 1000000",
@@ -14954,6 +14956,30 @@
     "models": {
       "availableSubtitle": "النماذج المتاحة عبر هذا المزود.",
       "searchPlaceholder": "بحث في النماذج..."
+    },
+    "filters": {
+      "allProviders": "جميع المزودين",
+      "apply": "تطبيق الفلاتر"
+    },
+    "modelPlaceholder": {
+      "name": "أدخل اسم النموذج",
+      "modelCode": "مثال: gpt-4o",
+      "description": "وصف اختياري",
+      "descriptionAr": "وصف اختياري بالعربية",
+      "search": "بحث في النماذج..."
+    },
+    "model": {
+      "name": "اسم النموذج",
+      "modelCode": "معرف النموذج",
+      "provider": "المزود",
+      "description": "الوصف",
+      "descriptionAr": "الوصف (عربي)",
+      "type": "نوع النموذج",
+      "tier": "الفئة",
+      "contextWindow": "نافذة السياق",
+      "maxOutputTokens": "الحد الأقصى للرمز الم_OUTPUT",
+      "inputCost": "تكلفة الإدخال",
+      "outputCost": "تكلفة الإخراج"
     }
   },
   "selected": "محدد"

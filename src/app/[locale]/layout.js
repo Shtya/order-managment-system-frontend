@@ -52,7 +52,9 @@ export function generateStaticParams() {
 
 
 export const metadata = {
-  metadataBase: new URL("https://getmadar.net"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000"
+  ),
 
   title: {
     default: "Madar",
@@ -77,14 +79,14 @@ export const metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://getmadar.net",
+    url: "/",
     siteName: "Madar",
     title: "Madar",
     description:
       "Madar helps businesses manage orders, shipping, and operations in one platform.",
     images: [
       {
-        url: "/logo.png", // => https://getmadar.net/logo.png
+        url: "/share.png", // => https://getmadar.net/logo.png
         width: 1200,
         height: 630,
         alt: "Madar Logo",
@@ -97,7 +99,7 @@ export const metadata = {
     title: "Madar",
     description:
       "Madar helps businesses manage orders, shipping, and operations in one platform.",
-    images: ["/logo.png"],
+    // images: ["/logo.png"],
   },
 };
 export default async function RootLayout({ children, params }) {

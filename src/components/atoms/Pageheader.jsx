@@ -1153,7 +1153,6 @@ export function PageHeader({
 					{buttons && (
 						<AnimatePresence mode="wait">
 							<motion.div
-								layout // This is the magic prop that animates the position change
 								transition={{ type: "spring", stiffness: 400, damping: 30 }}
 								className="grid grid-cols-1 xs:flex! items-center gap-2 flex-wrap justify-end relative max-xs:w-full xs:ml-auto sm:ml-0"
 							>

@@ -14629,12 +14629,14 @@
       "configure": "Configure",
       "enable": "Enable",
       "disable": "Disable",
-      "refresh": "Refresh"
+      "refresh": "Refresh",
+      "loadMore": "Load More"
     },
     "tabs": {
       "providers": "Providers",
       "configurations": "Configurations",
       "models": "Models",
+      "allModels": "All Models",
       "usage": "Usage",
       "integrations": "Integrations"
     },
@@ -14924,6 +14926,30 @@
     "models": {
       "availableSubtitle": "Models available through this provider.",
       "searchPlaceholder": "Search models..."
+    },
+    "filters": {
+      "allProviders": "All Providers",
+      "apply": "Apply Filters"
+    },
+    "modelPlaceholder": {
+      "name": "Enter model name",
+      "modelCode": "e.g. gpt-4o",
+      "description": "Optional description",
+      "descriptionAr": "Optional description in Arabic",
+      "search": "Search models..."
+    },
+    "model": {
+      "name": "Model Name",
+      "modelCode": "Model Identifier",
+      "provider": "Provider",
+      "description": "Description",
+      "descriptionAr": "Description (Arabic)",
+      "type": "Model Type",
+      "tier": "Tier",
+      "contextWindow": "Context Window",
+      "maxOutputTokens": "Max Output Tokens",
+      "inputCost": "Input Cost",
+      "outputCost": "Output Cost"
     }
   },
   "selected": "Selected"

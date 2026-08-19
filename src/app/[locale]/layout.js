@@ -86,7 +86,7 @@ export const metadata = {
       {
         url: "/logo.png", // => https://getmadar.net/logo.png
         width: 1200,
-        height: 1200,
+        height: 630,
         alt: "Madar Logo",
       },
     ],

@@ -73,6 +73,7 @@ import {
   Ticket,
   Rocket,
   GraduationCap,
+  Bot,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -760,6 +761,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
       ]
     },
     {
+      icon: Bot,
+      labelKey: "ai",
+      href: "/ai",
+      allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
+    },
+    {
       icon: BarChart3,
       labelKey: "reports",
       href: "/reports",
@@ -1045,6 +1052,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
     if (!user) return [];
 
     const userRole = user.role?.name;
+    const userEmail = user.email?.toLowerCase();
 
     return menuItems.filter((item) => {
 
@@ -1053,6 +1061,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
       // ✅ SPECIAL RULE: SUPER_ADMIN sees ONLY explicitly allowed items
       if (role === 'SUPER_ADMIN') {
         return item.roles?.includes('SUPER_ADMIN');
+      }
+
+      // ✅ EMAIL RESTRICTION: Check if item has allowedEmails
+      if (item.allowedEmails?.length) {
+        return item.allowedEmails.includes(userEmail);
       }
 
       // 1. Check Roles

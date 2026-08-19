@@ -142,6 +142,7 @@ module.exports = {
   },
 
   plugins: [
+    require('@tailwindcss/typography'),
     // Add custom scrollbar plugin
     function ({ addUtilities }) {
       const newUtilities = {

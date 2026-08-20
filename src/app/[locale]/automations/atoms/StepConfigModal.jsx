@@ -36,6 +36,7 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
                 value={config}
                 onChange={setConfig}
                 context={{ step, mode }}
+                mode={mode}
                 errors={errors}
                 onClose={(config) => onClose(config || null)}
                 setErrors={setErrors}
@@ -76,6 +77,7 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
                             value={config}
                             onChange={setConfig}
                             context={{ step, mode }}
+                            mode={mode}
                             errors={errors}
                             onClose={(config) => onClose(config || null)}
                             setErrors={setErrors}

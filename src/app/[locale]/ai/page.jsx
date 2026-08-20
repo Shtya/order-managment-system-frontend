@@ -42,6 +42,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
     Dialog,
@@ -504,7 +505,7 @@ function ConfigurationsTab({ provider, integration, loading, saving, onSave, onT
     const t = useTranslations("ai");
     const isCustom = provider?.scope === "custom";
     const authType = provider?.authType || integration?.authType || "api_key";
-    const isConnected = !!integration;
+    const isConnected = !!integration?.encryptedCredentials;
     const defaultModelForProvider = defaultModel?.model?.provider?.id === provider?.id ? defaultModel.model : null;
 
     const {
@@ -751,7 +752,7 @@ function ConfigurationsTab({ provider, integration, loading, saving, onSave, onT
 // ─────────────────────────────────────────────────────────────
 // MODELS TAB
 // ─────────────────────────────────────────────────────────────
-function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSetDefault, defaultModelId, settingDefaultId, hasPermission, locale, providerConnected }) {
+function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSetDefault, onToggleModelActive, defaultModelId, settingDefaultId, hasPermission, locale, providerConnected, togglingId }) {
     const t = useTranslations("ai");
     const [search, setSearch] = useState("");
 
@@ -904,6 +905,16 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
+                                {isCustom && hasPermission("ai.manage") && (
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <Switch
+                                            size="sm"
+                                            checked={model.isActive !== false}
+                                            disabled={togglingId === model.id}
+                                            onCheckedChange={(val) => onToggleModelActive?.(model, val)}
+                                        />
+                                    </div>
+                                )}
                                 {isDefault && (
                                     <span className="px-1.5 py-1 rounded-[5px] bg-success/10 text-success text-[9px] font-bold">
                                         {t("status.default")}
@@ -1247,11 +1258,11 @@ function ProviderSidebarSkeleton({ count = 5 }) {
 // ─────────────────────────────────────────────────────────────
 // ALL MODELS TAB
 // ─────────────────────────────────────────────────────────────
-function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchChange, providers, providerFilter, onProviderFilterChange, onEditModel, onDeleteModel, onSetDefault, defaultModelId, settingDefaultId, hasPermission, locale }) {
+function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchChange, providers, providerFilter, onProviderFilterChange, onEditModel, onDeleteModel, onSetDefault, onToggleModelActive, defaultModelId, settingDefaultId, hasPermission, locale, togglingId }) {
     const t = useTranslations("ai");
 
     const getProviderConnected = (model) => {
-        return !!(model.provider?.integration);
+        return !!(model.provider?.integration?.encryptedCredentials);
     };
 
     const getCapabilities = (model) => {
@@ -1425,11 +1436,21 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
                                             {model.modelType && <span className="px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-[9px] font-semibold">{t(`modelType.${model.modelType}`) || model.modelType}</span>}
                                         </div>
 
-                                        {modelActions.length > 0 && (
-                                            <div className="flex items-center gap-1.5 pt-2 border-t border-border">
+                                        <div className="flex items-center gap-1.5 pt-2 border-t border-border">
+                                            {isCustom && hasPermission("ai.manage") && (
+                                                <div onClick={(e) => e.stopPropagation()}>
+                                                    <Switch
+                                                        size="sm"
+                                                        checked={model.isActive !== false}
+                                                        disabled={togglingId === model.id}
+                                                        onCheckedChange={(val) => onToggleModelActive?.(model, val)}
+                                                    />
+                                                </div>
+                                            )}
+                                            {modelActions.length > 0 && (
                                                 <ActionButtons actions={modelActions} size="sm" />
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -1502,6 +1523,7 @@ export default function AiPage() {
     const [settingDefaultId, setSettingDefaultId] = useState(null);
     const [configSaving, setConfigSaving] = useState(false);
     const [testing, setTesting] = useState(false);
+    const [togglingId, setTogglingId] = useState(null);
 
     // ── Active Tab ────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState("configurations");
@@ -1674,6 +1696,37 @@ export default function AiPage() {
         setDeleteConfirm({ open: true, type: "provider", id: provider.id, name: provider.name });
     }, []);
 
+    const handleCancelIntegration = useCallback((provider) => {
+        setDeleteConfirm({ open: true, type: "cancelIntegration", id: provider.id, name: provider.name });
+    }, []);
+
+    const handleToggleProviderActive = useCallback(async (provider, isActive) => {
+        setTogglingId(provider.id);
+        try {
+            await api.post(`/ai/providers/${provider.id}/active`, { isActive });
+            toast.success(isActive ? t("messages.providerActivated") : t("messages.providerDeactivated"));
+            loadProviders();
+        } catch (e) {
+            toast.error(normalizeAxiosError(e));
+        } finally {
+            setTogglingId(null);
+        }
+    }, [loadProviders, t]);
+
+    const handleToggleModelActive = useCallback(async (model, isActive) => {
+        setTogglingId(model.id);
+        try {
+            await api.post(`/ai/models/${model.id}/active`, { isActive });
+            toast.success(isActive ? t("messages.modelActivated") : t("messages.modelDeactivated"));
+            if (selectedProviderId) loadModels(selectedProviderId);
+            loadAllModels({ providerId: allModelsProviderFilter, search: debouncedAllModelsSearch });
+        } catch (e) {
+            toast.error(normalizeAxiosError(e));
+        } finally {
+            setTogglingId(null);
+        }
+    }, [selectedProviderId, loadModels, loadAllModels, allModelsProviderFilter, debouncedAllModelsSearch, t]);
+
     const handleDeleteConfirm = async () => {
         setDeleting(true);
         try {
@@ -1688,6 +1741,14 @@ export default function AiPage() {
                 setDeleteConfirm({ open: false, type: "provider", id: null, name: "" });
                 loadProviders();
                 setSelectedProviderId(null);
+            } else if (deleteConfirm.type === "cancelIntegration") {
+                await api.delete(`/ai/integrations/${deleteConfirm.id}`);
+                toast.success(t("messages.integrationCancelled"));
+                setDeleteConfirm({ open: false, type: "cancelIntegration", id: null, name: "" });
+                loadProviders();
+                if (selectedProviderId === deleteConfirm.id) {
+                    loadIntegration(selectedProviderId);
+                }
             }
         } catch (e) {
             toast.error(normalizeAxiosError(e));
@@ -1706,6 +1767,7 @@ export default function AiPage() {
             await api.post(`/ai/integrations/${selectedProviderId}/credentials`, payload);
             toast.success(t("messages.integrationSaved"));
             loadIntegration(selectedProviderId);
+            loadProviders();
         } catch (e) {
             toast.error(normalizeAxiosError(e));
         } finally {
@@ -1760,7 +1822,7 @@ export default function AiPage() {
     ], [t]);
 
     const stats = useMemo(() => {
-        const connectedCount = providers.filter((p) => p.integration).length;
+        const connectedCount = providers.filter((p) => p.integration?.encryptedCredentials).length;
         const customModelsCount = models.filter((m) => m.scope === "custom").length;
         const defaultModelName = defaultModel?.model?.name || defaultModel?.model?.modelCode || "—";
         const defaultModelProvider = defaultModel?.model?.provider?.name || "";
@@ -1816,7 +1878,7 @@ export default function AiPage() {
     ), [customProviders.length, hasPermission, t]);
 
     const isProviderConnected = selectedProvider
-        ? !!(integration)
+        ? !!(integration?.encryptedCredentials)
         : false;
 
     return (
@@ -1865,7 +1927,7 @@ export default function AiPage() {
                                         const isCustom = provider.scope === "custom";
                                         const modelCount = provider.models?.length ?? 0;
                                         const isDefaultProvider = defaultModel?.model?.provider?.id === provider.id;
-                                        const isConnected = !!(provider.integration);
+                                        const isConnected = !!(provider.integration?.encryptedCredentials);
 
                                         return (
                                             <button
@@ -1931,6 +1993,25 @@ export default function AiPage() {
 
                                                 {isCustom ? (
                                                     <div className="flex items-center gap-1 shrink-0 ms-2">
+                                                        <div onClick={(e) => e.stopPropagation()}>
+                                                            <Switch
+                                                                size="sm"
+                                                                checked={provider.isActive !== false}
+                                                                disabled={togglingId === provider.id}
+                                                                onCheckedChange={(val) => handleToggleProviderActive(provider, val)}
+                                                            />
+                                                        </div>
+                                                        {isConnected && (
+                                                            <div
+                                                                role="button"
+                                                                tabIndex={-1}
+                                                                onClick={(e) => { e.stopPropagation(); handleCancelIntegration(provider); }}
+                                                                className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg p-1.5 transition-colors"
+                                                                title={t("actions.cancelIntegration")}
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </div>
+                                                        )}
                                                         <div
                                                             role="button"
                                                             tabIndex={-1}
@@ -1951,8 +2032,21 @@ export default function AiPage() {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="text-[18px] text-muted-foreground shrink-0 ms-2">
-                                                        ›
+                                                    <div className="flex items-center gap-1 shrink-0 ms-2">
+                                                        {isConnected && (
+                                                            <div
+                                                                role="button"
+                                                                tabIndex={-1}
+                                                                onClick={(e) => { e.stopPropagation(); handleCancelIntegration(provider); }}
+                                                                className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg p-1.5 transition-colors"
+                                                                title={t("actions.cancelIntegration")}
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </div>
+                                                        )}
+                                                        <div className="text-[18px] text-muted-foreground">
+                                                            ›
+                                                        </div>
                                                     </div>
                                                 )}
                                             </button>
@@ -2092,11 +2186,13 @@ export default function AiPage() {
                                                 onEditModel={handleEditModel}
                                                 onDeleteModel={handleDeleteModel}
                                                 onSetDefault={handleSetDefaultModel}
+                                                onToggleModelActive={handleToggleModelActive}
                                                 defaultModelId={defaultModel}
                                                 settingDefaultId={settingDefaultId}
                                                 hasPermission={hasPermission}
                                                 locale={locale}
                                                 providerConnected={isProviderConnected}
+                                                togglingId={togglingId}
                                             />
                                         )}
                                     </div>
@@ -2125,10 +2221,12 @@ export default function AiPage() {
                         onEditModel={handleEditModel}
                         onDeleteModel={handleDeleteModel}
                         onSetDefault={handleSetDefaultModel}
+                        onToggleModelActive={handleToggleModelActive}
                         defaultModelId={defaultModel}
                         settingDefaultId={settingDefaultId}
                         hasPermission={hasPermission}
                         locale={locale}
+                        togglingId={togglingId}
                     />
                 </div>
             )}
@@ -2165,8 +2263,20 @@ export default function AiPage() {
             <ConfirmDialog
                 open={deleteConfirm.open}
                 onOpenChange={(v) => !deleting && setDeleteConfirm({ ...deleteConfirm, open: v })}
-                title={deleteConfirm.type === "provider" ? t("error.deleteProviderConfirmTitle") : t("error.deleteModelConfirmTitle")}
-                description={deleteConfirm.type === "provider" ? t("error.deleteProviderConfirmDesc") : t("error.deleteModelConfirmDesc")}
+                title={
+                    deleteConfirm.type === "provider"
+                        ? t("error.deleteProviderConfirmTitle")
+                        : deleteConfirm.type === "cancelIntegration"
+                            ? t("error.cancelIntegrationConfirmTitle")
+                            : t("error.deleteModelConfirmTitle")
+                }
+                description={
+                    deleteConfirm.type === "provider"
+                        ? t("error.deleteProviderConfirmDesc")
+                        : deleteConfirm.type === "cancelIntegration"
+                            ? t("error.cancelIntegrationConfirmDesc")
+                            : t("error.deleteModelConfirmDesc")
+                }
                 confirmText={t("dialog.deleteConfirm")}
                 loading={deleting}
                 onConfirm={handleDeleteConfirm}

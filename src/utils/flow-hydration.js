@@ -1,5 +1,18 @@
 import api from "@/utils/api";
 
+function aiProviderConnected(provider) {
+    const integration = provider?.integration;
+    return !!(
+        provider?.isActive !== false &&
+        integration &&
+        (integration.encryptedCredentials || integration.credentials)
+    );
+}
+
+function activeProviderModels(provider) {
+    return (provider?.models || []).filter((model) => model.isActive !== false);
+}
+
 /**
  * Hydrates a node's configuration with fresh data from the backend.
  * Detects breaking changes (deleted entities) and non-breaking updates (name changes).
@@ -119,6 +132,97 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                 } catch (e) {
                     result.isValid = false;
                     result.error = t("whatsApp.automations.builder.config.hydration.employeeNotFound", { employee: config.employeeName || config.employeeId });
+                }
+                break;
+            }
+
+            case 'ai_address_correction': {
+                if (!config.providerId || !config.modelId) break;
+
+                try {
+                    const [aiRes, shippingRes] = await Promise.all([
+                        api.get("/ai/providers", { params: { scope: "all", isActive:"true" } }),
+                        config.shippingCompanyId ? api.get("/shipping/integrations/active") : Promise.resolve({ data: { integrations: [] } }),
+                    ]);
+
+                    const providers = Array.isArray(aiRes.data) ? aiRes.data : aiRes.data?.records || [];
+                    const freshProvider = providers.find(p => String(p.id) === String(config.providerId));
+
+                    if (!freshProvider || !aiProviderConnected(freshProvider)) {
+                        throw new Error("AI provider not connected");
+                    }
+
+                    const freshModel = activeProviderModels(freshProvider).find(m => String(m.id) === String(config.modelId));
+                    if (!freshModel) {
+                        result.isValid = false;
+                        result.error = t("whatsApp.automations.builder.config.hydration.aiModelNotFound", { model: config.modelName || config.modelCode || config.modelId });
+                        break;
+                    }
+
+                    if (freshProvider.name !== config.providerName) {
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.aiProviderUpdated", { oldName: config.providerName, newName: freshProvider.name }));
+                        result.newConfig.providerName = freshProvider.name;
+                    }
+
+                    const freshModelName = freshModel.displayName || freshModel.name || freshModel.modelCode;
+                    if (freshModelName !== config.modelName) {
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.aiModelUpdated", { oldName: config.modelName, newName: freshModelName }));
+                        result.newConfig.modelName = freshModelName;
+                        result.newConfig.modelCode = freshModel.modelCode;
+                    }
+
+                    if (config.shippingCompanyId) {
+                        const shippingIntegrations = Array.isArray(shippingRes.data?.integrations) ? shippingRes.data.integrations : Array.isArray(shippingRes.data) ? shippingRes.data : [];
+                        const freshCompany = shippingIntegrations.find(c => String(c.providerId) === String(config.shippingCompanyId));
+
+                        if (!freshCompany) {
+                            result.isValid = false;
+                            result.error = t("whatsApp.automations.builder.config.hydration.shippingCompanyNotFound", { company: config.shippingCompany || config.shippingCompanyId });
+                            break;
+                        }
+
+                        if (freshCompany.name !== config.shippingCompany) {
+                            result.changes.push(t("whatsApp.automations.builder.config.hydration.shippingCompanyUpdated", { fieldName: t("whatsApp.automations.builder.config.hydration.fieldNames.shippingCompany"), oldName: config.shippingCompany, newName: freshCompany.name }));
+                            result.newConfig.shippingCompany = freshCompany.name;
+                        }
+                        if (freshCompany.provider !== config.provider) {
+                            result.newConfig.provider = freshCompany.provider;
+                        }
+                    }
+                } catch (e) {
+                    result.isValid = false;
+                    result.error = t("whatsApp.automations.builder.config.hydration.aiProviderNotFound", { provider: config.providerName || config.providerId });
+                }
+                break;
+            }
+
+            case 'assign_shipping_provider': {
+                try {
+                    const res = await api.get("/shipping/integrations/active");
+                    const integrations = Array.isArray(res.data?.integrations) ? res.data.integrations : Array.isArray(res.data) ? res.data : [];
+
+                        if (integrations.length === 0) {
+                            result.isValid = false;
+                            result.error = t("whatsApp.automations.builder.config.hydration.noActiveShippingCompanies");
+                        }
+                   
+                    if (!config.shippingCompanyId) break;
+
+                    const freshCompany = integrations.find(c => String(c.providerId) === String(config.shippingCompanyId));
+                    if (!freshCompany) {
+                        throw new Error("Shipping company not connected");
+                    }
+
+                    if (freshCompany.name !== config.shippingCompany) {
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.shippingCompanyUpdated", { fieldName: t("whatsApp.automations.builder.config.hydration.fieldNames.shippingCompany"), oldName: config.shippingCompany, newName: freshCompany.name }));
+                        result.newConfig.shippingCompany = freshCompany.name;
+                    }
+                    if (freshCompany.provider !== config.provider) {
+                        result.newConfig.provider = freshCompany.provider;
+                    }
+                } catch (e) {
+                    result.isValid = false;
+                    result.error = t("whatsApp.automations.builder.config.hydration.shippingCompanyNotFound", { company: config.shippingCompany || config.shippingCompanyId });
                 }
                 break;
             }

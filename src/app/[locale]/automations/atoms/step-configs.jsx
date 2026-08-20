@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
@@ -447,6 +447,346 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
                 </Select>
             </FormGroup>
         </div>
+    );
+}
+
+const getConnectedAiProviders = (providers) => {
+    return providers.filter((provider) => {
+        const integration = provider.integration;
+        return !!(
+            provider.isActive !== false &&
+            integration &&
+            (integration.encryptedCredentials || integration.credentials)
+        );
+    });
+};
+
+const getProviderModels = (provider) => {
+    return (provider?.models || []).filter((model) => model.isActive !== false);
+};
+
+/**
+ * Action: AI Address Correction
+ */
+export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tNodes = useTranslations("whatsApp.automations.builder.nodes");
+    const tCommon = useTranslations("common");
+    const [providers, setProviders] = useState([]);
+    const [shippingCompanies, setShippingCompanies] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [tempValue, setTempValue] = useState({
+        providerId: value?.providerId || "",
+        providerName: value?.providerName || "",
+        modelId: value?.modelId || "",
+        modelName: value?.modelName || "",
+        modelCode: value?.modelCode || "",
+        shippingCompanyId: value?.shippingCompanyId || "",
+        shippingCompany: value?.shippingCompany || "",
+        provider: value?.provider || "",
+        branches: value?.branches || [
+            { id: "address_corrected", label: tNodes("branches.addressCorrected"), condition: "address_corrected" },
+            { id: "failed_to_correct", label: tNodes("branches.failedToCorrect"), condition: "failed_to_correct" },
+            { id: "address_incomplete", label: tNodes("branches.addressIncomplete"), condition: "address_incomplete" },
+        ],
+    });
+
+    useEffect(() => {
+        const fetchAiOptions = async () => {
+            try {
+                setLoading(true);
+                const [providersRes, defaultModelRes, shippingRes] = await Promise.all([
+                    api.get("/ai/providers", { params: { scope: "all", isActive:"true" } }),
+                    api.get("/ai/default-model"),
+                    api.get("/shipping/integrations/active"),
+                ]);
+
+                const providerRecords = Array.isArray(providersRes.data)
+                    ? providersRes.data
+                    : providersRes.data?.records || [];
+                const connectedProviders = getConnectedAiProviders(providerRecords);
+                setProviders(connectedProviders);
+
+                const shippingIntegrations = Array.isArray(shippingRes.data?.integrations) ? shippingRes.data.integrations : Array.isArray(shippingRes.data) ? shippingRes.data : [];
+                setShippingCompanies(shippingIntegrations);
+
+                if (value?.providerId && value?.modelId) return;
+
+                const defaultModelId = defaultModelRes.data?.modelId || defaultModelRes.data?.model?.id;
+                const defaultProvider = connectedProviders.find((provider) =>
+                    getProviderModels(provider).some((model) => model.id === defaultModelId)
+                );
+                const defaultModel = getProviderModels(defaultProvider).find((model) => model.id === defaultModelId);
+                const fallbackProvider = defaultProvider || connectedProviders[0];
+                const fallbackModel = defaultModel || getProviderModels(fallbackProvider)[0];
+
+                if (fallbackProvider && fallbackModel) {
+                    setTempValue((prev) => ({
+                        ...prev,
+                        providerId: fallbackProvider.id,
+                        providerName: fallbackProvider.name,
+                        modelId: fallbackModel.id,
+                        modelName: fallbackModel.displayName || fallbackModel.name || fallbackModel.modelCode,
+                        modelCode: fallbackModel.modelCode,
+                    }));
+                }
+            } catch (e) {
+                toast.error(normalizeAxiosError(e));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isOpen) fetchAiOptions();
+    }, [isOpen, value?.providerId, value?.modelId]);
+
+    useEffect(() => {
+        setDisabled(loading || !tempValue.providerId || !tempValue.modelId || !tempValue.shippingCompanyId);
+    }, [loading, tempValue.providerId, tempValue.modelId, tempValue.shippingCompanyId, setDisabled]);
+
+    const selectedProvider = providers.find((provider) => provider.id === tempValue.providerId);
+    const selectedModels = getProviderModels(selectedProvider);
+
+    const handleProviderChange = (providerId) => {
+        const provider = providers.find((item) => item.id === providerId);
+        const firstModel = getProviderModels(provider)[0];
+        setTempValue((prev) => ({
+            ...prev,
+            providerId,
+            providerName: provider?.name || "",
+            modelId: firstModel?.id || "",
+            modelName: firstModel?.displayName || firstModel?.name || firstModel?.modelCode || "",
+            modelCode: firstModel?.modelCode || "",
+        }));
+    };
+
+    const handleModelChange = (modelId) => {
+        const model = selectedModels.find((item) => item.id === modelId);
+        setTempValue((prev) => ({
+            ...prev,
+            modelId,
+            modelName: model?.displayName || model?.name || model?.modelCode || "",
+            modelCode: model?.modelCode || "",
+        }));
+    };
+
+    const handleShippingCompanyChange = (companyId) => {
+        const company = shippingCompanies.find((item) => String(item.providerId) === String(companyId));
+        setTempValue((prev) => ({
+            ...prev,
+            shippingCompanyId: companyId,
+            shippingCompany: company?.name || "",
+            provider: company?.provider || "",
+        }));
+    };
+
+    const handleSave = () => {
+        onChange(tempValue);
+        onClose(tempValue);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
+            <DialogContent className="sm:max-w-[560px] w-full flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
+                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+                            <Bot size={20} className="md:size-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig("aiAddressCorrectionTitle")}</h3>
+                            <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig("aiAddressCorrectionDesc")}</p>
+                        </div>
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-4">
+                    <FormGroup label={tConfig("aiProvider")} description={tConfig("aiProviderDesc")} error={errors.provider}>
+                        <Select value={tempValue.providerId || ""} onValueChange={handleProviderChange}>
+                            <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                                {loading ? (
+                                    <div className="flex items-center gap-2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span>{tConfig("loading")}</span>
+                                    </div>
+                                ) : (
+                                    <SelectValue placeholder={tConfig("selectAiProvider")} />
+                                )}
+                            </SelectTrigger>
+                            <SelectContent>
+                                {providers.map((provider) => (
+                                    <SelectItem key={provider.id} value={provider.id}>{provider.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
+
+                    <FormGroup label={tConfig("aiModel")} description={tConfig("aiModelDesc")} error={errors.model}>
+                        <Select value={tempValue.modelId || ""} onValueChange={handleModelChange} disabled={!tempValue.providerId}>
+                            <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                                <SelectValue placeholder={tConfig("selectAiModel")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {selectedModels.map((model) => (
+                                    <SelectItem key={model.id} value={model.id}>
+                                        {model.displayName || model.name || model.modelCode}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
+
+                    <FormGroup label={tConfig("shippingCompany")} description={tConfig("aiAddressShippingCompanyDesc")} error={errors.shippingCompany}>
+                        <Select value={tempValue.shippingCompanyId || ""} onValueChange={handleShippingCompanyChange}>
+                            <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                                {loading ? (
+                                    <div className="flex items-center gap-2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span>{tConfig("loading")}</span>
+                                    </div>
+                                ) : (
+                                    <SelectValue placeholder={tConfig("selectShippingCompany")} />
+                                )}
+                            </SelectTrigger>
+                            <SelectContent>
+                                {shippingCompanies.map((company) => (
+                                    <SelectItem key={company.providerId} value={company.providerId}>{company.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
+                </div>
+
+                <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
+                    <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
+                        <Button variant="ghost" onClick={() => onClose(null)} className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            {tCommon("cancel")}
+                        </Button>
+                        <Button disabled={loading || !tempValue.providerId || !tempValue.modelId || !tempValue.shippingCompanyId} onClick={handleSave} className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                            {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
+                        </Button>
+                    </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+/**
+ * Action: Assign Shipping Provider
+ */
+export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tNodes = useTranslations("whatsApp.automations.builder.nodes");
+    const tCommon = useTranslations("common");
+    const tShipping = useTranslations("shipping");
+    const [shippingCompanies, setShippingCompanies] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [tempValue, setTempValue] = useState({
+        shippingCompanyId: value?.shippingCompanyId || "",
+        shippingCompany: value?.shippingCompany || "",
+        provider: value?.provider || "",
+        branches: value?.branches || [
+            { id: "distributed", label: tNodes("branches.distributed"), condition: "distributed" },
+            { id: "failed_to_distribute", label: tNodes("branches.failedToDistribute"), condition: "failed_to_distribute" },
+        ],
+    });
+
+    useEffect(() => {
+        const fetchShippingCompanies = async () => {
+            try {
+                setLoading(true);
+                const { data } = await api.get("/shipping/integrations/active");
+                const integrations = Array.isArray(data?.integrations) ? data.integrations : Array.isArray(data) ? data : [];
+                setShippingCompanies(integrations);
+            } catch (e) {
+                toast.error(normalizeAxiosError(e));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isOpen) fetchShippingCompanies();
+    }, [isOpen]);
+
+    const isValid = !loading && !!tempValue.shippingCompanyId;
+
+    useEffect(() => {
+        setDisabled(!isValid);
+    }, [isValid, setDisabled]);
+
+    const handleShippingCompanyChange = (companyId) => {
+        const company = shippingCompanies.find((item) => String(item.providerId) === String(companyId));
+        setTempValue((prev) => ({
+            ...prev,
+            shippingCompanyId: companyId,
+            shippingCompany: company?.name || "",
+            provider: company?.provider || "",
+        }));
+    };
+
+    const handleSave = () => {
+        const payload = {
+            shippingCompanyId: tempValue.shippingCompanyId,
+            shippingCompany: tempValue.shippingCompany,
+            provider: tempValue.provider,
+            branches: tempValue.branches,
+        };
+        onChange(payload);
+        onClose(payload);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
+            <DialogContent className="sm:max-w-[560px] w-full flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
+                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+                            <Truck size={20} className="md:size-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig("assignShippingProviderTitle")}</h3>
+                            <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig("assignShippingProviderDesc")}</p>
+                        </div>
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-4">
+                    <FormGroup label={tConfig("shippingCompany")} description={tConfig("shippingCompanyAssignDesc")} error={errors.shippingCompany}>
+                        <Select value={tempValue.shippingCompanyId || ""} onValueChange={handleShippingCompanyChange}>
+                            <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                                {loading ? (
+                                    <div className="flex items-center gap-2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span>{tConfig("loading")}</span>
+                                    </div>
+                                ) : (
+                                    <SelectValue placeholder={tConfig("selectShippingCompany")} />
+                                )}
+                            </SelectTrigger>
+                            <SelectContent>
+                                {shippingCompanies.map((company) => (
+                                    <SelectItem key={company.providerId} value={String(company.providerId)}>
+                                        {tShipping(`providers.${company.provider?.toLowerCase()}`, { defaultValue: company.name })}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
+                </div>
+
+                <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
+                    <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
+                        <Button variant="ghost" onClick={() => onClose(null)} className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            {tCommon("cancel")}
+                        </Button>
+                        <Button disabled={!isValid} onClick={handleSave} className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                            {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
+                        </Button>
+                    </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }
 

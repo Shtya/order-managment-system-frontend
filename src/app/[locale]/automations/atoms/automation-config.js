@@ -1,4 +1,4 @@
-import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle, Bot } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -100,6 +100,24 @@ export const BASE_CONFIG = {
                         type: 'action',
                         configComponent: 'UpdateOrderStatusConfig',
                         className: 'max-w-xl!'
+                    },
+                    {
+                        id: 'ai_address_correction',
+                        icon: Bot,
+                        type: 'action',
+                        configComponent: 'AiAddressCorrectionConfig',
+                        className: 'max-w-xl!',
+                        hasCustom: true,
+                        allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
+                    },
+                    {
+                        id: 'assign_shipping_provider',
+                        icon: Truck,
+                        type: 'action',
+                        configComponent: 'AssignShippingProviderConfig',
+                        className: 'max-w-xl!',
+                        hasCustom: true,
+                        allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
                     },
                     {
                         id: 'send_whatsapp_template',

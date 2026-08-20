@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { Position, useUpdateNodeInternals } from '@xyflow/react';
-import { MessageSquare, RefreshCw, Send, Loader2, Zap, Users, MessageCircle, Hourglass, AlertTriangle } from 'lucide-react';
+import { MessageSquare, RefreshCw, Send, Loader2, Zap, Users, MessageCircle, Hourglass, AlertTriangle, Bot, Truck } from 'lucide-react';
 import { useLocale, useTranslations } from "next-intl";
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
@@ -18,6 +18,8 @@ export function ActionNode({ id, data, selected }) {
         'send_whatsapp_template': { label: t('actionTypes.send_whatsapp_template'), subtitle: t('nodes.action.subtitle'), icon: MessageSquare, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         "send_whatsapp_message": { label: t('actionTypes.send_whatsapp_message'), subtitle: t('nodes.action.subtitle'), icon: MessageCircle, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-500/10', },
         'update_order_status': { label: t('actionTypes.update_order_status'), subtitle: t('nodes.action.management'), icon: RefreshCw, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+        'ai_address_correction': { label: t('actionTypes.ai_address_correction'), subtitle: t('nodes.action.management'), icon: Bot, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-500/10' },
+        'assign_shipping_provider': { label: t('actionTypes.assign_shipping_provider'), subtitle: t('nodes.action.management'), icon: Truck, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-500/10' },
         'send_upsell': { label: t('actionTypes.send_upsell'), subtitle: t('nodes.action.upsell'), icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'assign_order_to_employee': { label: t('actionTypes.assign_order_to_employee'), subtitle: t('nodes.action.management'), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'send_sms': { label: t('actionTypes.send_sms'), subtitle: t('nodes.action.subtitle'), icon: Send, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-500/10', },
@@ -99,6 +101,32 @@ export function ActionNode({ id, data, selected }) {
                             <div className="flex items-center justify-between">
                                 <span className="opacity-50 font-bold">{t('nodes.changeStatusTo')}</span>
                                 <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">{data.config?.newStatus || '—'}</span>
+                            </div>
+                        )}
+                        {data.type === 'ai_address_correction' && (
+                            <div className="flex flex-col gap-1.5">
+                                <div className="flex items-center justify-between">
+                                    <span className="opacity-50 font-bold">{t('nodes.provider')}</span>
+                                    <span className="font-black text-violet-700 dark:text-violet-400 truncate">{data.config?.providerName || '—'}</span>
+                                </div>
+                                <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                    <span className="opacity-50 text-[9px]">{t('nodes.aiModel')}</span>
+                                    <span className="font-mono font-bold text-violet-600 dark:text-violet-400 truncate">{data.config?.modelName || data.config?.modelCode || '—'}</span>
+                                </div>
+                                {data.config?.shippingCompany && (
+                                    <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                        <span className="opacity-50 text-[9px]">{t('nodes.shippingCompany')}</span>
+                                        <span className="font-mono font-bold text-orange-600 dark:text-orange-400 truncate">{data.config.shippingCompany}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {data.type === 'assign_shipping_provider' && (
+                            <div className="flex flex-col gap-1.5">
+                                    <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                        <span className="opacity-50 text-[9px]">{t('nodes.provider')}</span>
+                                        <span className="font-mono font-bold text-orange-600 dark:text-orange-400 truncate">{data.config?.shippingCompany || '—'}</span>
+                                    </div>
                             </div>
                         )}
                         {data.type === 'send_upsell' && (

@@ -235,6 +235,82 @@ function ToggleIcon({ expanded }) {
   );
 }
 
+const hasFormattedText = (value) => /(\r?\n|[*_]{2}.+[*_]{2}|^\s*[-*]\s+)/m.test(value);
+const hasArabicText = (value) => /[\u0600-\u06FF]/.test(value);
+
+const renderInlineFormattedText = (text) => {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+
+  return parts.map((part, index) => {
+    const boldMatch = part.match(/^\*\*([^*]+)\*\*$/);
+
+    if (boldMatch) {
+      return (
+        <strong key={`${part}-${index}`} className="font-black text-slate-800 dark:text-slate-100">
+          {boldMatch[1]}
+        </strong>
+      );
+    }
+
+    return part;
+  });
+};
+
+const FormattedStringValue = React.memo(function FormattedStringValue({ value }) {
+  const normalizedValue = useMemo(() => value.replace(/\r\n/g, "\n").trim(), [value]);
+  const isFormatted = useMemo(() => hasFormattedText(normalizedValue), [normalizedValue]);
+  const isArabic = useMemo(() => hasArabicText(normalizedValue), [normalizedValue]);
+  const direction = isArabic ? "rtl" : "ltr";
+  const alignmentClass = isArabic ? "text-right" : "text-left";
+  const renderedLines = useMemo(() => {
+    if (!isFormatted) return null;
+
+    return normalizedValue.split("\n").map((line, index) => {
+      const trimmedLine = line.trim();
+      const bulletMatch = trimmedLine.match(/^[-*]\s+(.+)$/);
+
+      if (!trimmedLine) {
+        return <div key={`blank-${index}`} className="h-2" />;
+      }
+
+      if (bulletMatch) {
+        return (
+          <div key={`${trimmedLine}-${index}`} className="flex gap-2">
+            <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+            <span>{renderInlineFormattedText(bulletMatch[1])}</span>
+          </div>
+        );
+      }
+
+      return (
+        <div key={`${trimmedLine}-${index}`}>
+          {renderInlineFormattedText(trimmedLine)}
+        </div>
+      );
+    });
+  }, [isFormatted, normalizedValue]);
+
+  if (!isFormatted) {
+    return (
+      <span
+        dir={direction}
+        className={`break-all text-emerald-600 font-semibold dark:text-emerald-400 ${alignmentClass}`}
+      >
+        "{value}"
+      </span>
+    );
+  }
+
+  return (
+    <div
+      dir={direction}
+      className={`min-w-0 max-w-full whitespace-pre-wrap break-words rounded-lg border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-[12px] leading-6 text-slate-700 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-slate-200 ${alignmentClass}`}
+    >
+      {renderedLines}
+    </div>
+  );
+});
+
 // --- Recursive Node ---
 const JsonNode = ({ label, value, isLast, depth = 0, toggleId, forceExpand, t }) => {
   const [isExpanded, setIsExpanded] = useState(depth < 2 || forceExpand);
@@ -252,14 +328,13 @@ const JsonNode = ({ label, value, isLast, depth = 0, toggleId, forceExpand, t })
   // Render Primitive Value
   if (!isObject) {
     const valueColor =
-      type === "string"  ? "text-emerald-600 font-semibold dark:text-emerald-400" :
       type === "number"  ? "text-orange-500 font-bold dark:text-orange-400" :
       type === "boolean" ? "text-indigo-500 font-bold dark:text-indigo-400" :
       "text-slate-400";
 
     return (
       <div className="flex items-start justify-between font-mono text-[12px] leading-relaxed group hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-md px-1.5 py-1 transition-colors">
-        <div className="flex items-start gap-2 overflow-hidden">
+        <div className="flex min-w-0 items-start gap-2 overflow-hidden">
           <span className="w-4 shrink-0 flex justify-center mt-0.5">
             <TypeIconCmp size={12} className="text-slate-400" />
           </span>
@@ -268,9 +343,13 @@ const JsonNode = ({ label, value, isLast, depth = 0, toggleId, forceExpand, t })
               {label}
             </span>
           )}
-          <span className={`break-all ${valueColor}`}>
-            {type === "string" ? `"${value}"` : String(value)}
-          </span>
+          {type === "string" ? (
+            <FormattedStringValue value={value} />
+          ) : (
+            <span className={`break-all ${valueColor}`}>
+              {String(value)}
+            </span>
+          )}
           {!isLast && <span className="text-slate-400">,</span>}
         </div>
         <TypeBadge type={type} />

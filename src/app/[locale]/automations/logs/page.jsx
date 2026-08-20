@@ -242,7 +242,7 @@ export default function AutomationLogsPage() {
                 example: tTutorial("columns.trigger.example"),
                 cell: (row) => (
                     <div className="flex flex-col gap-0.5">
-                        <span className="text-xs">{tAutomations(`triggers.${row.automationFlow?.triggerType}`)}</span>
+                        <span className="text-xs">{tAutomations.has(`triggers.${row.automationFlow?.triggerType}`) ?  tAutomations(`triggers.${row.automationFlow?.triggerType}`) : "N/A"}</span>
                         {/* <span className="text-[10px] font-mono text-muted-foreground">#{row.triggerEntityId}</span> */}
                     </div>
                 ),

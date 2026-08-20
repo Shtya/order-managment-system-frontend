@@ -1227,10 +1227,7 @@ export default function CallCenterPage() {
                 page,
                 limit: per_page,
             };
-            if (viewMode === "manual") {
-                params.startDate = today;
-                params.endDate = today;
-            } else {
+            if (viewMode !== "manual")  {
                 if (filters.ruleType !== "all") params.ruleType = filters.ruleType;
                 if (filters.strategy !== "all") params.strategy = filters.strategy;
                 if (filters.isActive !== "all") params.isActive = filters.isActive;

@@ -13392,7 +13392,7 @@
       },
       "stats": {
         "new": {
-          "description": "Total number of new orders created today that have not yet been assigned to any employee.",
+          "description": "Total number of new orders that have not yet been assigned to any employee.",
           "example": "If 25 new orders were placed today and none have been assigned yet, this stat will display 25."
         },
         "confirmed": {

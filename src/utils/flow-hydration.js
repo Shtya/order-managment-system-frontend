@@ -146,10 +146,21 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                     ]);
 
                     const providers = Array.isArray(aiRes.data) ? aiRes.data : aiRes.data?.records || [];
-                    const freshProvider = providers.find(p => String(p.id) === String(config.providerId));
+                    const freshProvider = config.providerCode
+                        ? providers.find(p => String(p.code) === String(config.providerCode))
+                        : providers.find(p => String(p.id) === String(config.providerId));
 
                     if (!freshProvider || !aiProviderConnected(freshProvider)) {
                         throw new Error("AI provider not connected");
+                    }
+
+                    if (String(freshProvider.id) !== String(config.providerId)) {
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.aiProviderUpdated", { oldName: config.providerName, newName: freshProvider.name }));
+                        result.newConfig.providerId = freshProvider.id;
+                        result.newConfig.providerName = freshProvider.name;
+                    } else if (freshProvider.name !== config.providerName) {
+                        result.changes.push(t("whatsApp.automations.builder.config.hydration.aiProviderUpdated", { oldName: config.providerName, newName: freshProvider.name }));
+                        result.newConfig.providerName = freshProvider.name;
                     }
 
                     const freshModel = activeProviderModels(freshProvider).find(m => String(m.id) === String(config.modelId));
@@ -157,11 +168,6 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                         result.isValid = false;
                         result.error = t("whatsApp.automations.builder.config.hydration.aiModelNotFound", { model: config.modelName || config.modelCode || config.modelId });
                         break;
-                    }
-
-                    if (freshProvider.name !== config.providerName) {
-                        result.changes.push(t("whatsApp.automations.builder.config.hydration.aiProviderUpdated", { oldName: config.providerName, newName: freshProvider.name }));
-                        result.newConfig.providerName = freshProvider.name;
                     }
 
                     const freshModelName = freshModel.displayName || freshModel.name || freshModel.modelCode;

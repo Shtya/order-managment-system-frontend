@@ -478,6 +478,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
     const [tempValue, setTempValue] = useState({
         providerId: value?.providerId || "",
         providerName: value?.providerName || "",
+        providerCode: value?.providerCode || "",
         modelId: value?.modelId || "",
         modelName: value?.modelName || "",
         modelCode: value?.modelCode || "",
@@ -525,6 +526,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                         ...prev,
                         providerId: fallbackProvider.id,
                         providerName: fallbackProvider.name,
+                        providerCode: fallbackProvider.code || "",
                         modelId: fallbackModel.id,
                         modelName: fallbackModel.displayName || fallbackModel.name || fallbackModel.modelCode,
                         modelCode: fallbackModel.modelCode,
@@ -554,6 +556,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
             ...prev,
             providerId,
             providerName: provider?.name || "",
+            providerCode: provider?.code || "",
             modelId: firstModel?.id || "",
             modelName: firstModel?.displayName || firstModel?.name || firstModel?.modelCode || "",
             modelCode: firstModel?.modelCode || "",

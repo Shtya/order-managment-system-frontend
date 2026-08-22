@@ -9102,6 +9102,7 @@
       "session_expired": "Session expired, please log in again",
       "no_permission": "Sorry, you do not have permission to access this page",
       "invalid_credentials": "Invalid email or password",
+      "rate_limited": "Too many login attempts. Please try again later.",
       "title": "Welcome Back",
       "subtitle": "Enter your details to continue",
       "email": "Email",

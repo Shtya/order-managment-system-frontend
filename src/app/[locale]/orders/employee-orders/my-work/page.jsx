@@ -9,6 +9,7 @@ import {
   BadgeCheck, Banknote, StickyNote, Mail, Receipt, Star, Boxes, Hash, ImageIcon,
   Navigation, Plus, Minus, X, Save, Info, Trash2, Truck, MapPin, CreditCard,
   AlertTriangle,
+  PenLine,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -18,7 +19,7 @@ import api from "@/utils/api";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import { avatarSrc } from "@/components/atoms/UserSelect";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -40,6 +41,8 @@ import { normalizeAxiosError } from "@/utils/axios";
 
 
 // ─── RAW HEX (for alpha only) ──────────────────────────────────────────────
+const OTHER_CANCEL_CAUSE = "__other__";
+
 const HEX = {
   orange: "var(--primary)", amber: "var(--third)", flame: "var(--secondary)",
   violet: "#6763af", green: "#16a34a", red: "#dc2626", sky: "#0369a1",
@@ -478,6 +481,11 @@ export default function OrderConfirmationWorkPage() {
 
   const [issueDialog, setIssueDialog] = useState({ open: false, order: null });
   const [issueOptions, setIssueOptions] = useState({ statuses: [], causes: [], roles: [], users: [] });
+  const [selectableCancelCauses, setSelectableCancelCauses] = useState([]);
+  const [cancelCauseOpen, setCancelCauseOpen] = useState(false);
+  const [pendingCancelStatusId, setPendingCancelStatusId] = useState(null);
+  const [selectedCancelCauseId, setSelectedCancelCauseId] = useState("");
+  const [customCauseName, setCustomCauseName] = useState("");
 
   // ── Geo States ───────────────────────────────────────────────────────────
   const [providerErrors, setProviderErrors] = useState({});
@@ -488,7 +496,7 @@ export default function OrderConfirmationWorkPage() {
     [editedOrder?.shippingCompany]
   );
 
-  useEffect(() => { fetchNext(); fetchStatuses(); }, []);
+  useEffect(() => { fetchNext(); fetchStatuses(); fetchSelectableCancelCauses(); }, []);
 
   useEffect(() => {
     if (editedOrder?.orderNumber) setDocumentTitle(editedOrder.orderNumber);
@@ -501,6 +509,14 @@ export default function OrderConfirmationWorkPage() {
   };
   const fetchStatuses = async () => {
     try { const r = await api.get("/orders/allowed-confirmation"); setAllowedStatuses(r.data || []); } catch { }
+  };
+  const fetchSelectableCancelCauses = async () => {
+    try {
+      const r = await api.get("/cancel-causes/selectable");
+      setSelectableCancelCauses(r.data?.records || []);
+    } catch {
+      setSelectableCancelCauses([]);
+    }
   };
 
   useEffect(() => {
@@ -812,11 +828,12 @@ export default function OrderConfirmationWorkPage() {
   };
 
 
-  const changeStatus = async statusId => {
+  const changeStatus = async (statusId, extra = {}) => {
     if (!originalOrder || isLocked || decided) return;
     try {
       setChangingStatus(true); setSelStatusId(statusId);
-      const res = await api.put(`/orders/${originalOrder.id}/confirm-status`, { statusId, notes: notes.trim() || undefined });
+      const payload = { statusId, notes: notes.trim() || undefined, ...extra };
+      const res = await api.put(`/orders/${originalOrder.id}/confirm-status`, payload);
 
       if (res.data?.success === false) {
         alarmToast(res.data.message || t("messages.errorUpdatingStatus"));
@@ -827,8 +844,41 @@ export default function OrderConfirmationWorkPage() {
       setShowSuccess(true); setRefetching(true);
       const r = await api.get(`/orders/${originalOrder.id}`); initOrder(r.data);
       setDecided(true); setNotes(""); setSelStatusId(null);
+      setCancelCauseOpen(false); setPendingCancelStatusId(null);
+      setSelectedCancelCauseId(""); setCustomCauseName("");
     } catch (e) { toast.error(e.response?.data?.message || t("messages.errorUpdatingStatus")); setSelStatusId(null); setDecided(false); }
     finally { setChangingStatus(false); setRefetching(false); }
+  };
+
+  const requestStatusChange = (statusId) => {
+    const status = allowedStatuses.find((s) => s.id === statusId);
+    if (status?.code === "cancelled") {
+      setPendingCancelStatusId(statusId);
+      setSelectedCancelCauseId("");
+      setCustomCauseName("");
+      setCancelCauseOpen(true);
+      return;
+    }
+    changeStatus(statusId);
+  };
+
+  const confirmCancelWithCause = () => {
+    if (!pendingCancelStatusId) return;
+    const custom = customCauseName.trim();
+    const isOther = selectedCancelCauseId === OTHER_CANCEL_CAUSE;
+    if (isOther) {
+      if (!custom) {
+        toast.error(t("workPage.causeRequired"));
+        return;
+      }
+      changeStatus(pendingCancelStatusId, { customCauseName: custom });
+      return;
+    }
+    if (!selectedCancelCauseId) {
+      toast.error(t("workPage.causeRequired"));
+      return;
+    }
+    changeStatus(pendingCancelStatusId, { cancelCauseId: selectedCancelCauseId });
   };
 
   const nextOrder = () => {
@@ -896,9 +946,33 @@ export default function OrderConfirmationWorkPage() {
         ? <SaveBar onSave={handleSubmit(onSave)} onCancel={cancelChanges} loading={saving} {...sh} />
         : <ActionBar order={originalOrder} allowedStatuses={allowedStatuses} changingStatus={changingStatus}
           selStatusId={selStatusId} isLocked={isLocked} decided={decided} refetching={refetching}
-          changeStatus={changeStatus} nextOrder={nextOrder} loading={loading} {...sh}
+          changeStatus={requestStatusChange} nextOrder={nextOrder} loading={loading} {...sh}
           onEscalate={() => setIssueDialog({ open: true, order: originalOrder })} />
       }
+
+      <CancelCauseDialog
+        open={cancelCauseOpen}
+        onClose={() => {
+          if (changingStatus) return;
+          setCancelCauseOpen(false);
+          setPendingCancelStatusId(null);
+          setSelectedCancelCauseId("");
+          setCustomCauseName("");
+        }}
+        causes={selectableCancelCauses}
+        selectedCauseId={selectedCancelCauseId}
+        setSelectedCauseId={(id) => {
+          setSelectedCancelCauseId(id);
+          if (id !== OTHER_CANCEL_CAUSE) setCustomCauseName("");
+        }}
+        customCauseName={customCauseName}
+        setCustomCauseName={setCustomCauseName}
+        otherCauseValue={OTHER_CANCEL_CAUSE}
+        onConfirm={confirmCancelWithCause}
+        loading={changingStatus}
+        t={t}
+        isRtl={isRtl}
+      />
 
       <IssueFormDialog
         open={issueDialog.open}
@@ -1738,6 +1812,102 @@ function SaveBar({ onSave, onCancel, loading, t }) {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function CancelCauseDialog({
+  open,
+  onClose,
+  causes,
+  selectedCauseId,
+  setSelectedCauseId,
+  customCauseName,
+  setCustomCauseName,
+  otherCauseValue,
+  onConfirm,
+  loading,
+  t,
+  isRtl,
+}) {
+  const otherSelected = selectedCauseId === otherCauseValue;
+
+  return (
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent className="max-w-md rounded-xl p-0 overflow-hidden">
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", background: `color-mix(in srgb, ${HEX.orange}, transparent 75%)` }}>
+          <DialogHeader>
+            <DialogTitle className="serif" style={{ fontSize: 22, fontStyle: "italic" }}>
+              {t("workPage.cancelCauseTitle")}
+            </DialogTitle>
+          </DialogHeader>
+          <p style={{ fontSize: 12, color: "var(--foreground)", marginTop: 8 }}>
+            {t("workPage.cancelCauseHint")}
+          </p>
+        </div>
+        <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="field">
+            <label>{t("workPage.selectCause")}</label>
+            <Select
+              value={selectedCauseId || undefined}
+              onValueChange={setSelectedCauseId}
+              disabled={loading}
+            >
+              <SelectTrigger
+                style={{ textAlign: isRtl ? "right" : "left" }}
+                className={otherSelected ? "!border-primary !text-primary dark:!text-primary ring-1 ring-primary/60" : undefined}
+              >
+                {otherSelected ? (
+                  <span className="flex items-center gap-2 font-semibold text-primary dark:text-primary">
+                    <PenLine size={15} className="shrink-0" />
+                    {t("workPage.otherCause")}
+                  </span>
+                ) : (
+                  <SelectValue placeholder={t("workPage.selectCausePlaceholder")} />
+                )}
+              </SelectTrigger>
+              <SelectContent>
+                {causes.map((cause) => (
+                  <SelectItem key={cause.id} value={cause.id}>
+                    {cause.name}
+                  </SelectItem>
+                ))}
+                <SelectSeparator className="my-1 bg-primary dark:bg-primary" />
+                <SelectItem
+                  value={otherCauseValue}
+                  className="!text-primary dark:!text-primary font-semibold focus:!bg-primary/10 dark:focus:!bg-primary/90 focus:!text-primary data-[state=checked]:!text-primary"
+                >
+                  <span className="flex items-center gap-2">
+                    <PenLine size={14} className="shrink-0" />
+                    {t("workPage.otherCause")}
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="field">
+            <label className={otherSelected ? "text-primary dark:text-primary" : undefined}>
+              {t("workPage.customCause")}
+            </label>
+            <Input
+              value={customCauseName}
+              onChange={(e) => setCustomCauseName(e.target.value)}
+              placeholder={t("workPage.customCausePlaceholder")}
+              disabled={loading || !otherSelected}
+              className={otherSelected ? "!border-primary/40 ring-1 ring-primary/30 focus-visible:!border-primary/50" : undefined}
+              style={{ textAlign: isRtl ? "right" : "left", opacity: otherSelected ? 1 : 0.55 }}
+            />
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 4 }}>
+            <Button variant="outline" onClick={onClose} disabled={loading}>
+              {t("cancel")}
+            </Button>
+            <Button onClick={onConfirm} disabled={loading}>
+              {loading ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : t("workPage.confirmCancel")}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

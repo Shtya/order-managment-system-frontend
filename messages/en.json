@@ -570,6 +570,8 @@
     "issues": "Issues",
     "issuesAndStatuses": "Manage Issues",
     "manageCauses": "Manage Issue Types",
+    "cancelCauses": "Cancel Causes",
+    "cancelCausesStatistics": "Cancel Causes Statistics",
     "gettingStartedStatistics": "Getting Started Statistics",
     "ai": "AI"
   },
@@ -1194,6 +1196,180 @@
       "issuesCount": "Issues: {count}"
     },
     "updated_at": "Update date"
+  },
+  "cancelCauses": {
+    "title": "Cancel Causes",
+    "breadcrumb": {
+      "home": "Home",
+      "issues": "Issues"
+    },
+    "tabs": {
+      "main": "Main Causes",
+      "custom": "Custom Causes"
+    },
+    "table": {
+      "searchPlaceholder": "Search cancel causes...",
+      "emptyTitle": "No main cancel causes yet",
+      "emptySubtitle": "Add a cancel cause so employees can select it when cancelling an order.",
+      "emptyCustomTitle": "No custom cancel causes",
+      "emptyCustomSubtitle": "Employee-submitted causes waiting for review will appear here."
+    },
+    "columns": {
+      "name": "Name",
+      "description": "Description",
+      "status": "Status",
+      "active": "Active",
+      "sortOrder": "Sort Order",
+      "usageCount": "Used",
+      "submittedBy": "Submitted by"
+    },
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "filters": {
+      "status": "Status",
+      "reviewStatus": "Review status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "employee": "Employee",
+      "allEmployees": "All employees",
+      "all": "All",
+      "employeePlaceholder": "Select employee",
+      "date": "Date"
+    },
+    "actions": {
+      "addCause": "Add Cause",
+      "export": "Export Excel",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "accept": "Accept",
+      "reject": "Reject"
+    },
+    "dialog": {
+      "addTitle": "Add Cancel Cause",
+      "editTitle": "Edit Cancel Cause",
+      "subtitle": "This cause will be available when employees cancel an order.",
+      "detailsTitle": "Cancel Cause Details",
+      "name": "Name",
+      "namePlaceholder": "e.g. Customer refused",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description for the team...",
+      "sortOrder": "Sort Order",
+      "isActive": "Active",
+      "reviewNote": "Review note",
+      "reviewNotePlaceholder": "Optional note for the employee...",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "review": {
+      "acceptTitle": "Accept Custom Cause",
+      "rejectTitle": "Reject Custom Cause",
+      "confirmAccept": "Accept",
+      "confirmReject": "Reject"
+    },
+    "validation": {
+      "nameRequired": "Cause name is required",
+      "nameMin": "Name must be at least 3 characters",
+      "nameMax": "Name cannot exceed 200 characters",
+      "descriptionMax": "Description cannot exceed 1000 characters",
+      "sortOrderMin": "Sort order cannot be negative",
+      "reviewNoteMax": "Review note cannot exceed 500 characters"
+    },
+    "toast": {
+      "saved": "Cancel cause saved successfully",
+      "deleted": "Cancel cause deleted successfully",
+      "accepted": "Custom cause accepted",
+      "rejected": "Custom cause rejected"
+    },
+    "delete": {
+      "title": "Delete Cancel Cause",
+      "desc": "If this cause is used on orders it will be disabled instead of deleted.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "stats": {
+      "approvedCatalog": "Main Causes",
+      "pendingReview": "Pending Review",
+      "rejectedCatalog": "Rejected",
+      "totalCancellations": "Cancellations"
+    }
+  },
+  "cancelCausesReports": {
+    "title": "Cancel Causes Statistics",
+    "howToUse": "How to Use",
+    "fetchError": "Failed to load cancel-cause statistics.",
+    "breadcrumb": {
+      "home": "Home",
+      "reports": "Reports",
+      "statistics": "Cancel Causes Statistics"
+    },
+    "common": {
+      "apply": "Apply",
+      "dateRange": "Date range",
+      "chooseDateRange": "Choose date range",
+      "cancellations": "Cancellations",
+      "hours": "hours",
+      "viewCauses": "View causes"
+    },
+    "kpis": {
+      "totalCancellations": "Cancellations",
+      "uniqueOrders": "Unique cancelled orders",
+      "cancellationRate": "Cancellation rate",
+      "ordersInPeriod": "Orders in period",
+      "predefined": "Catalog causes used",
+      "custom": "Custom submissions",
+      "pendingReview": "Pending review",
+      "approvedCatalog": "Active catalog causes",
+      "inactiveCatalog": "Inactive causes",
+      "rejectedCatalog": "Rejected causes",
+      "avgHours": "Avg. hours to cancel",
+      "medianHours": "Median hours to cancel",
+      "slaBreaches": "SLA breaches",
+      "slaRate": "SLA breach rate",
+      "oldestPending": "Oldest pending age",
+      "avgPendingAge": "Avg. pending age",
+      "submissionsThisMonth": "Custom submissions this month"
+    },
+    "cards": {
+      "mix": "Custom vs catalog",
+      "trend": "Cancellations over time",
+      "sla": "Time-to-cancel SLA",
+      "pending": "Pending review queue",
+      "top": "Top cancel causes",
+      "topMonth": "Top this month",
+      "byCause": "Usage by cause",
+      "byEmployee": "Usage by employee",
+      "slaByCause": "Slowest causes (avg hours)"
+    },
+    "tables": {
+      "cause": "Cause",
+      "count": "Count",
+      "share": "Share",
+      "custom": "Custom",
+      "avgHours": "Avg time to cancel",
+      "avgHoursHint": "From order create until cancel",
+      "employee": "Employee",
+      "topCause": "Most used cause",
+      "medianHours": "Median hours",
+      "unassigned": "Unassigned"
+    },
+    "sla": {
+      "lt2h": "Under 2 hours",
+      "h2to8": "2–8 hours",
+      "h8to24": "8–24 hours",
+      "d1to3": "1–3 days",
+      "gt3d": "Over 3 days"
+    },
+    "mix": {
+      "predefined": "Catalog cause",
+      "custom": "Custom cause",
+      "acceptedConverted": "Custom later accepted",
+      "rejectedStillOnOrders": "Rejected custom still on orders"
+    }
   },
   "issues": {
     "title": "Issues Center",
@@ -2445,6 +2621,13 @@
       "issues_causes_create": "Create issue causes",
       "issues_causes_update": "Update issue causes",
       "issues_causes_delete": "Delete issue causes",
+      "cancel-causes_read": "View cancel causes",
+      "cancel-causes_getonly": "Select cancel causes only",
+      "cancel-causes_create": "Create cancel causes",
+      "cancel-causes_update": "Update cancel causes",
+      "cancel-causes_delete": "Delete cancel causes",
+      "cancel-causes_review": "Review cancel causes",
+      "cancel-causes_statistics": "View cancel cause statistics",
       "support_tickets_create": "Create support tickets",
       "support_tickets_read": "View support tickets",
       "support_tickets_reply": "Reply to support tickets",
@@ -5934,6 +6117,7 @@
       "viewShipmentLogs": "Shipping Companies Status Log",
       "viewAutomationRuns": "Automation Runs Logs",
       "viewUpsellHistory": "Upsells Sent",
+      "viewCancelCauses": "Cancel Causes History",
       "cancelAssignment": "Cancel Assignment",
       "bulkCancelAssignments": "Cancel Selected Assignments",
       "bulkCancelAssignmentsCount": "Cancel Selected Assignments({count})",
@@ -6678,6 +6862,8 @@
       "none": "None",
       "status": "New order status",
       "statusPlaceholder": "Select status",
+      "lastCancelCause": "Last cancel cause",
+      "lastCancelCausePlaceholder": "Select cancel cause",
       "paymentStatus": "Payment Status",
       "paymentStatusPlaceholder": "Select payment status",
       "employee": "Employee",
@@ -6712,6 +6898,7 @@
       "shipmentStatusPlaceholder": "Select the shipment status",
       "shipmentStatus": "Shipment status"
     },
+    "cancelCausesTitle": "Cancel Causes History",
     "automationTitle": "Automation Runs",
     "noRecords": "No data found for this order.",
     "table": {
@@ -6723,6 +6910,14 @@
       "atNode": "At Node",
       "automationRuns": "ِAutomation Runs Logs",
       "upsellHistory": "Upsells Sent",
+      "lastCancelCause": "Last Cancel Cause",
+      "cancelCauses": "Cancel Causes",
+      "cancelCause": "Cause",
+      "cancelCauseType": "Type",
+      "customCause": "Custom",
+      "predefinedCause": "Predefined",
+      "submittedBy": "Submitted by",
+      "recordedAt": "Recorded at",
       "barcode": "Barcode",
       "orderNumber": "Order Number",
       "duplicate": "Duplicate",
@@ -9889,7 +10084,16 @@
       "selectFromBottom": "Select the status from the bar at the bottom of the screen",
       "nextOrder": "Next Order",
       "retriesExhausted": "Retries Exhausted",
-      "retriesExhaustedMessage": "You have reached the maximum number of retry attempts for this order"
+      "retriesExhaustedMessage": "You have reached the maximum number of retry attempts for this order",
+      "cancelCauseTitle": "Choose a cancel cause",
+      "cancelCauseHint": "Select an existing cause or write a custom one. Custom causes wait for admin review.",
+      "selectCause": "Existing cause",
+      "selectCausePlaceholder": "Select a cause",
+      "otherCause": "Other cause",
+      "customCause": "Other cause",
+      "customCausePlaceholder": "Write the other cause...",
+      "confirmCancel": "Confirm cancellation",
+      "causeRequired": "Please select a cause or write a custom one"
     },
     "pieces": "Piece",
     "discount": "Discount",
@@ -13949,6 +14153,116 @@
             "description": "Percentage of all outbound WhatsApp messages that failed to send. This is calculated over all-time outbound messages. Messages with status 'failed' are counted as failures. Messages stuck in 'sent' or 'accepted' status are counted in the denominator but not as failures.",
             "example": "Of 1,000 outbound messages, 50 failed. The failure rate is 5%. These failures could be due to invalid numbers, blocked accounts, or policy violations."
           }
+        }
+      }
+    },
+    "cancelCauses": {
+      "stats": {
+        "totalCancellations": {
+          "description": "How many times an order was cancelled with a recorded cancel cause in the selected period. One order can appear more than once if it was cancelled again later.",
+          "example": "If 80 cancellations were logged this month, this card shows 80 even if some orders were cancelled twice."
+        },
+        "uniqueOrders": {
+          "description": "Count of distinct orders that received at least one cancel-cause event in the period. Use this when you care about orders, not repeated status changes.",
+          "example": "70 unique orders were cancelled. If total cancellations is 80, 10 of those events were repeat cancellations on the same orders."
+        },
+        "cancellationRate": {
+          "description": "Cancellations divided by all orders created in the same date range. This is an operations health metric, not a catalog metric.",
+          "example": "If 1,000 orders were created and 80 cancel events were logged, the rate is 8%."
+        },
+        "ordersInPeriod": {
+          "description": "All orders created in the selected range, used as the denominator for cancellation rate.",
+          "example": "This month you created 1,000 orders. Cancellation rate uses this 1,000 as the base."
+        },
+        "predefined": {
+          "description": "Cancel events where the employee picked an approved catalog cause instead of typing a custom one.",
+          "example": "65 of 80 cancellations used a catalog cause such as 'Customer refused'."
+        },
+        "custom": {
+          "description": "Cancel events submitted with a custom cause. These wait for admin review and still keep the original text on the order history.",
+          "example": "15 employees typed a new reason like 'Customer moved abroad' instead of picking from the list."
+        },
+        "pendingReview": {
+          "description": "Custom catalog rows still waiting for accept or reject. This is live catalog state, not limited to the date filter.",
+          "example": "There are 6 employee-submitted causes sitting in the Custom tab until an admin reviews them."
+        },
+        "approvedCatalog": {
+          "description": "Active approved causes employees can select when cancelling.",
+          "example": "You currently have 12 published causes such as Wrong number and Customer refused."
+        },
+        "inactiveCatalog": {
+          "description": "Approved catalog causes that are turned off, so employees no longer see them in the picker. Pending custom causes are not included.",
+          "example": "You approved 12 causes, then disabled 3 that are outdated. This card shows 3."
+        },
+        "rejectedCatalog": {
+          "description": "Custom causes an admin rejected. Order snapshots are never rewritten.",
+          "example": "4 custom names were rejected as duplicates of an existing catalog cause."
+        },
+        "avgHours": {
+          "description": "Average hours from order creation until the cancel-cause event. Shows how quickly cancellations happen.",
+          "example": "If most cancels happen the same day, average hours might be 6.5h."
+        },
+        "medianHours": {
+          "description": "The middle time-to-cancel. Less skewed by a few very old orders than the average.",
+          "example": "Average is 18h because of a few week-old orders, but the median is 4h — most cancels are fast."
+        },
+        "slaBreaches": {
+          "description": "Cancel events that happened after the SLA window (default 24 hours from order creation).",
+          "example": "12 cancellations were logged more than 24 hours after the order was created."
+        },
+        "slaRate": {
+          "description": "Share of cancellations that missed the SLA window.",
+          "example": "12 of 80 cancellations were late, so the breach rate is 15%."
+        },
+        "oldestPending": {
+          "description": "How long the oldest unreviewed custom cause has been waiting.",
+          "example": "The oldest pending cause was submitted 72 hours ago and still needs review."
+        },
+        "avgPendingAge": {
+          "description": "Average waiting time of all pending custom causes.",
+          "example": "On average, custom causes wait 18 hours before an admin accepts or rejects them."
+        },
+        "submissionsThisMonth": {
+          "description": "How many custom catalog rows employees created since the start of this calendar month.",
+          "example": "Employees submitted 9 new custom causes so far this month."
+        }
+      },
+      "widgets": {
+        "mix": {
+          "description": "Split of cancel events between catalog causes and custom typed causes. Also shows how many custom submissions were later accepted or remain rejected on order history.",
+          "example": "70% catalog vs 30% custom. 8 custom events sit on causes that were later accepted; 3 sit on rejected causes but the order text is unchanged."
+        },
+        "trend": {
+          "description": "Daily (or weekly/monthly) volume of cancellations, split into catalog vs custom. Spikes often mean a campaign, a courier issue, or a bad SKU.",
+          "example": "Last Tuesday jumped to 22 cancels, almost all with 'Out of stock'. The rest of the week stayed around 8 per day."
+        },
+        "sla": {
+          "description": "Distribution of how long after order creation the cancel happened. Use it to see if confirmation is catching issues early or after shipping started.",
+          "example": "40 cancels under 2 hours (quick confirmation), 10 after 3 days (late customer change of mind)."
+        },
+        "pending": {
+          "description": "Live queue of custom causes waiting for review. Age metrics tell you if the Custom tab is being processed.",
+          "example": "6 pending causes, oldest 3 days, average wait 18 hours — review is lagging."
+        },
+        "top": {
+          "description": "Highest-volume cancel causes in the selected date range. Rank is by event count, not by unique orders.",
+          "example": "'Customer refused' is #1 with 28 events (35% of cancellations this period)."
+        },
+        "topMonth": {
+          "description": "Top 5 causes in the current calendar month, even if your date filter is different. Useful as a 'right now' snapshot.",
+          "example": "This month 'Wrong number' overtook 'Customer refused' with 15 events."
+        },
+        "byCause": {
+          "description": "Full usage table: count, share of all cancellations, custom submissions, and average time from order creation until the cancel event.",
+          "example": "'Out of stock' has 12 events (15%), 2 of them custom-typed, averaging 9.4 hours to cancel."
+        },
+        "byEmployee": {
+          "description": "Which confirmation employees logged the most cancel causes, how many were custom, and their latest cause name.",
+          "example": "Sara logged 22 cancels, 5 custom. Her most recent cause snapshot is 'Customer refused'."
+        },
+        "slaByCause": {
+          "description": "Causes with the slowest average time-to-cancel. High hours often mean the issue appears late (shipping, address, product quality).",
+          "example": "'Damaged on arrival' averages 46 hours because it is discovered after delivery attempts."
         }
       }
     },

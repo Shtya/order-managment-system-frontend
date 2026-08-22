@@ -571,6 +571,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
         }
       ],
     },
+    {
+      icon: XCircle,
+      labelKey: "cancelCauses",
+      href: "/cancel-causes",
+      permission: "cancel-causes.read",
+    },
 
     //show to /warehouse?tab=distribution if isDirectShippingEnabled enable
     (isDirectShippingEnabled
@@ -787,7 +793,13 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           icon: Truck,
           labelKey: "shippingReport",
           href: "/reports/shipping",
-        }
+        },
+        {
+          icon: XCircle,
+          labelKey: "cancelCausesStatistics",
+          href: "/reports/cancel-causes-analysis",
+          permission: "cancel-causes.statistics",
+        },
       ],
     },
 
@@ -821,7 +833,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           href: "/orders/collections?tab=not_collected",
         },
       ],
-    },
+    }, 
+
     {
       icon: Factory,
       labelKey: "administration",
@@ -910,6 +923,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           href: "/issues/causes",
           permission: "issues.read",
         },
+        
       ],
     },
     {

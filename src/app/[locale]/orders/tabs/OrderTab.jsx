@@ -52,6 +52,7 @@ import {
   TrendingUp,
   Tag,
   UserMinus,
+  Ban,
 } from "lucide-react";
 
 import { useLocale, useTranslations } from "next-intl";
@@ -112,7 +113,7 @@ import {
   getShippingDaysRangeStatus,
 } from "@/utils/order-utils";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
-import { FaChartPie, FaListAlt } from "react-icons/fa";
+import { FaBan, FaChartPie, FaListAlt } from "react-icons/fa";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
 
 //order status flow
@@ -812,6 +813,9 @@ export default function OrdersTab({
   const [upsellHistoryModalOpen, setUpsellHistoryModalOpen] = useState(false);
   const [upsellHistoryOrder, setUpsellHistoryOrder] = useState(null);
 
+  const [cancelCausesModalOpen, setCancelCausesModalOpen] = useState(false);
+  const [cancelCausesOrder, setCancelCausesOrder] = useState(null);
+
   const [issueDialog, setIssueDialog] = useState({ open: false, order: null });
   const [issueOptions, setIssueOptions] = useState({
     statuses: [],
@@ -916,6 +920,7 @@ export default function OrdersTab({
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [filters, setFilters] = useState({
     status: "all",
+    lastCancelCause: "all",
     paymentStatus: "all",
     employee: "all",
     startDate: null,
@@ -926,6 +931,7 @@ export default function OrdersTab({
     store: "all",
     shippingCompany: "all",
   });
+  const [cancelCauses, setCancelCauses] = useState([]);
 
   const [loading, setLoading] = useState(false);
 
@@ -939,6 +945,13 @@ export default function OrdersTab({
   const searchTimer = useRef(null);
   useEffect(() => {
     fetchOrders();
+  }, []);
+
+  useEffect(() => {
+    api
+      .get("/cancel-causes/selectable")
+      .then((res) => setCancelCauses(res.data?.records || []))
+      .catch(() => setCancelCauses([]));
   }, []);
 
   // ── Debounce search ──
@@ -969,6 +982,10 @@ export default function OrdersTab({
       }
     } else {
       params.status = filters.status;
+    }
+
+    if (filters.lastCancelCause && filters.lastCancelCause !== "all") {
+      params.lastCancelCauseId = filters.lastCancelCause;
     }
 
     if (filters.paymentStatus && filters.paymentStatus !== "all")
@@ -1109,6 +1126,8 @@ export default function OrdersTab({
       if (search) params.search = search;
       if (filters.status && filters.status !== "all")
         params.status = filters.status;
+      if (filters.lastCancelCause && filters.lastCancelCause !== "all")
+        params.lastCancelCauseId = filters.lastCancelCause;
       if (filters.paymentStatus && filters.paymentStatus !== "all")
         params.paymentStatus = filters.paymentStatus;
       // if (filters.paymentMethod && filters.paymentMethod !== 'all') params.paymentMethod = filters.paymentMethod;
@@ -1813,6 +1832,55 @@ export default function OrdersTab({
         },
       },
       {
+        key: "lastCancelCause",
+        header: t("table.lastCancelCause"),
+        cell: (row) => {
+          const text = row.lastCancelCauseText || row.lastCancelCause?.name;
+          if (!text)
+            return <span className="text-muted-foreground text-sm">—</span>;
+          return (
+            <span
+              className="text-sm font-medium max-w-[180px] truncate block"
+              title={text}
+            >
+              {text}
+            </span>
+          );
+        },
+      },
+      {
+        key: "cancelCauses",
+        header: t("table.cancelCauses"),
+        cell: (row) => {
+          const count = row.cancelCauseCount || 0;
+          if (count === 0)
+            return <span className="text-muted-foreground text-sm">—</span>;
+
+          return (
+            <ActionButtons
+              row={row}
+              actions={[
+                {
+                  icon: (
+                    <div className="flex items-center gap-1.5">
+                      <FaBan className="h-4 w-4 text-rose-600" />
+                      <span className="text-xs font-semibold tabular-nums text-rose-600">{count}</span>
+                    </div>
+                  ),
+                  size: "xl",
+                  tooltip: t("actions.viewCancelCauses"),
+                  onClick: (r) => {
+                    setCancelCausesOrder(r);
+                    setCancelCausesModalOpen(true);
+                  },
+                  variant: "outline",
+                },
+              ]}
+            />
+          );
+        },
+      },
+      {
         key: "paymentMethod",
         header: t("table.paymentMethod"),
         cell: (row) => (
@@ -2294,6 +2362,31 @@ export default function OrdersTab({
               </Select>
             </FilterField>
 
+            <FilterField label={t("filters.lastCancelCause")}>
+              <Select
+                value={filters.lastCancelCause}
+                onValueChange={(v) =>
+                  setFilters((f) => ({ ...f, lastCancelCause: v }))
+                }
+              >
+                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm  focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
+                  <SelectValue
+                    placeholder={t("filters.lastCancelCausePlaceholder")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("filters.all")}</SelectItem>
+                  <SelectItem value="none">{t("filters.none")}</SelectItem>
+                  {Array.isArray(cancelCauses) &&
+                    cancelCauses.map((cause) => (
+                      <SelectItem key={cause.id} value={cause.id}>
+                        {cause.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </FilterField>
+
             {/* Payment status */}
             <FilterField label={t("filters.paymentStatus")}>
               <Select
@@ -2680,6 +2773,15 @@ export default function OrdersTab({
           setUpsellHistoryOrder(null);
         }}
         order={upsellHistoryOrder}
+      />
+
+      <OrderCancelCausesModal
+        isOpen={cancelCausesModalOpen}
+        onClose={() => {
+          setCancelCausesModalOpen(false);
+          setCancelCausesOrder(null);
+        }}
+        order={cancelCausesOrder}
       />
 
       <IssueFormDialog
@@ -3101,6 +3203,174 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
           </div>
         </div>
 
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function OrderCancelCausesModal({ isOpen, onClose, order }) {
+  const tCommon = useTranslations("common");
+  const t = useTranslations("orders");
+  const tCauses = useTranslations("cancelCauses");
+
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 50,
+    records: [],
+  });
+  const [loading, setLoading] = useState(false);
+
+  const fetchHistory = async (page = 1, perPage = 50) => {
+    if (!order?.id) return;
+    setLoading(true);
+    try {
+      const res = await api.get(`/cancel-causes/order/${order.id}/history`, {
+        params: { page, limit: perPage },
+      });
+      setPager(res.data);
+    } catch (error) {
+      console.error(error);
+      toast.error(t("messages.errorFetching") || "Failed to fetch cancel causes.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && order?.id) {
+      fetchHistory(1, 50);
+    }
+  }, [isOpen, order?.id]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="!max-w-5xl rounded-xl max-h-[90vh] flex flex-col p-0 shadow-2xl border-0 overflow-hidden">
+        <div className="relative px-6 pt-6 pb-5 shrink-0 bg-gradient-to-br from-primary to-secondary">
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <Ban size={22} className="text-white" />
+              </div>
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-0.5">
+                  {order?.orderNumber || order?.id}
+                </p>
+                <h2 className="text-white text-xl font-bold">
+                  {t("cancelCausesTitle")}
+                </h2>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+            >
+              <X size={16} className="text-white" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950/50">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[750px]">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-left">
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+                      {t("table.cancelCause")}
+                    </th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+                      {t("table.cancelCauseType")}
+                    </th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+                      {t("table.status")}
+                    </th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+                      {t("table.submittedBy")}
+                    </th>
+                    <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+                      {t("table.recordedAt")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {loading ? (
+                    <tr>
+                      <td colSpan="5" className="px-4 py-8 text-center text-slate-500">
+                        <Loader2 size={24} className="animate-spin mx-auto mb-2" />
+                        {tCommon("loading")}
+                      </td>
+                    </tr>
+                  ) : pager.records.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-4 py-8 text-center text-slate-500">
+                        {t("noRecords")}
+                      </td>
+                    </tr>
+                  ) : (
+                    pager.records.map((row) => (
+                      <tr
+                        key={row.id}
+                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex flex-col items-center">
+                            <span className="font-bold text-gray-700 dark:text-slate-200">
+                              {row.causeNameSnapshot || "—"}
+                            </span>
+                            {row.causeCodeSnapshot && (
+                              <span className="text-[10px] text-muted-foreground font-mono">
+                                {row.causeCodeSnapshot}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={cn(
+                              "inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase",
+                              row.isCustomSubmission
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400"
+                                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+                            )}
+                          >
+                            {row.isCustomSubmission
+                              ? t("table.customCause")
+                              : t("table.predefinedCause")}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {row.toStatus
+                            ? row.toStatus.system
+                              ? t(`statuses.${row.toStatus.code}`)
+                              : row.toStatus.name
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-center text-xs text-slate-600 dark:text-slate-300">
+                          {row.submittedByEmployee?.name || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                            <Clock size={14} />
+                            {row.created_at
+                              ? new Date(row.created_at).toLocaleString()
+                              : "—"}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end shrink-0">
+          <Button variant="outline" onClick={onClose} className="rounded-xl">
+            {tCauses("dialog.close")}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

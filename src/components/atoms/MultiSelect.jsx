@@ -18,6 +18,7 @@ export default function MultiSelect({
     valueKey = "id",
     params = {},
     initialValues = [],
+    single = false,
 }) {
     const locale = useLocale();
     const t = useTranslations("common");
@@ -120,11 +121,14 @@ export default function MultiSelect({
         let newValue;
         if (isSelected) {
             newValue = value.filter(v => (typeof v === 'object' ? v[valueKey] : v) !== val);
+        } else if (single) {
+            newValue = [option];
         } else {
             newValue = [...value, option];
         }
         
         onChange(newValue);
+        if (single && !isSelected) setOpen(false);
     };
 
     const removeOption = (valId) => {

@@ -1552,7 +1552,7 @@ export default function PurchasesPage() {
 			const res = await api.get(`/purchases/${row.id}`);
 			// Update with data and stop loading
 			setDetailsModal(prev => ({ ...prev, invoice: res.data, isLoading: false }));
-
+			
 			if (cleanupUrl) {
 				updateUrlWithId(null);
 			}

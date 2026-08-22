@@ -10,7 +10,7 @@ function aiProviderConnected(provider) {
 }
 
 function activeProviderModels(provider) {
-    return (provider?.models || []).filter((model) => model.isActive !== false);
+    return (provider?.models || []).filter((model) => model.isActive !== false && model.isAvailable !== false);
 }
 
 /**

@@ -22,6 +22,9 @@ import {
     Save,
     Info,
     Plus,
+    RefreshCw,
+    MoreVertical,
+    Unplug,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useTranslations, useLocale } from "next-intl";
@@ -60,6 +63,13 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -226,6 +236,7 @@ function EditProviderDialog({ open, onOpenChange, provider, onSuccess }) {
     }, [provider, open, reset]);
 
     const onSubmit = async (data) => {
+        const tid = toast.loading(t("loading.saving"));
         try {
             const payload = {
                 name: data.name,
@@ -239,11 +250,11 @@ function EditProviderDialog({ open, onOpenChange, provider, onSuccess }) {
                 isActive: true,
             };
             await api.patch(`/ai/providers/${provider.id}`, payload);
-            toast.success(t("messages.providerUpdated"));
+            toast.success(t("messages.providerUpdated"), { id: tid });
             onSuccess?.();
             onOpenChange(false);
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            toast.error(normalizeAxiosError(e), { id: tid });
         }
     };
 
@@ -411,6 +422,7 @@ function EditModelDialog({ open, onOpenChange, model, onSuccess }) {
     }, [model, open, reset]);
 
     const onSubmit = async (data) => {
+        const tid = toast.loading(t("loading.saving"));
         try {
             const payload = {
                 name: data.name,
@@ -426,11 +438,11 @@ function EditModelDialog({ open, onOpenChange, model, onSuccess }) {
                 toolsCalling: true,
             };
             await api.patch(`/ai/models/${model.id}`, payload);
-            toast.success(t("messages.modelUpdated"));
+            toast.success(t("messages.modelUpdated"), { id: tid });
             onSuccess?.();
             onOpenChange(false);
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            toast.error(normalizeAxiosError(e), { id: tid });
         }
     };
 
@@ -877,14 +889,27 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                             layout
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center gap-3 p-3.5 border border-border rounded-[9px] hover:border-primary/30 hover:border-primary/50 transition-colors"
+                            className={cn(
+                                "flex items-center gap-3 p-3.5 border border-border rounded-[9px] hover:border-primary/30 hover:border-primary/50 transition-colors",
+                                model.isAvailable === false && "opacity-50!"
+                            )}
                         >
                             {/* <div className="w-[34px] h-[34px] rounded-lg bg-muted flex items-center justify-center text-[11px] font-bold text-muted-foreground shrink-0">
                                 {typeIcon}
                             </div> */}
 
                             <div className="flex-1 min-w-0">
-                                <div className="text-xs font-bold text-foreground">{model.name}</div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="text-xs font-bold text-foreground">{model.name}</div>
+                                    {model.isAvailable === false && (
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-destructive bg-destructive/10 shrink-0">{t("scope.unavailable")}</span>
+                                    )}
+                                    {isCustom ? (
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-muted-foreground bg-muted shrink-0">{t("scope.custom")}</span>
+                                    ) : (
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-primary bg-primary/10 shrink-0">{t("scope.system")}</span>
+                                    )}
+                                </div>
                                 <div className="text-[10px] text-muted-foreground mt-0.5">{model.modelCode}</div>
                                 {(model.description || model.descriptionAr) && (
                                     <div className="text-[10px] text-muted-foreground mt-1 prose prose-xs max-w-none">
@@ -893,13 +918,14 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                                         </ReactMarkdown>
                                     </div>
                                 )}
-                                {capabilities.length > 0 && (
+                                {(capabilities.length > 0 || model.modelType) && (
                                     <div className="flex flex-wrap gap-1 mt-1.5">
                                         {capabilities.map((cap) => (
                                             <span key={cap} className="px-1.5 py-0.5 rounded bg-primary/5 text-primary/70 text-[9px]">
                                                 {cap}
                                             </span>
                                         ))}
+                                        {model.modelType && <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[9px] font-semibold">{t(`modelType.${model.modelType}`) || model.modelType}</span>}
                                     </div>
                                 )}
                             </div>
@@ -916,9 +942,7 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                                     </div>
                                 )}
                                 {isDefault && (
-                                    <span className="px-1.5 py-1 rounded-[5px] bg-success/10 text-success text-[9px] font-bold">
-                                        {t("status.default")}
-                                    </span>
+                                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
                                 )}
                                 {actions.length > 0 && (
                                     <ActionButtons actions={actions} />
@@ -988,6 +1012,7 @@ function AddProviderDialog({ open, onClose, onSuccess }) {
     }, [open, form]);
 
     const handleSubmit = form.handleSubmit(async (values) => {
+        const tid = toast.loading(t("loading.creatingProvider"));
         try {
             setLoading(true);
             const payload = {
@@ -1003,11 +1028,11 @@ function AddProviderDialog({ open, onClose, onSuccess }) {
                 isActive: true,
             };
             await api.post("/ai/providers", payload);
-            toast.success(t("messages.providerCreated"));
+            toast.success(t("messages.providerCreated"), { id: tid });
             onSuccess?.();
             onClose();
         } catch (err) {
-            toast.error(err?.response?.data?.message || t("messages.errorOccurred"));
+            toast.error(err?.response?.data?.message || t("messages.errorOccurred"), { id: tid });
         } finally {
             setLoading(false);
         }
@@ -1146,6 +1171,7 @@ function AddModelDialog({ open, onClose, onSuccess, providers, defaultProviderId
     }, [open, defaultProviderId, customProviders, form]);
 
     const handleSubmit = form.handleSubmit(async (values) => {
+        const tid = toast.loading(t("loading.creatingModel"));
         try {
             setLoading(true);
             const payload = {
@@ -1162,11 +1188,11 @@ function AddModelDialog({ open, onClose, onSuccess, providers, defaultProviderId
                 toolsCalling: true,
             };
             await api.post("/ai/models", payload);
-            toast.success(t("messages.modelCreated"));
+            toast.success(t("messages.modelCreated"), { id: tid });
             onSuccess?.();
             onClose();
         } catch (err) {
-            toast.error(err?.response?.data?.message || t("messages.errorOccurred"));
+            toast.error(err?.response?.data?.message || t("messages.errorOccurred"), { id: tid });
         } finally {
             setLoading(false);
         }
@@ -1379,7 +1405,10 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
                                 return (
                                     <div
                                         key={model.id}
-                                        className="border border-border rounded-[13px] p-4 hover:border-primary/30 hover:shadow-[0_7px_22px_rgba(40,35,90,0.08)] hover:-translate-y-0.5 transition-all"
+                                        className={cn(
+                                            "border border-border rounded-[13px] p-4 hover:border-primary/30 hover:shadow-[0_7px_22px_rgba(40,35,90,0.08)] hover:-translate-y-0.5 transition-all",
+                                            model.isAvailable === false && "opacity-50"
+                                        )}
                                     >
                                         <div className="flex items-start justify-between mb-3">
                                             <div className="flex items-center gap-3 min-w-0">
@@ -1397,14 +1426,21 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
                                                         {providerCode?.charAt(0)?.toUpperCase() || "AI"}
                                                     </div>
                                                 )}
-                                                <div className="min-w-0">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className="text-[14px] font-bold text-foreground truncate" dir="ltr">{model.name || model.modelCode}</span>
-                                                        {isDefault && <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500 flex-none" />}
-                                                        {isCustom && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary flex-none">{t("scope.custom")}</span>}
-                                                    </div>
-                                                    <span className="text-[11px] text-muted-foreground block mt-0.5">{providerName}</span>
-                                                </div>
+                                                 <div className="min-w-0">
+                                                      <div className="flex items-center gap-1.5">
+                                                          <span className="text-[14px] font-bold text-foreground truncate" dir="ltr">{model.name || model.modelCode}</span>
+                                                          {isDefault && <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500 flex-none" />}
+                                                          {model.isAvailable === false && (
+                                                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-destructive bg-destructive/10 flex-none">{t("scope.unavailable")}</span>
+                                                          )}
+                                                          {isCustom ? (
+                                                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-muted-foreground bg-muted flex-none">{t("scope.custom")}</span>
+                                                          ) : (
+                                                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-primary bg-primary/10 flex-none">{t("scope.system")}</span>
+                                                          )}
+                                                      </div>
+                                                     <span className="text-[11px] text-muted-foreground block mt-0.5">{providerName}</span>
+                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5 flex-none">
                                                 {connected ? (
@@ -1524,6 +1560,8 @@ export default function AiPage() {
     const [configSaving, setConfigSaving] = useState(false);
     const [testing, setTesting] = useState(false);
     const [togglingId, setTogglingId] = useState(null);
+    const [syncingProviderId, setSyncingProviderId] = useState(null);
+    const [openMenuProviderId, setOpenMenuProviderId] = useState(null);
 
     // ── Active Tab ────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState("configurations");
@@ -1701,49 +1739,68 @@ export default function AiPage() {
     }, []);
 
     const handleToggleProviderActive = useCallback(async (provider, isActive) => {
-        setTogglingId(provider.id);
+        const tid = toast.loading(isActive ? t("loading.activating") : t("loading.deactivating"));
         try {
             await api.post(`/ai/providers/${provider.id}/active`, { isActive });
-            toast.success(isActive ? t("messages.providerActivated") : t("messages.providerDeactivated"));
-            loadProviders();
+            toast.success(isActive ? t("messages.providerActivated") : t("messages.providerDeactivated"), { id: tid });
+            setProviders((prev) => prev.map((p) => p.id === provider.id ? { ...p, isActive } : p));
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            toast.error(normalizeAxiosError(e), { id: tid });
         } finally {
             setTogglingId(null);
         }
-    }, [loadProviders, t]);
+    }, [t]);
+
+    const handleSyncModels = useCallback(async (provider) => {
+        const tid = toast.loading(t("loading.syncing"));
+        try {
+            const { data } = await api.post(`/ai/providers/${provider.id}/sync-models`);
+            const created = data?.created ?? 0;
+            if (created > 0) {
+                toast.success(t("messages.modelsSynced", { count: created }), { id: tid });
+            } else {
+                toast.success(t("messages.modelsSyncNoNew"), { id: tid });
+            }
+            if (selectedProviderId === provider.id) loadModels(selectedProviderId);
+        } catch (e) {
+            toast.error(t("messages.modelsSyncFailed") + ": " + normalizeAxiosError(e), { id: tid });
+        } finally {
+            setSyncingProviderId(null);
+        }
+    }, [selectedProviderId, loadModels, t]);
 
     const handleToggleModelActive = useCallback(async (model, isActive) => {
-        setTogglingId(model.id);
+        const tid = toast.loading(isActive ? t("loading.activating") : t("loading.deactivating"));
         try {
             await api.post(`/ai/models/${model.id}/active`, { isActive });
-            toast.success(isActive ? t("messages.modelActivated") : t("messages.modelDeactivated"));
-            if (selectedProviderId) loadModels(selectedProviderId);
-            loadAllModels({ providerId: allModelsProviderFilter, search: debouncedAllModelsSearch });
+            toast.success(isActive ? t("messages.modelActivated") : t("messages.modelDeactivated"), { id: tid });
+            setModels((prev) => prev.map((m) => m.id === model.id ? { ...m, isActive } : m));
+            setAllModels((prev) => prev.map((m) => m.id === model.id ? { ...m, isActive } : m));
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            toast.error(normalizeAxiosError(e), { id: tid });
         } finally {
             setTogglingId(null);
         }
-    }, [selectedProviderId, loadModels, loadAllModels, allModelsProviderFilter, debouncedAllModelsSearch, t]);
+    }, [t]);
 
     const handleDeleteConfirm = async () => {
+        const tid = toast.loading(t("loading.deleting"));
         setDeleting(true);
         try {
             if (deleteConfirm.type === "model") {
                 await api.delete(`/ai/models/${deleteConfirm.id}`);
-                toast.success(t("messages.modelDeleted"));
+                toast.success(t("messages.modelDeleted"), { id: tid });
                 setDeleteConfirm({ open: false, type: "model", id: null, name: "" });
                 if (selectedProviderId) loadModels(selectedProviderId);
             } else if (deleteConfirm.type === "provider") {
                 await api.delete(`/ai/providers/${deleteConfirm.id}`);
-                toast.success(t("messages.providerDeleted"));
+                toast.success(t("messages.providerDeleted"), { id: tid });
                 setDeleteConfirm({ open: false, type: "provider", id: null, name: "" });
                 loadProviders();
                 setSelectedProviderId(null);
             } else if (deleteConfirm.type === "cancelIntegration") {
                 await api.delete(`/ai/integrations/${deleteConfirm.id}`);
-                toast.success(t("messages.integrationCancelled"));
+                toast.success(t("messages.integrationCancelled"), { id: tid });
                 setDeleteConfirm({ open: false, type: "cancelIntegration", id: null, name: "" });
                 loadProviders();
                 if (selectedProviderId === deleteConfirm.id) {
@@ -1751,7 +1808,7 @@ export default function AiPage() {
                 }
             }
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            toast.error(normalizeAxiosError(e), { id: tid });
         } finally {
             setDeleting(false);
         }
@@ -1759,17 +1816,18 @@ export default function AiPage() {
 
     const handleSaveConfig = async ({ baseUrl, credentials }) => {
         if (!selectedProviderId) return;
+        const tid = toast.loading(t("loading.saving"));
         setConfigSaving(true);
         try {
             const payload = {};
             if (baseUrl !== undefined) payload.baseUrl = baseUrl;
             if (credentials) payload.credentials = credentials;
             await api.post(`/ai/integrations/${selectedProviderId}/credentials`, payload);
-            toast.success(t("messages.integrationSaved"));
+            toast.success(t("messages.integrationSaved"), { id: tid });
             loadIntegration(selectedProviderId);
             loadProviders();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            toast.error(normalizeAxiosError(e), { id: tid });
         } finally {
             setConfigSaving(false);
         }
@@ -1777,13 +1835,14 @@ export default function AiPage() {
 
     const handleTestConnection = async () => {
         if (!selectedProviderId) return;
+        const tid = toast.loading(t("loading.testing"));
         setTesting(true);
         try {
             await api.post(`/ai/integrations/${selectedProviderId}/test`);
-            toast.success(t("messages.connectionTestSuccess"));
+            toast.success(t("messages.connectionTestSuccess"), { id: tid });
             loadIntegration(selectedProviderId);
         } catch (e) {
-            toast.error(t("messages.connectionTestFailed") + ": " + normalizeAxiosError(e));
+            toast.error(t("messages.connectionTestFailed") + ": " + normalizeAxiosError(e), { id: tid });
         } finally {
             setTesting(false);
         }
@@ -1791,13 +1850,14 @@ export default function AiPage() {
 
     const handleSetDefaultModel = async (model) => {
         if (!hasPermission("ai.manage")) return;
+        const tid = toast.loading(t("loading.settingDefault"));
         try {
             setSettingDefaultId(model.id);
             await api.put("/ai/default-model", { modelId: model.id });
-            toast.success(t("messages.defaultModelSet"));
+            toast.success(t("messages.defaultModelSet"), { id: tid });
             loadDefaultModel();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            toast.error(normalizeAxiosError(e), { id: tid });
         } finally {
             setSettingDefaultId(null);
         }
@@ -1935,10 +1995,11 @@ export default function AiPage() {
                                                 type="button"
                                                 onClick={() => handleSelectProvider(provider)}
                                                 className={cn(
-                                                    "grid grid-cols-[45px_1fr_auto] items-center gap-3 min-h-[82px] px-3 py-3 rounded-[10px] border transition-all text-start w-full",
+                                                    "grid grid-cols-[45px_1fr] items-center gap-3 min-h-[82px] px-3 py-3 rounded-[10px] border transition-all text-start w-full",
                                                     isSelected
                                                         ? "bg-primary/5 border-primary/20"
-                                                        : "bg-transparent border-transparent hover:bg-primary/5 hover:border-primary/20"
+                                                        : "bg-transparent border-transparent hover:bg-primary/5 hover:border-primary/20",
+                                                    provider.isActive === false && "opacity-50"
                                                 )}
                                             >
                                                 <div className={cn(
@@ -1972,6 +2033,85 @@ export default function AiPage() {
                                                                 {t("scope.system")}
                                                             </span>
                                                         )}
+                                                        <div className="ms-auto flex items-center gap-1 shrink-0">
+                                                            {(isCustom || isConnected) && (
+                                                                <DropdownMenu open={openMenuProviderId === provider.id} onOpenChange={(open) => setOpenMenuProviderId(open ? provider.id : null)}>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground rounded-lg"
+                                                                            onClick={(e) => e.stopPropagation()}
+                                                                        >
+                                                                            <MoreVertical className="h-3.5 w-3.5" />
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="start" className="w-48">
+                                                                        {isConnected && (
+                                                                            <DropdownMenuItem
+                                                                                onClick={(e) => { e.stopPropagation(); handleSyncModels(provider); }}
+                                                                                disabled={syncingProviderId === provider.id}
+                                                                                className="flex items-center gap-2 cursor-pointer"
+                                                                            >
+                                                                                {syncingProviderId === provider.id ? (
+                                                                                    <Loader2 size={14} className="text-primary animate-spin" />
+                                                                                ) : (
+                                                                                    <RefreshCw size={14} className="text-primary" />
+                                                                                )}
+                                                                                <span>{t("actions.syncModels")}</span>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {isConnected && (
+                                                                            <DropdownMenuItem
+                                                                                onClick={(e) => { e.stopPropagation(); handleCancelIntegration(provider); }}
+                                                                                className="flex items-center gap-2 cursor-pointer text-destructive"
+                                                                            >
+                                                                                <Unplug size={14} />
+                                                                                <span>{t("actions.cancelIntegration")}</span>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                         {isCustom && isConnected && <DropdownMenuSeparator />}
+                                                                         {isCustom && (
+                                                                             <DropdownMenuItem
+                                                                                 onClick={(e) => { e.stopPropagation(); handleToggleProviderActive(provider, provider.isActive === false); }}
+                                                                                 disabled={togglingId === provider.id}
+                                                                                 className="flex items-center gap-2 cursor-pointer"
+                                                                             >
+                                                                                 {provider.isActive !== false ? (
+                                                                                     <>
+                                                                                         <X size={14} className="text-destructive" />
+                                                                                         <span>{t("actions.deactivate")}</span>
+                                                                                     </>
+                                                                                 ) : (
+                                                                                     <>
+                                                                                         <Check size={14} className="text-green-600" />
+                                                                                         <span>{t("actions.activate")}</span>
+                                                                                     </>
+                                                                                 )}
+                                                                             </DropdownMenuItem>
+                                                                         )}
+                                                                         {isCustom && (
+                                                                            <DropdownMenuItem
+                                                                                onClick={(e) => { e.stopPropagation(); handleEditProvider(provider); }}
+                                                                                className="flex items-center gap-2 cursor-pointer"
+                                                                            >
+                                                                                <Edit2 size={14} className="text-muted-foreground" />
+                                                                                <span>{t("actions.editProvider")}</span>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {isCustom && (
+                                                                            <DropdownMenuItem
+                                                                                onClick={(e) => { e.stopPropagation(); handleDeleteProvider(provider); }}
+                                                                                className="flex items-center gap-2 cursor-pointer text-destructive"
+                                                                            >
+                                                                                <Trash2 size={14} />
+                                                                                <span>{t("actions.deleteProvider")}</span>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     {provider.description && (
                                                         <div className="text-[11px] text-muted-foreground mt-1 prose prose-xs max-w-none">
@@ -1980,75 +2120,16 @@ export default function AiPage() {
                                                             </ReactMarkdown>
                                                         </div>
                                                     )}
-                                                    <div className="flex items-center gap-2 mt-1.5">
-                                                        <StatusBadge connected={isConnected} />
-                                                        {modelCount > 0 && (
-                                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-primary bg-primary/10">
-                                                                <Layers className="w-2.5 h-2.5" />
-                                                                {modelCount}
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                                     <div className="flex items-center gap-2 mt-1.5">
+                                                         <StatusBadge connected={isConnected} />
+                                                         {modelCount > 0 && (
+                                                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold text-primary bg-primary/10">
+                                                                 <Layers className="w-2.5 h-2.5" />
+                                                                 {modelCount}
+                                                             </span>
+                                                         )}
+                                                     </div>
                                                 </div>
-
-                                                {isCustom ? (
-                                                    <div className="flex items-center gap-1 shrink-0 ms-2">
-                                                        <div onClick={(e) => e.stopPropagation()}>
-                                                            <Switch
-                                                                size="sm"
-                                                                checked={provider.isActive !== false}
-                                                                disabled={togglingId === provider.id}
-                                                                onCheckedChange={(val) => handleToggleProviderActive(provider, val)}
-                                                            />
-                                                        </div>
-                                                        {isConnected && (
-                                                            <div
-                                                                role="button"
-                                                                tabIndex={-1}
-                                                                onClick={(e) => { e.stopPropagation(); handleCancelIntegration(provider); }}
-                                                                className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg p-1.5 transition-colors"
-                                                                title={t("actions.cancelIntegration")}
-                                                            >
-                                                                <X className="w-4 h-4" />
-                                                            </div>
-                                                        )}
-                                                        <div
-                                                            role="button"
-                                                            tabIndex={-1}
-                                                            onClick={(e) => { e.stopPropagation(); handleEditProvider(provider); }}
-                                                            className="text-primary hover:text-primary hover:bg-primary/10 rounded-lg p-1.5 transition-colors"
-                                                            title={t("actions.editProvider")}
-                                                        >
-                                                            <Edit2 className="w-4 h-4" />
-                                                        </div>
-                                                        <div
-                                                            role="button"
-                                                            tabIndex={-1}
-                                                            onClick={(e) => { e.stopPropagation(); handleDeleteProvider(provider); }}
-                                                            className="text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg p-1.5 transition-colors"
-                                                            title={t("actions.deleteProvider")}
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-1 shrink-0 ms-2">
-                                                        {isConnected && (
-                                                            <div
-                                                                role="button"
-                                                                tabIndex={-1}
-                                                                onClick={(e) => { e.stopPropagation(); handleCancelIntegration(provider); }}
-                                                                className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg p-1.5 transition-colors"
-                                                                title={t("actions.cancelIntegration")}
-                                                            >
-                                                                <X className="w-4 h-4" />
-                                                            </div>
-                                                        )}
-                                                        <div className="text-[18px] text-muted-foreground">
-                                                            ›
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </button>
                                         );
                                     })}

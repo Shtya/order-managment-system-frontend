@@ -462,7 +462,7 @@ const getConnectedAiProviders = (providers) => {
 };
 
 const getProviderModels = (provider) => {
-    return (provider?.models || []).filter((model) => model.isActive !== false);
+    return (provider?.models || []).filter((model) => model.isActive !== false && model.isAvailable !== false);
 };
 
 /**
@@ -487,8 +487,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
         provider: value?.provider || "",
         branches: value?.branches || [
             { id: "address_corrected", label: tNodes("branches.addressCorrected"), condition: "address_corrected" },
-            { id: "failed_to_correct", label: tNodes("branches.failedToCorrect"), condition: "failed_to_correct" },
-            { id: "address_incomplete", label: tNodes("branches.addressIncomplete"), condition: "address_incomplete" },
+            { id: "address_not_corrected", label: tNodes("branches.addressNotCorrected"), condition: "address_not_corrected" },
         ],
     });
 

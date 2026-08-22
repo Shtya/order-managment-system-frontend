@@ -3872,7 +3872,7 @@
       },
       "actions": {
         "viewOrderFile": "عرض ملف الطلب",
-        "viewSessionFile": "عرض ملف الجلسة ({{count}} طلبات)",
+        "viewSessionFile": "عرض ملف الجلسة ({count} طلبات)",
         "viewOperationLog": "عرض سجل العملية"
       },
       "opTypes": {
@@ -3933,7 +3933,7 @@
         "carrier": "شركة الشحن",
         "preparedAt": "وقت التحضير",
         "correctPdf": "PDF المسح الصحيح",
-        "errorsPdf": "PDF أخطاء المسح ({{count}})",
+        "errorsPdf": "PDF أخطاء المسح ({count})",
         "noErrors": "لا توجد أخطاء في هذا الطلب",
         "products": "المنتجات",
         "sku": "SKU",
@@ -3943,28 +3943,28 @@
         "status": "الحالة",
         "completed": "مكتمل",
         "incomplete": "ناقص",
-        "scanErrors": "أخطاء المسح ({{count}})",
-        "correctScans": "عمليات المسح الصحيحة ({{count}})",
+        "scanErrors": "أخطاء المسح ({count})",
+        "correctScans": "عمليات المسح الصحيحة ({count})",
         "signatureSection": "تأكيد الاستلام — موظف شركة الشحن",
         "signatureText": "أقر بأنني استلمت الطلبات المُحضَّرة المدرجة في هذا الملف كاملةً وبدون نقصان.",
         "signerName": "اسم الموظف",
         "signerPlaceholder": "اسم موظف شركة الشحن",
         "confirmSignature": "تأكيد التوقيع",
-        "signedBy": "تم التوقيع بواسطة: {{name}}"
+        "signedBy": "تم التوقيع بواسطة: {name}"
       },
       "sessionModal": {
         "sessionLabel": "جلسة التحضير",
         "title": "ملفات جلسة التحضير",
-        "ordersCount": "{{count}} طلب",
+        "ordersCount": "{count} طلب",
         "preparedOrders": "طلبات محضّرة",
         "correctScans": "مسح صحيح",
         "errorScans": "مسح خاطئ",
-        "errorsBadge": "{{count}} خطأ",
+        "errorsBadge": "{count} خطأ",
         "completed": "مكتمل",
         "incomplete": "ناقص",
         "correctPdfTitle": "PDF المسح الصحيح",
         "correctPdfDesc": "جميع الطلبات والمنتجات + نموذج التوقيع",
-        "errorsPdfTitle": "PDF أخطاء المسح ({{count}})",
+        "errorsPdfTitle": "PDF أخطاء المسح ({count})",
         "errorsPdfDesc": "جميع الأكواد الخاطئة وأسباب الرفض",
         "noErrors": "لا توجد أخطاء في هذه الجلسة"
       },
@@ -12106,7 +12106,7 @@
             "noRolesMatch": "لا توجد قواعد مطابقة",
             "notEligible": "غير مؤهل للتعيين",
             "addressCorrected": "تم التعديل",
-            "failedToCorrect": "فشل التعديل",
+            "addressNotCorrected": "لم يثم التعديل",
             "addressIncomplete": "العنوان غير مكتمل",
             "distributed": "تم التوزيع",
             "failedToDistribute": "فشل التوزيع",
@@ -14708,7 +14708,11 @@
       "enable": "تفعيل",
       "disable": "تعطيل",
       "refresh": "تحديث",
-      "loadMore": "تحميل المزيد"
+      "loadMore": "تحميل المزيد",
+      "syncModels": "مزامنة النماذج",
+      "cancelIntegration": "إلغاء التكامل",
+      "activate": "تفعيل",
+      "deactivate": "تعطيل"
     },
     "tabs": {
       "providers": "مزودو الخدمة",
@@ -14730,7 +14734,7 @@
       "authType": "نوع المصادقة",
       "baseUrl": "عنوان API",
       "website": "الموقع الإلكتروني",
-      "apiKey": "Api Key",
+      "apiKey": "مفتاح API",
       "bearerToken": "رمز Bearer",
       "organization": "معرف المنظمة",
       "project": "معرف المشروع",
@@ -14761,7 +14765,7 @@
       "protocol": "اختر البروتوكول",
       "authType": "اختر نوع المصادقة",
       "baseUrl": "مثال: https://api.openai.com/v1",
-      "apiKey": "أدخل Api Key",
+      "apiKey": "أدخل مفتاح API",
       "bearerToken": "أدخل رمز Bearer",
       "organization": "أدخل معرف المنظمة (اختياري)",
       "project": "أدخل معرف المشروع (اختياري)",
@@ -14832,14 +14836,15 @@
       "custom": "مخصص"
     },
     "authType": {
-      "api_key": "Api Key",
+      "api_key": "مفتاح API",
       "bearer": "رمز Bearer",
       "oauth": "OAuth",
       "none": "بدون (عام)"
     },
     "scope": {
       "system": "النظام",
-      "custom": "مخصص"
+      "custom": "مخصص",
+      "unavailable": "غير متاح"
     },
     "tier": {
       "free": "مجاني",
@@ -14880,7 +14885,17 @@
       "providers": "جارٍ تحميل مزودي الخدمة...",
       "models": "جارٍ تحميل النماذج...",
       "integrations": "جارٍ تحميل التكاملات...",
-      "usage": "جارٍ تحميل بيانات الاستخدام..."
+      "usage": "جارٍ تحميل بيانات الاستخدام...",
+      "syncing": "جارٍ مزامنة النماذج...",
+      "creatingProvider": "جارٍ إنشاء المزود...",
+      "creatingModel": "جارٍ إنشاء النموذج...",
+      "deleting": "جارٍ الحذف...",
+      "cancellingIntegration": "جارٍ إلغاء التكامل...",
+      "activating": "جارٍ التفعيل...",
+      "deactivating": "جارٍ التعطيل...",
+      "saving": "جارٍ الحفظ...",
+      "testing": "جارٍ اختبار الاتصال...",
+      "settingDefault": "جارٍ تعيين النموذج الافتراضي..."
     },
     "error": {
       "loadProvidersFailed": "فشل تحميل مزودي الخدمة",
@@ -14923,7 +14938,7 @@
       "invalidUrl": "يجب أن يكون عنوان URL صالحًا",
       "baseUrlRequired": "عنوان API مطلوب للمزودين المخصصين",
       "baseUrlInvalid": "يجب أن يكون عنوان API صالحًا",
-      "apiKeyRequired": " ال Api Key مطلوب للمصادقة",
+      "apiKeyRequired": " ال مفتاح API مطلوب للمصادقة",
       "bearerTokenRequired": "رمز Bearer مطلوب لمصادقة Bearer",
       "maxRpmMin": "يجب أن يكون الحد الأقصى للطلبات في الدقيقة 1 على الأقل",
       "maxRpmMax": "لا يمكن أن يتجاوز الحد الأقصى للطلبات في الدقيقة 1000000",
@@ -14967,7 +14982,12 @@
       "providerActivated": "تم تفعيل المزود",
       "providerDeactivated": "تم تعطيل المزود",
       "modelActivated": "تم تفعيل النموذج",
-      "modelDeactivated": "تم تعطيل النموذج"
+      "modelDeactivated": "تم تعطيل النموذج",
+      "modelsSynced": "تم مزامنة {count} نماذج جديدة بنجاح",
+      "modelsSyncNoNew": "لا توجد نماذج جديدة للمزامنة",
+      "modelsSyncFailed": "فشل في مزامنة النماذج",
+      "errorOccurred": "حدث خطأ غير متوقع",
+      "integrationCancelled": "تم إلغاء الربط بنجاح"
     },
     "usage": {
       "totalRequests": "إجمالي الطلبات",
@@ -15016,6 +15036,7 @@
       "apply": "تطبيق الفلاتر"
     },
     "modelPlaceholder": {
+      "provider": "اختر المزود المخصص",
       "name": "أدخل اسم النموذج",
       "modelCode": "مثال: gpt-4o",
       "description": "وصف اختياري",

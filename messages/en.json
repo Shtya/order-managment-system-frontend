@@ -3873,7 +3873,7 @@
       },
       "actions": {
         "viewOrderFile": "View Order File",
-        "viewSessionFile": "View Session File ({{count}} orders)",
+        "viewSessionFile": "View Session File ({count} orders)",
         "viewOperationLog": "View Operation Log"
       },
       "opTypes": {
@@ -3934,7 +3934,7 @@
         "carrier": "Carrier",
         "preparedAt": "Preparation Time",
         "correctPdf": "Correct Scan PDF",
-        "errorsPdf": "Scan Errors PDF ({{count}})",
+        "errorsPdf": "Scan Errors PDF ({count})",
         "noErrors": "No errors in this order",
         "products": "Products",
         "sku": "SKU",
@@ -3944,8 +3944,8 @@
         "status": "Status",
         "completed": "Completed",
         "incomplete": "Incomplete",
-        "scanErrors": "Scan Errors ({{count}})",
-        "correctScans": "Correct Scans ({{count}})",
+        "scanErrors": "Scan Errors ({count})",
+        "correctScans": "Correct Scans ({count})",
         "signatureSection": "Receipt Confirmation — Shipping Agent",
         "signatureText": "I hereby acknowledge that I have received all prepared orders listed in this file in full.",
         "signerName": "Employee Name",
@@ -3956,16 +3956,16 @@
       "sessionModal": {
         "sessionLabel": "Preparation Session",
         "title": "Preparation Session Files",
-        "ordersCount": "{{count}} Orders",
+        "ordersCount": "{count} Orders",
         "preparedOrders": "Prepared Orders",
         "correctScans": "Correct Scans",
         "errorScans": "Error Scans",
-        "errorsBadge": "{{count}} Errors",
+        "errorsBadge": "{count} Errors",
         "completed": "Completed",
         "incomplete": "Incomplete",
         "correctPdfTitle": "Correct Scan PDF",
         "correctPdfDesc": "All orders and products + Signature form",
-        "errorsPdfTitle": "Scan Errors PDF ({{count}})",
+        "errorsPdfTitle": "Scan Errors PDF ({count})",
         "errorsPdfDesc": "All invalid codes and rejection reasons",
         "noErrors": "No errors in this session"
       },
@@ -6777,11 +6777,11 @@
       "invalidFileType": "Unsupported file format (use XLSX)",
       "noFileSelected": "Please select a file first",
       "uploadSuccess": "Successfully queued orders for creation.",
-      "uploadSuccessCount": "{{count}} orders created successfully",
+      "uploadSuccessCount": "{count} orders created successfully",
       "uploadFailed": "Failed to upload orders",
       "uploadNoCreated": "No orders were created. Check the file and errors.",
       "errorReportGenerated": "Errors found! Error report downloaded. Fix and reupload.",
-      "moreErrors": "and {{count}} more errors"
+      "moreErrors": "and {count} more errors"
     },
     "distribution": {
       "fields": {
@@ -12082,7 +12082,7 @@
             "noRolesMatch": "No Rules Match",
             "notEligible": "Not Eligible",
             "addressCorrected": "Address Corrected",
-            "failedToCorrect": "Failed to Adjust",
+            "addressNotCorrected": "Address Not Corrected",
             "addressIncomplete": "Address Incomplete",
             "distributed": "Distributed",
             "failedToDistribute": "Failed to Distribute",
@@ -14678,7 +14678,11 @@
       "enable": "Enable",
       "disable": "Disable",
       "refresh": "Refresh",
-      "loadMore": "Load More"
+      "loadMore": "Load More",
+      "syncModels": "Sync Models",
+      "cancelIntegration": "Cancel Integration",
+      "activate": "Activate",
+      "deactivate": "Deactivate"
     },
     "tabs": {
       "providers": "Providers",
@@ -14809,7 +14813,8 @@
     },
     "scope": {
       "system": "System",
-      "custom": "Custom"
+      "custom": "Custom",
+      "unavailable": "Unavailable"
     },
     "tier": {
       "free": "Free",
@@ -14850,7 +14855,17 @@
       "providers": "Loading providers...",
       "models": "Loading models...",
       "integrations": "Loading integrations...",
-      "usage": "Loading usage data..."
+      "usage": "Loading usage data...",
+      "syncing": "Syncing models...",
+      "creatingProvider": "Creating provider...",
+      "creatingModel": "Creating model...",
+      "deleting": "Deleting...",
+      "cancellingIntegration": "Cancelling integration...",
+      "activating": "Activating...",
+      "deactivating": "Deactivating...",
+      "saving": "Saving...",
+      "testing": "Testing connection...",
+      "settingDefault": "Setting default model..."
     },
     "error": {
       "loadProvidersFailed": "Failed to load providers",
@@ -14937,7 +14952,12 @@
       "providerActivated": "Provider activated",
       "providerDeactivated": "Provider deactivated",
       "modelActivated": "Model activated",
-      "modelDeactivated": "Model deactivated"
+      "modelDeactivated": "Model deactivated",
+      "modelsSynced": "{count} new models synced successfully",
+      "modelsSyncNoNew": "No new models to sync",
+      "modelsSyncFailed": "Failed to sync models",
+      "errorOccurred": "An unexpected error occurred",
+      "integrationCancelled": "Integration cancelled successfully"
     },
     "usage": {
       "totalRequests": "Total Requests",
@@ -14986,6 +15006,7 @@
       "apply": "Apply Filters"
     },
     "modelPlaceholder": {
+      "provider": "Select custom provider",
       "name": "Enter model name",
       "modelCode": "e.g. gpt-4o",
       "description": "Optional description",

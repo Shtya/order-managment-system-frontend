@@ -1826,6 +1826,7 @@ export default function AiPage() {
             toast.success(t("messages.integrationSaved"), { id: tid });
             loadIntegration(selectedProviderId);
             loadProviders();
+            loadModels(selectedProviderId);
         } catch (e) {
             toast.error(normalizeAxiosError(e), { id: tid });
         } finally {

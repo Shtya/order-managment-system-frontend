@@ -517,7 +517,7 @@ function ConfigurationsTab({ provider, integration, loading, saving, onSave, onT
     const t = useTranslations("ai");
     const isCustom = provider?.scope === "custom";
     const authType = provider?.authType || integration?.authType || "api_key";
-    const isConnected = !!integration?.encryptedCredentials;
+    const isConnected = !!integration?.credentials?.apiKey;
     const defaultModelForProvider = defaultModel?.model?.provider?.id === provider?.id ? defaultModel.model : null;
 
     const {
@@ -1288,7 +1288,7 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
     const t = useTranslations("ai");
 
     const getProviderConnected = (model) => {
-        return !!(model.provider?.integration?.encryptedCredentials);
+        return !!(model.provider?.integration?.credentials?.apiKey);
     };
 
     const getCapabilities = (model) => {
@@ -1883,7 +1883,7 @@ export default function AiPage() {
     ], [t]);
 
     const stats = useMemo(() => {
-        const connectedCount = providers.filter((p) => p.integration?.encryptedCredentials).length;
+        const connectedCount = providers.filter((p) => p.integration?.credentials?.apiKey).length;
         const customModelsCount = models.filter((m) => m.scope === "custom").length;
         const defaultModelName = defaultModel?.model?.name || defaultModel?.model?.modelCode || "—";
         const defaultModelProvider = defaultModel?.model?.provider?.name || "";
@@ -1939,7 +1939,7 @@ export default function AiPage() {
     ), [customProviders.length, hasPermission, t]);
 
     const isProviderConnected = selectedProvider
-        ? !!(integration?.encryptedCredentials)
+        ? !!(integration?.credentials?.apiKey)
         : false;
 
     return (
@@ -1988,7 +1988,7 @@ export default function AiPage() {
                                         const isCustom = provider.scope === "custom";
                                         const modelCount = provider.models?.length ?? 0;
                                         const isDefaultProvider = defaultModel?.model?.provider?.id === provider.id;
-                                        const isConnected = !!(provider.integration?.encryptedCredentials);
+                                        const isConnected = !!(provider.integration?.credentials?.apiKey);
 
                                         return (
                                             <button

@@ -456,7 +456,7 @@ const getConnectedAiProviders = (providers) => {
         return !!(
             provider.isActive !== false &&
             integration &&
-            (integration.encryptedCredentials || integration.credentials)
+            (integration.credentials?.apiKey || integration.credentials)
         );
     });
 };

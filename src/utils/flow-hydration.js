@@ -5,7 +5,7 @@ function aiProviderConnected(provider) {
     return !!(
         provider?.isActive !== false &&
         integration &&
-        (integration.encryptedCredentials || integration.credentials)
+        (integration.credentials?.apiKey || integration.credentials)
     );
 }
 

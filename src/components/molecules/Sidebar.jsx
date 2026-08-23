@@ -568,14 +568,14 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           icon: Truck,
           labelKey: "shippedOrders",
           href: "/orders?tab=shippedOrders",
-        }
+        },
+        {
+          icon: XCircle,
+          labelKey: "cancelCauses",
+          href: "/cancel-causes",
+          permission: "cancel-causes.read",
+        },
       ],
-    },
-    {
-      icon: XCircle,
-      labelKey: "cancelCauses",
-      href: "/cancel-causes",
-      permission: "cancel-causes.read",
     },
 
     //show to /warehouse?tab=distribution if isDirectShippingEnabled enable

@@ -27,6 +27,10 @@ import { useTutorial } from "@/context/TutorialContext";
 import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import { useRouter } from "@/i18n/navigation";
+import ProductFilter from "@/components/atoms/ProductFilter";
+import StoreFilter from "@/components/atoms/StoreFilter";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import CityFilter from "@/components/atoms/CityFilter";
 import {
   Card,
   MiniTable,
@@ -140,11 +144,19 @@ export default function CancelCausesStatisticsPage() {
 
   const [loading, setLoading] = useState(true);
   const [quickRange, setQuickRange] = useState("this_month");
-  const [filters, setFilters] = useState({ startDate: null, endDate: null });
+  const [filters, setFilters] = useState({
+    startDate: null,
+    endDate: null,
+    store: "all",
+    shippingCompany: "all",
+    productId: "all",
+    cityId: "all",
+  });
 
   const [overview, setOverview] = useState(null);
   const [byCause, setByCause] = useState([]);
   const [top, setTop] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
   const [topMonth, setTopMonth] = useState([]);
   const [trend, setTrend] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -168,9 +180,23 @@ export default function CancelCausesStatisticsPage() {
       const p = { ...extra };
       if (dateParams.startDate) p.startDate = dateParams.startDate;
       if (dateParams.endDate) p.endDate = dateParams.endDate;
+      if (filters.store && filters.store !== "all") p.storeId = filters.store;
+      if (filters.shippingCompany && filters.shippingCompany !== "all") {
+        p.shippingCompanyId = filters.shippingCompany;
+      }
+      if (filters.productId && filters.productId !== "all") {
+        p.productId = filters.productId;
+      }
+      if (filters.cityId && filters.cityId !== "all") p.cityId = filters.cityId;
       return p;
     },
-    [dateParams],
+    [
+      dateParams,
+      filters.store,
+      filters.shippingCompany,
+      filters.productId,
+      filters.cityId,
+    ],
   );
 
   const fetchData = useCallback(async () => {
@@ -182,6 +208,7 @@ export default function CancelCausesStatisticsPage() {
         overviewRes,
         byCauseRes,
         topRes,
+        topProductsRes,
         topMonthRes,
         trendRes,
         employeesRes,
@@ -190,7 +217,8 @@ export default function CancelCausesStatisticsPage() {
         api.get("/cancel-causes/statistics", { params: p }).catch(() => ({ data: null })),
         api.get("/cancel-causes/statistics/by-cause", { params: { ...p, limit: 12 } }).catch(() => ({ data: { records: [] } })),
         api.get("/cancel-causes/statistics/top", { params: { ...p, limit: 8 } }).catch(() => ({ data: { records: [] } })),
-        api.get("/cancel-causes/statistics/top-this-month").catch(() => ({ data: { records: [] } })),
+        api.get("/cancel-causes/statistics/top-products", { params: { ...p, limit: 8 } }).catch(() => ({ data: { records: [] } })),
+        api.get("/cancel-causes/statistics/top-this-month", { params: { ...p, limit: 5 } }).catch(() => ({ data: { records: [] } })),
         api.get("/cancel-causes/statistics/trend", { params: { ...p, interval } }).catch(() => ({ data: { buckets: [] } })),
         api.get("/cancel-causes/statistics/by-employee", { params: { ...p, limit: 12 } }).catch(() => ({ data: { records: [] } })),
         // api.get("/cancel-causes/statistics/sla", { params: p }).catch(() => ({ data: null })),
@@ -201,6 +229,7 @@ export default function CancelCausesStatisticsPage() {
       setOverview(overviewRes.data);
       setByCause(byCauseRes.data?.records || []);
       setTop(topRes.data?.records || []);
+      setTopProducts(topProductsRes.data?.records || []);
       setTopMonth(topMonthRes.data?.records || []);
       setTrend(
         (trendRes.data?.buckets || []).map((item) => ({
@@ -437,6 +466,14 @@ export default function CancelCausesStatisticsPage() {
     { key: "percent", header: t("tables.share"), cell: (r) => <PctBar value={r.percent || 0} color="#8b5cf6" /> },
   ];
 
+  const productCols = [
+    { key: "name", header: t("tables.product"), cell: (r) => <span className="font-semibold text-xs">{r.name || "—"}</span> },
+    { key: "count", header: t("tables.cancellations"), cell: (r) => <span className="tabular-nums text-xs">{r.count}</span> },
+    { key: "orderCount", header: t("tables.orders"), cell: (r) => <span className="tabular-nums text-xs">{r.orderCount}</span> },
+    { key: "quantity", header: t("tables.quantity"), cell: (r) => <span className="tabular-nums text-xs">{r.quantity}</span> },
+    { key: "percent", header: t("tables.share"), cell: (r) => <PctBar value={r.percent || 0} color="#f59e0b" /> },
+  ];
+
   const employeeCols = [
     { key: "employeeName", header: t("tables.employee"), cell: (r) => <span className="font-semibold text-xs">{r.employeeName || t("tables.unassigned")}</span> },
     { key: "count", header: t("tables.count"), cell: (r) => <span className="tabular-nums text-xs">{r.count}</span> },
@@ -474,7 +511,7 @@ export default function CancelCausesStatisticsPage() {
         active={quickRange}
         setActive={(v) => {
           setQuickRange(v);
-          setFilters({ startDate: null, endDate: null });
+          setFilters((f) => ({ ...f, startDate: null, endDate: null }));
         }}
       />
 
@@ -491,6 +528,23 @@ export default function CancelCausesStatisticsPage() {
             maxDate="today"
           />
         </FilterField>
+        <ProductFilter
+          label={t("filters.product")}
+          value={filters.productId}
+          onChange={(v) => setFilters((f) => ({ ...f, productId: v }))}
+        />
+        <StoreFilter
+          value={filters.store}
+          onChange={(v) => setFilters((f) => ({ ...f, store: v }))}
+        />
+        <ShippingCompanyFilter
+          value={filters.shippingCompany}
+          onChange={(v) => setFilters((f) => ({ ...f, shippingCompany: v }))}
+        />
+        <CityFilter
+          value={filters.cityId}
+          onChange={(v) => setFilters((f) => ({ ...f, cityId: v }))}
+        />
       </TableFilters>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -556,7 +610,7 @@ export default function CancelCausesStatisticsPage() {
           </TutorialSpotlight>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
           <TutorialSpotlight
             title={t("cards.topMonth")}
             description={tTutorial("widgets.topMonth.description")}
@@ -568,6 +622,8 @@ export default function CancelCausesStatisticsPage() {
             </Card>
           </TutorialSpotlight>
         </motion.div>
+
+        
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -609,6 +665,19 @@ export default function CancelCausesStatisticsPage() {
           </TutorialSpotlight>
         </motion.div>
       </div>
+
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+          <TutorialSpotlight
+            title={t("cards.topProducts")}
+            description={tTutorial("widgets.topProducts.description")}
+            example={tTutorial("widgets.topProducts.example")}
+            overview
+          >
+            <Card title={t("cards.topProducts")} icon={Ban}>
+              <MiniTable columns={productCols} data={topProducts} loading={loading} />
+            </Card>
+          </TutorialSpotlight>
+        </motion.div>
 
       {/* Slowest causes by SLA — paused for now
       <motion.div>

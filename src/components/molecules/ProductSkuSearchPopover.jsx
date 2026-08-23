@@ -577,6 +577,7 @@ export function ProductSkuSearchPopover({
   width,
   mode = "products",
   className = "",
+  initFromProductIds = false,
 }) {
   const t = useTranslations("productSearch");
 
@@ -604,24 +605,68 @@ export function ProductSkuSearchPopover({
   useEffect(() => {
     const initSkusFromUrl = async () => {
       const skusParam = searchParams.get('skus');
-      if (!skusParam) return;
+      const productIdsParam = initFromProductIds ? searchParams.get('productIds') : null;
 
-      const skuIds = skusParam.split(',').map(id => id.trim()).filter(Boolean);
-      if (skuIds.length === 0) return;
+      if (!skusParam && !productIdsParam) return;
 
       const params = new URLSearchParams(searchParams.toString());
-      params.delete('skus');
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      if (skusParam) params.delete('skus');
+      if (productIdsParam) params.delete('productIds');
+      const nextQuery = params.toString();
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
 
       try {
-        const res = await api.get('/lookups/skus', {
-          params: { skus: skuIds.join(',') }
-        });
+        const fetched = [];
 
-        const fetchedSkus = Array.isArray(res.data?.data)
-          ? res.data.data
-          : Array.isArray(res.data) ? res.data : [];
-        handleSelectSku(fetchedSkus);
+        if (productIdsParam) {
+          const productIds = productIdsParam.split(',').map((id) => id.trim()).filter(Boolean);
+          if (productIds.length > 0) {
+            const res = await api.get('/products', {
+              params: { ids: productIds.join(','), limit: Math.max(productIds.length, 10), page: 1 },
+            });
+            const records = Array.isArray(res.data?.records)
+              ? res.data.records
+              : Array.isArray(res.data) ? res.data : [];
+            for (const product of records) {
+              const variants = Array.isArray(product?.skus)
+                ? product.skus
+                : Array.isArray(product?.variants) ? product.variants : [];
+              for (const sku of variants) {
+                if (sku?.isActive === false) continue;
+                fetched.push({
+                  id: sku.id,
+                  productId: product.id,
+                  label: sku.sku ? sku.sku : `#${sku.id}`,
+                  sku: sku.sku ?? null,
+                  key: sku.key ?? null,
+                  stockOnHand: Number(sku.stockOnHand ?? 0),
+                  reserved: Number(sku.reserved ?? 0),
+                  price: Number(sku.price ?? sku.unitCost ?? 0),
+                  wholesalePrice: Number(sku.wholesalePrice ?? product.wholesalePrice ?? 0),
+                  unitCost: Number(sku.unitCost ?? 0),
+                  available: Number(sku.available ?? 0),
+                  name: sku.name ?? product.name ?? null,
+                  attributes: sku.attributes || {},
+                });
+              }
+            }
+          }
+        }
+
+        if (skusParam) {
+          const skuIds = skusParam.split(',').map((id) => id.trim()).filter(Boolean);
+          if (skuIds.length > 0) {
+            const res = await api.get('/lookups/skus', {
+              params: { skus: skuIds.join(',') }
+            });
+            const fetchedSkus = Array.isArray(res.data?.data)
+              ? res.data.data
+              : Array.isArray(res.data) ? res.data : [];
+            fetched.push(...fetchedSkus);
+          }
+        }
+
+        if (fetched.length > 0) handleSelectSku(fetched);
       } catch (error) {
         console.error("Failed to fetch initial SKUs from URL:", error);
       }
@@ -629,7 +674,7 @@ export function ProductSkuSearchPopover({
 
     initSkusFromUrl();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); //
+  }, []);
 
   // Measure trigger width
   useEffect(() => {

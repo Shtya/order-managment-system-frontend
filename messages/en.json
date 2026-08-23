@@ -1315,6 +1315,9 @@
       "hours": "hours",
       "viewCauses": "View causes"
     },
+    "filters": {
+      "product": "Product"
+    },
     "kpis": {
       "totalCancellations": "Cancellations",
       "uniqueOrders": "Unique cancelled orders",
@@ -1340,6 +1343,7 @@
       "sla": "Time-to-cancel SLA",
       "pending": "Pending review queue",
       "top": "Top cancel causes",
+      "topProducts": "Top cancelled products",
       "topMonth": "Top this month",
       "byCause": "Usage by cause",
       "byEmployee": "Usage by employee",
@@ -1347,6 +1351,10 @@
     },
     "tables": {
       "cause": "Cause",
+      "product": "Product",
+      "cancellations": "Cancellations",
+      "orders": "Orders",
+      "quantity": "Qty",
       "count": "Count",
       "share": "Share",
       "custom": "Custom",
@@ -5248,7 +5256,8 @@
       "reactivate": "Reactivate",
       "success": "Successfully completed",
       "printSku": "Print  Skus",
-      "fetchExternalDetails": "View product data from the stor"
+      "fetchExternalDetails": "View product data from the stor",
+      "viewCancelCauses": "View cancel causes"
     },
     "tabs": {
       "products": "Products",
@@ -5291,7 +5300,9 @@
       "filter": "Filter",
       "export": "Export",
       "exportToStoreCount": "Export to stores ({count})",
-      "exportToStore": "Export to stores"
+      "exportToStore": "Export to stores",
+      "createPurchase": "Create purchase",
+      "createPurchaseCount": "Create purchase ({count})"
     },
     "filters": {
       "storageRack": "Storage Rack",
@@ -5354,6 +5365,17 @@
       "price": "Price",
       "ordersShipped": "Shipped orders",
       "ordersDelivered": "Delivered orders",
+      "cancelCauses": "Cancel causes",
+      "cancelCausesTitle": "Cancel causes for this product",
+      "cancelCausesTotal": "{count} cancellations",
+      "cancelCausesEmpty": "No cancel causes recorded for this product.",
+      "cancelCause": "Cause",
+      "cancelCauseDetails": "Cause details",
+      "cancelCauseCount": "Cancellations",
+      "cancelCauseOrders": "Orders",
+      "cancelCauseLastAt": "Last used",
+      "cancelCauseCustom": "{count} custom",
+      "cancelCauseQty": "{count} qty",
       "stockInsights": "Stock insights",
       "productOrdersModalTitleShipped": "Orders including this product (shipped)",
       "productOrdersModalTitleDelivered": "Orders including this product (delivered)",
@@ -6872,6 +6894,8 @@
       "datePlaceholder": "Select period",
       "product": "Product",
       "productPlaceholder": "Select product",
+      "city": "City",
+      "cityPlaceholder": "Select city",
       "area": "Area",
       "areaPlaceholder": "Select area",
       "store": "Store",
@@ -14247,6 +14271,10 @@
         "top": {
           "description": "Highest-volume cancel causes in the selected date range. Rank is by event count, not by unique orders.",
           "example": "'Customer refused' is #1 with 28 events (35% of cancellations this period)."
+        },
+        "topProducts": {
+          "description": "Products that appear most often on cancelled orders in the selected period, after store, city, shipping, and product filters.",
+          "example": "'Summer dress' is on 18 cancel events (22 orders, 31 units) in this range."
         },
         "topMonth": {
           "description": "Top 5 causes in the current calendar month, even if your date filter is different. Useful as a 'right now' snapshot.",

@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { CalendarDays, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw, Printer, Plus, Minus, X, Loader2, Truck, RefreshCw, Link, Download } from "lucide-react";
+import { CalendarDays, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw, Printer, Plus, Minus, X, Loader2, Truck, RefreshCw, Link, Download, Ban } from "lucide-react";
 import { useExport } from "@/hook/useExport";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { Badge } from "@/components/ui/badge";
@@ -168,6 +168,155 @@ export function ProductOrdersByStatusModal({
 	);
 }
 
+export function ProductCancelCausesModal({
+	open,
+	onOpenChange,
+	product,
+	loading,
+	records = [],
+	total = 0,
+}) {
+	const t = useTranslations("products");
+	const tCauses = useTranslations("cancelCauses");
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="!max-w-5xl rounded-xl max-h-[90vh] flex flex-col p-0 shadow-2xl border-0 overflow-hidden">
+				<div className="relative px-6 pt-6 pb-5 shrink-0 bg-gradient-to-br from-primary to-secondary">
+					<div className="relative flex items-center justify-between">
+						<div className="flex items-center gap-3">
+							<div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+								<Ban size={22} className="text-white" />
+							</div>
+							<div>
+								<p className="text-white/70 text-xs font-medium mb-0.5">
+									{product?.name || product?.id}
+								</p>
+								<h2 className="text-white text-xl font-bold">
+									{t("table.cancelCausesTitle")}
+								</h2>
+								<p className="text-white/80 text-xs mt-1">
+									{t("table.cancelCausesTotal", { count: total || 0 })}
+								</p>
+							</div>
+						</div>
+						<button
+							onClick={() => onOpenChange?.(false)}
+							className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+						>
+							<X size={16} className="text-white" />
+						</button>
+					</div>
+				</div>
+
+				<div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950/50">
+					<div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+						<div className="overflow-x-auto">
+							<table className="w-full text-sm min-w-[860px]">
+								<thead>
+									<tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-left">
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+											{t("table.cancelCause")}
+										</th>
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+											{t("table.cancelCauseDetails")}
+										</th>
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+											{tCauses("columns.status")}
+										</th>
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+											{t("table.cancelCauseCount")}
+										</th>
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+											{t("table.cancelCauseOrders")}
+										</th>
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">
+											{t("table.cancelCauseLastAt")}
+										</th>
+									</tr>
+								</thead>
+								<tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+									{loading ? (
+										<tr>
+											<td colSpan="6" className="px-4 py-8 text-center text-slate-500">
+												<Loader2 size={24} className="animate-spin mx-auto mb-2" />
+												{t("common.loading")}
+											</td>
+										</tr>
+									) : records.length === 0 ? (
+										<tr>
+											<td colSpan="6" className="px-4 py-8 text-center text-slate-500">
+												{t("table.cancelCausesEmpty")}
+											</td>
+										</tr>
+									) : (
+										records.map((row) => (
+											<tr
+												key={row.causeId || row.name}
+												className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+											>
+												<td className="px-4 py-3 text-center">
+													<div className="flex flex-col items-center gap-1">
+														<span className="font-bold text-gray-700 dark:text-slate-200">
+															{row.name || "—"}
+														</span>
+														{row.code && (
+															<span className="text-[10px] text-muted-foreground font-mono">
+																{row.code}
+															</span>
+														)}
+													</div>
+												</td>
+												<td className="px-4 py-3 text-center text-xs text-slate-600 dark:text-slate-300 max-w-[280px]">
+													<p className="leading-relaxed">{row.description || "—"}</p>
+													<p className="mt-1 text-[10px] text-muted-foreground">
+														{row.isActive ? tCauses("filters.active") : tCauses("filters.inactive")}
+														{row.customCount ? ` · ${t("table.cancelCauseCustom", { count: row.customCount })}` : ""}
+													</p>
+												</td>
+												<td className="px-4 py-3 text-center">
+													<Badge className="rounded-full">
+														{row.reviewStatus
+															? tCauses(`status.${row.reviewStatus}`)
+															: "—"}
+													</Badge>
+												</td>
+												<td className="px-4 py-3 text-center">
+													<span className="font-semibold tabular-nums text-rose-600">
+														{row.count || 0}
+													</span>
+													{row.percent != null && (
+														<span className="block text-[10px] text-muted-foreground">
+															{row.percent}%
+														</span>
+													)}
+												</td>
+												<td className="px-4 py-3 text-center tabular-nums text-xs">
+													{row.orderCount || 0}
+													{row.quantity ? (
+														<span className="block text-[10px] text-muted-foreground">
+															{t("table.cancelCauseQty", { count: row.quantity })}
+														</span>
+													) : null}
+												</td>
+												<td className="px-4 py-3 text-center text-xs text-slate-600 dark:text-slate-300">
+													{row.lastOccurredAt
+														? new Date(row.lastOccurredAt).toLocaleString()
+														: "—"}
+												</td>
+											</tr>
+										))
+									)}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 export default function useProductsTab({ setExternalModal, searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
 	const router = useRouter();
 	const tTutorial = useTranslations("tutorial");
@@ -195,6 +344,13 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 		productId: null,
 		statusCode: null,
 		shippingCompany: "all",
+	});
+	const [productCancelCausesModal, setProductCancelCausesModal] = useState({
+		open: false,
+		loading: false,
+		product: null,
+		records: [],
+		total: 0,
 	});
 
 	const fetchProductOrders = useCallback(
@@ -234,6 +390,30 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 		},
 		[t, fetchProductOrders]
 	);
+
+	const openProductCancelCauses = useCallback(async (product) => {
+		setProductCancelCausesModal({
+			open: true,
+			loading: true,
+			product,
+			records: [],
+			total: 0,
+		});
+		try {
+			const res = await api.get(`/cancel-causes/product/${product.id}/causes`, {
+				params: { limit: 50 },
+			});
+			setProductCancelCausesModal((m) => ({
+				...m,
+				loading: false,
+				records: res.data?.records || [],
+				total: res.data?.total || 0,
+			}));
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+			setProductCancelCausesModal((m) => ({ ...m, loading: false, records: [] }));
+		}
+	}, []);
 
 	const handleShippingCompanyChange = useCallback(
 		(shippingCompany) => {
@@ -596,6 +776,36 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 					);
 				},
 			},
+			{
+				key: "cancelCauses",
+				header: t("table.cancelCauses"),
+				className: "w-[80px]",
+				cell: (row) => {
+					const count = row.cancelCauseCount || 0;
+					if (count === 0)
+						return <span className="text-muted-foreground text-sm">—</span>;
+
+					return (
+						<ActionButtons
+							row={row}
+							actions={[
+								{
+									icon: (
+										<div className="flex items-center gap-1.5">
+											<Ban className="h-4 w-4 text-rose-600" />
+											<span className="text-xs font-semibold tabular-nums text-rose-600">{count}</span>
+										</div>
+									),
+									size: "xl",
+									tooltip: `${t("actions.viewCancelCauses")} (${count})`,
+									onClick: (r) => openProductCancelCauses(r),
+									variant: "outline",
+								}
+							]}
+						/>
+					);
+				},
+			},
 			{ key: "images", header: t("table.imagesCount"), className: "w-[100px]", type: "imgs" },
 			// { 
 			// 	key: "slug", 
@@ -772,9 +982,9 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 				)
 			}
 		];
-	}, [reservedEnabled, router, t, onAskDelete, onOpenView, formatCurrency, activetab, pager.per_page, selectedProducts, openProductOrders]);
+	}, [reservedEnabled, router, t, onAskDelete, onOpenView, formatCurrency, activetab, pager.per_page, selectedProducts, openProductOrders, openProductCancelCauses]);
 
-	return { tutorialActions: true, loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal, handleShippingCompanyChange, handleOrdersExport, exportLoading };
+	return { tutorialActions: true, loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal, productCancelCausesModal, setProductCancelCausesModal, handleShippingCompanyChange, handleOrdersExport, exportLoading };
 }
 
 export function SkuPrintModal({ open, onClose, product }) {

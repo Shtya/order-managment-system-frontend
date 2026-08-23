@@ -1317,6 +1317,9 @@
       "hours": "ساعة",
       "viewCauses": "عرض الأسباب"
     },
+    "filters": {
+      "product": "المنتج"
+    },
     "kpis": {
       "totalCancellations": "الإلغاءات",
       "uniqueOrders": "طلبات ملغاة فريدة",
@@ -1342,6 +1345,7 @@
       "sla": "زمن الإلغاء واتفاقية الخدمة",
       "pending": "قائمة المراجعة",
       "top": "أكثر أسباب الإلغاء",
+      "topProducts": "أكثر المنتجات الملغاة",
       "topMonth": "الأكثر هذا الشهر",
       "byCause": "الاستخدام حسب السبب",
       "byEmployee": "الاستخدام حسب الموظف",
@@ -1349,6 +1353,10 @@
     },
     "tables": {
       "cause": "السبب",
+      "product": "المنتج",
+      "cancellations": "الإلغاءات",
+      "orders": "الطلبات",
+      "quantity": "الكمية",
       "count": "العدد",
       "share": "الحصة",
       "custom": "مخصص",
@@ -5247,7 +5255,8 @@
       "reactivate": "إعادة التفعيل",
       "success": "تمت بنجاح",
       "printSku": "إطبع Skus",
-      "fetchExternalDetails": "عرض بيانات المنتج من المتجر"
+      "fetchExternalDetails": "عرض بيانات المنتج من المتجر",
+      "viewCancelCauses": "عرض أسباب الإلغاء"
     },
     "tabs": {
       "products": "المنتجات",
@@ -5290,7 +5299,9 @@
       "filter": "تصفية",
       "export": "تصدير",
       "exportToStoreCount": "تصدير للمتاجر ({count})",
-      "exportToStore": "تصدير للمتاجر"
+      "exportToStore": "تصدير للمتاجر",
+      "createPurchase": "إنشاء مشتريات",
+      "createPurchaseCount": "إنشاء مشتريات ({count})"
     },
     "filters": {
       "storageRack": "رف التخزين",
@@ -5353,6 +5364,17 @@
       "price": "السعر",
       "ordersShipped": "طلبات قيد الشحن",
       "ordersDelivered": "طلبات تم تسليمها",
+      "cancelCauses": "أسباب الإلغاء",
+      "cancelCausesTitle": "أسباب إلغاء هذا المنتج",
+      "cancelCausesTotal": "{count} إلغاء",
+      "cancelCausesEmpty": "لا توجد أسباب إلغاء مسجّلة لهذا المنتج.",
+      "cancelCause": "السبب",
+      "cancelCauseDetails": "تفاصيل السبب",
+      "cancelCauseCount": "الإلغاءات",
+      "cancelCauseOrders": "الطلبات",
+      "cancelCauseLastAt": "آخر استخدام",
+      "cancelCauseCustom": "{count} مخصص",
+      "cancelCauseQty": "{count} قطعة",
       "stockInsights": "ملخص المخزون",
       "productOrdersModalTitleShipped": "طلبات تتضمن هذا المنتج (شُحنت)",
       "productOrdersModalTitleDelivered": "طلبات تتضمن هذا المنتج (تم التسليم)",
@@ -6861,6 +6883,8 @@
       "datePlaceholder": "اختر الفترة",
       "product": "المنتج",
       "productPlaceholder": "اختر المنتج",
+      "city": "المدينة",
+      "cityPlaceholder": "اختر المدينة",
       "area": "المنطقة",
       "areaPlaceholder": "اختر المنطقة",
       "store": "المتجر",
@@ -14277,6 +14301,10 @@
         "top": {
           "description": "أكثر أسباب الإلغاء في الفترة حسب عدد الأحداث وليس عدد الطلبات الفريدة.",
           "example": "«رفض العميل» في المقدمة بـ 28 حدثاً أي 35٪ من إلغاءات الفترة."
+        },
+        "topProducts": {
+          "description": "المنتجات الأكثر ظهوراً على الطلبات الملغاة في الفترة بعد فلاتر المتجر والمدينة والشحن والمنتج.",
+          "example": "«فستان صيفي» على 18 حدث إلغاء (22 طلباً و31 قطعة) في هذه الفترة."
         },
         "topMonth": {
           "description": "أعلى 5 أسباب في الشهر الميلادي الحالي حتى لو كان فلتر التاريخ مختلفاً.",

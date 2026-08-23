@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 
-import useProductsTab, { ProductViewModal, SkuPrintModal, ProductOrdersByStatusModal } from "./ProductsTab";
+import useProductsTab, { ProductViewModal, SkuPrintModal, ProductOrdersByStatusModal, ProductCancelCausesModal } from "./ProductsTab";
 import useBundlesTab, { BundleViewModal } from "./BundlesTab";
 import useIdleTab from "./IdleTab";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -536,6 +536,16 @@ export default function ProductsPage() {
 				tutorialActions={tutorialActions}
 				actions={[
 					{
+						key: "createPurchase",
+						label: selectedProducts.length > 0 ? t("toolbar.createPurchaseCount", { count: selectedProducts.length }) : t("toolbar.createPurchase"),
+						icon: <ShoppingCart size={14} />,
+						color: "primary",
+						disabled: selectedProducts.length === 0,
+						onClick: () => router.push(`/purchases/new?productIds=${selectedProducts.join(",")}`),
+						permission: "purchases.create",
+						hidden: active !== "products",
+					},
+					{
 						key: "exportToStore",
 						label: selectedProducts.length > 0 ? t("toolbar.exportToStoreCount", { count: selectedProducts.length }) : t("toolbar.exportToStore"),
 						icon: <StoreIcon size={14} />,
@@ -766,6 +776,15 @@ export default function ProductsPage() {
 				onShippingCompanyChange={productsLogic.handleShippingCompanyChange}
 				onExport={productsLogic.handleOrdersExport}
 				exportLoading={productsLogic.exportLoading}
+			/>
+
+			<ProductCancelCausesModal
+				open={productsLogic.productCancelCausesModal.open}
+				onOpenChange={(o) => productsLogic.setProductCancelCausesModal((m) => ({ ...m, open: o }))}
+				product={productsLogic.productCancelCausesModal.product}
+				loading={productsLogic.productCancelCausesModal.loading}
+				records={productsLogic.productCancelCausesModal.records}
+				total={productsLogic.productCancelCausesModal.total}
 			/>
 
 			<ExportToStoreModal

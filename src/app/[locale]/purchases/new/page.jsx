@@ -465,7 +465,7 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 									{t("sections.addProducts")}
 								</h3>
 
-								<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={selectSku} closeOnSelect={false} />
+								<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={selectSku} closeOnSelect={false} initFromProductIds={!isEdit} />
 								{errors.items && (
 									<p className="text-xs text-red-500 mt-2">{errors.items.message}</p>
 								)}

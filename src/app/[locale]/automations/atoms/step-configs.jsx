@@ -388,7 +388,9 @@ export function WhatsappIncomingConfig({ value, onChange, errors, setDisabled })
  */
 export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }) {
     const [statuses, setStatuses] = useState([]);
+    const [cancelCauses, setCancelCauses] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingCauses, setLoadingCauses] = useState(false);
     const tOrders = useTranslations("orders");
     const tConfig = useTranslations("whatsApp.automations.builder.config");
 
@@ -408,18 +410,51 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
         fetchStatuses();
     }, []);
 
+    const selectedStatus = statuses.find((s) => s.id?.toString() === value.newStatusId?.toString());
+    const isCancelled = selectedStatus?.code === "cancelled";
+
     useEffect(() => {
-        // Prevent save until a new status is selected
-        const isValid = !!value.newStatusId;
+        if (!isCancelled) return;
+        const fetchCauses = async () => {
+            try {
+                setLoadingCauses(true);
+                const { data } = await api.get("/cancel-causes/selectable");
+                setCancelCauses(data?.records || []);
+            } catch (error) {
+                console.error("Failed to fetch cancel causes:", error);
+                toast.error(normalizeAxiosError(error));
+                setCancelCauses([]);
+            } finally {
+                setLoadingCauses(false);
+            }
+        };
+        fetchCauses();
+    }, [isCancelled]);
+
+    useEffect(() => {
+        const isValid = !!value.newStatusId && (!isCancelled || !!value.cancelCauseId);
         setDisabled(!isValid);
-    }, [value.newStatusId, setDisabled]);
+    }, [value.newStatusId, value.cancelCauseId, isCancelled, setDisabled]);
 
     const handleStatusChange = (v) => {
-        const selectedStatus = statuses.find(s => s.id.toString() === v);
+        const selected = statuses.find(s => s.id.toString() === v);
+        const nextIsCancelled = selected?.code === "cancelled";
         onChange({
             ...value,
-            newStatus: selectedStatus?.name,
-            newStatusId: v
+            newStatus: selected?.name,
+            newStatusId: v,
+            ...(nextIsCancelled
+                ? {}
+                : { cancelCauseId: undefined, cancelCauseName: undefined }),
+        });
+    };
+
+    const handleCauseChange = (v) => {
+        const selectedCause = cancelCauses.find((c) => String(c.id) === String(v));
+        onChange({
+            ...value,
+            cancelCauseId: v,
+            cancelCauseName: selectedCause?.name,
         });
     };
 
@@ -446,6 +481,30 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
                     </SelectContent>
                 </Select>
             </FormGroup>
+
+            {isCancelled && (
+                <FormGroup label={tConfig('cancelCause')} description={tConfig('cancelCauseDesc')} error={errors.cancelCauseId}>
+                    <Select value={value.cancelCauseId?.toString() || ""} onValueChange={handleCauseChange}>
+                        <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                            {loadingCauses ? (
+                                <div className="flex items-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>{tConfig('loadingCauses')}</span>
+                                </div>
+                            ) : (
+                                <SelectValue placeholder={tConfig('selectCancelCause')} />
+                            )}
+                        </SelectTrigger>
+                        <SelectContent>
+                            {cancelCauses.map((cause) => (
+                                <SelectItem key={cause.id} value={String(cause.id)}>
+                                    {cause.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </FormGroup>
+            )}
         </div>
     );
 }

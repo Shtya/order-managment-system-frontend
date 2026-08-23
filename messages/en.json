@@ -571,6 +571,7 @@
     "issuesAndStatuses": "Manage Issues",
     "manageCauses": "Manage Issue Types",
     "cancelCauses": "Cancel Causes",
+    "tags": "Tags",
     "cancelCausesStatistics": "Cancel Causes Statistics",
     "gettingStartedStatistics": "Getting Started Statistics",
     "ai": "AI"
@@ -1298,6 +1299,209 @@
       "totalCancellations": "Cancellations"
     }
   },
+  "tags": {
+    "title": "Tags",
+    "breadcrumb": {
+      "home": "Home",
+      "orders": "Orders"
+    },
+    "tabs": {
+      "tags": "Tags",
+      "automations": "Tag Automations"
+    },
+    "table": {
+      "searchTags": "Search tags...",
+      "searchAutomations": "Search automations...",
+      "emptyTagsTitle": "No tags yet",
+      "emptyTagsSubtitle": "Create a tag to label orders manually or with automations.",
+      "emptyAutomationsTitle": "No tag automations yet",
+      "emptyAutomationsSubtitle": "Create a rule to add a tag when order conditions match."
+    },
+    "columns": {
+      "name": "Name",
+      "color": "Color",
+      "description": "Description",
+      "active": "Active",
+      "manual": "Manual assign",
+      "priority": "Priority",
+      "tag": "Tag",
+      "enabled": "Enabled",
+      "logic": "Logic",
+      "rules": "Rules"
+    },
+    "filters": {
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "tag": "Tag"
+    },
+    "actions": {
+      "addTag": "Add Tag",
+      "addAutomation": "Add Automation",
+      "settings": "Settings",
+      "export": "Export Excel",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "settings": {
+      "title": "Tag Settings",
+      "modeTitle": "Order tag mode",
+      "many": "Allow multiple tags",
+      "manyDesc": "Every matching automation can add its tag. Tags are not removed when conditions stop matching.",
+      "manyDescription": "Use this when an order can carry several labels at once (for example VIP and COD).",
+      "one": "One tag only",
+      "oneDesc": "Keep only the highest-priority matching tag and replace others. If nothing matches, existing tags stay.",
+      "oneDescription": "Use this when each order should have a single tag. Higher priority wins.",
+      "automationsTitle": "Tag automations",
+      "automationsOn": "Enabled",
+      "automationsOnDesc": "Evaluate rules when an order, shipment, or upsell changes.",
+      "automationsOnDescription": "Automations add tags only. They never remove tags when conditions become false.",
+      "automationsOff": "Disabled",
+      "automationsOffDesc": "Stop automatic tagging. Manual assignment still works.",
+      "automationsOffDescription": "Existing tags stay on orders. You can still assign tags by hand."
+    },
+    "dialog": {
+      "addTagTitle": "Add Tag",
+      "editTagTitle": "Edit Tag",
+      "tagSubtitle": "Tags can be assigned manually or by automations.",
+      "addAutomationTitle": "Add Tag Automation",
+      "editAutomationTitle": "Edit Tag Automation",
+      "automationSubtitle": "When the conditions match, this tag is added to the order.",
+      "detailsTitle": "Details",
+      "name": "Name",
+      "namePlaceholder": "e.g. VIP",
+      "color": "Color",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional note for the team...",
+      "isActive": "Active",
+      "allowManual": "Allow manual assignment",
+      "priority": "Priority",
+      "priorityHint": "Higher priority wins when only one tag is allowed.",
+      "tag": "Tag",
+      "tagPlaceholder": "Select a tag",
+      "isEnabled": "Enabled",
+      "logic": "Match logic",
+      "logicAnd": "All rules (AND)",
+      "logicOr": "Any rule (OR)",
+      "rules": "Rules",
+      "addRule": "Add rule",
+      "field": "Field",
+      "operator": "Operator",
+      "value": "Value",
+      "valuePlaceholder": "Value",
+      "selectValues": "Select values",
+      "inHint": "Comma-separated values",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "fields": {
+      "order": {
+        "statusId": "Order status",
+        "storeId": "Store",
+        "cityId": "City",
+        "paymentStatus": "Payment status",
+        "productsTotal": "Products total",
+        "itemsQuantity": "Items quantity",
+        "shippingCompanyId": "Shipping company",
+        "finalTotal": "Final total",
+        "isConfirmed": "Order confirmed",
+        "confirmationSource": "Confirmation source",
+        "phone": {
+          "valid": "Phone number"
+        }
+      },
+      "shipment": {
+        "status": "Shipment status"
+      },
+      "upsell": {
+        "accepted": "Upsell accepted"
+      }
+    },
+    "operators": {
+      "eq": "Equals",
+      "neq": "Not equals",
+      "in": "In list",
+      "not_in": "Not in list",
+      "is_null": "Is empty",
+      "is_not_null": "Is not empty",
+      "gte": "Greater or equal",
+      "lte": "Less or equal"
+    },
+    "boolean": {
+      "true": "Yes",
+      "false": "No"
+    },
+    "confirmationSource": {
+      "whatsapp": "WhatsApp",
+      "manual": "Manual"
+    },
+    "phone": {
+      "egyptian": "Egyptian",
+      "notEgyptian": "Not Egyptian"
+    },
+    "paymentStatus": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "partial": "Partial",
+      "refunded": "Refunded",
+      "partially_refunded": "Partially refunded"
+    },
+    "shipmentStatus": {
+      "pending_action": "Pending action",
+      "preparing": "Preparing",
+      "ready_to_ship": "Ready to ship",
+      "out_for_delivery": "Out for delivery",
+      "delivered": "Delivered",
+      "returned_to_warehouse": "Returned to warehouse",
+      "failed": "Failed",
+      "customer_not_respond": "Customer did not respond",
+      "customer_data_wrong": "Wrong customer data",
+      "customer_refused": "Customer refused",
+      "cancelled": "Cancelled"
+    },
+    "upsellStatus": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "expired": "Expired",
+      "accepted_non_eligible": "Accepted (not eligible)",
+      "failed_to_add": "Failed to add"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMin": "Name must be at least 1 character",
+      "nameMax": "Name is too long",
+      "colorInvalid": "Use a hex color like #6C5CE7",
+      "descriptionMax": "Description cannot exceed 1000 characters",
+      "priorityMin": "Priority cannot be negative",
+      "tagRequired": "Select a tag",
+      "rulesMin": "Add at least one rule",
+      "rulesMax": "You can add up to 5 rules",
+      "fieldRequired": "Select a field",
+      "operatorRequired": "Select an operator",
+      "valueRequired": "Value is required"
+    },
+    "toast": {
+      "saved": "Saved successfully",
+      "deleted": "Deleted successfully"
+    },
+    "delete": {
+      "tagTitle": "Delete Tag",
+      "tagDesc": "This tag will be removed from all orders.",
+      "automationTitle": "Delete Automation",
+      "automationDesc": "This rule will stop adding the tag automatically.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "stats": {
+      "tags": "Tags",
+      "automations": "Automations"
+    }
+  },
   "cancelCausesReports": {
     "title": "Cancel Causes Statistics",
     "howToUse": "How to Use",
@@ -1316,12 +1520,18 @@
       "viewCauses": "View causes"
     },
     "filters": {
-      "product": "Product"
+      "product": "Product",
+      "shippingTiming": "Cancel timing",
+      "shippingTimingBoth": "Before and after shipping",
+      "shippingTimingBefore": "Before shipping",
+      "shippingTimingAfter": "After shipping"
     },
     "kpis": {
       "totalCancellations": "Cancellations",
       "uniqueOrders": "Unique cancelled orders",
       "cancellationRate": "Cancellation rate",
+      "afterShippingCancelRate": "After-shipping cancel rate",
+      "afterShippingShareOfCancels": "After-shipping share of cancels",
       "ordersInPeriod": "Orders in period",
       "predefined": "Catalog causes used",
       "custom": "Custom submissions",
@@ -5301,8 +5511,8 @@
       "export": "Export",
       "exportToStoreCount": "Export to stores ({count})",
       "exportToStore": "Export to stores",
-      "createPurchase": "Create purchase",
-      "createPurchaseCount": "Create purchase ({count})"
+      "createPurchase": "Create bulk purchase",
+      "createPurchaseCount": "Create bulk purchase ({count})"
     },
     "filters": {
       "storageRack": "Storage Rack",
@@ -12482,7 +12692,16 @@
           "whatsappAccountDesc": "Choose the account that will receive messages",
           "selectAccount": "Select account...",
           "changeStatusToDesc": "The new status to be assigned to the order",
+          "confirmationSource": "Confirmation source",
+          "confirmationSourceDesc": "Set only when moving to confirmed. Leave empty for workflow/auto confirms so they are not tagged.",
+          "confirmationSourceNone": "Do not set",
+          "confirmationSourceWhatsapp": "WhatsApp",
+          "confirmationSourceManual": "Manual",
           "selectNewStatus": "Select new status...",
+          "cancelCause": "Cancel cause",
+          "cancelCauseDesc": "Required when the new status is cancelled. Saved on the cancellation record.",
+          "selectCancelCause": "Select a cancel cause...",
+          "loadingCauses": "Loading causes...",
           "whatsappTemplateTitle": "Send WhatsApp Template",
           "whatsappTemplateDesc": "Choose the template and fill in the required variables",
           "saveStep": "Save Step",
@@ -13237,10 +13456,12 @@
       "orderPostponeDate": "Postpone Order Date",
       "offerDiscount": "Offer Discount",
       "paymentMethod": "Payment Method",
+      "confirmOrder": "Confirm Order",
       "descriptions": {
         "orderPostponeDate": "Let the customer choose a new delivery date",
         "offerDiscount": "Send a discount offer the customer can accept",
-        "paymentMethod": "Ask the customer how they want to pay"
+        "paymentMethod": "Ask the customer how they want to pay",
+        "confirmOrder": "Ask the customer to confirm the order on WhatsApp"
       },
       "generatedRows": "Dates",
       "businessConfigTitle": "Business Options",
@@ -14193,6 +14414,14 @@
         "cancellationRate": {
           "description": "Cancellations divided by all orders created in the same date range. This is an operations health metric, not a catalog metric.",
           "example": "If 1,000 orders were created and 80 cancel events were logged, the rate is 8%."
+        },
+        "afterShippingCancelRate": {
+          "description": "Unique orders cancelled after a shipment existed, divided by all orders that were shipped in the same date range.",
+          "example": "If 400 orders were shipped and 20 of them were cancelled after shipping, this card shows 5%."
+        },
+        "afterShippingShareOfCancels": {
+          "description": "Share of all cancel events in the period that happened after the order already had a shipment.",
+          "example": "If 80 cancellations were logged and 20 were after shipping, this card shows 25%."
         },
         "ordersInPeriod": {
           "description": "All orders created in the selected range, used as the denominator for cancellation rate.",

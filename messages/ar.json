@@ -571,6 +571,7 @@
     "issuesAndStatuses": "إدارة المشكلات",
     "manageCauses": "إدارة أنواع المشكلات",
     "cancelCauses": "أسباب الإلغاء",
+    "tags": "الوسوم",
     "cancelCausesStatistics": "إحصائيات أسباب الإلغاء",
     "gettingStartedStatistics": "إحصائيات الاعداد",
     "ai": "الذكاء الاصطناعي"
@@ -1300,6 +1301,209 @@
       "totalCancellations": "الإلغاءات"
     }
   },
+  "tags": {
+    "title": "الوسوم",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "orders": "الطلبات"
+    },
+    "tabs": {
+      "tags": "الوسوم",
+      "automations": "أتمتة الوسوم"
+    },
+    "table": {
+      "searchTags": "ابحث في الوسوم...",
+      "searchAutomations": "ابحث في الأتمتة...",
+      "emptyTagsTitle": "لا توجد وسوم بعد",
+      "emptyTagsSubtitle": "أنشئ وسمًا لتصنيف الطلبات يدويًا أو عبر الأتمتة.",
+      "emptyAutomationsTitle": "لا توجد أتمتة وسوم بعد",
+      "emptyAutomationsSubtitle": "أنشئ قاعدة لإضافة وسم عند تحقق شروط الطلب."
+    },
+    "columns": {
+      "name": "الاسم",
+      "color": "اللون",
+      "description": "الوصف",
+      "active": "نشط",
+      "manual": "تعيين يدوي",
+      "priority": "الأولوية",
+      "tag": "الوسم",
+      "enabled": "مفعّل",
+      "logic": "المنطق",
+      "rules": "القواعد"
+    },
+    "filters": {
+      "status": "الحالة",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "enabled": "مفعّل",
+      "disabled": "معطّل",
+      "tag": "الوسم"
+    },
+    "actions": {
+      "addTag": "إضافة وسم",
+      "addAutomation": "إضافة أتمتة",
+      "settings": "الإعدادات",
+      "export": "تصدير إكسل",
+      "view": "عرض",
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "settings": {
+      "title": "إعدادات الوسوم",
+      "modeTitle": "وضع وسوم الطلب",
+      "many": "السماح بعدة وسوم",
+      "manyDesc": "كل أتمتة مطابقة تضيف وسمها. لا تُحذف الوسوم عند توقف تحقق الشروط.",
+      "manyDescription": "استخدم هذا عندما يمكن أن يحمل الطلب عدة تسميات في نفس الوقت.",
+      "one": "وسم واحد فقط",
+      "oneDesc": "يُحتفظ بوسم المطابقة ذي الأولوية الأعلى ويُستبدل الباقي. إن لم يطابق شيء تبقى الوسوم الحالية.",
+      "oneDescription": "استخدم هذا عندما يجب أن يكون لكل طلب وسم واحد. الأولوية الأعلى تفوز.",
+      "automationsTitle": "أتمتة الوسوم",
+      "automationsOn": "مفعّلة",
+      "automationsOnDesc": "تُقيَّم القواعد عند تغيير الطلب أو الشحنة أو العرض الإضافي.",
+      "automationsOnDescription": "الأتمتة تضيف الوسوم فقط ولا تزيلها عند توقف تحقق الشروط.",
+      "automationsOff": "معطّلة",
+      "automationsOffDesc": "إيقاف الإضافة التلقائية. التعيين اليدوي يبقى متاحًا.",
+      "automationsOffDescription": "الوسوم الحالية تبقى على الطلبات ويمكن تعيينها يدويًا."
+    },
+    "dialog": {
+      "addTagTitle": "إضافة وسم",
+      "editTagTitle": "تعديل وسم",
+      "tagSubtitle": "يمكن تعيين الوسوم يدويًا أو عبر الأتمتة.",
+      "addAutomationTitle": "إضافة أتمتة وسم",
+      "editAutomationTitle": "تعديل أتمتة وسم",
+      "automationSubtitle": "عند تحقق الشروط يُضاف هذا الوسم إلى الطلب.",
+      "detailsTitle": "التفاصيل",
+      "name": "الاسم",
+      "namePlaceholder": "مثال: VIP",
+      "color": "اللون",
+      "description": "الوصف",
+      "descriptionPlaceholder": "ملاحظة اختيارية للفريق...",
+      "isActive": "نشط",
+      "allowManual": "السماح بالتعيين اليدوي",
+      "priority": "الأولوية",
+      "priorityHint": "الأولوية الأعلى تفوز عند السماح بوسم واحد فقط.",
+      "tag": "الوسم",
+      "tagPlaceholder": "اختر وسمًا",
+      "isEnabled": "مفعّل",
+      "logic": "منطق المطابقة",
+      "logicAnd": "كل القواعد (AND)",
+      "logicOr": "أي قاعدة (OR)",
+      "rules": "القواعد",
+      "addRule": "إضافة قاعدة",
+      "field": "الحقل",
+      "operator": "العامل",
+      "value": "القيمة",
+      "valuePlaceholder": "القيمة",
+      "selectValues": "اختر القيم",
+      "inHint": "قيم مفصولة بفواصل",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "close": "إغلاق"
+    },
+    "fields": {
+      "order": {
+        "statusId": "حالة الطلب",
+        "storeId": "المتجر",
+        "cityId": "المدينة",
+        "paymentStatus": "حالة الدفع",
+        "productsTotal": "إجمالي المنتجات",
+        "itemsQuantity": "كمية العناصر",
+        "shippingCompanyId": "شركة الشحن",
+        "finalTotal": "الإجمالي النهائي",
+        "isConfirmed": "الطلب تم تأكيده من قبل",
+        "confirmationSource": "مصدر التأكيد",
+        "phone": {
+          "valid": "رقم الهاتف"
+        }
+      },
+      "shipment": {
+        "status": "حالة الشحنة"
+      },
+      "upsell": {
+        "accepted": "تم قبول العرض الإضافي"
+      }
+    },
+    "operators": {
+      "eq": "يساوي",
+      "neq": "لا يساوي",
+      "in": "ضمن القائمة",
+      "not_in": "ليس ضمن القائمة",
+      "is_null": "فارغ",
+      "is_not_null": "غير فارغ",
+      "gte": "أكبر أو يساوي",
+      "lte": "أصغر أو يساوي"
+    },
+    "boolean": {
+      "true": "نعم",
+      "false": "لا"
+    },
+    "confirmationSource": {
+      "whatsapp": "واتساب",
+      "manual": "يدوي"
+    },
+    "phone": {
+      "egyptian": "مصري",
+      "notEgyptian": "غير مصري"
+    },
+    "paymentStatus": {
+      "pending": "قيد الانتظار",
+      "paid": "مدفوع",
+      "partial": "جزئي",
+      "refunded": "مسترد",
+      "partially_refunded": "مسترد جزئيًا"
+    },
+    "shipmentStatus": {
+      "pending_action": "قيد الإجراء",
+      "preparing": "قيد التحضير",
+      "ready_to_ship": "جاهز للشحن",
+      "out_for_delivery": "خرج للتوصيل",
+      "delivered": "تم التسليم",
+      "returned_to_warehouse": "رجع للمستودع",
+      "failed": "فشل",
+      "customer_not_respond": "العميل لم يرد",
+      "customer_data_wrong": "بيانات العميل خاطئة",
+      "customer_refused": "العميل رفض",
+      "cancelled": "ملغى"
+    },
+    "upsellStatus": {
+      "pending": "قيد الانتظار",
+      "accepted": "مقبول",
+      "rejected": "مرفوض",
+      "expired": "منتهي",
+      "accepted_non_eligible": "مقبول (غير مؤهل)",
+      "failed_to_add": "فشل الإضافة"
+    },
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "nameMin": "يجب ألا يقل الاسم عن حرف",
+      "nameMax": "الاسم طويل جدًا",
+      "colorInvalid": "استخدم لونًا سداسيًا مثل #6C5CE7",
+      "descriptionMax": "يجب ألا يتجاوز الوصف 1000 حرف",
+      "priorityMin": "لا يمكن أن تكون الأولوية سالبة",
+      "tagRequired": "اختر وسمًا",
+      "rulesMin": "أضف قاعدة واحدة على الأقل",
+      "rulesMax": "يمكن إضافة 5 قواعد كحد أقصى",
+      "fieldRequired": "اختر حقلًا",
+      "operatorRequired": "اختر عاملًا",
+      "valueRequired": "القيمة مطلوبة"
+    },
+    "toast": {
+      "saved": "تم الحفظ بنجاح",
+      "deleted": "تم الحذف بنجاح"
+    },
+    "delete": {
+      "tagTitle": "حذف الوسم",
+      "tagDesc": "سيتم إزالة هذا الوسم من كل الطلبات.",
+      "automationTitle": "حذف الأتمتة",
+      "automationDesc": "ستتوقف هذه القاعدة عن إضافة الوسم تلقائيًا.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "stats": {
+      "tags": "الوسوم",
+      "automations": "الأتمتة"
+    }
+  },
   "cancelCausesReports": {
     "title": "إحصائيات أسباب الإلغاء",
     "howToUse": "كيفية الاستخدام",
@@ -1318,12 +1522,18 @@
       "viewCauses": "عرض الأسباب"
     },
     "filters": {
-      "product": "المنتج"
+      "product": "المنتج",
+      "shippingTiming": "توقيت الإلغاء",
+      "shippingTimingBoth": "قبل الشحن وبعده",
+      "shippingTimingBefore": "قبل الشحن",
+      "shippingTimingAfter": "بعد الشحن"
     },
     "kpis": {
       "totalCancellations": "الإلغاءات",
       "uniqueOrders": "طلبات ملغاة فريدة",
       "cancellationRate": "معدل الإلغاء",
+      "afterShippingCancelRate": "معدل الإلغاء بعد الشحن",
+      "afterShippingShareOfCancels": "حصة الإلغاء بعد الشحن",
       "ordersInPeriod": "الطلبات في الفترة",
       "predefined": "استخدام الأسباب المعتمدة",
       "custom": "أسباب مخصصة",
@@ -5300,8 +5510,8 @@
       "export": "تصدير",
       "exportToStoreCount": "تصدير للمتاجر ({count})",
       "exportToStore": "تصدير للمتاجر",
-      "createPurchase": "إنشاء مشتريات",
-      "createPurchaseCount": "إنشاء مشتريات ({count})"
+      "createPurchase": "إنشاء مشتريات مجمعة",
+      "createPurchaseCount": "إنشاء مشتريات مجمعة ({count})"
     },
     "filters": {
       "storageRack": "رف التخزين",
@@ -12506,6 +12716,16 @@
           "whatsappAccountDesc": "اختر الحساب الذي سيستقبل الرسائل",
           "selectAccount": "اختر الحساب...",
           "changeStatusToDesc": "الحالة الجديدة التي سيتم تعيينها للطلب",
+          "confirmationSource": "مصدر التأكيد",
+          "confirmationSourceDesc": "يُستخدم فقط عند التحويل إلى مؤكد. اتركه فارغًا لتأكيدات الأتمتة حتى لا تُوسم.",
+          "confirmationSourceNone": "بدون تعيين",
+          "confirmationSourceWhatsapp": "واتساب",
+          "confirmationSourceManual": "يدوي",
+          "selectNewStatus": "اختر الحالة الجديدة...",
+          "cancelCause": "سبب الإلغاء",
+          "cancelCauseDesc": "مطلوب عند اختيار حالة ملغى. يُحفظ على سجل الإلغاء.",
+          "selectCancelCause": "اختر سبب الإلغاء...",
+          "loadingCauses": "جاري تحميل الأسباب...",
           "selectNewStatus": "اختر الحالة الجديدة...",
           "whatsappTemplateTitle": "إرسال قالب واتساب",
           "whatsappTemplateDesc": "اختر القالب وقم بتعبئة المتغيرات المطلوبة",
@@ -13263,10 +13483,12 @@
       "orderPostponeDate": "تأجيل تاريخ الطلب",
       "offerDiscount": "عرض خصم",
       "paymentMethod": "طريقة الدفع",
+      "confirmOrder": "تأكيد الطلب",
       "descriptions": {
         "orderPostponeDate": "دع العميل يختار تاريخ تسليم جديد",
         "offerDiscount": "أرسل عرض خصم يمكن للعميل قبوله",
-        "paymentMethod": "اسأل العميل عن طريقة الدفع التي يفضلها"
+        "paymentMethod": "اسأل العميل عن طريقة الدفع التي يفضلها",
+        "confirmOrder": "اطلب من العميل تأكيد الطلب عبر واتساب"
       },
       "generatedRows": "التواريخ",
       "businessConfigTitle": "خيارات العمل",
@@ -14223,6 +14445,14 @@
         "cancellationRate": {
           "description": "أحداث الإلغاء مقسومة على كل الطلبات المنشأة في نفس الفترة.",
           "example": "إذا أُنشئ 1000 طلب وسُجّل 80 إلغاء فالمعدل 8٪."
+        },
+        "afterShippingCancelRate": {
+          "description": "الطلبات الملغاة بعد وجود شحنة، مقسومة على كل الطلبات التي شُحنت في نفس الفترة.",
+          "example": "إذا شُحن 400 طلب وأُلغي 20 منها بعد الشحن يظهر 5٪."
+        },
+        "afterShippingShareOfCancels": {
+          "description": "نسبة أحداث الإلغاء في الفترة التي حدثت بعد أن أصبح للطلب شحنة.",
+          "example": "إذا سُجّل 80 إلغاء منها 20 بعد الشحن يظهر 25٪."
         },
         "ordersInPeriod": {
           "description": "كل الطلبات المنشأة في الفترة، وهي مقام معدل الإلغاء.",

@@ -12,6 +12,7 @@ import {
   Layers,
   PieChart as PieIcon,
   TrendingUp,
+  Truck,
   UserPlus,
   Users,
   XCircle,
@@ -31,6 +32,13 @@ import ProductFilter from "@/components/atoms/ProductFilter";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import CityFilter from "@/components/atoms/CityFilter";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Card,
   MiniTable,
@@ -151,6 +159,7 @@ export default function CancelCausesStatisticsPage() {
     shippingCompany: "all",
     productId: "all",
     cityId: "all",
+    shippingTiming: "both",
   });
 
   const [overview, setOverview] = useState(null);
@@ -188,6 +197,9 @@ export default function CancelCausesStatisticsPage() {
         p.productId = filters.productId;
       }
       if (filters.cityId && filters.cityId !== "all") p.cityId = filters.cityId;
+      if (filters.shippingTiming && filters.shippingTiming !== "both") {
+        p.shippingTiming = filters.shippingTiming;
+      }
       return p;
     },
     [
@@ -196,6 +208,7 @@ export default function CancelCausesStatisticsPage() {
       filters.shippingCompany,
       filters.productId,
       filters.cityId,
+      filters.shippingTiming,
     ],
   );
 
@@ -290,6 +303,22 @@ export default function CancelCausesStatisticsPage() {
       icon: TrendingUp,
       description: tTutorial("stats.cancellationRate.description"),
       example: tTutorial("stats.cancellationRate.example"),
+    },
+    {
+      id: "afterShippingRate",
+      name: t("kpis.afterShippingCancelRate"),
+      value: `${overview?.afterShippingCancelRate || 0}%`,
+      icon: Truck,
+      description: tTutorial("stats.afterShippingCancelRate.description"),
+      example: tTutorial("stats.afterShippingCancelRate.example"),
+    },
+    {
+      id: "afterShippingShare",
+      name: t("kpis.afterShippingShareOfCancels"),
+      value: `${overview?.afterShippingShareOfCancels || 0}%`,
+      icon: Ban,
+      description: tTutorial("stats.afterShippingShareOfCancels.description"),
+      example: tTutorial("stats.afterShippingShareOfCancels.example"),
     },
     {
       id: "orders",
@@ -545,6 +574,21 @@ export default function CancelCausesStatisticsPage() {
           value={filters.cityId}
           onChange={(v) => setFilters((f) => ({ ...f, cityId: v }))}
         />
+        <FilterField label={t("filters.shippingTiming")} icon={Truck}>
+          <Select
+            value={filters.shippingTiming || "both"}
+            onValueChange={(v) => setFilters((f) => ({ ...f, shippingTiming: v }))}
+          >
+            <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+              <SelectValue placeholder={t("filters.shippingTiming")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="both">{t("filters.shippingTimingBoth")}</SelectItem>
+              <SelectItem value="before">{t("filters.shippingTimingBefore")}</SelectItem>
+              <SelectItem value="after">{t("filters.shippingTimingAfter")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </FilterField>
       </TableFilters>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

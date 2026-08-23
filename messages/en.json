@@ -1529,9 +1529,10 @@
     "kpis": {
       "totalCancellations": "Cancellations",
       "uniqueOrders": "Unique cancelled orders",
-      "cancellationRate": "Cancellation rate",
+      "cancellationRate": "Total Cancellation rate",
+      "beforeShippingCancelRate": "Before-shipping cancel rate",
       "afterShippingCancelRate": "After-shipping cancel rate",
-      "afterShippingShareOfCancels": "After-shipping share of cancels",
+      "afterShippingCancelRateOfShipped": "After-shipping cancels of shipped",
       "ordersInPeriod": "Orders in period",
       "predefined": "Catalog causes used",
       "custom": "Custom submissions",
@@ -3505,7 +3506,45 @@
         "printBostaWaybillSelected": "Print Bosta Waybill ({count})",
         "reprintBostaWaybillSelected": "Reprint Bosta Waybill ({count})\t"
       },
-      "bostaWaybill": "Bosta Waybill"
+      "bostaWaybill": "Bosta Waybill",
+      "packingList": {
+        "action": "Packing List",
+        "actionSelected": "Packing List ({count})",
+        "actionDefault": "Packing List",
+        "title": "Packing List",
+        "titleAr": "قائمة التحضير",
+        "subtitle": "PACKING LIST",
+        "previewTitle": "Packing List Preview",
+        "previewSubtitle": "Product packing list",
+        "mode": "Print layout",
+        "modeCombined": "All selected orders (one table)",
+        "modePerOrder": "Per order",
+        "printNow": "Print packing list ({count})",
+        "printDate": "Print Date",
+        "printNumber": "Print Number",
+        "ordersCount": "Number of Orders",
+        "itemsCount": "Total Items",
+        "totalQuantity": "Total Quantity",
+        "productsCount": "Number of Products",
+        "includedOrders": "Orders included in this list",
+        "storageLocation": "Storage Location",
+        "warehouse": "Warehouse",
+        "unassignedLocation": "Unassigned location",
+        "unassignedWarehouse": "Unassigned warehouse",
+        "select": "Select",
+        "image": "Image",
+        "productName": "Product Name",
+        "sku": "SKU",
+        "quantity": "Quantity Requested",
+        "inOrders": "Orders Count",
+        "productCode": "Product Code",
+        "warehouseNotes": "Warehouse Notes",
+        "notesText": "Please verify quantities and locations before preparing the orders",
+        "preparerSignature": "Preparer's Signature",
+        "orderInfo": "Order Information",
+        "orderTitle": "Order {orderNumber}",
+        "pdfFailed": "Failed to generate packing list PDF"
+      }
     },
     "preparation": {
       "pdf": {
@@ -14416,12 +14455,16 @@
           "example": "If 1,000 orders were created and 80 cancel events were logged, the rate is 8%."
         },
         "afterShippingCancelRate": {
-          "description": "Unique orders cancelled after a shipment existed, divided by all orders that were shipped in the same date range.",
-          "example": "If 400 orders were shipped and 20 of them were cancelled after shipping, this card shows 5%."
+          "description": "Unique orders cancelled after they left the warehouse, divided by all orders created in the same date range.",
+          "example": "If 1,000 orders were created and 20 were cancelled after shipping, this card shows 2%."
         },
-        "afterShippingShareOfCancels": {
-          "description": "Share of all cancel events in the period that happened after the order already had a shipment.",
-          "example": "If 80 cancellations were logged and 20 were after shipping, this card shows 25%."
+        "beforeShippingCancelRate": {
+          "description": "Unique orders cancelled before they left the warehouse, divided by all orders created in the same date range.",
+          "example": "If 1,000 orders were created and 60 were cancelled before shipping, this card shows 6%."
+        },
+        "afterShippingCancelRateOfShipped": {
+          "description": "Unique orders cancelled after they left the warehouse, divided by all orders that were actually shipped in the same date range.",
+          "example": "If 400 orders were shipped and 20 of them were cancelled after shipping, this card shows 5%."
         },
         "ordersInPeriod": {
           "description": "All orders created in the selected range, used as the denominator for cancellation rate.",

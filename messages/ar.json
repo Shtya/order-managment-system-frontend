@@ -1531,9 +1531,10 @@
     "kpis": {
       "totalCancellations": "الإلغاءات",
       "uniqueOrders": "طلبات ملغاة فريدة",
-      "cancellationRate": "معدل الإلغاء",
+      "cancellationRate": "معدل الإلغاء الإجمالي",
+      "beforeShippingCancelRate": "معدل الإلغاء قبل الشحن",
       "afterShippingCancelRate": "معدل الإلغاء بعد الشحن",
-      "afterShippingShareOfCancels": "حصة الإلغاء بعد الشحن",
+      "afterShippingCancelRateOfShipped": "الإلغاء بعد الشحن من إجمالي المشحون",
       "ordersInPeriod": "الطلبات في الفترة",
       "predefined": "استخدام الأسباب المعتمدة",
       "custom": "أسباب مخصصة",
@@ -3504,7 +3505,45 @@
         "printBostaWaybillSelected": "طباعة بوليصة بوسطة ({count})",
         "reprintBostaWaybillSelected": "إعادة طباعة بوليصة بوسطة ({count})\t"
       },
-      "bostaWaybill": "بوليصية بوسطة"
+      "bostaWaybill": "بوليصية بوسطة",
+      "packingList": {
+        "action": "قائمة التحضير",
+        "actionSelected": "قائمة التحضير ({count})",
+        "actionDefault": "قائمة التحضير",
+        "title": "قائمة التحضير",
+        "titleAr": "قائمة التحضير",
+        "subtitle": "PACKING LIST",
+        "previewTitle": "معاينة قائمة التحضير",
+        "previewSubtitle": "قائمة تعبئة المنتجات",
+        "mode": "تخطيط الطباعة",
+        "modeCombined": "كل الطلبات المحددة (جدول واحد)",
+        "modePerOrder": "لكل طلب",
+        "printNow": "طباعة قائمة التحضير ({count})",
+        "printDate": "تاريخ الطباعة",
+        "printNumber": "رقم الطباعة",
+        "ordersCount": "عدد الطلبات",
+        "itemsCount": "إجمالي الأصناف",
+        "totalQuantity": "إجمالي الكميات",
+        "productsCount": "عدد المنتجات",
+        "includedOrders": "الطلبات المشمولة في هذه القائمة",
+        "storageLocation": "موقع التخزين",
+        "warehouse": "المستودع",
+        "unassignedLocation": "بدون موقع",
+        "unassignedWarehouse": "بدون مستودع",
+        "select": "تحديد",
+        "image": "الصورة",
+        "productName": "اسم المنتج",
+        "sku": "SKU",
+        "quantity": "عدد الأصناف المطلوبة",
+        "inOrders": "عدد الطلبات",
+        "productCode": "رمز المنتج",
+        "warehouseNotes": "ملاحظات للمستودع",
+        "notesText": "يرجى التحقق من الكميات والمواقع قبل تجهيز الطلبات",
+        "preparerSignature": "توقيع المجهز",
+        "orderInfo": "بيانات الطلب",
+        "orderTitle": "طلب {orderNumber}",
+        "pdfFailed": "فشل إنشاء ملف قائمة التحضير"
+      }
     },
     "preparation": {
       "pdf": {
@@ -14447,12 +14486,16 @@
           "example": "إذا أُنشئ 1000 طلب وسُجّل 80 إلغاء فالمعدل 8٪."
         },
         "afterShippingCancelRate": {
-          "description": "الطلبات الملغاة بعد وجود شحنة، مقسومة على كل الطلبات التي شُحنت في نفس الفترة.",
-          "example": "إذا شُحن 400 طلب وأُلغي 20 منها بعد الشحن يظهر 5٪."
+          "description": "الطلبات الملغاة بعد خروجها من المخزن، مقسومة على كل الطلبات المنشأة في نفس الفترة.",
+          "example": "إذا أُنشئ 1000 طلب وأُلغي 20 منها بعد الشحن يظهر 2٪."
         },
-        "afterShippingShareOfCancels": {
-          "description": "نسبة أحداث الإلغاء في الفترة التي حدثت بعد أن أصبح للطلب شحنة.",
-          "example": "إذا سُجّل 80 إلغاء منها 20 بعد الشحن يظهر 25٪."
+        "beforeShippingCancelRate": {
+          "description": "الطلبات الملغاة قبل خروجها من المخزن، مقسومة على كل الطلبات المنشأة في نفس الفترة.",
+          "example": "إذا أُنشئ 1000 طلب وأُلغي 60 منها قبل الشحن يظهر 6٪."
+        },
+        "afterShippingCancelRateOfShipped": {
+          "description": "الطلبات الملغاة بعد خروجها من المخزن، مقسومة على كل الطلبات التي شُحنت فعلياً في نفس الفترة.",
+          "example": "إذا شُحن 400 طلب وأُلغي 20 منها بعد الشحن يظهر 5٪."
         },
         "ordersInPeriod": {
           "description": "كل الطلبات المنشأة في الفترة، وهي مقام معدل الإلغاء.",

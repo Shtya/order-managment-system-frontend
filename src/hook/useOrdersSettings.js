@@ -58,6 +58,8 @@ const defaultSettings =  {
       warehouseDefaultShippingCompanyId: "",
       //   allowReturnCreation: true,
     },
+    orderTagMode: "many",
+    tagAutomationsEnabled: true,
   };
 
 const buildSettingsObject = (data, prevSettings) => ({
@@ -97,6 +99,9 @@ const buildSettingsObject = (data, prevSettings) => ({
     data.automationMigrationStrategy ?? prevSettings.automationMigrationStrategy ?? "latest_patch",
   defaultWhatsAppAccountId:
     data.defaultWhatsAppAccountId ?? prevSettings.defaultWhatsAppAccountId ?? "",
+  orderTagMode: data.orderTagMode ?? prevSettings.orderTagMode ?? "many",
+  tagAutomationsEnabled:
+    data.tagAutomationsEnabled ?? prevSettings.tagAutomationsEnabled ?? true,
 
   // تحديث الكائنات المتداخلة (Nested Objects)
   workingHours: {

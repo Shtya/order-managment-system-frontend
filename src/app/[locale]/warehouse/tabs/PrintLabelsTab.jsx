@@ -10,6 +10,7 @@ import {
   CreditCard, Store, Clock, BarChart3, Loader2,
   FileQuestion,
   RefreshCw,
+  ClipboardList,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -37,6 +38,7 @@ import BarcodeCell from "@/components/atoms/BarcodeCell";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import SystemLabelPDF from "../atoms/SystemLabelPDF";
+import PackingListPreviewModal from "../atoms/PackingListPreviewModal";
 import { useLocale } from "next-intl";
 import { renderBarcode } from "@/utils/barcode";
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -526,6 +528,7 @@ function NotPrintedSubtab({ resetToken, fetchStats }) {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [detailModal, setDetailModal] = useState(null);
   const [printPreview, setPrintPreview] = useState({ open: false, orders: [] });
+  const [packingPreview, setPackingPreview] = useState({ open: false, orders: [] });
 
   const [pager, setPager] = useState({
     total_records: 0,
@@ -540,7 +543,8 @@ function NotPrintedSubtab({ resetToken, fetchStats }) {
     const params = {
       page,
       limit: per_page,
-      status: 'distributed'
+      status: 'distributed',
+      includeProductLocation: true,
     };
 
     if (debouncedSearch) params.search = debouncedSearch;
@@ -653,6 +657,7 @@ function NotPrintedSubtab({ resetToken, fetchStats }) {
         labels={{ searchPlaceholder: t("notPrinted.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("notPrinted.empty"), emptySubtitle: "" }}
         actions={[
           { key: "printSelected", label: selectedOrders.length > 0 ? t("notPrinted.printSelected", { count: selectedOrders.length }) : t("notPrinted.printSelectedDefault"), icon: <Printer size={14} />, color: "primary", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
+          { key: "packingList", label: selectedOrders.length > 0 ? t("packingList.actionSelected", { count: selectedOrders.length }) : t("packingList.actionDefault"), icon: <ClipboardList size={14} />, color: "primary", onClick: () => selectedOrders.length > 0 && setPackingPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
           { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
@@ -676,6 +681,7 @@ function NotPrintedSubtab({ resetToken, fetchStats }) {
         onPageChange={handlePageChange}
       />
       <PrintPreviewModal open={printPreview.open} onClose={() => setPrintPreview({ open: false, orders: [] })} orders={printPreview.orders} onConfirmPrint={handleConfirmPrint} />
+      <PackingListPreviewModal open={packingPreview.open} onClose={() => setPackingPreview({ open: false, orders: [] })} orders={packingPreview.orders} onConfirmPrint={handleConfirmPrint} />
       <OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} hideNotes={true} />
     </div>
   );
@@ -691,6 +697,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [detailModal, setDetailModal] = useState(null);
   const [printPreview, setPrintPreview] = useState({ open: false, orders: [] });
+  const [packingPreview, setPackingPreview] = useState({ open: false, orders: [] });
 
   const [pager, setPager] = useState({
     total_records: 0,
@@ -705,7 +712,8 @@ function PrintedSubtab({ resetToken, fetchStats }) {
     const params = {
       page,
       limit: per_page,
-      status: 'printed'
+      status: 'printed',
+      includeProductLocation: true,
     };
 
     if (debouncedSearch) params.search = debouncedSearch;
@@ -810,6 +818,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         labels={{ searchPlaceholder: t("printed.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("printed.empty"), emptySubtitle: "" }}
         actions={[
           { key: "reprintSelected", label: selectedOrders.length > 0 ? t("printed.printSelected", { count: selectedOrders.length }) : t("printed.printSelectedDefault"), icon: <Printer size={14} />, color: "primary", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
+          { key: "packingList", label: selectedOrders.length > 0 ? t("packingList.actionSelected", { count: selectedOrders.length }) : t("packingList.actionDefault"), icon: <ClipboardList size={14} />, color: "primary", onClick: () => selectedOrders.length > 0 && setPackingPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
           { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
@@ -833,6 +842,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         onPageChange={handlePageChange}
       />
       <PrintPreviewModal open={printPreview.open} onClose={() => setPrintPreview({ open: false, orders: [] })} orders={printPreview.orders} onConfirmPrint={handleReprintConfirm} />
+      <PackingListPreviewModal open={packingPreview.open} onClose={() => setPackingPreview({ open: false, orders: [] })} orders={packingPreview.orders} onConfirmPrint={handleReprintConfirm} />
       <OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} />
     </div>
   );

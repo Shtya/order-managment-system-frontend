@@ -74,6 +74,7 @@ import {
   Rocket,
   GraduationCap,
   Bot,
+  Tags,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -575,6 +576,13 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           href: "/cancel-causes",
           permission: "cancel-causes.read",
         },
+        {
+          icon: Tags,
+          labelKey: "tags",
+          href: "/tags",
+          permission: "tags.read",
+          allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
+        },
       ],
     },
 
@@ -1067,6 +1075,10 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
 
     const userRole = user.role?.name;
     const userEmail = user.email?.toLowerCase();
+    const isEmailAllowed = (entry) => {
+      if (!entry?.allowedEmails?.length) return true;
+      return entry.allowedEmails.some((email) => email.toLowerCase() === userEmail);
+    };
 
     return menuItems.filter((item) => {
 
@@ -1078,8 +1090,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
       }
 
       // ✅ EMAIL RESTRICTION: Check if item has allowedEmails
-      if (item.allowedEmails?.length) {
-        return item.allowedEmails.includes(userEmail);
+      if (!isEmailAllowed(item)) {
+        return false;
       }
 
       // 1. Check Roles
@@ -1098,7 +1110,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
       // Case B: item has children → check at least one child
       if (item.children?.length) {
         return item.children.some((child) =>
-          hasPermission(child.permission)
+          isEmailAllowed(child) && hasPermission(child.permission)
         );
       }
       return true;
@@ -1110,6 +1122,9 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
 
       return {
         ...item,
+        ...(item.children?.length
+          ? { children: item.children.filter(isEmailAllowed) }
+          : {}),
         isLocked
       };
     });

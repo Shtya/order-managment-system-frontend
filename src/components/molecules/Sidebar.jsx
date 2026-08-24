@@ -580,8 +580,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           icon: Tags,
           labelKey: "tags",
           href: "/tags",
-          permission: "tags.read",
-          allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
+          permission: "tags.read"
         },
       ],
     },

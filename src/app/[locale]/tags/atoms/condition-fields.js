@@ -8,18 +8,21 @@ export const DEFAULT_RULE = {
 
 export const CONDITION_FIELDS = [
   "order.statusId",
-  "order.storeId",
-  "order.cityId",
-  "order.paymentStatus",
-  "order.productsTotal",
-  "order.itemsQuantity",
-  "order.shippingCompanyId",
-  "order.finalTotal",
   "order.isConfirmed",
   "order.confirmationSource",
+  "order.storeId",
+  "order.shippingCompanyId",
+  "order.cityId",
+  "order.productsTotal",
+  "order.finalTotal",
+  "order.itemsQuantity",
+  "order.productsCount",
+  "order.paymentStatus",
+  "order.phone.valid",
+  "assignment.contactTries",
+  "assignment.hasActive",
   "shipment.status",
   "upsell.accepted",
-  "order.phone.valid",
 ];
 
 export const OPERATORS = [
@@ -36,13 +39,16 @@ export const OPERATORS = [
 export const NUMBER_FIELDS = new Set([
   "order.productsTotal",
   "order.itemsQuantity",
+  "order.productsCount",
   "order.finalTotal",
+  "assignment.contactTries",
 ]);
 
 export const BOOLEAN_FIELDS = new Set([
   "order.isConfirmed",
   "order.phone.valid",
   "upsell.accepted",
+  "assignment.hasActive",
 ]);
 
 export const LIST_FIELDS = new Set([

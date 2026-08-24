@@ -60,6 +60,7 @@ const defaultSettings =  {
     },
     orderTagMode: "many",
     tagAutomationsEnabled: true,
+    tagAutomationsRemoveUnmatched: true,
   };
 
 const buildSettingsObject = (data, prevSettings) => ({
@@ -102,6 +103,10 @@ const buildSettingsObject = (data, prevSettings) => ({
   orderTagMode: data.orderTagMode ?? prevSettings.orderTagMode ?? "many",
   tagAutomationsEnabled:
     data.tagAutomationsEnabled ?? prevSettings.tagAutomationsEnabled ?? true,
+  tagAutomationsRemoveUnmatched:
+    data.tagAutomationsRemoveUnmatched ??
+    prevSettings.tagAutomationsRemoveUnmatched ??
+    true,
 
   // تحديث الكائنات المتداخلة (Nested Objects)
   workingHours: {

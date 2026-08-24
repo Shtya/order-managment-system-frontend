@@ -138,33 +138,55 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
             <p className="text-xs text-red-500">{errors.name.message}</p>
           )}
         </div>
+        <div className=" grid grid-cols-1 md:grid-cols-2 gap-2">
 
-        <div className="space-y-1.5">
-          <Label className="text-sm font-medium">{t("dialog.color")}</Label>
-          <Controller
-            name="color"
-            control={control}
-            render={({ field }) => (
-              <div className="flex items-center gap-2 h-10 px-2 rounded-md border border-border bg-background/60">
-                <input
-                  type="color"
-                  value={HEX.test(field.value) ? field.value : "#6C5CE7"}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0"
-                />
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">{t("dialog.priority")}</Label>
+            <Controller
+              name="priority"
+              control={control}
+              render={({ field }) => (
                 <Input
+                  type="number"
+                  min={0}
                   {...field}
-                  placeholder="#6C5CE7"
-                  error={Boolean(errors.color)}
-                  className="flex-1 border-0! shadow-none! bg-transparent!"
+                  error={Boolean(errors.priority)}
                 />
-              </div>
+              )}
+            />
+            <p className="text-xs text-muted-foreground">{t("dialog.priorityHint")}</p>
+            {errors.priority?.message && (
+              <p className="text-xs text-red-500">{errors.priority.message}</p>
             )}
-          />
-          {errors.color?.message && (
-            <p className="text-xs text-red-500">{errors.color.message}</p>
-          )}
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">{t("dialog.color")}</Label>
+            <Controller
+              name="color"
+              control={control}
+              render={({ field }) => (
+                <div className="flex items-center gap-2 h-10 px-2 rounded-md border border-border bg-background/60">
+                  <input
+                    type="color"
+                    value={HEX.test(field.value) ? field.value : "#6C5CE7"}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0"
+                  />
+                  <Input
+                    {...field}
+                    placeholder="#6C5CE7"
+                    error={Boolean(errors.color)}
+                    className="flex-1 border-0! shadow-none! bg-transparent!"
+                  />
+                </div>
+              )}
+            />
+            {errors.color?.message && (
+              <p className="text-xs text-red-500">{errors.color.message}</p>
+            )}
+          </div>
         </div>
+
 
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">{t("dialog.description")}</Label>
@@ -185,25 +207,7 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-sm font-medium">{t("dialog.priority")}</Label>
-          <Controller
-            name="priority"
-            control={control}
-            render={({ field }) => (
-              <Input
-                type="number"
-                min={0}
-                {...field}
-                error={Boolean(errors.priority)}
-              />
-            )}
-          />
-          <p className="text-xs text-muted-foreground">{t("dialog.priorityHint")}</p>
-          {errors.priority?.message && (
-            <p className="text-xs text-red-500">{errors.priority.message}</p>
-          )}
-        </div>
+
 
         <div className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3">
           <Label className="text-sm font-medium">{t("dialog.isActive")}</Label>

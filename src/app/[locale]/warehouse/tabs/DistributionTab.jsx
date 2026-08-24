@@ -74,6 +74,11 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import AssignCarrierDialog from "../atoms/AssignCarrierDialog";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
+import {
+  OrderTagChips,
+  OrderTagsDialog,
+  unwrapOrderTags,
+} from "@/app/[locale]/orders/atoms/OrderTagsEditor";
 
 // ─────────────────────────────────────────────
 // MAIN TAB
@@ -276,9 +281,11 @@ export default function DistributionTab({ subtab, setSubtab }) {
 export function OrderDetailModal({ open, onClose, order: initialOrder, hideNotes }) {
   const [fullOrder, setFullOrder] = useState(null);
   const [loadingFull, setLoadingFull] = useState(false);
+  const [tagsOpen, setTagsOpen] = useState(false);
 
   const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.distribution");
+  const tOrders = useTranslations("orders");
   const tR = useTranslations("orders.replacement");
   const tCR = useTranslations("CreateReplacement");
   const { formatCurrency } = usePlatformSettings();
@@ -299,7 +306,10 @@ export function OrderDetailModal({ open, onClose, order: initialOrder, hideNotes
         });
       return () => { cancelled = true; };
     }
-    if (!open) setFullOrder(null);
+    if (!open) {
+      setFullOrder(null);
+      setTagsOpen(false);
+    }
   }, [open, initialOrder?.id]);
 
   const order = fullOrder || initialOrder;
@@ -412,386 +422,130 @@ export function OrderDetailModal({ open, onClose, order: initialOrder, hideNotes
   ];
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent
-        className="!max-w-2xl sm:w-full bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 border-0 shadow-2xl"
-      >
-        {/* Header with gradient */}
-        <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden bg-primary ">
-          {/* Decorative circles */}
-          <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10" />
-          <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10" />
+    <>
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent
+          className="!max-w-2xl sm:w-full bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 border-0 shadow-2xl"
+        >
+          {/* Header with gradient */}
+          <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden bg-primary ">
+            {/* Decorative circles */}
+            <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10" />
+            <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10" />
 
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Package className="text-white" size={22} />
+            <div className="relative flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <Package className="text-white" size={22} />
+                </div>
+                <div>
+                  <p className="text-white/70 text-xs font-medium mb-0.5">
+                    {t("modal.orderDetailsTitle", { code: "" })}
+                  </p>
+                  <h2 className="text-white text-xl font-bold font-mono">
+                    {order.orderNumber}
+                  </h2>
+                </div>
               </div>
-              <div>
-                <p className="text-white/70 text-xs font-medium mb-0.5">
-                  {t("modal.orderDetailsTitle", { code: "" })}
-                </p>
-                <h2 className="text-white text-xl font-bold font-mono">
-                  {order.orderNumber}
-                </h2>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
-            >
-              <X size={16} className="text-white" />
-            </button>
-          </div>
-
-          {/* Status badge */}
-          <div className="relative mt-4 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              {order.shippingCompany?.name
-                ? order.shippingCompany?.name
-                : t("stats.withoutCarrier")}
-            </span>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full",
-                order.paymentMethod === "cod"
-                  ? "bg-yellow-400/30 text-white border border-yellow-300/40"
-                  : "bg-green-400/30 text-white border border-green-300/40",
-              )}
-            >
-              <CreditCard size={11} />
-              {order.paymentStatus === "paid"
-                ? t("payment.paid")
-                : order.paymentMethod === "cod"
-                  ? t("payment.cod")
-                  : order.paymentMethod}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-6 space-y-5 w-full min-w-0">
-          {/* Info grid */}
-          <div className="grid grid-cols-2 gap-2.5">
-            {infoRows.map(({ label, value, icon: Icon, accent }) => (
-              <div
-                key={label}
-                className="group flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl p-3 transition-colors"
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
               >
-                <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ backgroundColor: accent + "18" }}
-                >
-                  <Icon size={13} style={{ color: accent }} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-0.5 font-medium">
-                    {label}
-                  </p>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">
-                    {value}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+                <X size={16} className="text-white" />
+              </button>
+            </div>
 
-          {/* Products section */}
-          <div className="rounded-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
-            <div
-              className="px-4 py-2.5 flex items-center gap-2"
-              style={{
-                background:
-                  "linear-gradient(90deg, #6763af15 0%, transparent 100%)",
-              }}
-            >
-              <ShoppingBag size={14} style={{ color: "#6763af" }} />
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                {t("section.products")}
+            {/* Status badge */}
+            <div className="relative mt-4 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                {order.shippingCompany?.name
+                  ? order.shippingCompany?.name
+                  : t("stats.withoutCarrier")}
               </span>
-              <span className="ml-auto text-xs font-semibold text-slate-400">
-                {order.items?.length || 0} {tCommon("items")}
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full",
+                  order.paymentMethod === "cod"
+                    ? "bg-yellow-400/30 text-white border border-yellow-300/40"
+                    : "bg-green-400/30 text-white border border-green-300/40",
+                )}
+              >
+                <CreditCard size={11} />
+                {order.paymentStatus === "paid"
+                  ? t("payment.paid")
+                  : order.paymentMethod === "cod"
+                    ? t("payment.cod")
+                    : order.paymentMethod}
               </span>
             </div>
-            <div className="divide-y divide-slate-100 dark:divide-slate-700/60">
-              {order.items?.map((p, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className={`flex items-center gap-3 px-4 py-3 ${p?.bundle?.name ? "border-l-4 border-l-indigo-500/70 bg-indigo-50/30 dark:bg-indigo-950/20" : ""}`}
+          </div>
+
+          <div className="p-6 space-y-5 w-full min-w-0">
+            {/* Info grid */}
+            <div className="grid grid-cols-2 gap-2.5">
+              {order.orderTags?.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setTagsOpen(true)}
+                  className="group flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl p-3 transition-colors text-start min-w-0"
+                  title={tOrders("actions.tags")}
+                >
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-blue-500/10">
+                    <Tag size={13} className="text-blue-500" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-1 font-medium">
+                      {tOrders("table.tags")}
+                    </p>
+
+                    <OrderTagChips
+                      tags={unwrapOrderTags(order)}
+                      max={8}
+                      className="max-w-full"
+                    />
+                  </div>
+                </button>
+              )}
+
+              {infoRows.map(({ label, value, icon: Icon, accent }) => (
+                <div
+                  key={label}
+                  className="group flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl p-3 transition-colors"
                 >
                   <div
-                    className="w-7 h-7 rounded-lg flex items-center bg-primary/18 justify-center text-xs font-bold flex-shrink-0"
-                    style={{ color: "var(--primary)" }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ backgroundColor: accent + "18" }}
                   >
-                    {i + 1}
+                    <Icon size={13} style={{ color: accent }} />
                   </div>
-                  <span
-                    className="font-mono text-[11px] px-2 py-0.5 rounded-md font-bold"
-                    style={{ backgroundColor: "#6763af12", color: "#6763af" }}
-                  >
-                    {p.variant?.sku}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-sm text-slate-700 dark:text-slate-200 font-medium">
-                        {p.variant?.product?.name}
-                      </span>
-                      {p?.bundle?.name && (
-                        <BundleBadge bundleName={p?.bundle?.name} />
-                      )}
-                    </div>
+
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-0.5 font-medium">
+                      {label}
+                    </p>
+                    <p className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">
+                      {value}
+                    </p>
                   </div>
-                  <span className="text-xs text-slate-400 font-mono">
-                    ×{p.quantity}
-                  </span>
-                  <span
-                    className="font-bold text-sm"
-                    style={{ color: "var(--primary)" }}
-                  >
-                    {formatCurrency((Number(p.unitPrice) || 0) * (Number(p.quantity) || 0))}
-                  </span>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
-
-          {/* Replacement Info Section */}
-          {replacement && (
-            <div className="max-w-full rounded-xl w-full overflow-hidden" style={{ borderColor: "var(--primary, #6763af)" + "40" }}> <div
-              className="px-4 py-2.5 flex items-center gap-2"
-              style={{
-                background: "linear-gradient(90deg, #6763af15 0%, transparent 100%)",
-              }} >
-              <ArrowLeftRight size={14} style={{ color: "#6763af" }} />
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                {tR("cardTitle")}
-              </span>
-              {replacement.reason && (
-                <span
-                  className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-lg"
-                  style={{ backgroundColor: "#6763af12", color: "#6763af" }}
-                >
-                  {replacement.reason}
-                </span>
-              )}
-            </div>
-
-              {/* Original order info */}
-              {originalOrder && (
-                <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-700/60">
-                  <p className="text-[9px] font-black uppercase tracking-[2px] text-slate-400 mb-2">
-                    {tR("originalOrder")}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-1.5">
-                      <Hash size={11} className="text-slate-400" />
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200 font-mono">
-                        {originalOrder.orderNumber}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <User size={11} className="text-slate-400" />
-                      <span className="text-xs text-slate-600 dark:text-slate-300">
-                        {originalOrder.customerName}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <TrendingUp size={11} className="text-slate-400" />
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                        {formatCurrency(originalOrder.finalTotal)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Replaced items table */}
-              {bridgeItems.length > 0 && (
-                <div className="w-full ">
-                  <div className=" overflow-hidden w-full px-4 py-3 border-t border-slate-100 dark:border-slate-700/60">
-                    <p className="text-[9px] font-black uppercase tracking-[2px] text-slate-400 mb-2">
-                      {tR("replacedItems")} ({bridgeItems.length})
-                    </p>
-
-                    {/* FIX 3: Simplified the scroll wrapper to just `w-full overflow-x-auto` */}
-                    <div className="w-full overflow-x-auto max-w-full rounded-lg border border-slate-100 dark:border-slate-800">
-                  <table className="w-full min-w-max border-collapse">
-                      <thead>
-                          <tr className="bg-slate-50 dark:bg-slate-800/80">
-                            {[
-                              tR("table.originalProduct"),
-                              tR("table.newProduct"),
-                              tR("table.returnQuantity"),
-                              tR("table.newQty"),
-                              tR("table.oldPrice"),
-                              tR("table.newPrice"),
-                              tR("table.diff"),
-                            ].map((h) => (
-                              <th
-                                key={h}
-                                className="text-right px-3 py-2 text-[9px] font-black uppercase tracking-wider text-slate-400 whitespace-nowrap"
-                              >
-                                {h}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
-                          {bridgeItems.map((item, idx) => {
-                            const origItem = item.originalOrderItem;
-                            const origProduct = origItem?.variant?.product;
-                            const newProduct = item.newVariant?.product;
-                            const newVariant = item.newVariant;
-                            const oldPrice = origItem?.unitPrice ?? 0;
-                            const matchedNewOrderItem = order?.items?.find(
-                              (roi) => roi.variantId === item.newVariantId,
-                            );
-                            const newPrice = matchedNewOrderItem?.unitPrice ?? 0;
-                            const lineDiff = newPrice - oldPrice;
-
-                            return (
-                              <tr
-                                key={item.id ?? idx}
-                                className={cn(
-                                  "transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50",
-                                  idx % 2 !== 0 && "bg-slate-50/50 dark:bg-slate-800/20",
-                                )}
-                              >
-                                <td className="px-3 py-2.5">
-                                  <div className="flex items-center gap-2">
-                                    {origProduct?.mainImage ? (
-                                      <img
-                                        src={avatarSrc(origProduct.mainImage)}
-                                        className="w-6 h-6 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 bg-slate-100 dark:bg-slate-800">
-                                        <Package size={10} className="text-slate-400" />
-                                      </div>
-                                    )}
-                                    <div className="min-w-0">
-                                      <p className="text-[10px] font-bold text-slate-700 dark:text-slate-200 line-clamp-1 line-through text-nowrap">
-                                        {origProduct?.name || "—"}
-                                      </p>
-                                      {origItem?.variant?.sku && (
-                                        <p className="text-[9px] text-slate-400 font-mono  text-nowrap">
-                                          {origItem.variant.sku}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2.5">
-                                  <div className="flex items-center gap-2">
-                                    {newProduct?.mainImage ? (
-                                      <img
-                                        src={avatarSrc(newProduct.mainImage)}
-                                        className="w-6 h-6 rounded-lg object-cover shrink-0"
-                                        style={{ border: "1px solid #6763af40" }}
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "#6763af12" }}>
-                                        <Package size={10} style={{ color: "#6763af" }} />
-                                      </div>
-                                    )}
-                                    <div className="min-w-0">
-                                      <p className="text-[10px] font-bold text-slate-700 dark:text-slate-200 line-clamp-1 text-nowrap">
-                                        {newProduct?.name || newVariant?.name || "—"}
-                                      </p>
-                                      {newVariant?.sku && (
-                                        <p className="text-[9px] text-slate-400 font-mono text-nowrap">
-                                          {newVariant.sku}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2.5 text-right">
-                                  <span
-                                    className="inline-flex items-center justify-center w-5 h-5 rounded-md text-[9px] font-black line-through text-nowrap"
-                                    style={{ backgroundColor: "#6763af12", color: "#6763af" }}
-                                  >
-                                    ×{item.returnQuantity}
-                                  </span>
-                                </td>
-                                <td className="px-3 py-2.5 text-right">
-                                  <span
-                                    className="inline-flex items-center justify-center w-5 h-5 rounded-md text-[9px] font-black text-nowrap"
-                                    style={{ backgroundColor: "#6763af12", color: "#6763af" }}
-                                  >
-                                    ×{item.quantityToReplace}
-                                  </span>
-                                </td>
-                                <td className="px-3 py-2.5 text-right">
-                                  <span className="text-[10px] text-slate-400 font-mono">
-                                    {formatCurrency(oldPrice)}
-                                  </span>
-                                </td>
-                                <td className="px-3 py-2.5 text-right">
-                                  <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 font-mono text-nowrap">
-                                    {formatCurrency(newPrice)}
-                                  </span>
-                                </td>
-                                <td className="px-3 py-2.5 text-right">
-                                  <span
-                                    className="text-[10px] font-black font-mono text-nowrap"
-                                    style={{
-                                      color:
-                                        lineDiff < 0
-                                          ? "#ef4444"
-                                          : lineDiff > 0
-                                            ? "#10b981"
-                                            : "var(--muted-foreground)",
-                                    }}
-                                  >
-                                    {lineDiff > 0 ? "+" : ""}
-                                    {formatCurrency(lineDiff)}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Notes */}
-          {!!order.notes && !hideNotes && (
-            <div
-              className="rounded-xl p-4 border bg-primary/10 border-primary/30"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle size={14} style={{ color: "var(--third)" }} />
-                <p className="text-xs font-bold" style={{ color: "var(--primary)" }}>
-                  {t("section.notes")}
-                </p>
-              </div>
-              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                {order.notes}
-              </p>
-            </div>
-          )}
-
-          <div className="flex justify-end pt-1">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="rounded-xl border-slate-200 hover:border-slate-300 text-slate-600"
-            >
-              {t("common.close")}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      <OrderTagsDialog
+        open={tagsOpen}
+        order={order}
+        onClose={() => setTagsOpen(false)}
+        onUpdated={(rows) => {
+          setFullOrder((prev) =>
+            prev ? { ...prev, orderTags: rows } : { ...order, orderTags: rows },
+          );
+        }}
+      />
+    </>
   );
 }
 

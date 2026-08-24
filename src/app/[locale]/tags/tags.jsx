@@ -2,9 +2,13 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  CheckCircle2,
+  Eye,
   FileDown,
   Loader2,
+  MousePointerClick,
   Pencil,
+  Play,
   PlusCircle,
   Settings,
   Tags,
@@ -35,7 +39,7 @@ import { AutomationFormDialog } from "./atoms/AutomationFormDialog";
 import { TagSettingsDialog } from "./atoms/TagSettingsDialog";
 import { unwrapList } from "./atoms/condition-fields";
 
-const DEFAULT_TAG_FILTERS = { isActive: "all" };
+const DEFAULT_TAG_FILTERS = { isActive: "all", allowManualAssignment: "all" };
 const DEFAULT_AUTOMATION_FILTERS = { isEnabled: "all", tagId: "all" };
 
 export default function TagsPage() {
@@ -63,6 +67,7 @@ export default function TagsPage() {
 
   const [selected, setSelected] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [formReadOnly, setFormReadOnly] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -71,10 +76,6 @@ export default function TagsPage() {
     setDocumentTitle(t("title"));
   }, [t]);
 
-  useEffect(() => {
-    const tab = new URLSearchParams(window.location.search).get("tab");
-    if (tab === "tags" || tab === "automations") setViewMode(tab);
-  }, []);
 
   const viewModes = useMemo(
     () => [
@@ -101,13 +102,13 @@ export default function TagsPage() {
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
     try {
-      const [tagsRes, autosRes] = await Promise.all([
-        api.get("/tags", { params: { page: 1, limit: 1 } }),
-        api.get("/tag-automations", { params: { page: 1, limit: 1 } }),
-      ]);
+      const res = await api.get("/tags/stats");
       setStats({
-        tags: tagsRes.data?.total_records ?? 0,
-        automations: autosRes.data?.total_records ?? 0,
+        tags: res.data?.tags ?? 0,
+        activeTags: res.data?.activeTags ?? 0,
+        manualTags: res.data?.manualTags ?? 0,
+        automations: res.data?.automations ?? 0,
+        activeAutomations: res.data?.activeAutomations ?? 0,
       });
     } catch (_) {
       setStats(null);
@@ -122,6 +123,9 @@ export default function TagsPage() {
       if (searchValue?.trim()) params.search = searchValue.trim();
       if (mode === "tags") {
         if (filterState.isActive !== "all") params.isActive = filterState.isActive;
+        if (filterState.allowManualAssignment !== "all") {
+          params.allowManualAssignment = filterState.allowManualAssignment;
+        }
       } else {
         if (filterState.isEnabled !== "all") params.isEnabled = filterState.isEnabled;
         if (filterState.tagId && filterState.tagId !== "all") params.tagId = filterState.tagId;
@@ -196,7 +200,12 @@ export default function TagsPage() {
   }, [appliedFilters, appliedSearch, buildParams, handleExport, viewMode]);
 
   const hasActiveFilters = useMemo(() => {
-    if (viewMode === "tags") return appliedFilters.isActive !== "all";
+    if (viewMode === "tags") {
+      return (
+        appliedFilters.isActive !== "all" ||
+        appliedFilters.allowManualAssignment !== "all"
+      );
+    }
     return appliedFilters.isEnabled !== "all" || appliedFilters.tagId !== "all";
   }, [appliedFilters, viewMode]);
 
@@ -299,6 +308,7 @@ export default function TagsPage() {
                   tooltip: t("actions.edit"),
                   onClick: () => {
                     setSelected(row);
+                    setFormReadOnly(false);
                     setFormOpen(true);
                   },
                   variant: "primary",
@@ -344,7 +354,8 @@ export default function TagsPage() {
       {
         key: "logic",
         header: t("columns.logic"),
-        cell: (row) => row.conditions?.logic || "AND",
+        cell: (row) =>
+          row.conditions?.logic === "OR" ? t("dialog.logicOr") : t("dialog.logicAnd"),
       },
       {
         key: "rules",
@@ -361,10 +372,22 @@ export default function TagsPage() {
             row={row}
             actions={[
               {
+                icon: <Eye size={16} />,
+                tooltip: t("actions.view"),
+                onClick: () => {
+                  setSelected(row);
+                  setFormReadOnly(true);
+                  setFormOpen(true);
+                },
+                variant: "primary",
+                permission: "tag-automations.read",
+              },
+              {
                 icon: <Pencil size={16} />,
                 tooltip: t("actions.edit"),
                 onClick: () => {
                   setSelected(row);
+                  setFormReadOnly(false);
                   setFormOpen(true);
                 },
                 variant: "primary",
@@ -391,10 +414,28 @@ export default function TagsPage() {
     () => [
       { name: t("stats.tags"), value: stats?.tags ?? 0, icon: Tags, sortOrder: 0 },
       {
+        name: t("stats.activeTags"),
+        value: stats?.activeTags ?? 0,
+        icon: CheckCircle2,
+        sortOrder: 1,
+      },
+      {
+        name: t("stats.manualTags"),
+        value: stats?.manualTags ?? 0,
+        icon: MousePointerClick,
+        sortOrder: 2,
+      },
+      {
         name: t("stats.automations"),
         value: stats?.automations ?? 0,
         icon: Workflow,
-        sortOrder: 1,
+        sortOrder: 3,
+      },
+      {
+        name: t("stats.activeAutomations"),
+        value: stats?.activeAutomations ?? 0,
+        icon: Play,
+        sortOrder: 4,
       },
     ],
     [stats, t],
@@ -429,6 +470,7 @@ export default function TagsPage() {
               variant="solid"
               onClick={() => {
                 setSelected(null);
+                setFormReadOnly(false);
                 setFormOpen(true);
               }}
               icon={<PlusCircle size={18} />}
@@ -459,21 +501,40 @@ export default function TagsPage() {
         filters={
           <>
             {viewMode === "tags" ? (
-              <FilterField label={t("filters.status")}>
-                <Select
-                  value={filters.isActive}
-                  onValueChange={(v) => setFilters((f) => ({ ...f, isActive: v }))}
-                >
-                  <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
-                    <SelectValue placeholder={t("filters.status")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{tc("all")}</SelectItem>
-                    <SelectItem value="true">{t("filters.active")}</SelectItem>
-                    <SelectItem value="false">{t("filters.inactive")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FilterField>
+              <>
+                <FilterField label={t("filters.status")}>
+                  <Select
+                    value={filters.isActive}
+                    onValueChange={(v) => setFilters((f) => ({ ...f, isActive: v }))}
+                  >
+                    <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                      <SelectValue placeholder={t("filters.status")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{tc("all")}</SelectItem>
+                      <SelectItem value="true">{t("filters.active")}</SelectItem>
+                      <SelectItem value="false">{t("filters.inactive")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FilterField>
+                <FilterField label={t("filters.manual")}>
+                  <Select
+                    value={filters.allowManualAssignment}
+                    onValueChange={(v) =>
+                      setFilters((f) => ({ ...f, allowManualAssignment: v }))
+                    }
+                  >
+                    <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                      <SelectValue placeholder={t("filters.manual")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{tc("all")}</SelectItem>
+                      <SelectItem value="true">{t("filters.allowed")}</SelectItem>
+                      <SelectItem value="false">{t("filters.notAllowed")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FilterField>
+              </>
             ) : (
               <>
                 <FilterField label={t("filters.enabled")}>
@@ -554,7 +615,11 @@ export default function TagsPage() {
         <AutomationFormDialog
           automation={selected}
           open={formOpen}
-          onClose={() => setFormOpen(false)}
+          readOnly={formReadOnly}
+          onClose={() => {
+            setFormOpen(false);
+            setFormReadOnly(false);
+          }}
           onSaved={afterMutate}
           tags={tagOptions}
         />

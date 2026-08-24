@@ -23,6 +23,7 @@ import {
   Mail,
   Copy,
   Users,
+  Tags,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
@@ -714,6 +715,7 @@ function FieldSubLabel({ children }) {
 }
 
 export function GeneralTab({ settings, patch, t, tTutorial }) {
+  const tTags = useTranslations("tags");
 
   return (
     <div className="space-y-5">
@@ -920,6 +922,84 @@ export function GeneralTab({ settings, patch, t, tTutorial }) {
             </motion.div>
           )}
         </AnimatePresence>
+      </SectionCard>
+
+      {/* ── Order tags ── */}
+      <SectionCard
+        icon={Tags}
+        iconColor="#6C5CE7"
+        title={tTags("settings.title")}
+        subtitle={tTags("settings.modeTitle")}
+      >
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">{tTags("settings.modeTitle")}</Label>
+            <Select
+              value={settings.orderTagMode || "many"}
+              onValueChange={(value) => patch({ orderTagMode: value })}
+            >
+              <SelectTrigger className="h-10 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="many" description={tTags("settings.manyDescription")}>
+                  {tTags("settings.many")}
+                </SelectItem>
+                <SelectItem value="one" description={tTags("settings.oneDescription")}>
+                  {tTags("settings.one")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">{tTags("settings.automationsTitle")}</Label>
+            <Select
+              value={settings.tagAutomationsEnabled === false ? "false" : "true"}
+              onValueChange={(value) => patch({ tagAutomationsEnabled: value === "true" })}
+            >
+              <SelectTrigger className="h-10 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="true" description={tTags("settings.automationsOnDescription")}>
+                  {tTags("settings.automationsOn")}
+                </SelectItem>
+                <SelectItem value="false" description={tTags("settings.automationsOffDescription")}>
+                  {tTags("settings.automationsOff")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">{tTags("settings.removeUnmatchedTitle")}</Label>
+            <Select
+              value={settings.tagAutomationsRemoveUnmatched === false ? "false" : "true"}
+              onValueChange={(value) =>
+                patch({ tagAutomationsRemoveUnmatched: value === "true" })
+              }
+            >
+              <SelectTrigger className="h-10 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  value="true"
+                  description={tTags("settings.removeUnmatchedOnDescription")}
+                >
+                  {tTags("settings.removeUnmatchedOn")}
+                </SelectItem>
+                <SelectItem
+                  value="false"
+                  description={tTags("settings.removeUnmatchedOffDescription")}
+                >
+                  {tTags("settings.removeUnmatchedOff")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </SectionCard>
 
       {/* ── Retry Limits ── */}

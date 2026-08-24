@@ -94,6 +94,7 @@ import DistributionModal from "../atoms/DistrubtionModal";
 import BulkUploadModal from "../atoms/BulkUploadModal";
 import CancelAssignmentsModal from "../atoms/CancelAssignmentsModal";
 import IssueFormDialog from "../../issues/atoms/IssueFormDialog";
+import { OrderTagChips, OrderTagsDialog, unwrapOrderTags } from "../atoms/OrderTagsEditor";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import SettingsModal from "../atoms/SettingsModal";
@@ -930,8 +931,11 @@ export default function OrdersTab({
     shippingStatus: "all",
     store: "all",
     shippingCompany: "all",
+    tagId: "all",
   });
   const [cancelCauses, setCancelCauses] = useState([]);
+  const [tagOptions, setTagOptions] = useState([]);
+  const [tagsOrder, setTagsOrder] = useState(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -952,6 +956,20 @@ export default function OrdersTab({
       .get("/cancel-causes/selectable")
       .then((res) => setCancelCauses(res.data?.records || []))
       .catch(() => setCancelCauses([]));
+    api
+      .get("/tags", { params: { limit: 100, isActive: true } })
+      .then((res) => setTagOptions(res.data?.records || []))
+      .catch(() => {
+        api
+          .get("/tags/assignable")
+          .then((res) => {
+            const list = Array.isArray(res.data)
+              ? res.data
+              : res.data?.records || [];
+            setTagOptions(list);
+          })
+          .catch(() => setTagOptions([]));
+      });
   }, []);
 
   // ── Debounce search ──
@@ -1006,6 +1024,7 @@ export default function OrdersTab({
       params.storeId = filters.store;
     if (filters.employee && filters.employee !== "all")
       params.userId = filters.employee;
+    if (filters.tagId && filters.tagId !== "all") params.tagId = filters.tagId;
 
     if (adminId && adminId !== "all") {
       params.adminId = adminId;
@@ -1139,6 +1158,7 @@ export default function OrdersTab({
         params.storeId = filters.store;
       if (filters.employee && filters.employee !== "all")
         params.userId = filters.employee;
+      if (filters.tagId && filters.tagId !== "all") params.tagId = filters.tagId;
 
       const response = await api.get("/orders/export", {
         params,
@@ -1509,8 +1529,19 @@ export default function OrdersTab({
           </span>
         ),
       },
-
-
+      {
+        key: "tags",
+        header: t("table.tags"),
+        cell: (row) => (
+          <button
+            type="button"
+            className="text-start"
+            onClick={() => setTagsOrder(row)}
+          >
+            <OrderTagChips tags={unwrapOrderTags(row)} />
+          </button>
+        ),
+      },
       readOnlyStatus ? {
         key: "status",
         header: t("table.status"),
@@ -2002,6 +2033,13 @@ export default function OrdersTab({
             row={row}
             actions={isAssign ? [
               {
+                icon: <Tag />,
+                tooltip: t("actions.tags"),
+                onClick: (r) => setTagsOrder(r),
+                variant: "primary",
+                permission: "orders.read",
+              },
+              {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
                 onClick: (r) => {
@@ -2114,6 +2152,13 @@ export default function OrdersTab({
                 example: tTutorial("actions.statusHistory.example"),
               },
               // -----------------------------
+              {
+                icon: <Tag />,
+                tooltip: t("actions.tags"),
+                onClick: (r) => setTagsOrder(r),
+                variant: "primary",
+                permission: "orders.read",
+              },
               {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
@@ -2500,6 +2545,25 @@ export default function OrdersTab({
               </Select>
             </FilterField>
 
+            <FilterField label={t("filters.tags")}>
+              <Select
+                value={filters.tagId}
+                onValueChange={(v) => setFilters((f) => ({ ...f, tagId: v }))}
+              >
+                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
+                  <SelectValue placeholder={t("filters.tagsPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("filters.all")}</SelectItem>
+                  {tagOptions.map((tag) => (
+                    <SelectItem key={tag.id} value={tag.id}>
+                      {tag.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FilterField>
+
             <StoreFilter
               value={filters.store}
               onChange={(v) => setFilters((f) => ({ ...f, store: v }))}
@@ -2793,6 +2857,24 @@ export default function OrdersTab({
         options={{ ...issueOptions, locale }}
         initialStatusId={openIssueStatusId}
         order={issueDialog.order}
+      />
+
+      <OrderTagsDialog
+        open={!!tagsOrder}
+        order={tagsOrder}
+        onClose={() => setTagsOrder(null)}
+        onUpdated={(rows) => {
+          if (!tagsOrder?.id) return;
+          setPager((p) => ({
+            ...p,
+            records: p.records.map((r) =>
+              r.id === tagsOrder.id ? { ...r, orderTags: rows } : r,
+            ),
+          }));
+          setTagsOrder((prev) =>
+            prev ? { ...prev, orderTags: rows } : prev,
+          );
+        }}
       />
     </div>
   );

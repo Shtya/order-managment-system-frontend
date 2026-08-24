@@ -70,6 +70,11 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
 import { setDocumentTitle } from "@/utils/documentTitle";
+import {
+  OrderTagChips,
+  OrderTagsDialog,
+  unwrapOrderTags,
+} from "../../atoms/OrderTagsEditor";
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const P = "var(--primary)";
@@ -262,13 +267,15 @@ export default function OrderDetailsPageWrapper() {
       </div>
     );
 
-  return <OrderDetailsPage order={order} loading={loading} />;
+  return (
+    <OrderDetailsPage order={order} loading={loading} setOrder={setOrder} />
+  );
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
 // MAIN PAGE
 // ──────────────────────────────────────────────────────────────────────────────
-export function OrderDetailsPage({ order, loading }) {
+export function OrderDetailsPage({ order, loading, setOrder }) {
   const { isSuperAdmin } = useAuth();
   const t = useTranslations("orders");
   const router = useRouter();
@@ -276,6 +283,7 @@ export function OrderDetailsPage({ order, loading }) {
 
   const [fetchedLocation, setFetchedLocation] = useState(null);
   const [fetchingLocation, setFetchingLocation] = useState(false);
+  const [tagsOpen, setTagsOpen] = useState(false);
 
   useEffect(() => {
     if (!order?.latitude || !order?.longitude) return;
@@ -298,20 +306,20 @@ export function OrderDetailsPage({ order, loading }) {
   const isAutoFetched = !order?.locationName && fetchedLocation?.name;
 
   const formatDate = (date, onlyDate = false) => {
-  if (!date) return "—";
+    if (!date) return "—";
 
-  return new Date(date).toLocaleString("ar-EG", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    ...(onlyDate
-      ? {}
-      : {
+    return new Date(date).toLocaleString("ar-EG", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      ...(onlyDate
+        ? {}
+        : {
           hour: "2-digit",
           minute: "2-digit",
         }),
-  });
-};
+    });
+  };
   const { formatCurrency } = usePlatformSettings();
 
   if (loading) return <OrderDetailsPageSkeleton />;
@@ -352,7 +360,7 @@ export function OrderDetailsPage({ order, loading }) {
           !isSuperAdmin && <Button_
             onClick={() => router.push(`/orders/edit/${order.id}`)}
             size="sm"
-            disabled={order.status.code === "delivered" || !!order.monthlyClosingId }
+            disabled={order.status.code === "delivered" || !!order.monthlyClosingId}
             icon={<Edit size={18} />}
             label={t("actions.edit")}
           />
@@ -378,18 +386,50 @@ export function OrderDetailsPage({ order, loading }) {
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80">
                   {t("fields.orderNumber")}
                 </p>
+
                 <p
                   className="text-3xl font-black tracking-tight leading-none"
-                  style={{ fontFamily: "var(--mono, monospace)", color: P }}
+                  style={{
+                    fontFamily: "var(--mono, monospace)",
+                    color: P,
+                  }}
                 >
                   {order.orderNumber}
                 </p>
               </div>
-              <div className="flex items-center gap-2.5 shrink-0">
+
+              <div className="flex flex-col items-end gap-3 shrink-0">
+                {/* Status */}
                 <StatusBadge status={order.status} t={t} />
+
+                {/* Tags */}
+                {order.orderTags?.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setTagsOpen(true)}
+                    className="group flex flex-col items-end gap-1.5 rounded-lg px-1.5 py-1 hover:bg-muted/60 transition-colors"
+                    title={t("actions.tags")}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Tag
+                        size={11}
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
+                      />
+
+                      <span className="text-[10px] font-medium text-muted-foreground">
+                        {t("table.tags")}
+                      </span>
+                    </div>
+
+                    <OrderTagChips
+                      tags={unwrapOrderTags(order)}
+                      max={4}
+                      className="max-w-[280px] justify-end"
+                    />
+                  </button>
+                )}
               </div>
             </div>
-
             {/* ── Meta grid: row 1 (shipping/finance) ───────────────── */}
             <div className="border-t border-border/25">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
@@ -1205,6 +1245,17 @@ export function OrderDetailsPage({ order, loading }) {
           )}
         </div>
       </div>
+
+      <OrderTagsDialog
+        open={tagsOpen}
+        order={order}
+        onClose={() => setTagsOpen(false)}
+        onUpdated={(rows) => {
+          setOrder?.((prev) =>
+            prev ? { ...prev, orderTags: rows } : prev,
+          );
+        }}
+      />
     </div>
   );
 }

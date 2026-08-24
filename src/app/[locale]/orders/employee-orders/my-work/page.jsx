@@ -10,6 +10,7 @@ import {
   Navigation, Plus, Minus, X, Save, Info, Trash2, Truck, MapPin, CreditCard,
   AlertTriangle,
   PenLine,
+  Tags,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -37,6 +38,12 @@ import { Label } from "@/components/ui/label";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
 import IssueFormDialog from "../../../issues/atoms/IssueFormDialog";
 import { normalizeAxiosError } from "@/utils/axios";
+import {
+  OrderTagChips,
+  OrderTagsDialog,
+  unwrapOrderTags,
+} from "../../atoms/OrderTagsEditor";
+import { useAuth } from "@/context/AuthContext";
 
 
 
@@ -480,6 +487,7 @@ export default function OrderConfirmationWorkPage() {
   const [removedIds, setRemovedIds] = useState([]);
 
   const [issueDialog, setIssueDialog] = useState({ open: false, order: null });
+  const [tagsOpen, setTagsOpen] = useState(false);
   const [issueOptions, setIssueOptions] = useState({ statuses: [], causes: [], roles: [], users: [] });
   const [selectableCancelCauses, setSelectableCancelCauses] = useState([]);
   const [cancelCauseOpen, setCancelCauseOpen] = useState(false);
@@ -902,7 +910,7 @@ export default function OrderConfirmationWorkPage() {
       <div style={{ height: 4, background: `linear-gradient(90deg,${HEX.orange},${HEX.amber},${HEX.flame})`, flexShrink: 0 }} />
 
       {/* ── HERO HEADER ─────────────────────────── */}
-      <Hero order={editedOrder} {...sh} />
+      <Hero order={editedOrder} onOpenTags={() => setTagsOpen(true)} {...sh} />
 
       {/* ── BODY GRID ───────────────────────────── */}
       <div style={{ padding: "20px 24px 150px 24px", display: "grid", gridTemplateColumns: "minmax(0,1.85fr) minmax(0,3fr)", gap: 20, alignItems: "start" }}>
@@ -947,7 +955,9 @@ export default function OrderConfirmationWorkPage() {
         : <ActionBar order={originalOrder} allowedStatuses={allowedStatuses} changingStatus={changingStatus}
           selStatusId={selStatusId} isLocked={isLocked} decided={decided} refetching={refetching}
           changeStatus={requestStatusChange} nextOrder={nextOrder} loading={loading} {...sh}
-          onEscalate={() => setIssueDialog({ open: true, order: originalOrder })} />
+          onEscalate={() => setIssueDialog({ open: true, order: originalOrder })}
+          onTags={() => setTagsOpen(true)}
+        />
       }
 
       <CancelCauseDialog
@@ -974,6 +984,16 @@ export default function OrderConfirmationWorkPage() {
         isRtl={isRtl}
       />
 
+      <OrderTagsDialog
+        open={tagsOpen}
+        order={editedOrder}
+        onClose={() => setTagsOpen(false)}
+        onUpdated={(rows) => {
+          setOriginalOrder((prev) => (prev ? { ...prev, orderTags: rows } : prev));
+          setEditedOrder((prev) => (prev ? { ...prev, orderTags: rows } : prev));
+        }}
+      />
+
       <IssueFormDialog
         open={issueDialog.open}
         onOpenChange={(o) =>
@@ -989,7 +1009,7 @@ export default function OrderConfirmationWorkPage() {
 }
 
 // ─── HERO HEADER ───────────────────────────────────────────────────────────
-function Hero({ order, isRtl }) {
+function Hero({ order, isRtl, onOpenTags }) {
   const tOrders = useTranslations("orders");
   const t = useTranslations("orders-work");
   if (!order) return null;
@@ -997,6 +1017,7 @@ function Hero({ order, isRtl }) {
   const status = order.status;
   const { formatCurrency } = usePlatformSettings();
   const assignment = order.assignments?.[0] || {};
+  const orderTags = unwrapOrderTags(order);
   return (
     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .4, ease: [.16, 1, .3, 1] }}>
       {/* Main card — no side padding to bleed full width */}
@@ -1099,6 +1120,24 @@ function Hero({ order, isRtl }) {
                 <span style={{ fontSize: 13, fontWeight: 700, color: status.color }}>{status.system ? tOrders(`statuses.${status.code}`) : status.name}</span>
               </motion.div>
             )}
+            <button
+              type="button"
+              onClick={onOpenTags}
+              title={tOrders("actions.tags")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 12px",
+                borderRadius: "var(--radius-xl)",
+                background: "var(--muted)",
+                border: "1.5px solid var(--border)",
+                cursor: "pointer",
+              }}
+            >
+              <Tags size={12} style={{ color: "var(--muted-foreground)", flexShrink: 0 }} />
+              <OrderTagChips tags={orderTags} max={4} className="max-w-[220px]" />
+            </button>
           </div>
         </div>
 
@@ -1912,9 +1951,11 @@ function CancelCauseDialog({
 }
 
 // ─── ACTION BAR ────────────────────────────────────────────────────────────
-function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLocked, decided, refetching, changeStatus, nextOrder, loading, t, isRtl, onEscalate }) {
+function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLocked, decided, refetching, changeStatus, nextOrder, loading, t, isRtl, onEscalate, onTags }) {
   const canNext = decided && !loading && !changingStatus && !refetching;
   const tOrders = useTranslations("orders");
+  const { hasPermission } = useAuth();
+  const canEditTags = hasPermission("orders.update") || hasPermission("orders.updateTags");
 
   return (
     <motion.div initial={{ y: 90, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: .25, duration: .42 }}
@@ -1953,6 +1994,16 @@ function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLock
             </div>
 
             <div style={{ width: 1, alignSelf: "stretch", background: "var(--border)", flexShrink: 0 }} />
+
+            {canEditTags && (
+              <motion.button type="button" onClick={onTags}
+                whileHover={{ y: -2, boxShadow: `0 8px 24px ${rgba(HEX.violet, .35)}` }}
+                whileTap={{ scale: .96 }}
+                style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", borderRadius: "var(--radius)", border: `1.5px solid ${rgba(HEX.violet, .35)}`, background: rgba(HEX.violet, .08), fontSize: 13, fontWeight: 700, color: HEX.violet, cursor: "pointer", boxShadow: "none", transition: "all .2s" }}>
+                <Tags size={13} />
+                {tOrders("actions.tags")}
+              </motion.button>
+            )}
 
             {/* Escalate issue */}
             <motion.button type="button" onClick={onEscalate}

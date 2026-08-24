@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import { Check, ChevronDown, Plus, Trash2, Workflow } from "lucide-react";
+import { Check, ChevronDown, Loader2, Plus, Trash2, Workflow } from "lucide-react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -40,13 +40,34 @@ import {
   unwrapList,
 } from "./condition-fields";
 
-function OptionsMultiSelect({ options, value, onChange, placeholder }) {
+const LOOKUP_FIELDS = new Set([
+  "order.statusId",
+  "order.storeId",
+  "order.cityId",
+  "order.shippingCompanyId",
+  "shipment.status",
+]);
+
+function ValuesLoadingField({ label }) {
+  return (
+    <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 text-sm text-muted-foreground">
+      <Loader2 size={14} className="animate-spin shrink-0" />
+      <span className="truncate">{label}</span>
+    </div>
+  );
+}
+
+function OptionsMultiSelect({ options, value, onChange, placeholder, disabled, loading, loadingLabel }) {
+  if (loading) {
+    return <ValuesLoadingField label={loadingLabel || placeholder} />;
+  }
   const selected = Array.isArray(value) ? value.map(String) : [];
   const labels = options
     .filter((opt) => selected.includes(String(opt.value)))
     .map((opt) => opt.label);
 
   const toggle = (nextValue) => {
+    if (disabled) return;
     const exists = selected.includes(nextValue);
     onChange(exists ? selected.filter((item) => item !== nextValue) : [...selected, nextValue]);
   };
@@ -56,7 +77,8 @@ function OptionsMultiSelect({ options, value, onChange, placeholder }) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="relative h-10 w-full rounded-xl border border-border bg-background px-3 pe-8 text-sm text-start truncate"
+          disabled={disabled}
+          className="relative h-10 w-full rounded-xl border border-border bg-background px-3 pe-8 text-sm text-start truncate disabled:opacity-60"
         >
           {labels.length ? labels.join(", ") : (
             <span className="text-muted-foreground">{placeholder}</span>
@@ -91,19 +113,25 @@ function OptionsMultiSelect({ options, value, onChange, placeholder }) {
   );
 }
 
-function RuleValueInput({ field, operator, value, onChange, t, options }) {
+function RuleValueInput({ field, operator, value, onChange, t, options, disabled, lookupsLoading }) {
   if (!operatorNeedsValue(operator)) return null;
 
   const isList = operator === "in" || operator === "not_in";
   const opts = options[field] || [];
+  const isLookup = LOOKUP_FIELDS.has(field);
+  const waitingForLabels = isLookup && lookupsLoading;
   const booleanTrueLabel =
     field === "order.phone.valid" ? t("phone.egyptian") : t("boolean.true");
   const booleanFalseLabel =
     field === "order.phone.valid" ? t("phone.notEgyptian") : t("boolean.false");
 
+  if (waitingForLabels) {
+    return <ValuesLoadingField label={t("dialog.valuesLoading")} />;
+  }
+
   if (BOOLEAN_FIELDS.has(field)) {
     return (
-      <Select value={String(value ?? "true")} onValueChange={onChange}>
+      <Select value={String(value ?? "true")} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger className="h-10 rounded-xl">
           <SelectValue />
         </SelectTrigger>
@@ -122,13 +150,22 @@ function RuleValueInput({ field, operator, value, onChange, t, options }) {
         value={value}
         onChange={onChange}
         placeholder={t("dialog.selectValues")}
+        disabled={disabled}
+        loading={waitingForLabels}
+        loadingLabel={t("dialog.valuesLoading")}
       />
     );
   }
 
-  if (opts.length) {
+  if (isLookup || opts.length) {
+    const selected = value ? String(value) : "";
+    const hasMatch = opts.some((opt) => String(opt.value) === selected);
     return (
-      <Select value={value ? String(value) : undefined} onValueChange={onChange}>
+      <Select
+        value={hasMatch ? selected : undefined}
+        onValueChange={onChange}
+        disabled={disabled}
+      >
         <SelectTrigger className="h-10 rounded-xl">
           <SelectValue placeholder={t("dialog.valuePlaceholder")} />
         </SelectTrigger>
@@ -149,15 +186,17 @@ function RuleValueInput({ field, operator, value, onChange, t, options }) {
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
       placeholder={t("dialog.valuePlaceholder")}
+      disabled={disabled}
     />
   );
 }
 
-export function AutomationFormDialog({ automation, open, onClose, onSaved, tags }) {
+export function AutomationFormDialog({ automation, open, onClose, onSaved, tags, readOnly = false }) {
   const t = useTranslations("tags");
   const tOrders = useTranslations("orders");
   const locale = useLocale();
   const isEdit = !!automation;
+  const [lookupsLoading, setLookupsLoading] = useState(false);
   const [lookups, setLookups] = useState({
     statuses: [],
     stores: [],
@@ -245,11 +284,12 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
+    setLookupsLoading(true);
     (async () => {
       try {
         const [statusesRes, storesRes, citiesRes, shippingRes, shipmentRes] = await Promise.all([
           api.get("/orders/statuses").catch(() => ({ data: [] })),
-          api.get("/stores", { params: { limit: 200 } }).catch(() => ({ data: [] })),
+          api.get("/stores", { params: { limit: 200, isActive: true } }).catch(() => ({ data: [] })),
           api.get("/cities", { params: { limit: 500 } }).catch(() => ({ data: [] })),
           api.get("/shipping/integrations/active").catch(() => ({ data: [] })),
           api.get("/shipping/statuses").catch(() => ({ data: {} })),
@@ -270,6 +310,8 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags 
         });
       } catch (e) {
         toast.error(normalizeAxiosError(e));
+      } finally {
+        if (!cancelled) setLookupsLoading(false);
       }
     })();
     return () => {
@@ -316,6 +358,7 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags 
 
   const onSubmit = useCallback(
     async (values) => {
+      if (readOnly) return;
       try {
         const payload = {
           name: values.name.trim(),
@@ -344,7 +387,7 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags 
         toast.error(normalizeAxiosError(e));
       }
     },
-    [isEdit, automation, onClose, onSaved, t],
+    [isEdit, automation, onClose, onSaved, t, readOnly],
   );
 
   const changeOperator = (index, nextOperator, currentValue) => {
@@ -363,30 +406,45 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags 
     <ModalShell onClose={onClose} maxWidth="max-w-3xl">
       <ModalHeader
         icon={Workflow}
-        title={isEdit ? t("dialog.editAutomationTitle") : t("dialog.addAutomationTitle")}
+        title={
+          readOnly
+            ? t("dialog.viewAutomationTitle")
+            : isEdit
+              ? t("dialog.editAutomationTitle")
+              : t("dialog.addAutomationTitle")
+        }
         subtitle={t("dialog.automationSubtitle")}
         onClose={onClose}
       />
       <form className="p-6 space-y-5 max-h-[75vh] overflow-y-auto" onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-1.5">
-          <Label className="text-sm font-medium">{t("dialog.name")}</Label>
+          <Label className="text-sm font-medium" >
+            {t("dialog.name")}
+          </Label>
           <Controller
             name="name"
             control={control}
             render={({ field }) => (
-              <Input {...field} placeholder={t("dialog.namePlaceholder")} error={Boolean(errors.name)} />
+              <Input
+                {...field}
+                placeholder={t("dialog.namePlaceholder")}
+                error={Boolean(errors.name)}
+                disabled={readOnly}
+              />
             )}
           />
           {errors.name?.message && <p className="text-xs text-red-500">{errors.name.message}</p>}
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-sm font-medium">{t("dialog.tag")}</Label>
+          <Label className="text-sm font-medium" description={t("dialog.tagDescription")}>
+            {t("dialog.tag")}
+          </Label>
           <Controller
             name="tagId"
             control={control}
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select value={field.value} onValueChange={field.onChange} disabled={readOnly}>
                 <SelectTrigger className="h-10 rounded-xl">
                   <SelectValue placeholder={t("dialog.tagPlaceholder")} />
                 </SelectTrigger>
@@ -405,12 +463,14 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags 
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-sm font-medium">{t("dialog.logic")}</Label>
+            <Label className="text-sm font-medium" description={t("dialog.logicDescription")}>
+              {t("dialog.logic")}
+            </Label>
             <Controller
               name="logic"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value} onValueChange={field.onChange} disabled={readOnly}>
                   <SelectTrigger className="h-10 rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
@@ -424,12 +484,19 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags 
           </div>
           <div className="space-y-1.5 flex justify-end mb-1">
             <div className="flex-1 flex mt-auto h-10 items-center justify-between rounded-xl border border-[var(--border)] px-3">
-              <Label className="text-sm font-medium me-2">{t("dialog.isEnabled")}</Label>
+              <Label className="text-sm font-medium me-2" description={t("dialog.isEnabledDescription")}>
+                {t("dialog.isEnabled")}
+              </Label>
               <Controller
                 name="isEnabled"
                 control={control}
                 render={({ field }) => (
-                  <Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} size="sm" />
+                  <Switch
+                    checked={Boolean(field.value)}
+                    onCheckedChange={field.onChange}
+                    size="sm"
+                    disabled={readOnly}
+                  />
                 )}
               />
             </div>
@@ -438,14 +505,23 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags 
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">{t("dialog.rules")}</Label>
-            <GhostBtn
-              disabled={fields.length >= MAX_RULES}
-              onClick={() => fields.length < MAX_RULES && append({ ...DEFAULT_RULE })}
-            >
-              <Plus size={14} className="me-1" />
-              {t("dialog.addRule")}
-            </GhostBtn>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium" description={t("dialog.rulesDescription")}>
+                {t("dialog.rules")}
+              </Label>
+              <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                {t("dialog.rulesCount", { count: fields.length, max: MAX_RULES })}
+              </span>
+            </div>
+            {!readOnly && (
+              <GhostBtn
+                disabled={fields.length >= MAX_RULES}
+                onClick={() => fields.length < MAX_RULES && append({ ...DEFAULT_RULE })}
+              >
+                <Plus size={14} className="me-1" />
+                {t("dialog.addRule")}
+              </GhostBtn>
+            )}
           </div>
           {errors.rules?.message && (
             <p className="text-xs text-red-500">{errors.rules.message}</p>
@@ -458,107 +534,134 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags 
                 key={item.id}
                 className="grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1.3fr_auto] gap-2 p-3 rounded-xl border border-border"
               >
-                <Controller
-                  name={`rules.${index}.field`}
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={(v) => {
-                        field.onChange(v);
-                        const nextOps = operatorsFor(v);
-                        const nextOperator = nextOps.includes(watchedRules?.[index]?.operator)
-                          ? watchedRules[index].operator
-                          : nextOps[0];
-                        if (!nextOps.includes(watchedRules?.[index]?.operator)) {
-                          setValue(`rules.${index}.operator`, nextOperator);
-                        }
-                        setValue(
-                          `rules.${index}.value`,
-                          BOOLEAN_FIELDS.has(v)
-                            ? "true"
-                            : nextOperator === "in" || nextOperator === "not_in"
-                              ? []
-                              : "",
-                        );
-                      }}
-                    >
-                      <SelectTrigger className="h-10 rounded-xl">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CONDITION_FIELDS.map((f) => (
-                          <SelectItem key={f} value={f}>
-                            {t(`fields.${f}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                <Controller
-                  name={`rules.${index}.operator`}
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={(v) => {
-                        field.onChange(v);
-                        if (!operatorNeedsValue(v)) {
-                          setValue(`rules.${index}.value`, "");
-                          return;
-                        }
-                        setValue(
-                          `rules.${index}.value`,
-                          changeOperator(index, v, watchedRules?.[index]?.value),
-                        );
-                      }}
-                    >
-                      <SelectTrigger className="h-10 rounded-xl">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ops.map((op) => (
-                          <SelectItem key={op} value={op}>
-                            {t(`operators.${op}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                <Controller
-                  name={`rules.${index}.value`}
-                  control={control}
-                  render={({ field }) => (
-                    <RuleValueInput
-                      field={rule.field}
-                      operator={rule.operator}
-                      value={field.value}
-                      onChange={field.onChange}
-                      t={t}
-                      options={fieldOptions}
-                    />
-                  )}
-                />
-                <button
-                  type="button"
-                  className="h-10 w-10 rounded-xl border border-border flex items-center justify-center text-red-500 disabled:opacity-40"
-                  onClick={() => fields.length > 1 && remove(index)}
-                  disabled={fields.length <= 1}
-                >
-                  <Trash2 size={16} />
-                </button>
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium" description={t("dialog.fieldDescription")}>
+                    {t("dialog.field")}
+                  </Label>
+                  <Controller
+                    name={`rules.${index}.field`}
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        disabled={readOnly}
+                        onValueChange={(v) => {
+                          field.onChange(v);
+                          const nextOps = operatorsFor(v);
+                          const nextOperator = nextOps.includes(watchedRules?.[index]?.operator)
+                            ? watchedRules[index].operator
+                            : nextOps[0];
+                          if (!nextOps.includes(watchedRules?.[index]?.operator)) {
+                            setValue(`rules.${index}.operator`, nextOperator);
+                          }
+                          setValue(
+                            `rules.${index}.value`,
+                            BOOLEAN_FIELDS.has(v)
+                              ? "true"
+                              : nextOperator === "in" || nextOperator === "not_in"
+                                ? []
+                                : "",
+                          );
+                        }}
+                      >
+                        <SelectTrigger className="h-10 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CONDITION_FIELDS.map((f) => (
+                            <SelectItem key={f} value={f}>
+                              {t(`fields.${f}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium" description={t("dialog.operatorDescription")}>
+                    {t("dialog.operator")}
+                  </Label>
+                  <Controller
+                    name={`rules.${index}.operator`}
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        disabled={readOnly}
+                        onValueChange={(v) => {
+                          field.onChange(v);
+                          if (!operatorNeedsValue(v)) {
+                            setValue(`rules.${index}.value`, "");
+                            return;
+                          }
+                          setValue(
+                            `rules.${index}.value`,
+                            changeOperator(index, v, watchedRules?.[index]?.value),
+                          );
+                        }}
+                      >
+                        <SelectTrigger className="h-10 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ops.map((op) => (
+                            <SelectItem key={op} value={op}>
+                              {t(`operators.${op}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium" description={t("dialog.valueDescription")}>
+                    {t("dialog.value")}
+                  </Label>
+                  <Controller
+                    name={`rules.${index}.value`}
+                    control={control}
+                    render={({ field }) => (
+                      <RuleValueInput
+                        field={rule.field}
+                        operator={rule.operator}
+                        value={field.value}
+                        onChange={field.onChange}
+                        t={t}
+                        options={fieldOptions}
+                        disabled={readOnly}
+                        lookupsLoading={lookupsLoading}
+                      />
+                    )}
+                  />
+                </div>
+                {!readOnly && (
+                  <button
+                    type="button"
+                    className="h-10 w-10 mt-auto rounded-xl border border-border flex items-center justify-center text-red-500 disabled:opacity-40"
+                    onClick={() => fields.length > 1 && remove(index)}
+                    disabled={fields.length <= 1}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
               </div>
             );
           })}
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
-          <GhostBtn onClick={onClose}>{t("dialog.cancel")}</GhostBtn>
-          <PrimaryBtn type="submit" loading={isSubmitting}>
-            {t("dialog.save")}
-          </PrimaryBtn>
+          {readOnly ? (
+            <GhostBtn onClick={onClose}>{t("dialog.close")}</GhostBtn>
+          ) : (
+            <>
+              <GhostBtn onClick={onClose}>{t("dialog.cancel")}</GhostBtn>
+              <PrimaryBtn type="submit" loading={isSubmitting}>
+                {t("dialog.save")}
+              </PrimaryBtn>
+            </>
+          )}
         </div>
       </form>
     </ModalShell>

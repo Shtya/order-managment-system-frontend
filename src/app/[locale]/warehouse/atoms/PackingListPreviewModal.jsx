@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { pdf } from "@react-pdf/renderer";
 import { ClipboardList, Loader2, MapPin, Printer, X } from "lucide-react";
 import { toast } from "react-hot-toast";
+import QRCode from "react-qr-code";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -46,9 +47,9 @@ function PreviewTable({ groups, t }) {
                       </td>
                       <td className="px-2 py-2 text-center">
                         {row.image ? (
-                          <img src={avatarSrc(row.image)} alt="" className="mx-auto h-9 w-9 rounded object-cover" />
+                          <QRCode value={avatarSrc(row.image)} size={40} />
                         ) : (
-                          <span className="inline-block h-9 w-9 rounded bg-slate-100 dark:bg-slate-800" />
+                          <span className="inline-block h-10 w-10 rounded bg-slate-100 dark:bg-slate-800" />
                         )}
                       </td>
                       <td className="px-2 py-2 font-semibold text-slate-800 dark:text-slate-100">{row.name}</td>
@@ -89,7 +90,7 @@ function StatsRow({ t, summary, printNumber, printedAt, locale, showOrderCount =
   );
 }
 
-export default function PackingListPreviewModal({ open, onClose, orders, onConfirmPrint }) {
+export default function PackingListPreviewModal({ open, onClose, orders }) {
   const t = useTranslations("warehouse.print");
   const tCommon = useTranslations("common");
   const locale = useLocale();
@@ -126,7 +127,7 @@ export default function PackingListPreviewModal({ open, onClose, orders, onConfi
           mode={mode}
           data={data}
           headerQrUrl={assets.headerQrUrl}
-          imageByUrl={assets.imageByUrl}
+          qrByImageUrl={assets.qrByImageUrl}
         />,
       ).toBlob();
       const url = URL.createObjectURL(blob);
@@ -138,7 +139,6 @@ export default function PackingListPreviewModal({ open, onClose, orders, onConfi
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      onConfirmPrint(orders.map((o) => o.orderNumber));
       onClose();
     } catch (error) {
       console.error("Error generating packing list PDF:", error);

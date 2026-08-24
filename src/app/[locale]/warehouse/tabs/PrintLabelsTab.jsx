@@ -39,6 +39,9 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import SystemLabelPDF from "../atoms/SystemLabelPDF";
 import PackingListPreviewModal from "../atoms/PackingListPreviewModal";
+import { PackingListPages } from "../atoms/PackingListPDF";
+import { buildPackingListData, generatePrintNumber } from "../atoms/buildPackingListData";
+import { preparePackingListAssets } from "../atoms/packingListAssets";
 import { useLocale } from "next-intl";
 import { renderBarcode } from "@/utils/barcode";
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -133,6 +136,8 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
   const [numPages, setNumPages] = useState(null);
+  const [includePackingList, setIncludePackingList] = useState(true);
+  const [packingMode, setPackingMode] = useState("combined");
   const locale = useLocale();
 
   const bostaOrders = useMemo(() => orders?.filter(o => o.shippingCompany?.code?.toLowerCase() === 'bosta') || [], [orders]);
@@ -145,6 +150,8 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
       setSource("system");
       setBostaPdf(null);
       setLoadError(null);
+      setIncludePackingList(true);
+      setPackingMode("combined");
     }
   }, [open]);
 
@@ -177,21 +184,21 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
 
   
   const handlePrint = async () => {
-    if (source === "system" || source === "all") {
+    const shouldBuildReactPdf = source === "system" || source === "all" || includePackingList;
+
+    if (shouldBuildReactPdf) {
       try {
         setLoading(true);
         
-        // Generate barcode data URLs for all orders
+        const labelOrders = (source === "system" || source === "all") ? orders : [];
         const barcodeUrls = {};
-        for (const order of orders) {
-          // Create a temporary canvas and SVG
+        for (const order of labelOrders) {
           const canvas = document.createElement('canvas');
           const tempDiv = document.createElement('div');
           const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
           tempDiv.appendChild(svg);
           document.body.appendChild(tempDiv);
           
-          // Render barcode to SVG using our existing renderBarcode utility
           renderBarcode(svg, order.orderNumber, {
             width: 2,
             height: 50,
@@ -201,13 +208,11 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
             lineColor: "#000000"
           });
           
-          // Convert SVG to data URL
           const serializer = new XMLSerializer();
           const svgStr = serializer.serializeToString(svg);
           const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
           const url = URL.createObjectURL(svgBlob);
           
-          // Draw SVG to canvas to convert to PNG (more reliable for PDF)
           const img = new Image();
           await new Promise((resolve, reject) => {
             img.onload = () => {
@@ -225,23 +230,40 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
             img.src = url;
           });
           
-          // Cleanup
           URL.revokeObjectURL(url);
           document.body.removeChild(tempDiv);
         }
+
+        let extraPages = null;
+        if (includePackingList) {
+          const packingData = buildPackingListData(orders, {
+            printNumber: generatePrintNumber(),
+            printedAt: new Date(),
+          });
+          const assets = await preparePackingListAssets(packingData, packingMode);
+          extraPages = (
+            <PackingListPages
+              t={t}
+              locale={locale}
+              mode={packingMode}
+              data={packingData}
+              headerQrUrl={assets.headerQrUrl}
+              qrByImageUrl={assets.qrByImageUrl}
+            />
+          );
+        }
         
-        // Generate PDF
         const blob = await pdf(
           <SystemLabelPDF
-            orders={orders}
+            orders={labelOrders}
             t={t}
             formatCurrency={formatCurrency}
             locale={locale}
             barcodeUrls={barcodeUrls}
+            extraPages={extraPages}
           />
         ).toBlob();
         
-        // Download PDF
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -498,7 +520,28 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
           )}
         </div>
 
-        <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2 shrink-0 bg-white dark:bg-slate-950">
+        <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0 bg-white dark:bg-slate-950">
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              <Checkbox
+                checked={includePackingList}
+                onCheckedChange={(checked) => setIncludePackingList(checked === true)}
+              />
+              {t("packingList.includeWithLabels")}
+            </label>
+            {includePackingList && (
+              <Select value={packingMode} onValueChange={setPackingMode}>
+                <SelectTrigger className="h-9 w-[240px] rounded-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="combined">{t("packingList.modeCombined")}</SelectItem>
+                  <SelectItem value="perOrder">{t("packingList.modePerOrder")}</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          <div className="flex gap-2">
           <Button variant="outline" onClick={onClose} className="rounded-xl h-11 px-6">{tCommon("cancel")}</Button>
           <Button
             onClick={handlePrint}
@@ -511,6 +554,7 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
             <Printer size={18} className="mr-2" />
             {t("printPreview.printNow", { count: orders.length })}
           </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -681,7 +725,7 @@ function NotPrintedSubtab({ resetToken, fetchStats }) {
         onPageChange={handlePageChange}
       />
       <PrintPreviewModal open={printPreview.open} onClose={() => setPrintPreview({ open: false, orders: [] })} orders={printPreview.orders} onConfirmPrint={handleConfirmPrint} />
-      <PackingListPreviewModal open={packingPreview.open} onClose={() => setPackingPreview({ open: false, orders: [] })} orders={packingPreview.orders} onConfirmPrint={handleConfirmPrint} />
+      <PackingListPreviewModal open={packingPreview.open} onClose={() => setPackingPreview({ open: false, orders: [] })} orders={packingPreview.orders} />
       <OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} hideNotes={true} />
     </div>
   );
@@ -842,7 +886,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         onPageChange={handlePageChange}
       />
       <PrintPreviewModal open={printPreview.open} onClose={() => setPrintPreview({ open: false, orders: [] })} orders={printPreview.orders} onConfirmPrint={handleReprintConfirm} />
-      <PackingListPreviewModal open={packingPreview.open} onClose={() => setPackingPreview({ open: false, orders: [] })} orders={packingPreview.orders} onConfirmPrint={handleReprintConfirm} />
+      <PackingListPreviewModal open={packingPreview.open} onClose={() => setPackingPreview({ open: false, orders: [] })} orders={packingPreview.orders} />
       <OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} />
     </div>
   );

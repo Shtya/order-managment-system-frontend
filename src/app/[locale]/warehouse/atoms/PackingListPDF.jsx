@@ -149,13 +149,13 @@ const pdfStyles = StyleSheet.create({
     fontSize: 8,
     color: TEXT_DARK,
   },
-  colCheck: { width: "8%", alignItems: "center" },
-  colImage: { width: "10%", alignItems: "center" },
-  colName: { width: "28%" },
-  colSku: { width: "16%" },
-  colLocation: { width: "18%" },
-  colQty: { width: "10%", alignItems: "center" },
-  colOrders: { width: "10%", alignItems: "center" },
+  colCheck: { width: "7%", alignItems: "center" },
+  colImage: { width: "16%", alignItems: "center" },
+  colName: { width: "24%" },
+  colSku: { width: "14%" },
+  colLocation: { width: "17%" },
+  colQty: { width: "11%", alignItems: "center" },
+  colOrders: { width: "11%", alignItems: "center" },
   orderSeparator: {
     flexDirection: "row",
     alignItems: "center",
@@ -183,11 +183,9 @@ const pdfStyles = StyleSheet.create({
     border: `1.2px solid ${TEXT_MUTED}`,
     borderRadius: 2,
   },
-  productImage: {
-    width: 26,
-    height: 26,
-    objectFit: "cover",
-    borderRadius: 3,
+  productQr: {
+    width: 32,
+    height: 32,
   },
   footer: {
     marginTop: 16,
@@ -239,7 +237,7 @@ function StatBox({ label, value, align }) {
   );
 }
 
-function ProductTable({ groups, t, isArabic, imageByUrl }) {
+function ProductTable({ groups, t, isArabic, qrByImageUrl }) {
   const rowDir = isArabic ? "row-reverse" : "row";
   const align = isArabic ? "right" : "left";
 
@@ -264,12 +262,13 @@ function ProductTable({ groups, t, isArabic, imageByUrl }) {
               <View style={pdfStyles.colOrders}><Text style={[pdfStyles.th, { textAlign: "center" }]}>{t("packingList.inOrders")}</Text></View>
             </View>
             {(group.rows || []).map((row) => {
-              const img = imageByUrl?.[avatarSrc(row.image)];
+              const imageUrl = row.image ? avatarSrc(row.image) : "";
+              const qr = imageUrl ? qrByImageUrl?.[imageUrl] : "";
               return (
                 <View key={row.key} style={[pdfStyles.tableRow, { flexDirection: rowDir }]} wrap={false}>
                   <View style={pdfStyles.colCheck}><View style={pdfStyles.checkbox} /></View>
                   <View style={pdfStyles.colImage}>
-                    {img ? <Image src={img} style={pdfStyles.productImage} /> : <View style={pdfStyles.productImage} />}
+                    {qr ? <Image src={qr} style={pdfStyles.productQr} /> : <View style={pdfStyles.productQr} />}
                   </View>
                   <View style={pdfStyles.colName}><Text style={[pdfStyles.td, { textAlign: align }]}>{row.name}</Text></View>
                   <View style={pdfStyles.colSku}><Text style={[pdfStyles.td, { textAlign: align }]}>{row.sku}</Text></View>
@@ -384,16 +383,16 @@ function FooterBlock({ t, isArabic }) {
   );
 }
 
-const PackingListPDF = ({
+export function PackingListPages({
   t,
   locale,
   mode = "combined",
   data,
   headerQrUrl,
-  imageByUrl = {},
-}) => {
+  qrByImageUrl = {},
+}) {
   const isArabic = locale === "ar";
-  const title = isArabic ? t("packingList.title") : t("packingList.title");
+  const title = t("packingList.title");
   const subtitle = isArabic ? t("packingList.subtitle") : t("packingList.titleAr");
   const pageStyle = [
     pdfStyles.page,
@@ -404,59 +403,63 @@ const PackingListPDF = ({
     },
   ];
 
-  if (mode === "perOrder") {
-    return (
-      <Document>
-        <Page size="A4" style={pageStyle} wrap>
-          <DocumentHeader headerQrUrl={headerQrUrl} title={title} subtitle={subtitle} />
+  const body = mode === "perOrder" ? (
+    <>
+      <DocumentHeader headerQrUrl={headerQrUrl} title={title} subtitle={subtitle} />
+      <SummaryStats
+        t={t}
+        summary={data.summary}
+        printNumber={data.printNumber}
+        printedAt={data.printedAt}
+        locale={locale}
+        isArabic={isArabic}
+        showOrderCount
+      />
+      <IncludedOrders t={t} orderNumbers={data.orderNumbers} isArabic={isArabic} />
+      {(data.perOrder || []).map((block) => (
+        <View key={block.order?.orderNumber || block.order?.id} style={pdfStyles.orderSection}>
+          <OrderSeparator orderNumber={block.order?.orderNumber} t={t} />
+          <OrderInfoBlock t={t} order={block.order} isArabic={isArabic} />
           <SummaryStats
             t={t}
-            summary={data.summary}
-            printNumber={data.printNumber}
-            printedAt={data.printedAt}
+            summary={block.summary}
             locale={locale}
             isArabic={isArabic}
-            showOrderCount
+            showOrderCount={false}
           />
-          <IncludedOrders t={t} orderNumbers={data.orderNumbers} isArabic={isArabic} />
-          {(data.perOrder || []).map((block) => (
-            <View key={block.order?.orderNumber || block.order?.id} style={pdfStyles.orderSection}>
-              <OrderSeparator orderNumber={block.order?.orderNumber} t={t} />
-              <OrderInfoBlock t={t} order={block.order} isArabic={isArabic} />
-              <SummaryStats
-                t={t}
-                summary={block.summary}
-                locale={locale}
-                isArabic={isArabic}
-                showOrderCount={false}
-              />
-              <ProductTable groups={block.groups} t={t} isArabic={isArabic} imageByUrl={imageByUrl} />
-            </View>
-          ))}
-          <FooterBlock t={t} isArabic={isArabic} />
-        </Page>
-      </Document>
-    );
-  }
+            <ProductTable groups={block.groups} t={t} isArabic={isArabic} qrByImageUrl={qrByImageUrl} />
+        </View>
+      ))}
+      <FooterBlock t={t} isArabic={isArabic} />
+    </>
+  ) : (
+    <>
+      <DocumentHeader headerQrUrl={headerQrUrl} title={title} subtitle={subtitle} />
+      <SummaryStats
+        t={t}
+        summary={data.summary}
+        printNumber={data.printNumber}
+        printedAt={data.printedAt}
+        locale={locale}
+        isArabic={isArabic}
+      />
+      <IncludedOrders t={t} orderNumbers={data.orderNumbers} isArabic={isArabic} />
+      <ProductTable groups={data.groups} t={t} isArabic={isArabic} qrByImageUrl={qrByImageUrl} />
+      <FooterBlock t={t} isArabic={isArabic} />
+    </>
+  );
 
   return (
-    <Document>
-      <Page size="A4" style={pageStyle} wrap>
-        <DocumentHeader headerQrUrl={headerQrUrl} title={title} subtitle={subtitle} />
-        <SummaryStats
-          t={t}
-          summary={data.summary}
-          printNumber={data.printNumber}
-          printedAt={data.printedAt}
-          locale={locale}
-          isArabic={isArabic}
-        />
-        <IncludedOrders t={t} orderNumbers={data.orderNumbers} isArabic={isArabic} />
-        <ProductTable groups={data.groups} t={t} isArabic={isArabic} imageByUrl={imageByUrl} />
-        <FooterBlock t={t} isArabic={isArabic} />
-      </Page>
-    </Document>
+    <Page size="A4" style={pageStyle} wrap>
+      {body}
+    </Page>
   );
-};
+}
+
+const PackingListPDF = (props) => (
+  <Document>
+    <PackingListPages {...props} />
+  </Document>
+);
 
 export default PackingListPDF;

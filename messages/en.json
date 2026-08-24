@@ -574,7 +574,9 @@
     "tags": "Tags",
     "cancelCausesStatistics": "Cancel Causes Statistics",
     "gettingStartedStatistics": "Getting Started Statistics",
-    "ai": "AI"
+    "ai": "AI",
+    "platformNumbers": "WhatsApp Numbers",
+    "revenueStats": "WhatsApp Revenue"
   },
   "gettingStarted": {
     "allComplete": {
@@ -1335,7 +1337,10 @@
       "inactive": "Inactive",
       "enabled": "Enabled",
       "disabled": "Disabled",
-      "tag": "Tag"
+      "tag": "Tag",
+      "manual": "Manual assignment",
+      "allowed": "Allowed",
+      "notAllowed": "Not allowed"
     },
     "actions": {
       "addTag": "Add Tag",
@@ -1369,6 +1374,7 @@
       "tagSubtitle": "Tags can be assigned manually or by automations.",
       "addAutomationTitle": "Add Tag Automation",
       "editAutomationTitle": "Edit Tag Automation",
+      "viewAutomationTitle": "Automation details",
       "automationSubtitle": "When the conditions match, this tag is added to the order.",
       "detailsTitle": "Details",
       "name": "Name",
@@ -1384,14 +1390,24 @@
       "tagPlaceholder": "Select a tag",
       "isEnabled": "Enabled",
       "logic": "Match logic",
-      "logicAnd": "All rules (AND)",
-      "logicOr": "Any rule (OR)",
+      "logicAnd": "All rules",
+      "logicOr": "Any rule",
+      "logicDescription": "Choose whether every rule must match, or whether one matching rule is enough to add the tag.",
+      "nameDescription": "A name your team will recognize in the automations list.",
+      "tagDescription": "The tag that will be added to the order when the rules match. Automations never remove tags.",
+      "isEnabledDescription": "Turn this off to pause the automation without deleting it.",
+      "rulesDescription": "Each rule checks one order field. You can add up to 5 rules.",
+      "fieldDescription": "The order, shipment, or upsell value to compare.",
+      "operatorDescription": "How to compare the field, for example equals, in a list, or greater than.",
+      "valueDescription": "The value to match against the selected field.",
+      "rulesCount": "{count}/{max}",
       "rules": "Rules",
       "addRule": "Add rule",
       "field": "Field",
       "operator": "Operator",
       "value": "Value",
       "valuePlaceholder": "Value",
+      "valuesLoading": "Loading values...",
       "selectValues": "Select values",
       "inHint": "Comma-separated values",
       "save": "Save",
@@ -1406,6 +1422,7 @@
         "paymentStatus": "Payment status",
         "productsTotal": "Products total",
         "itemsQuantity": "Items quantity",
+        "productsCount": "Products count",
         "shippingCompanyId": "Shipping company",
         "finalTotal": "Final total",
         "isConfirmed": "Order confirmed",
@@ -1413,6 +1430,9 @@
         "phone": {
           "valid": "Phone number"
         }
+      },
+      "assignment": {
+        "contactTries": "Contact attempts"
       },
       "shipment": {
         "status": "Shipment status"
@@ -1499,7 +1519,10 @@
     },
     "stats": {
       "tags": "Tags",
-      "automations": "Automations"
+      "automations": "Automations",
+      "activeTags": "Active tags",
+      "manualTags": "Manual tags",
+      "activeAutomations": "Active automations"
     }
   },
   "cancelCausesReports": {
@@ -2488,6 +2511,12 @@
       "messageEmail": "Email:",
       "messagePassword": "Password:",
       "messageLoginInstruction": "Please login and change your password after first login."
+    },
+    "whatsappNumbers": {
+      "action": "WhatsApp Numbers",
+      "title": "Assigned WhatsApp Numbers",
+      "empty": "No WhatsApp numbers assigned to this user yet.",
+      "manageHint": "Manage assignments from Dashboard → WhatsApp Numbers."
     }
   },
   "roles": {
@@ -2721,6 +2750,7 @@
       "orders_readReplace": "View order replacements",
       "orders_replace": "Replace order",
       "orders_update": "Update orders",
+      "orders_updateTags": "Update order tags",
       "payments_read": "View payments",
       "permissions_create": "Create permissions",
       "permissions_delete": "Delete permissions",
@@ -3543,6 +3573,7 @@
         "preparerSignature": "Preparer's Signature",
         "orderInfo": "Order Information",
         "orderTitle": "Order {orderNumber}",
+        "includeWithLabels": "Also print packing list",
         "pdfFailed": "Failed to generate packing list PDF"
       }
     },
@@ -6393,7 +6424,8 @@
       "bulkCancelAssignments": "Cancel Selected Assignments",
       "bulkCancelAssignmentsCount": "Cancel Selected Assignments({count})",
       "viewReplace": "View new order",
-      "escalateIssue": "Escalate Issue"
+      "escalateIssue": "Escalate Issue",
+      "tags": "Tags"
     },
     "shipmentLogs": {
       "title": "Shipment Logs",
@@ -7169,9 +7201,20 @@
       },
       "replaceDate": "Replacement date",
       "shipmentStatusPlaceholder": "Select the shipment status",
-      "shipmentStatus": "Shipment status"
+      "shipmentStatus": "Shipment status",
+      "tags": "Tags",
+      "tagsPlaceholder": "Select tag"
     },
     "cancelCausesTitle": "Cancel Causes History",
+    "tags": {
+      "title": "Order tags",
+      "oneModeHint": "This workspace allows one tag per order. Choosing another tag replaces the current one.",
+      "manyModeHint": "Select one or more tags for this order.",
+      "empty": "No tags available to assign.",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "saving": "Saving..."
+    },
     "automationTitle": "Automation Runs",
     "noRecords": "No data found for this order.",
     "table": {
@@ -7201,6 +7244,7 @@
       "phoneNumber": "Phone Number",
       "products": "Products",
       "shippingCost": "Shipping Cost",
+      "tags": "Tags",
       "status": "Status",
       "confirmOrder": "Confirm Order",
       "trackingCode": "Tracking Code",
@@ -10370,7 +10414,6 @@
     },
     "pieces": "Piece",
     "discount": "Discount",
-    "additionalFees": "Additional Fees",
     "collected": "Collected",
     "currentStatus": "Current Status",
     "clickToSet": "Click to set",
@@ -11973,7 +12016,8 @@
         "openSettings": "Settings",
         "syncTemplates": "Sync Templates",
         "edit": "Edit",
-        "replaceAccessToken": "Replace Access Token"
+        "replaceAccessToken": "Replace Access Token",
+        "detailsUsage": "Details & usage"
       },
       "replaceAccessToken": {
         "title": "Replace Access Token",
@@ -12073,7 +12117,32 @@
         "appId": "App ID",
         "appSecret": "App Secret"
       },
-      "howIntegrate": "How to set up"
+      "howIntegrate": "How to set up",
+      "providedBadge": "Madra number",
+      "provided": {
+        "title": "Number details & usage",
+        "periods": {
+          "mtd": "This month",
+          "last_month": "Last month",
+          "lifetime": "Lifetime"
+        },
+        "totals": {
+          "messages": "Messages",
+          "spend": "Spent",
+          "refunded": "Refunded"
+        },
+        "ratesTitle": "Usage by type",
+        "yourRates": "Your prices",
+        "recentTitle": "Recent charges",
+        "refunded": "Refunded",
+        "rateKeys": {
+          "template_marketing": "Template — Marketing",
+          "template_utility": "Template — Utility",
+          "template_authentication": "Template — Authentication",
+          "session_message": "Chat message",
+          "default": "Default rate"
+        }
+      }
     },
     "templates": {
       "dialog": {
@@ -12725,7 +12794,6 @@
           "selectShipmentStatus": "Select shipment status...",
           "shippingCompany": "Shipping Company",
           "shippingCompanyDesc": "Choose the shipping company to monitor shipments in",
-          "selectShippingCompany": "Select shipping company...",
           "allShippingCompanies": "All Shipping Companies",
           "whatsappAccount": "WhatsApp Account",
           "whatsappAccountDesc": "Choose the account that will receive messages",
@@ -12912,7 +12980,7 @@
           "productsTotal": "Products Total",
           "shippingCost": "Shipping Cost",
           "discount": "Discount",
-      "additionalFees": "Additional Fees",
+          "additionalFees": "Additional Fees",
           "finalTotal": "Final Total",
           "status": "Order Status",
           "store": "Store",
@@ -13163,6 +13231,115 @@
       "errorOccurred": "Sorry, something went wrong",
       "retry": "Retry",
       "retryNowLatestVersion": "Retry from the latest version"
+    },
+    "platform": {
+      "breadcrumb": {
+        "home": "Dashboard",
+        "numbers": "WhatsApp Numbers"
+      },
+      "stats": {
+        "total": "Total Numbers",
+        "assigned": "Assigned",
+        "monthRevenue": "Revenue (Month)"
+      },
+      "toolbar": {
+        "addNumber": "Add Number",
+        "searchPlaceholder": "Search numbers..."
+      },
+      "table": {
+        "number": "Number",
+        "usedBy": "Used by",
+        "monthRevenue": "Revenue (Month)",
+        "lifetimeRevenue": "Revenue (Lifetime)",
+        "status": "Status",
+        "active": "Active",
+        "disabled": "Disabled",
+        "unassigned": "Unassigned",
+        "empty": "No platform numbers yet. Add your first number to rent it to users."
+      },
+      "actions": {
+        "assign": "Assign user",
+        "edit": "Edit",
+        "disable": "Disable",
+        "enable": "Enable"
+      },
+      "toggle": {
+        "disableTitle": "Disable number",
+        "disableDescription": "The assigned user will not be able to send messages until re-enabled.",
+        "enableTitle": "Enable number",
+        "enableDescription": "The number will become available for the assigned user again."
+      },
+      "form": {
+        "name": "Name",
+        "phoneNumber": "Phone number",
+        "phoneNumberId": "Phone Number ID",
+        "businessId": "Business ID",
+        "accessToken": "Access Token",
+        "wabaId": "WABA ID",
+        "appId": "App ID",
+        "appSecret": "App Secret"
+      },
+      "assign": {
+        "title": "Assign number",
+        "currentlyAssigned": "Currently assigned to",
+        "reassignWarning": "This will REVOKE the current assignment and give the number to the selected user.",
+        "user": "User",
+        "selectUser": "Select a user...",
+        "canSend": "Can send messages",
+        "canManageTemplates": "Can manage templates",
+        "rates": "Prices per message (USD)",
+        "ratesHint": "Leave empty to block that message type, or set a Default price."
+      },
+      "rates": {
+        "template_marketing": "Template — Marketing",
+        "template_utility": "Template — Utility",
+        "template_authentication": "Template — Authentication",
+        "session_message": "Chat message",
+        "default": "Default rate"
+      },
+      "messages": {
+        "createSuccess": "Number created successfully",
+        "updateSuccess": "Saved successfully",
+        "assignSuccess": "Assignment saved",
+        "alreadyAssigned": "This number is already assigned to a user"
+      }
+    },
+    "revenue": {
+      "breadcrumb": {
+        "home": "Dashboard",
+        "title": "WhatsApp Revenue"
+      },
+      "stats": {
+        "monthEarned": "Earned This Month",
+        "lifetimeEarned": "Earned (Lifetime)",
+        "monthMessages": "Charged Messages (Month)",
+        "activeAssignments": "Active Assignments"
+      },
+      "chart": {
+        "title": "Revenue Trend",
+        "earned": "Earned ($)",
+        "messages": "Messages"
+      },
+      "tables": {
+        "byAccount": "By Number",
+        "byRate": "By Message Type",
+        "topTenants": "Top Paying Users"
+      },
+      "table": {
+        "account": "Number",
+        "earned": "Earned",
+        "messages": "Messages",
+        "rateKey": "Message Type",
+        "tenant": "User",
+        "spend": "Spend"
+      },
+      "rates": {
+        "template_marketing": "Template — Marketing",
+        "template_utility": "Template — Utility",
+        "template_authentication": "Template — Authentication",
+        "session_message": "Chat message",
+        "default": "Default rate"
+      }
     }
   },
   "systemErrors": {
@@ -15359,48 +15536,25 @@
       "website": "https://example.com"
     },
     "model": {
-      "providerId": "Provider",
-      "provider": "Custom Provider",
-      "customProviderId": "Custom Provider",
+      "name": "Model Name",
       "modelCode": "Model Identifier",
-      "name": "Display Name",
+      "provider": "Provider",
       "description": "Description",
       "descriptionAr": "Description (Arabic)",
-      "descriptionPlaceholder": "Describe the model's capabilities and use cases",
-      "descriptionArPlaceholder": "صف إمكانيات النموذج وحالات استخدامه",
-      "modelType": "Model Type",
       "type": "Model Type",
       "tier": "Tier",
-      "contextWindow": "Context Window (tokens)",
+      "contextWindow": "Context Window",
       "maxOutputTokens": "Max Output Tokens",
-      "inputCostPerMillion": "Input Cost ($/1M tokens)",
-      "outputCostPerMillion": "Output Cost ($/1M tokens)",
-      "isActive": "Active",
-      "stream": "Streaming",
-      "jsonMode": "JSON Mode",
-      "reasoning": "Reasoning",
-      "toolsCalling": "Tools Calling",
-      "temperature": "Default Temperature",
-      "maxTokens": "Default Max Tokens",
-      "topP": "Default Top-P"
+      "inputCost": "Input Cost",
+      "outputCost": "Output Cost"
     },
     "modelPlaceholder": {
-      "providerId": "Select provider",
       "provider": "Select custom provider",
-      "customProviderId": "Select custom provider",
-      "modelCode": "e.g. gpt-4o or my-custom-model-v1",
-      "name": "e.g. GPT-4o or My Custom Model",
-      "description": "Describe the model's capabilities and use cases",
-      "descriptionAr": "صف إمكانيات النموذج وحالات استخدامه",
-      "modelType": "Select model type",
-      "tier": "Select tier",
-      "contextWindow": "e.g. 128000",
-      "maxOutputTokens": "e.g. 4096",
-      "inputCostPerMillion": "e.g. 5.00",
-      "outputCostPerMillion": "e.g. 15.00",
-      "temperature": "0.0 to 2.0, default 1.0",
-      "maxTokens": "e.g. 4096",
-      "topP": "0.0 to 1.0, default 1.0"
+      "name": "Enter model name",
+      "modelCode": "e.g. gpt-4o",
+      "description": "Optional description",
+      "descriptionAr": "Optional description in Arabic",
+      "search": "Search models..."
     },
     "providerCode": {
       "openai": "OpenAI",
@@ -15618,27 +15772,6 @@
     "filters": {
       "allProviders": "All Providers",
       "apply": "Apply Filters"
-    },
-    "modelPlaceholder": {
-      "provider": "Select custom provider",
-      "name": "Enter model name",
-      "modelCode": "e.g. gpt-4o",
-      "description": "Optional description",
-      "descriptionAr": "Optional description in Arabic",
-      "search": "Search models..."
-    },
-    "model": {
-      "name": "Model Name",
-      "modelCode": "Model Identifier",
-      "provider": "Provider",
-      "description": "Description",
-      "descriptionAr": "Description (Arabic)",
-      "type": "Model Type",
-      "tier": "Tier",
-      "contextWindow": "Context Window",
-      "maxOutputTokens": "Max Output Tokens",
-      "inputCost": "Input Cost",
-      "outputCost": "Output Cost"
     }
   },
   "selected": "Selected"

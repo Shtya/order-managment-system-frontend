@@ -84,11 +84,10 @@ export async function preparePackingListAssets(data, mode) {
   }
 
   const headerQrUrl = await getQRCodeDataUrl(data.printNumber || "PACKING-LIST", 160);
-
-  const imageByUrl = {};
+  const qrByImageUrl = {};
   await Promise.all(Array.from(images).map(async (src) => {
-    imageByUrl[src] = await imageToDataUrl(src);
+    qrByImageUrl[src] = await getQRCodeDataUrl(src, 96);
   }));
 
-  return { headerQrUrl, imageByUrl };
+  return { headerQrUrl, qrByImageUrl };
 }

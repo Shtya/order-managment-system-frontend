@@ -107,12 +107,12 @@ const pdfStyles = StyleSheet.create({
 });
 
 
-const SystemLabelPDF = ({ orders, t, formatCurrency, locale, barcodeUrls }) => {
+const SystemLabelPDF = ({ orders, t, formatCurrency, locale, barcodeUrls, extraPages = null }) => {
   const isArabic = locale === "ar";
 
   return (
     <Document>
-      {orders.map((order, index) => (
+      {orders.map((order) => (
         <Page
           key={order.orderNumber}
           size="A4"
@@ -209,6 +209,7 @@ const SystemLabelPDF = ({ orders, t, formatCurrency, locale, barcodeUrls }) => {
           </View>
         </Page>
       ))}
+      {extraPages}
     </Document>
   );
 };

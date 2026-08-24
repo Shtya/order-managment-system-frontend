@@ -574,7 +574,9 @@
     "tags": "الوسوم",
     "cancelCausesStatistics": "إحصائيات أسباب الإلغاء",
     "gettingStartedStatistics": "إحصائيات الاعداد",
-    "ai": "الذكاء الاصطناعي"
+    "ai": "الذكاء الاصطناعي",
+    "platformNumbers": "أرقام واتساب المنصة",
+    "revenueStats": "إيرادات واتساب"
   },
   "gettingStarted": {
     "allComplete": {
@@ -1337,7 +1339,10 @@
       "inactive": "غير نشط",
       "enabled": "مفعّل",
       "disabled": "معطّل",
-      "tag": "الوسم"
+      "tag": "الوسم",
+      "manual": "التعيين اليدوي",
+      "allowed": "مسموح",
+      "notAllowed": "غير مسموح"
     },
     "actions": {
       "addTag": "إضافة وسم",
@@ -1371,6 +1376,7 @@
       "tagSubtitle": "يمكن تعيين الوسوم يدويًا أو عبر الأتمتة.",
       "addAutomationTitle": "إضافة أتمتة وسم",
       "editAutomationTitle": "تعديل أتمتة وسم",
+      "viewAutomationTitle": "تفاصيل الأتمتة",
       "automationSubtitle": "عند تحقق الشروط يُضاف هذا الوسم إلى الطلب.",
       "detailsTitle": "التفاصيل",
       "name": "الاسم",
@@ -1386,14 +1392,24 @@
       "tagPlaceholder": "اختر وسمًا",
       "isEnabled": "مفعّل",
       "logic": "منطق المطابقة",
-      "logicAnd": "كل القواعد (AND)",
-      "logicOr": "أي قاعدة (OR)",
+      "logicAnd": "كل القواعد",
+      "logicOr": "أي قاعدة",
+      "logicDescription": "اختر إن كان يجب تحقق كل القواعد، أو يكفي تحقق قاعدة واحدة لإضافة الوسم.",
+      "nameDescription": "اسم يظهر لفريقك في قائمة الأتمتة.",
+      "tagDescription": "الوسم الذي يُضاف إلى الطلب عند تحقق القواعد. الأتمتة لا تزيل الوسوم.",
+      "isEnabledDescription": "أوقف هذا الخيار لإيقاف الأتمتة مؤقتًا دون حذفها.",
+      "rulesDescription": "كل قاعدة تفحص حقلًا واحدًا في الطلب. يمكنك إضافة حتى 5 قواعد.",
+      "fieldDescription": "قيمة الطلب أو الشحنة أو العرض الإضافي التي ستُقارن.",
+      "operatorDescription": "طريقة المقارنة، مثل يساوي أو ضمن قائمة أو أكبر من.",
+      "valueDescription": "القيمة التي تُطابق الحقل المختار.",
+      "rulesCount": "{count}/{max}",
       "rules": "القواعد",
       "addRule": "إضافة قاعدة",
       "field": "الحقل",
       "operator": "العامل",
       "value": "القيمة",
       "valuePlaceholder": "القيمة",
+      "valuesLoading": "جاري تحميل القيم...",
       "selectValues": "اختر القيم",
       "inHint": "قيم مفصولة بفواصل",
       "save": "حفظ",
@@ -1408,6 +1424,7 @@
         "paymentStatus": "حالة الدفع",
         "productsTotal": "إجمالي المنتجات",
         "itemsQuantity": "كمية العناصر",
+        "productsCount": "عدد المنتجات",
         "shippingCompanyId": "شركة الشحن",
         "finalTotal": "الإجمالي النهائي",
         "isConfirmed": "الطلب تم تأكيده من قبل",
@@ -1415,6 +1432,9 @@
         "phone": {
           "valid": "رقم الهاتف"
         }
+      },
+      "assignment": {
+        "contactTries": "محاولات التواصل"
       },
       "shipment": {
         "status": "حالة الشحنة"
@@ -1501,7 +1521,10 @@
     },
     "stats": {
       "tags": "الوسوم",
-      "automations": "الأتمتة"
+      "automations": "الأتمتة",
+      "activeTags": "وسوم نشطة",
+      "manualTags": "وسوم يدوية",
+      "activeAutomations": "أتمتة نشطة"
     }
   },
   "cancelCausesReports": {
@@ -2490,6 +2513,12 @@
       "messageEmail": "البريد الإلكتروني:",
       "messagePassword": "كلمة المرور:",
       "messageLoginInstruction": "يرجى تسجيل الدخول وتغيير كلمة المرور الخاصة بك بعد تسجيل الدخول الأول."
+    },
+    "whatsappNumbers": {
+      "action": "أرقام الواتساب",
+      "title": "الأرقام المُسندة للمستخدم",
+      "empty": "لا توجد أرقام واتساب مُسندة لهذا المستخدم حتى الآن.",
+      "manageHint": "إدارة الإسنادات من لوحة التحكم → أرقام واتساب المنصة."
     }
   },
   "roles": {
@@ -2722,6 +2751,7 @@
       "orders_readReplace": "عرض استبدال الطلبات",
       "orders_replace": "استبدال الطلب",
       "orders_update": "تعديل الطلبات",
+      "orders_updateTags": "تعديل وسوم الطلبات",
       "payments_read": "عرض المدفوعات",
       "permissions_create": "إنشاء الصلاحيات",
       "permissions_delete": "حذف الصلاحيات",
@@ -3542,6 +3572,7 @@
         "preparerSignature": "توقيع المجهز",
         "orderInfo": "بيانات الطلب",
         "orderTitle": "طلب {orderNumber}",
+        "includeWithLabels": "طباعة قائمة التحضير أيضاً",
         "pdfFailed": "فشل إنشاء ملف قائمة التحضير"
       }
     },
@@ -6392,7 +6423,8 @@
       "bulkCancelAssignments": "إلغاء الإسنادات",
       "bulkCancelAssignmentsCount": "إلغاء الإسنادات ({count})",
       "viewReplace": "عرض الطلب الجديد",
-      "escalateIssue": "تصعيد مشكلة"
+      "escalateIssue": "تصعيد مشكلة",
+      "tags": "الوسوم"
     },
     "shipmentLogs": {
       "title": "سجلات الشحنة",
@@ -7158,9 +7190,20 @@
       },
       "replaceDate": "تاريخ الاستبدال",
       "shipmentStatusPlaceholder": "اختر حالة الشحنة",
-      "shipmentStatus": "حالة الشحنة"
+      "shipmentStatus": "حالة الشحنة",
+      "tags": "الوسوم",
+      "tagsPlaceholder": "اختر وسم"
     },
     "cancelCausesTitle": "سجل أسباب الإلغاء",
+    "tags": {
+      "title": "وسوم الطلب",
+      "oneModeHint": "وضع الوسوم مضبوط على وسم واحد لكل طلب. اختيار وسم آخر يستبدل الحالي.",
+      "manyModeHint": "يمكنك اختيار وسم واحد أو أكثر لهذا الطلب.",
+      "empty": "لا توجد وسوم متاحة للإسناد.",
+      "confirm": "تأكيد",
+      "cancel": "إلغاء",
+      "saving": "جاري الحفظ..."
+    },
     "automationTitle": "سجلات تشغيل الأتمتة",
     "noRecords": "لم يتم العثور على بيانات لهذا الطلب.",
     "table": {
@@ -7180,6 +7223,7 @@
       "phoneNumber": "رقم الهاتف",
       "products": "المنتجات",
       "shippingCost": "تكلفة الشحن",
+      "tags": "الوسوم",
       "status": "الحالة",
       "confirmOrder": "تأكيد الطلب",
       "trackingCode": "كود التتبع",
@@ -11997,7 +12041,8 @@
         "openSettings": "الإعدادات",
         "syncTemplates": "مزامنة القوالب",
         "edit": "تعديل",
-        "replaceAccessToken": "استبدال رمز الوصول"
+        "replaceAccessToken": "استبدال رمز الوصول",
+        "detailsUsage": "التفاصيل والاستخدام"
       },
       "replaceAccessToken": {
         "title": "استبدال رمز الوصول",
@@ -12097,7 +12142,32 @@
         "appId": "معرف التطبيق",
         "appSecret": "سر التطبيق"
       },
-      "howIntegrate": "كيفية الاعداد"
+      "howIntegrate": "كيفية الاعداد",
+      "providedBadge": "رقم مدرة",
+      "provided": {
+        "title": "تفاصيل الرقم واستخدامه",
+        "periods": {
+          "mtd": "هذا الشهر",
+          "last_month": "الشهر الماضي",
+          "lifetime": "كلي"
+        },
+        "totals": {
+          "messages": "الرسائل",
+          "spend": "المنصرف",
+          "refunded": "المسترد"
+        },
+        "ratesTitle": "الاستخدام حسب النوع",
+        "yourRates": "أسعارك",
+        "recentTitle": "أحدث الرسوم",
+        "refunded": "مسترد",
+        "rateKeys": {
+          "template_marketing": "قالب — تسويقي",
+          "template_utility": "قالب — خدمي",
+          "template_authentication": "قالب — مصادقة",
+          "session_message": "رسالة محادثة",
+          "default": "السعر الافتراضي"
+        }
+      }
     },
     "templates": {
       "dialog": {
@@ -12749,7 +12819,6 @@
           "selectShipmentStatus": "اختر حالة الشحنة...",
           "shippingCompany": "شركة الشحن",
           "shippingCompanyDesc": "اختر شركة الشحن التي سيتم مراقبة الشحنات فيها",
-          "selectShippingCompany": "اختر شركة الشحن...",
           "allShippingCompanies": "جميع شركات الشحن",
           "whatsappAccount": "حساب الواتساب",
           "whatsappAccountDesc": "اختر الحساب الذي سيستقبل الرسائل",
@@ -12765,7 +12834,6 @@
           "cancelCauseDesc": "مطلوب عند اختيار حالة ملغى. يُحفظ على سجل الإلغاء.",
           "selectCancelCause": "اختر سبب الإلغاء...",
           "loadingCauses": "جاري تحميل الأسباب...",
-          "selectNewStatus": "اختر الحالة الجديدة...",
           "whatsappTemplateTitle": "إرسال قالب واتساب",
           "whatsappTemplateDesc": "اختر القالب وقم بتعبئة المتغيرات المطلوبة",
           "saveStep": "حفظ الخطوة",
@@ -13188,6 +13256,115 @@
       "errorOccurred": "عذراً، حدث خطأ ما",
       "retry": "   إعادة المحاولة",
       "retryNowLatestVersion": "إعادة المحاولة من أخر إصدار"
+    },
+    "platform": {
+      "breadcrumb": {
+        "home": "لوحة التحكم",
+        "numbers": "أرقام واتساب المنصة"
+      },
+      "stats": {
+        "total": "إجمالي الأرقام",
+        "assigned": "مُسندة",
+        "monthRevenue": "إيرادات الشهر"
+      },
+      "toolbar": {
+        "addNumber": "إضافة رقم",
+        "searchPlaceholder": "ابحث في الأرقام..."
+      },
+      "table": {
+        "number": "الرقم",
+        "usedBy": "يستخدمه",
+        "monthRevenue": "إيراد الشهر",
+        "lifetimeRevenue": "إجمالي الإيراد",
+        "status": "الحالة",
+        "active": "نشط",
+        "disabled": "معطل",
+        "unassigned": "غير مُسند",
+        "empty": "لا توجد أرقام بعد. أضف أول رقم لتأجيره للمستخدمين."
+      },
+      "actions": {
+        "assign": "إسناد لمستخدم",
+        "edit": "تعديل",
+        "disable": "تعطيل",
+        "enable": "تفعيل"
+      },
+      "toggle": {
+        "disableTitle": "تعطيل الرقم",
+        "disableDescription": "لن يتمكن المستخدم المُسند من إرسال الرسائل حتى إعادة التفعيل.",
+        "enableTitle": "تفعيل الرقم",
+        "enableDescription": "سيصبح الرقم متاحاً للمستخدم المُسند مرة أخرى."
+      },
+      "form": {
+        "name": "الاسم",
+        "phoneNumber": "رقم الهاتف",
+        "phoneNumberId": "معرف رقم الهاتف",
+        "businessId": "معرف النشاط التجاري",
+        "accessToken": "رمز الوصول",
+        "wabaId": "معرف WABA",
+        "appId": "معرف التطبيق",
+        "appSecret": "سر التطبيق"
+      },
+      "assign": {
+        "title": "إسناد الرقم",
+        "currentlyAssigned": "مُسند حالياً إلى",
+        "reassignWarning": "سيتم إلغاء الإسناد الحالي ومنح الرقم للمستخدم المحدد.",
+        "user": "المستخدم",
+        "selectUser": "اختر مستخدماً...",
+        "canSend": "يمكنه إرسال الرسائل",
+        "canManageTemplates": "يمكنه إدارة القوالب",
+        "rates": "السعر لكل رسالة (دولار)",
+        "ratesHint": "اتركه فارغاً لحظر ذلك النوع، أو حدد سعراً افتراضياً."
+      },
+      "rates": {
+        "template_marketing": "قالب — تسويقي",
+        "template_utility": "قالب — خدمي",
+        "template_authentication": "قالب — مصادقة",
+        "session_message": "رسالة محادثة",
+        "default": "السعر الافتراضي"
+      },
+      "messages": {
+        "createSuccess": "تم إنشاء الرقم بنجاح",
+        "updateSuccess": "تم الحفظ بنجاح",
+        "assignSuccess": "تم حفظ الإسناد",
+        "alreadyAssigned": "هذا الرقم مُسند بالفعل لمستخدم آخر"
+      }
+    },
+    "revenue": {
+      "breadcrumb": {
+        "home": "لوحة التحكم",
+        "title": "إيرادات واتساب"
+      },
+      "stats": {
+        "monthEarned": "أرباح هذا الشهر",
+        "lifetimeEarned": "إجمالي الأرباح",
+        "monthMessages": "رسائل مفوترة (الشهر)",
+        "activeAssignments": "إسنادات نشطة"
+      },
+      "chart": {
+        "title": "تطور الإيرادات",
+        "earned": "الأرباح ($)",
+        "messages": "الرسائل"
+      },
+      "tables": {
+        "byAccount": "حسب الرقم",
+        "byRate": "حسب نوع الرسالة",
+        "topTenants": "أعلى المستخدمين دفعاً"
+      },
+      "table": {
+        "account": "الرقم",
+        "earned": "الأرباح",
+        "messages": "الرسائل",
+        "rateKey": "نوع الرسالة",
+        "tenant": "المستخدم",
+        "spend": "الإنفاق"
+      },
+      "rates": {
+        "template_marketing": "قالب — تسويقي",
+        "template_utility": "قالب — خدمي",
+        "template_authentication": "قالب — مصادقة",
+        "session_message": "رسالة محادثة",
+        "default": "السعر الافتراضي"
+      }
     }
   },
   "systemErrors": {
@@ -15390,48 +15567,25 @@
       "website": "https://example.com"
     },
     "model": {
-      "providerId": "المزود",
-      "provider": "المزود المخصص",
-      "customProviderId": "المزود المخصص",
+      "name": "اسم النموذج",
       "modelCode": "معرف النموذج",
-      "name": "الاسم المعروض",
+      "provider": "المزود",
       "description": "الوصف",
       "descriptionAr": "الوصف (عربي)",
-      "descriptionPlaceholder": "صف إمكانيات النموذج وحالات استخدامه",
-      "descriptionArPlaceholder": "صف إمكانيات النموذج وحالات استخدامه",
-      "modelType": "نوع النموذج",
       "type": "نوع النموذج",
-      "tier": "المستوى",
-      "contextWindow": "نافذة السياق (رمز)",
-      "maxOutputTokens": "الحد الأقصى لرموز المخرجات",
-      "inputCostPerMillion": "تكلفة المدخلات (دولار / مليون رمز)",
-      "outputCostPerMillion": "تكلفة المخرجات (دولار / مليون رمز)",
-      "isActive": "نشط",
-      "stream": "البث المباشر",
-      "jsonMode": "وضع JSON",
-      "reasoning": "الاستدلال",
-      "toolsCalling": "استدعاء الأدوات",
-      "temperature": "درجة الحرارة الافتراضية",
-      "maxTokens": "الحد الأقصى الافتراضي للرموز",
-      "topP": "Top-P الافتراضي"
+      "tier": "الفئة",
+      "contextWindow": "نافذة السياق",
+      "maxOutputTokens": "الحد الأقصى للرمز الم_OUTPUT",
+      "inputCost": "تكلفة الإدخال",
+      "outputCost": "تكلفة الإخراج"
     },
     "modelPlaceholder": {
-      "providerId": "اختر المزود",
       "provider": "اختر المزود المخصص",
-      "customProviderId": "اختر المزود المخصص",
-      "modelCode": "مثال: gpt-4o أو نموذجي-المخصص-v1",
-      "name": "مثال: GPT-4o أو نموذجي المخصص",
-      "description": "صف إمكانيات النموذج وحالات استخدامه",
-      "descriptionAr": "صف إمكانيات النموذج وحالات استخدامه بالعربية",
-      "modelType": "اختر نوع النموذج",
-      "tier": "اختر المستوى",
-      "contextWindow": "مثال: 128000",
-      "maxOutputTokens": "مثال: 4096",
-      "inputCostPerMillion": "مثال: 5.00",
-      "outputCostPerMillion": "مثال: 15.00",
-      "temperature": "0.0 إلى 2.0، الافتراضي 1.0",
-      "maxTokens": "مثال: 4096",
-      "topP": "0.0 إلى 1.0، الافتراضي 1.0"
+      "name": "أدخل اسم النموذج",
+      "modelCode": "مثال: gpt-4o",
+      "description": "وصف اختياري",
+      "descriptionAr": "وصف اختياري بالعربية",
+      "search": "بحث في النماذج..."
     },
     "providerCode": {
       "openai": "OpenAI",
@@ -15649,27 +15803,6 @@
     "filters": {
       "allProviders": "جميع المزودين",
       "apply": "تطبيق الفلاتر"
-    },
-    "modelPlaceholder": {
-      "provider": "اختر المزود المخصص",
-      "name": "أدخل اسم النموذج",
-      "modelCode": "مثال: gpt-4o",
-      "description": "وصف اختياري",
-      "descriptionAr": "وصف اختياري بالعربية",
-      "search": "بحث في النماذج..."
-    },
-    "model": {
-      "name": "اسم النموذج",
-      "modelCode": "معرف النموذج",
-      "provider": "المزود",
-      "description": "الوصف",
-      "descriptionAr": "الوصف (عربي)",
-      "type": "نوع النموذج",
-      "tier": "الفئة",
-      "contextWindow": "نافذة السياق",
-      "maxOutputTokens": "الحد الأقصى للرمز الم_OUTPUT",
-      "inputCost": "تكلفة الإدخال",
-      "outputCost": "تكلفة الإخراج"
     }
   },
   "selected": "محدد"

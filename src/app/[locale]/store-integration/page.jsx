@@ -582,7 +582,7 @@ export function StoreConfigDialog({
                   </div>
 
                   <div className="flex gap-1.5 flex-wrap">
-                    <Controller
+                    {/* <Controller
                       control={control}
                       name="syncNewProducts"
                       render={({ field }) => (
@@ -600,7 +600,7 @@ export function StoreConfigDialog({
                           </Label>
                         </div>
                       )}
-                    />
+                    /> */}
 
                     <Controller
                       control={control}

@@ -1618,7 +1618,7 @@ export function SyncSettingsTab({ settings, patch, tTutorial }) {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <motion.div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+                    {/* <motion.div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
                       <Checkbox
                         id={`sync-new-${store.id}`}
                         checked={!!store.syncNewProducts}
@@ -1634,7 +1634,7 @@ export function SyncSettingsTab({ settings, patch, tTutorial }) {
                       >
                         {tStores("form.syncNewProducts")}
                       </Label>
-                    </motion.div>
+                    </motion.div> */}
 
                     <motion.div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
                       <Checkbox

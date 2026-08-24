@@ -545,16 +545,16 @@ export default function ProductsPage() {
 						permission: "purchases.create",
 						hidden: active !== "products",
 					},
-					{
-						key: "exportToStore",
-						label: selectedProducts.length > 0 ? t("toolbar.exportToStoreCount", { count: selectedProducts.length }) : t("toolbar.exportToStore"),
-						icon: <StoreIcon size={14} />,
-						color: "primary",
-						disabled: selectedProducts.length === 0,
-						onClick: () => setExportToStoreModal(true),
-						permission: "products.update",
-						hidden: active === "idle"
-					},
+					// {
+					// 	key: "exportToStore",
+					// 	label: selectedProducts.length > 0 ? t("toolbar.exportToStoreCount", { count: selectedProducts.length }) : t("toolbar.exportToStore"),
+					// 	icon: <StoreIcon size={14} />,
+					// 	color: "primary",
+					// 	disabled: selectedProducts.length === 0,
+					// 	onClick: () => setExportToStoreModal(true),
+					// 	permission: "products.update",
+					// 	hidden: active === "idle"
+					// },
 					{
 						key: "export",
 						label: t("toolbar.export"),

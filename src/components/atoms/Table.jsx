@@ -121,6 +121,7 @@ export const TableToolbar = memo(function TableToolbar({
   hasActiveFilters = false,
   filterLabel = "Filters",
   actions = [],
+  toolbarExtra = null,
 }) {
   const { hasPermission } = useAuth();
   const handleKeyDown = (e) => {
@@ -180,6 +181,8 @@ export const TableToolbar = memo(function TableToolbar({
             </motion.span>
           </motion.button>
         )}
+
+        {toolbarExtra}
 
         {filteredActions.map((action) => (
           <TutorialSpotlight key={action.key} title={action.label} description={action.description} example={action.example} card="sm">
@@ -572,7 +575,7 @@ export default function Table({
   pagination = null, onPageChange,
   pageParamName = "page", limitParamName = "limit",
   perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "", flat = false,
-  rowClassName = () => "", tutorialActions = false
+  rowClassName = () => "", tutorialActions = false, toolbarExtra
 }) {
   const { isTutorialMode } = useTutorial();
   const displayData = isTutorialMode && tutorialData.length > 0 ? tutorialData : data;
@@ -618,6 +621,7 @@ export default function Table({
             hasActiveFilters={hasActiveFilters}
             filterLabel={labels.filter}
             actions={actions}
+            toolbarExtra={toolbarExtra}
           />
           <AnimatePresence>
             {filtersOpen && hasFilters && (

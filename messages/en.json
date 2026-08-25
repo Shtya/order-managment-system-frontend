@@ -6432,6 +6432,24 @@
     }
   },
   "orders": {
+    "groupedView": {
+      "normalView": "Normal View",
+      "groupedByDate": "Group by Date",
+      "groupBy": "Group by",
+      "date": "Date",
+      "period": "Period",
+      "ordersUnit": "orders",
+      "loadMore": "Load More",
+      "loadingOrders": "Loading orders...",
+      "emptyGrouped": "No orders within the selected period",
+      "editFilters": "Edit Filters",
+      "showingOf": "Showing {shown} of {total} orders",
+      "stats": {
+        "totalOrders": "Total Orders",
+        "delayed": "Delayed",
+        "totalAmount": "Total Amount"
+      }
+    },
     "actions": {
       "duplicate": "Duplicate Order",
       "addStatus": "Add Status",

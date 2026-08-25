@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import Flatpickr from "react-flatpickr";
 import { useTranslations } from "next-intl";
 import { getDateRangeParams } from "@/utils/healpers";
@@ -16,8 +16,11 @@ export default function DateRangePicker({
   mode = "range", // "single" or "range"
   minDate,
   maxDate = "today",
+  /** Increment to programmatically open the calendar */
+  openSignal = 0,
 }) {
   const t = useTranslations("accounts");
+  const fpRef = useRef(null);
 
   const dateValue = useMemo(() => {
     if (mode === "single") {
@@ -59,6 +62,27 @@ export default function DateRangePicker({
 
   };
 
+  const prevOpenSignalRef = useRef(openSignal);
+
+  useEffect(() => {
+    // Only open when openSignal *changes* (explicit request), not on remount with a stale value
+    if (openSignal === prevOpenSignalRef.current) return;
+    prevOpenSignalRef.current = openSignal;
+    if (!openSignal) return;
+
+    const timer = setTimeout(() => {
+      const instance = fpRef.current?.flatpickr;
+      if (!instance) return;
+      instance.altInput?.scrollIntoView?.({
+        behavior: "smooth",
+        block: "center",
+      });
+      instance.open();
+      instance.altInput?.focus?.();
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [openSignal]);
+
   const options = useMemo(() => ({
     mode: mode,
     dateFormat: "Y-m-d",
@@ -75,6 +99,7 @@ export default function DateRangePicker({
 
   return (
     <Flatpickr
+      ref={fpRef}
       value={dateValue}
       onChange={handleChange}
       onReady={(selectedDates, dateStr, instance) => {

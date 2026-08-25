@@ -37,8 +37,7 @@ export const PLATFORM_CURRENCY = "EGP"
 // Returns normalized startDate/endDate ISO strings for API params.
 // "YYYY-MM-DD" inputs are treated as local dates:
 //   startDate = local midnight of the start day,
-//   endDate   = local midnight of the day AFTER the end day (keeps the whole end day),
-//               unless start and end are the same day, in which case endDate = startDate.
+//   endDate   = local midnight of the day AFTER the end day (keeps the whole end day).
 export function getDateRangeParams(filters) {
   const out = {};
   if (!filters) return out;
@@ -61,9 +60,9 @@ export function getDateRangeParams(filters) {
   };
 
   const start = toLocalMidnight(filters.startDate);
-  const endRaw = toLocalMidnight(filters.endDate);
-  const sameDay = start && endRaw && endRaw.getTime() === start.getTime();
-  const end = endRaw ? (sameDay ? endRaw : toLocalMidnight(filters.endDate, true)) : null;
+  const end = filters.endDate
+    ? toLocalMidnight(filters.endDate, true)
+    : null;
 
   if (start) out.startDate = start.toISOString();
   if (end) {

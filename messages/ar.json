@@ -6430,6 +6430,24 @@
     }
   },
   "orders": {
+    "groupedView": {
+      "normalView": "عرض عادي",
+      "groupedByDate": "تجميع حسب التاريخ",
+      "groupBy": "تجميع حسب",
+      "date": "التاريخ",
+      "period": "الفترة",
+      "ordersUnit": "طلب",
+      "loadMore": "تحميل المزيد",
+      "loadingOrders": "جاري تحميل الطلبات...",
+      "emptyGrouped": "لا توجد طلبات ضمن الفترة المحددة",
+      "editFilters": "تعديل الفلاتر",
+      "showingOf": "عرض {shown} من {total} طلب",
+      "stats": {
+        "totalOrders": "إجمالي الطلبات",
+        "delayed": "متأخر",
+        "totalAmount": "إجمالي المبلغ"
+      }
+    },
     "actions": {
       "duplicate": "تكرار الطلب",
       "addStatus": "إضافة حالة",

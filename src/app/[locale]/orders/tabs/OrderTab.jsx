@@ -95,9 +95,17 @@ import BulkUploadModal from "../atoms/BulkUploadModal";
 import CancelAssignmentsModal from "../atoms/CancelAssignmentsModal";
 import IssueFormDialog from "../../issues/atoms/IssueFormDialog";
 import { OrderTagChips, OrderTagsDialog, unwrapOrderTags } from "../atoms/OrderTagsEditor";
-import Table, { FilterField } from "@/components/atoms/Table";
+import Table, {
+  FilterField,
+  TableToolbar,
+  TableFilters,
+  TablePagination,
+} from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import SettingsModal from "../atoms/SettingsModal";
+import OrdersByDateGroups, {
+  GROUPED_ORDERS_PAGE,
+} from "../atoms/OrdersByDateGroups";
 import ActionButtons from "@/components/atoms/Actions";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
@@ -947,6 +955,20 @@ export default function OrdersTab({
   });
   const [ordersLoading, setOrdersLoading] = useState(false);
   const searchTimer = useRef(null);
+
+  // ── Group by Date view state ──
+  const [viewMode, setViewMode] = useState("normal");
+  const [groupedFiltersOpen, setGroupedFiltersOpen] = useState(false);
+  const [dateFilterOpenSignal, setDateFilterOpenSignal] = useState(0);
+  const [groupPager, setGroupPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+    records: [],
+  });
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [expandedDates, setExpandedDates] = useState(() => new Set());
+  const [dateOrders, setDateOrders] = useState({});
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -982,6 +1004,10 @@ export default function OrdersTab({
   // ── Fetch on search / filter change ──
   useEffect(() => {
     handlePageChange(1, pager.per_page);
+    if (viewMode === "grouped") {
+      resetGroupedState();
+      fetchOrderGroups(1, groupPager.per_page);
+    }
   }, [debouncedSearch, adminId]);
 
   const buildParams = (
@@ -1064,6 +1090,143 @@ export default function OrdersTab({
     }
   };
 
+  // ── Group by Date handlers ──────────────────────────────────────────────
+  const resetGroupedState = () => {
+    setExpandedDates(new Set());
+    setDateOrders({});
+  };
+
+  const fetchOrderGroups = async (
+    page = groupPager.current_page,
+    per_page = groupPager.per_page,
+    filterOverrides = {},
+  ) => {
+    try {
+      setGroupsLoading(true);
+      const params = { ...buildParams(page, per_page), ...filterOverrides };
+      const res = await api.get("/orders/grouped-by-date", { params });
+      const data = res.data || {};
+      setGroupPager({
+        total_records: data.total_records || 0,
+        current_page: data.current_page || page,
+        per_page: data.per_page || per_page,
+        records: Array.isArray(data.records) ? data.records : [],
+      });
+    } catch (e) {
+      console.error("Error fetching grouped orders", e);
+      toast.error(t("messages.errorFetchingOrders"));
+    } finally {
+      setGroupsLoading(false);
+    }
+  };
+
+  const handleViewModeChange = (mode) => {
+    if (mode === viewMode) return;
+    setViewMode(mode);
+    if (mode !== "grouped") return;
+    resetGroupedState();
+    fetchOrderGroups(1, groupPager.per_page);
+  };
+
+  const clearGroupedDateRange = () => {
+    setFilters((f) => ({ ...f, startDate: null, endDate: null }));
+    resetGroupedState();
+    fetchOrderGroups(1, groupPager.per_page, {
+      startDate: undefined,
+      endDate: undefined,
+    });
+  };
+
+  const handleGroupPageChange = ({ page, per_page }) => {
+    // Changing date-group pagination resets expanded groups
+    resetGroupedState();
+    setGroupedFiltersOpen(false);
+    fetchOrderGroups(page, per_page);
+  };
+
+  const openGroupedDateFilter = () => {
+    setGroupedFiltersOpen(true);
+    // Bump after filters panel mounts so DateRangePicker sees a signal *change*
+    // (normal "Filters" toggle must not auto-open the calendar).
+    requestAnimationFrame(() => {
+      setTimeout(() => setDateFilterOpenSignal((n) => n + 1), 80);
+    });
+  };
+
+  const fetchOrdersForDate = async (date, { cursor } = {}) => {
+    // Same filters as normal list; day is matched via groupDate (same DATE() as grouped stats)
+    const base = buildParams();
+    delete base.page;
+    delete base.limit;
+    delete base.startDate;
+    delete base.endDate;
+
+    const params = {
+      ...base,
+      groupDate: date,
+      limit: GROUPED_ORDERS_PAGE,
+      useCursor: true,
+    };
+    if (cursor?.value != null && cursor?.id != null) {
+      params["cursor[value]"] = cursor.value;
+      params["cursor[id]"] = cursor.id;
+    }
+
+    setDateOrders((prev) => ({
+      ...prev,
+      [date]: { ...(prev[date] || {}), loading: true },
+    }));
+    try {
+      const res = await api.get("/orders", { params });
+      const data = res.data || {};
+      const newRecords = Array.isArray(data.records) ? data.records : [];
+      setDateOrders((prev) => {
+        const prevEntry = prev[date] || {};
+        return {
+          ...prev,
+          [date]: {
+            records: cursor
+              ? [...(prevEntry.records || []), ...newRecords]
+              : newRecords,
+            total_records:
+              data.total_records ||
+              prevEntry.total_records ||
+              0,
+            nextCursor: data.nextCursor,
+            hasMore: !!data.hasMore,
+            loading: false,
+          },
+        };
+      });
+    } catch (e) {
+      console.error("Error fetching orders for date", e);
+      toast.error(t("messages.errorFetchingOrders"));
+      setDateOrders((prev) => ({
+        ...prev,
+        [date]: { ...(prev[date] || {}), loading: false },
+      }));
+    }
+  };
+
+  const toggleDateGroup = (date) => {
+    const willExpand = !expandedDates.has(date);
+    setExpandedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(date)) next.delete(date);
+      else next.add(date);
+      return next;
+    });
+    if (willExpand && !dateOrders[date]) {
+      fetchOrdersForDate(date);
+    }
+  };
+
+  const loadMoreOrdersForDate = (date) => {
+    const entry = dateOrders[date];
+    if (!entry || entry.loading || !entry.nextCursor) return;
+    fetchOrdersForDate(date, { cursor: entry.nextCursor });
+  };
+
   const handleDeleteStatus = (status) => {
     setDeletingStatus(status);
     setDeleteModalOpen(true);
@@ -1130,6 +1293,11 @@ export default function OrdersTab({
 
   const applyFilters = () => {
     toast.success(t("messages.filtersApplied"));
+    if (viewMode === "grouped") {
+      resetGroupedState();
+      fetchOrderGroups(1, groupPager.per_page);
+      return;
+    }
     fetchOrders(1, pager.per_page);
   };
   const [exportLoading, setExportLoading] = useState();
@@ -1190,6 +1358,62 @@ export default function OrdersTab({
       link.click();
 
       // Cleanup
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.dismiss();
+      toast.success(t("messages.exportSuccess"), {
+        id: toastId,
+      });
+    } catch (error) {
+      console.error("Export failed:", error);
+      toast.dismiss();
+      toast.error(error.response?.data?.message || t("messages.exportFailed"), {
+        id: toastId,
+      });
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // ── Export grouped daily statistics (dates + statistics) ──
+  const handleGroupedExport = async () => {
+    let toastId;
+    try {
+      setExportLoading(true);
+      toastId = toast.loading(t("messages.exportStarted"));
+
+      const params = buildParams();
+      delete params.page;
+      delete params.limit;
+
+      const response = await api.get("/orders/export/grouped-by-date", {
+        params,
+        responseType: "blob",
+      });
+
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = `orders_grouped_by_date_export_${Date.now()}.xlsx`;
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^";]+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+
+      const url = window.URL.createObjectURL(
+        new Blob([response.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        }),
+      );
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+
       link.remove();
       window.URL.revokeObjectURL(url);
 
@@ -2246,6 +2470,243 @@ export default function OrdersTab({
 
   console.log(cancelModalOpen.ids)
 
+  // ── Shared filter panel (used by both Normal and Group by Date views) ──
+  const filtersNode = (
+    <>
+      {/* Status */}
+      <FilterField label={t("filters.status")}>
+        <Select
+          value={filters.status}
+          onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
+        >
+          <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm  focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
+            <SelectValue placeholder={t("filters.statusPlaceholder")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("filters.all")}</SelectItem>
+            {Array.isArray(filteredStats) &&
+              filteredStats.map((s) => (
+                <SelectItem
+                  key={s.code || s.id}
+                  value={s.code || String(s.id)}
+                >
+                  {s.system ? t(`statuses.${s.code}`) : s.name || s.code}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </FilterField>
+
+      <FilterField label={t("filters.lastCancelCause")}>
+        <Select
+          value={filters.lastCancelCause}
+          onValueChange={(v) =>
+            setFilters((f) => ({ ...f, lastCancelCause: v }))
+          }
+        >
+          <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm  focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
+            <SelectValue
+              placeholder={t("filters.lastCancelCausePlaceholder")}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("filters.all")}</SelectItem>
+            <SelectItem value="none">{t("filters.none")}</SelectItem>
+            {Array.isArray(cancelCauses) &&
+              cancelCauses.map((cause) => (
+                <SelectItem key={cause.id} value={cause.id}>
+                  {cause.name}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </FilterField>
+
+      {/* Payment status */}
+      <FilterField label={t("filters.paymentStatus")}>
+        <Select
+          value={filters.paymentStatus}
+          onValueChange={(v) =>
+            setFilters((f) => ({ ...f, paymentStatus: v }))
+          }
+        >
+          <SelectTrigger
+            className="h-10 rounded-xl border-border bg-background text-sm
+            focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all"
+          >
+            <SelectValue
+              placeholder={t("filters.paymentStatusPlaceholder")}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("filters.all")}</SelectItem>
+            <SelectItem value="pending">
+              {t("paymentStatuses.pending")}
+            </SelectItem>
+            <SelectItem value="paid">
+              {t("paymentStatuses.paid")}
+            </SelectItem>
+            <SelectItem value="partial">
+              {t("paymentStatuses.partial")}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FilterField>
+
+      <FilterField label={t("filters.employee")}>
+        <UserSelect
+          value={filters.employee}
+          onSelect={(user) =>
+            setFilters((f) => ({
+              ...f,
+              employee: user ? String(user.id) : "all",
+            }))
+          }
+          placeholder={t("filters.employeePlaceholder")}
+          allowAll
+          allLabel={t("filters.all")}
+          className="h-10 rounded-xl border-border bg-background"
+          contentClassName="bg-card-select"
+        />
+      </FilterField>
+
+      {/* Date range */}
+      <FilterField label={t("filters.date")}>
+        <DateRangePicker
+          value={{
+            startDate: filters.startDate,
+            endDate: filters.endDate,
+          }}
+          onChange={(newDates) =>
+            setFilters((prev) => ({
+              ...prev,
+              ...newDates,
+            }))
+          }
+          placeholder={t("filters.datePlaceholder")}
+          dataSize="default"
+          maxDate="today"
+          openSignal={dateFilterOpenSignal}
+        />
+      </FilterField>
+
+      <FilterField label={t("postponed.date")}>
+        <DateRangePicker
+          value={{
+            startDate: filters.postponedStartDate,
+            endDate: filters.postponedEndDate,
+          }}
+          onChange={(newDates) =>
+            setFilters((prev) => ({
+              ...prev,
+              postponedStartDate: newDates.startDate,
+              postponedEndDate: newDates.endDate,
+            }))
+          }
+          placeholder={t("postponed.datePlaceholder")}
+          dataSize="default"
+          // minDate="today"
+          maxDate={null}
+        />
+      </FilterField>
+
+      <FilterField label={t("filters.shipmentStatus")}>
+        <Select
+          value={filters.shippingStatus}
+          onValueChange={(v) =>
+            setFilters((f) => ({ ...f, shippingStatus: v }))
+          }
+        >
+          <SelectTrigger
+            className="h-10 rounded-xl border-border bg-background text-sm
+                    focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all"
+          >
+            <SelectValue
+              placeholder={t("filters.shipmentStatusPlaceholder")}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("filters.all")}</SelectItem>
+            {(unifiedShipmentStatuses || []).map((code) => (
+              <SelectItem key={code} value={code}>
+                {t(`trackingStatus.${code}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FilterField>
+
+      <FilterField label={t("filters.tags")}>
+        <Select
+          value={filters.tagId}
+          onValueChange={(v) => setFilters((f) => ({ ...f, tagId: v }))}
+        >
+          <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
+            <SelectValue placeholder={t("filters.tagsPlaceholder")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("filters.all")}</SelectItem>
+            {tagOptions.map((tag) => (
+              <SelectItem key={tag.id} value={tag.id}>
+                {tag.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FilterField>
+
+      <StoreFilter
+        value={filters.store}
+        onChange={(v) => setFilters((f) => ({ ...f, store: v }))}
+      />
+
+      <ShippingCompanyFilter
+        value={filters.shippingCompany}
+        onChange={(v) =>
+          setFilters((f) => ({ ...f, shippingCompany: v }))
+        }
+      />
+    </>
+  );
+
+  // ── View switcher (segmented control) ──
+  const viewSwitcher = (
+    <div className="flex items-center gap-0.5 p-1 rounded-xl border border-border/60 bg-background/60">
+      {[
+        ["normal", t("groupedView.normalView")],
+        ["grouped", t("groupedView.groupedByDate")],
+      ].map(([mode, label]) =>
+        viewMode === mode ? (
+          <span
+            key={mode}
+            className="h-8 px-3.5 flex items-center rounded-lg text-xs whitespace-nowrap"
+            style={{
+              background:
+                "color-mix(in oklab, var(--primary) 10%, transparent)",
+              border: "1px solid color-mix(in oklab, var(--primary) 30%, transparent)",
+              color: "var(--primary)",
+              fontWeight: 900,
+            }}
+          >
+            {label}
+          </span>
+        ) : (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => handleViewModeChange(mode)}
+            className="h-8 px-3.5 rounded-lg text-xs font-bold text-muted-foreground hover:text-[var(--primary)] hover:bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] transition-all whitespace-nowrap"
+          >
+            {label}
+          </button>
+        ),
+      )}
+    </div>
+  );
+
+  const formatGroupedDate = (iso) =>
+    iso ? new Date(iso).toLocaleDateString("en-US") : "";
+
   return (
     <div className=" ">
       {!hideHeader && (<PageHeader
@@ -2315,6 +2776,7 @@ export default function OrdersTab({
         ]}
       />)}
 
+      {viewMode === "normal" ? (
       <Table
         // ── Row Styling ───────────────────────────────────────────────────────
         rowClassName={(row) =>
@@ -2381,202 +2843,8 @@ export default function OrdersTab({
           (v) => v && v !== "all" && v !== null,
         )}
         onApplyFilters={applyFilters}
-        filters={
-          <>
-            {/* Status */}
-            <FilterField label={t("filters.status")}>
-              <Select
-                value={filters.status}
-                onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
-              >
-                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm  focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
-                  <SelectValue placeholder={t("filters.statusPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filters.all")}</SelectItem>
-                  {Array.isArray(filteredStats) &&
-                    filteredStats.map((s) => (
-                      <SelectItem
-                        key={s.code || s.id}
-                        value={s.code || String(s.id)}
-                      >
-                        {s.system ? t(`statuses.${s.code}`) : s.name || s.code}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </FilterField>
-
-            <FilterField label={t("filters.lastCancelCause")}>
-              <Select
-                value={filters.lastCancelCause}
-                onValueChange={(v) =>
-                  setFilters((f) => ({ ...f, lastCancelCause: v }))
-                }
-              >
-                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm  focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
-                  <SelectValue
-                    placeholder={t("filters.lastCancelCausePlaceholder")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filters.all")}</SelectItem>
-                  <SelectItem value="none">{t("filters.none")}</SelectItem>
-                  {Array.isArray(cancelCauses) &&
-                    cancelCauses.map((cause) => (
-                      <SelectItem key={cause.id} value={cause.id}>
-                        {cause.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </FilterField>
-
-            {/* Payment status */}
-            <FilterField label={t("filters.paymentStatus")}>
-              <Select
-                value={filters.paymentStatus}
-                onValueChange={(v) =>
-                  setFilters((f) => ({ ...f, paymentStatus: v }))
-                }
-              >
-                <SelectTrigger
-                  className="h-10 rounded-xl border-border bg-background text-sm
-            focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all"
-                >
-                  <SelectValue
-                    placeholder={t("filters.paymentStatusPlaceholder")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filters.all")}</SelectItem>
-                  <SelectItem value="pending">
-                    {t("paymentStatuses.pending")}
-                  </SelectItem>
-                  <SelectItem value="paid">
-                    {t("paymentStatuses.paid")}
-                  </SelectItem>
-                  <SelectItem value="partial">
-                    {t("paymentStatuses.partial")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </FilterField>
-
-            <FilterField label={t("filters.employee")}>
-              <UserSelect
-                value={filters.employee}
-                onSelect={(user) =>
-                  setFilters((f) => ({
-                    ...f,
-                    employee: user ? String(user.id) : "all",
-                  }))
-                }
-                placeholder={t("filters.employeePlaceholder")}
-                allowAll
-                allLabel={t("filters.all")}
-                className="h-10 rounded-xl border-border bg-background"
-                contentClassName="bg-card-select"
-              />
-            </FilterField>
-
-            {/* Date range */}
-            <FilterField label={t("filters.date")}>
-              <DateRangePicker
-                value={{
-                  startDate: filters.startDate,
-                  endDate: filters.endDate,
-                }}
-                onChange={(newDates) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    ...newDates,
-                  }))
-                }
-                placeholder={t("filters.datePlaceholder")}
-                dataSize="default"
-                maxDate="today"
-              />
-            </FilterField>
-
-            <FilterField label={t("postponed.date")}>
-              <DateRangePicker
-                value={{
-                  startDate: filters.postponedStartDate,
-                  endDate: filters.postponedEndDate,
-                }}
-                onChange={(newDates) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    postponedStartDate: newDates.startDate,
-                    postponedEndDate: newDates.endDate,
-                  }))
-                }
-                placeholder={t("postponed.datePlaceholder")}
-                dataSize="default"
-                // minDate="today"
-                maxDate={null}
-              />
-            </FilterField>
-
-            <FilterField label={t("filters.shipmentStatus")}>
-              <Select
-                value={filters.shippingStatus}
-                onValueChange={(v) =>
-                  setFilters((f) => ({ ...f, shippingStatus: v }))
-                }
-              >
-                <SelectTrigger
-                  className="h-10 rounded-xl border-border bg-background text-sm
-                    focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all"
-                >
-                  <SelectValue
-                    placeholder={t("filters.shipmentStatusPlaceholder")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filters.all")}</SelectItem>
-                  {(unifiedShipmentStatuses || []).map((code) => (
-                    <SelectItem key={code} value={code}>
-                      {t(`trackingStatus.${code}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FilterField>
-
-            <FilterField label={t("filters.tags")}>
-              <Select
-                value={filters.tagId}
-                onValueChange={(v) => setFilters((f) => ({ ...f, tagId: v }))}
-              >
-                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
-                  <SelectValue placeholder={t("filters.tagsPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filters.all")}</SelectItem>
-                  {tagOptions.map((tag) => (
-                    <SelectItem key={tag.id} value={tag.id}>
-                      {tag.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FilterField>
-
-            <StoreFilter
-              value={filters.store}
-              onChange={(v) => setFilters((f) => ({ ...f, store: v }))}
-            />
-
-            <ShippingCompanyFilter
-              value={filters.shippingCompany}
-              onChange={(v) =>
-                setFilters((f) => ({ ...f, shippingCompany: v }))
-              }
-            />
-          </>
-        }
+        filters={filtersNode}
+        toolbarExtra={showTopActions ? viewSwitcher : undefined}
         // ── Table ─────────────────────────────────────────────────────────────
         columns={columns}
         data={pager.records}
@@ -2590,6 +2858,148 @@ export default function OrdersTab({
         }}
         onPageChange={handlePageChange}
       />
+      ) : (
+        <div className="main-card rounded-2xl border border-border/50 overflow-hidden">
+          {/* ── Toolbar ─────────────────────────────────────────── */}
+          <div className="px-5 py-4 border-b border-border/40">
+            <TableToolbar
+              searchValue={search}
+              onSearchChange={setSearch}
+              onSearch={applyFilters}
+              hasSearch
+              searchPlaceholder={t("toolbar.searchPlaceholder")}
+              isFiltersOpen={groupedFiltersOpen}
+              onToggleFilters={() => setGroupedFiltersOpen((v) => !v)}
+              filterLabel={t("toolbar.filter")}
+              actions={[
+                ...(showBulkUpload
+                  ? [{
+                    key: "bulk",
+                    label: t("toolbar.bulkUpload"),
+                    icon: <Upload size={14} />,
+                    color: "primary",
+                    onClick: () => setBulkUploadOpen(true),
+                    permission: "orders.create",
+                  }]
+                  : []),
+                {
+                  key: "export",
+                  label: t("toolbar.export"),
+                  icon: exportLoading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Download size={14} />
+                  ),
+                  color: "primary",
+                  onClick: handleGroupedExport,
+                  disabled: exportLoading,
+                  permission: "orders.read",
+                },
+              ]}
+              toolbarExtra={viewSwitcher}
+            />
+            <AnimatePresence>
+              {groupedFiltersOpen && (
+                <TableFilters
+                  onApply={applyFilters}
+                  applyLabel={t("filters.apply")}
+                >
+                  {filtersNode}
+                </TableFilters>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ── Active filter chips ─────────────────────────────── */}
+          <div className="px-5 py-3 flex items-center gap-2 flex-wrap border-b border-border/40">
+            <button
+              type="button"
+              onClick={openGroupedDateFilter}
+              className="cursor-pointer text-xs text-muted-foreground hover:opacity-80 transition-opacity"
+            >
+              {t("groupedView.groupBy")}:{" "}
+              <strong style={{ color: "var(--primary)" }}>
+                {t("groupedView.date")}
+              </strong>
+            </button>
+            {filters.startDate && filters.endDate && (
+              <button
+                type="button"
+                className="cursor-default inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold hover:opacity-90 transition-opacity"
+                style={{
+                  background:
+                    "color-mix(in oklab, var(--primary) 6%, transparent)",
+                  borderColor:
+                    "color-mix(in oklab, var(--primary) 25%, transparent)",
+                  color: "var(--primary)",
+                }}
+              >
+                {t("groupedView.period")}:{" "}
+                {formatGroupedDate(filters.startDate)} →{" "}
+                {formatGroupedDate(filters.endDate)}
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearGroupedDateRange();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      clearGroupedDateRange();
+                    }
+                  }}
+                  className="cursor-pointer hover:opacity-70 font-black"
+                  title={t("filters.all")}
+                >
+                  ×
+                </span>
+              </button>
+            )}
+          </div>
+
+          {/* ── Date groups ─────────────────────────────────────── */}
+          <div className="p-4">
+            {!groupsLoading && groupPager.records.length === 0 ? (
+              <div className="py-16 flex flex-col items-center gap-3">
+                <Package size={26} className="text-muted-foreground/60" />
+                <p className="text-sm font-bold text-foreground">
+                  {t("groupedView.emptyGrouped")}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setGroupedFiltersOpen(true)}
+                >
+                  {t("groupedView.editFilters")}
+                </Button>
+              </div>
+            ) : (
+              <OrdersByDateGroups
+                groups={groupPager.records}
+                columns={columns}
+                expandedDates={expandedDates}
+                dateOrders={dateOrders}
+                onToggleDate={toggleDateGroup}
+                onLoadMore={loadMoreOrdersForDate}
+                isLoading={groupsLoading}
+                formatCurrency={formatCurrency}
+                getStatusColor={(code) => statusesMap[code]?.color || null}
+              />
+            )}
+          </div>
+
+          {/* ── Pagination over date groups ─────────────────────── */}
+          <div className="h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+          <TablePagination
+            pagination={groupPager}
+            onPageChange={handleGroupPageChange}
+            isLoading={groupsLoading}
+          />
+        </div>
+      )}
 
       <DistributionModal
         isOpen={distributionOpen}

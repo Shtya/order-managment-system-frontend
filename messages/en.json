@@ -13745,7 +13745,7 @@
         "orderPostponeDate": "Let the customer choose a new delivery date",
         "offerDiscount": "Send a discount offer the customer can accept",
         "paymentMethod": "Ask the customer how they want to pay",
-        "orderCancelCause": "Cancel the order using a reason chosen by the customer"
+        "orderCancelCause": "Cancel the order using a reason chosen by the customer",
         "confirmOrder": "Ask the customer to confirm the order on WhatsApp"
       },
       "generatedRows": "Dates",

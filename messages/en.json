@@ -7101,7 +7101,24 @@
       "unitPrice": "Unit Price",
       "lineTotal": "Total",
       "unitCost": "Unit cost",
-      "totalUnitCost": "Total cost"
+      "totalUnitCost": "Total cost",
+      "confirmation": "Confirmation",
+      "confirmed": "Confirmed",
+      "confirmationSources": {
+        "whatsapp": "WhatsApp",
+        "manual": "Manual"
+      },
+      "secondPhoneNumber": "Second phone",
+      "allowOpenPackage": "Open package allowed",
+      "originalOrderNumber": "Original order",
+      "orderFlags": "Cancel / Postpone / Return",
+      "cancelledAt": "Cancelled at",
+      "rejectReason": "Reject reason",
+      "rejectedAt": "Rejected at",
+      "returnedAt": "Returned at",
+      "reminderDays": "Reminder",
+      "reminderDaysBefore": "{days} day(s) before",
+      "yes": "Yes"
     },
     "workPage": {
       "changeStatus": "Change Order Status",
@@ -13041,6 +13058,8 @@
           "secondPhoneNumber": "Second Phone Number",
           "address": "Address",
           "city": "City",
+          "cityName": "City name (text)",
+          "lastCancelCause": "Cancel cause",
           "area": "Area",
           "landmark": "Landmark",
           "deposit": "Deposit",

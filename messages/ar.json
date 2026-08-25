@@ -7089,7 +7089,24 @@
       "whatsappResponseLocation": "موقع استجابة الواتساب",
       "autoRetrieved": "تم الاسترداد تلقائياً",
       "unitCost": "سعر التكلفة",
-      "totalUnitCost": "إجمالي التكلفة"
+      "totalUnitCost": "إجمالي التكلفة",
+      "confirmation": "التأكيد",
+      "confirmed": "مؤكد",
+      "confirmationSources": {
+        "whatsapp": "واتساب",
+        "manual": "يدوي"
+      },
+      "secondPhoneNumber": "رقم هاتف ثانٍ",
+      "allowOpenPackage": "السماح بفتح الطرد",
+      "originalOrderNumber": "الطلب الأصلي",
+      "orderFlags": "إلغاء / تأجيل / مرتجع",
+      "cancelledAt": "تاريخ الإلغاء",
+      "rejectReason": "سبب الرفض",
+      "rejectedAt": "تاريخ الرفض",
+      "returnedAt": "تاريخ الإرجاع",
+      "reminderDays": "التذكير",
+      "reminderDaysBefore": "قبل {days} يوم",
+      "yes": "نعم"
     },
     "workPage": {
       "changeStatus": "تغيير حالة الطلب",
@@ -13065,6 +13082,8 @@
           "secondPhoneNumber": "رقم الجوال الثاني",
           "address": "العنوان",
           "city": "المدينة",
+          "cityName": "اسم المدينة (نص)",
+          "lastCancelCause": "سبب الإلغاء",
           "area": "الحي",
           "landmark": "العلامة المميزة",
           "deposit": "المدفوع",

@@ -5,14 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot, Ban } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
 import { OrderPropertySelector, useOrderProperties } from "./OrderPropertySelector";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useFlowStore } from "@/hook/useFlowStore";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
@@ -2450,8 +2450,11 @@ export function SendUpsellConfig({ value, onChange, onClose, setDisabled }) {
 export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled, onClose, context }) {
     const { shippingCompanies } = usePlatformSettings();
     const tCommon = useTranslations("common");
+    const locale = useLocale();
     const [stores, setStores] = useState([]);
     const [statuses, setStatuses] = useState([]);
+    const [cities, setCities] = useState([]);
+    const [cancelCauses, setCancelCauses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeIndex, setActiveIndex] = useState(null);
     const [search, setSearch] = useState('');
@@ -2479,12 +2482,16 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [storesRes, statusesRes] = await Promise.all([
+                const [storesRes, statusesRes, citiesRes, causesRes] = await Promise.all([
                     api.get("/lookups/stores", { params: { limit: 200, isActive: true } }),
-                    api.get("/orders/statuses")
+                    api.get("/orders/statuses"),
+                    api.get("/lookups/cities", { params: { limit: 200 } }),
+                    api.get("/cancel-causes/selectable"),
                 ]);
                 setStores(storesRes.data || []);
                 setStatuses(Array.isArray(statusesRes.data) ? statusesRes.data : statusesRes.data.records || []);
+                setCities(Array.isArray(citiesRes.data) ? citiesRes.data : citiesRes.data?.records || []);
+                setCancelCauses(causesRes.data?.records || []);
             } catch (error) {
                 console.error("Failed to fetch order check data:", error);
             } finally {
@@ -2493,6 +2500,15 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
         };
         if (isOpen) fetchData();
     }, [isOpen]);
+
+    const cityOptions = useMemo(
+        () =>
+            cities.map((c) => ({
+                id: c.id,
+                label: locale === "ar" ? (c.nameAr || c.nameEn) : (c.nameEn || c.nameAr),
+            })),
+        [cities, locale],
+    );
 
     const fields = [
         { id: "orderNumber", label: tBuilder('orderProperties.orderNumber'), type: "string", icon: Hash, color: "text-blue-500", bg: "bg-blue-50" },
@@ -2519,7 +2535,18 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                 { id: "unknown", label: tOrders("unknown") },
             ]
         },
-        { id: "city", label: tBuilder('orderProperties.city'), type: "string", icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
+        // Keep legacy text city checks for existing automations; prefer cityId for new ones.
+        // { id: "city", label: tBuilder('orderProperties.cityName'), type: "string", icon: MapPin, color: "text-rose-500", bg: "bg-rose-50" },
+        { id: "cityId", label: tBuilder('orderProperties.city'), type: "select", icon: MapPin, color: "text-rose-500", bg: "bg-rose-50", options: cityOptions },
+        {
+            id: "lastCancelCauseId",
+            label: tBuilder('orderProperties.lastCancelCause'),
+            type: "select",
+            icon: Ban,
+            color: "text-orange-500",
+            bg: "bg-orange-50",
+            options: cancelCauses.map((c) => ({ id: c.id, label: c.name })),
+        },
         { id: "discount", label: tBuilder('orderProperties.discount'), type: "string", icon: Tag, color: "text-pink-500", bg: "bg-pink-50" },
         { id: "additionalFees", label: tBuilder('orderProperties.additionalFees'), type: "number", icon: Tag, color: "text-pink-500", bg: "bg-pink-50" },
         { id: "status", label: tBuilder('orderProperties.status'), type: "select", icon: Activity, color: "text-cyan-500", bg: "bg-cyan-50", options: statuses.map(s => ({ id: s.id, label: s.system ? tOrders(`statuses.${s.code}`) : s.name })) },

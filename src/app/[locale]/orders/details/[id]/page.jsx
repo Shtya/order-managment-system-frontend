@@ -38,6 +38,9 @@ import {
   MapPin as MapPinIcon,
   Loader2,
   AlertTriangle,
+  Ban,
+  UserCheck,
+  PackageOpen,
 } from "lucide-react";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import {
@@ -75,6 +78,16 @@ import {
   OrderTagsDialog,
   unwrapOrderTags,
 } from "../../atoms/OrderTagsEditor";
+import {
+  calcShippingDaysElapsed,
+  getShippingDaysBadgeStyles,
+  getShippingDaysRangeStatus,
+} from "@/utils/order-utils";
+
+const ORDER_STATUS = {
+  SHIPPED: "shipped",
+  DELIVERED: "delivered",
+};
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const P = "var(--primary)";
@@ -112,6 +125,66 @@ function StatusBadge({ status, t }) {
       <span className="w-1.5 h-1.5 rounded-full" style={{ background: P }} />
       {status?.system ? t(`statuses.${status.code}`) : status.name}
     </span>
+  );
+}
+
+function ShippingDaysBadge({ order, t }) {
+  const statusCode = order?.status?.code;
+  const isShipped = statusCode === ORDER_STATUS.SHIPPED;
+  const isDelivered = statusCode === ORDER_STATUS.DELIVERED;
+  if ((!isShipped && !isDelivered) || !order?.shippedAt) return null;
+
+  const cityConfig = order.cityDetails?.tenantConfigs?.[0];
+  const minDays = cityConfig?.minShippingDays ?? null;
+  const maxDays = cityConfig?.maxShippingDays ?? null;
+  const refDate = isDelivered ? order.deliveredAt : undefined;
+  const days = calcShippingDaysElapsed(order.shippedAt, refDate);
+  if (days == null) return null;
+
+  const rangeStatus = getShippingDaysRangeStatus(days, minDays, maxDays);
+  const { className } = getShippingDaysBadgeStyles(rangeStatus);
+  const statusLabel = t(`shippingDays.${rangeStatus}`);
+  const daysLabel =
+    days === 1
+      ? t("shippingDays.day", { count: days })
+      : t("shippingDays.days", { count: days });
+
+  return (
+    <Badge
+      className={cn("rounded-lg px-2.5 py-1 font-semibold tabular-nums", className)}
+      title={statusLabel}
+    >
+      {daysLabel}
+    </Badge>
+  );
+}
+
+function AssignedEmployeeChip({ assignment, t, formatDate }) {
+  const user = assignment?.employee;
+  if (!user) {
+    return (
+      <span className="text-xs font-medium text-muted-foreground">
+        {t("table.notAssigned")}
+      </span>
+    );
+  }
+  return (
+    <div className="flex items-center gap-2 min-w-0">
+      <Avatar className="h-7 w-7 shrink-0">
+        <AvatarImage src={avatarSrc(user.avatarUrl)} alt={user.name} />
+        <AvatarFallback className="text-[10px] font-bold" style={{ background: P_15, color: P }}>
+          {(user.name || "?").slice(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0">
+        <p className="text-xs font-bold text-foreground truncate">{user.name}</p>
+        {(user.employeeType || assignment?.assignedAt) && (
+          <p className="text-[10px] text-muted-foreground truncate">
+            {user.employeeType || formatDate?.(assignment.assignedAt)}
+          </p>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -556,6 +629,52 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
               </div>
             </div>
 
+            {/* ── Meta grid: row 3 (ops: assignment / postpone / cancel / shipping days) ── */}
+            <div className="mx-5 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+            <div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
+                <MetaCell
+                  label={t("table.assignedEmployee")}
+                  icon={<UserCheck size={11} />}
+                >
+                  <AssignedEmployeeChip
+                    assignment={order.assignments?.find((a) => a.isAssignmentActive) || order.assignments?.[0]}
+                    t={t}
+                    formatDate={formatDate}
+                  />
+                </MetaCell>
+
+                <MetaCell
+                  label={t("fields.postponedDate")}
+                  icon={<Calendar size={11} />}
+                >
+                  <span className="text-xs font-semibold text-foreground">
+                    {order.postponedDate ? formatDate(order.postponedDate, true) : "—"}
+                  </span>
+                  {order.postponedDate && order.reminderDaysBefore != null && (
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">
+                      {t("details.reminderDaysBefore", { days: order.reminderDaysBefore })}
+                    </span>
+                  )}
+                </MetaCell>
+
+                <MetaCell
+                  label={t("table.lastCancelCause")}
+                  icon={<Ban size={11} />}
+                >
+                  <span className="text-xs font-semibold text-foreground line-clamp-2">
+                    {order.lastCancelCauseText || order.lastCancelCause?.name || "—"}
+                  </span>
+                  {order.cancelledAt && (
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">
+                      {formatDate(order.cancelledAt)}
+                    </span>
+                  )}
+                </MetaCell>
+
+              </div>
+            </div>
+
             {/* ── Order items table ──────────────────────────────────── */}
             <div className="border-t border-border/25 p-5 space-y-5">
               <SectionLabel icon={Package}>
@@ -949,6 +1068,13 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
                 label={t("fields.phoneNumber")}
                 value={order.phoneNumber}
               />
+              {order.secondPhoneNumber && (
+                <InfoRow
+                  icon={Phone}
+                  label={t("details.secondPhoneNumber")}
+                  value={order.secondPhoneNumber}
+                />
+              )}
               {order.email && (
                 <InfoRow
                   icon={FileText}
@@ -975,19 +1101,83 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
                   value={order.landmark}
                 />
               )}
-              {order.postponedDate && (
+              {order.customerNotes && (
                 <InfoRow
-                  icon={Calendar}
-                  label={t("fields.postponedDate")}
-                  value={formatDate(order.postponedDate, true)}
+                  icon={StickyNote}
+                  label={t("details.customerNotes")}
+                  value={order.customerNotes}
+                />
+              )}
+              {order.allowOpenPackage && (
+                <InfoRow
+                  icon={PackageOpen}
+                  label={t("details.allowOpenPackage")}
+                  value={t("details.yes")}
+                />
+              )}
+              {order.originalOrderNumber && (
+                <InfoRow
+                  icon={Hash}
+                  label={t("details.originalOrderNumber")}
+                  value={order.originalOrderNumber}
                 />
               )}
             </div>
           </SideCard>
 
+          {/* Cancellation / postpone extras */}
+          {(order.lastCancelCauseText || order.lastCancelCause || order.cancelledAt || order.postponedDate || order.rejectReason || order.returnedAt) && (
+            <SideCard title={t("details.orderFlags")} icon={Ban} delay={0.07}>
+              <div className="space-y-0">
+                {(order.lastCancelCauseText || order.lastCancelCause) && (
+                  <InfoRow
+                    icon={Ban}
+                    label={t("table.lastCancelCause")}
+                    value={order.lastCancelCauseText || order.lastCancelCause?.name}
+                  />
+                )}
+                {order.cancelledAt && (
+                  <InfoRow
+                    icon={Calendar}
+                    label={t("details.cancelledAt")}
+                    value={formatDate(order.cancelledAt)}
+                  />
+                )}
+                {order.postponedDate && (
+                  <InfoRow
+                    icon={Calendar}
+                    label={t("fields.postponedDate")}
+                    value={formatDate(order.postponedDate, true)}
+                  />
+                )}
+                {order.rejectReason && (
+                  <InfoRow
+                    icon={AlertCircle}
+                    label={t("details.rejectReason")}
+                    value={order.rejectReason}
+                  />
+                )}
+                {order.rejectedAt && (
+                  <InfoRow
+                    icon={Calendar}
+                    label={t("details.rejectedAt")}
+                    value={formatDate(order.rejectedAt)}
+                  />
+                )}
+                {order.returnedAt && (
+                  <InfoRow
+                    icon={RotateCcw}
+                    label={t("details.returnedAt")}
+                    value={formatDate(order.returnedAt)}
+                  />
+                )}
+              </div>
+            </SideCard>
+          )}
+
           {/* Shipping Info */}
           {/* نتحقق من وجود بيانات الشحن في المصفوفة الجديدة أو البيانات القديمة كاحتياط */}
-          {((order.shipments && order.shipments.length > 0) || order.shippingCompany) && (
+          {((order.shipments && order.shipments.length > 0) || order.shippingCompany || order.shippedAt) && (
             <SideCard
               title={t("details.shippingInfo")}
               icon={Truck}
@@ -1054,6 +1244,15 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
                           value={formatDate(order.deliveredAt)}
                         />
                       )}
+
+                      {((order.status?.code === ORDER_STATUS.SHIPPED || order.status?.code === ORDER_STATUS.DELIVERED) && order.shippedAt) && (
+                        <InfoRow
+                          icon={Clock}
+                          label={t("table.shippingDays")}
+                        >
+                          <ShippingDaysBadge order={order} t={t} />
+                        </InfoRow>
+                      )}
                     </>
                   );
                 })()}
@@ -1100,74 +1299,83 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
           )}
 
           {/* Assigned Employee */}
-          {order.assignments?.length > 0 && (
-            <SideCard
-              title={t("details.assignedEmployee")}
-              icon={User}
-              delay={0.13}
-            >
-              {order.assignments
-                .filter((a) => a.isAssignmentActive)
-                .map((assignment) => (
-                  <div key={assignment.id} className="space-y-3">
-                    {/* Employee chip */}
-                    <div
-                      className="flex items-center gap-3 p-3 rounded-xl border"
-                      style={{ background: P_06, borderColor: P_20 }}
-                    >
-                      <Avatar className="w-9 h-9 shrink-0">
-                        <AvatarImage src={assignment.employee?.avatar} />
-                        <AvatarFallback
-                          className="text-sm font-black"
-                          style={{ background: P_15, color: P }}
-                        >
-                          {assignment.employee?.name?.charAt(0) || "E"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-foreground truncate">
-                          {assignment.employee?.name ||
-                            t("details.unknownEmployee")}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          {formatDate(assignment.assignedAt)}
-                        </p>
-                      </div>
-                    </div>
+          <SideCard
+            title={t("details.assignedEmployee")}
+            icon={UserCheck}
+            delay={0.13}
+          >
+            {(() => {
+              const assignment = order.assignments?.[0];
+              if (!assignment) {
+                return (
+                  <p className="text-xs text-muted-foreground py-2">
+                    {t("table.notAssigned")}
+                  </p>
+                );
+              }
 
-                    {/* Retry stats */}
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        {
-                          label: t("details.retriesUsed"),
-                          val: assignment.retriesUsed,
-                        },
-                        {
-                          label: t("details.maxRetries"),
-                          val: assignment.maxRetriesAtAssignment,
-                        },
-                      ].map(({ label, val }) => (
-                        <div
-                          key={label}
-                          className="rounded-xl p-3 text-center border"
-                          style={{ background: P_06, borderColor: P_20 }}
-                        >
-                          <p
-                            className="text-xl font-black"
-                            style={{ color: P }}
-                          >
-                            {val}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
-                            {label}
-                          </p>
-                        </div>
-                      ))}
+              return (
+                <div key={assignment.id} className="space-y-3">
+                  <div
+                    className="flex items-center gap-3 p-3 rounded-xl border"
+                    style={{ background: P_06, borderColor: P_20 }}
+                  >
+                    <Avatar className="w-9 h-9 shrink-0">
+                      <AvatarImage
+                        src={avatarSrc(assignment.employee?.avatarUrl)}
+                        alt={assignment.employee?.name}
+                      />
+                      <AvatarFallback
+                        className="text-sm font-black"
+                        style={{ background: P_15, color: P }}
+                      >
+                        {(assignment.employee?.name || "?").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-foreground truncate">
+                        {assignment.employee?.name || t("details.unknownEmployee")}
+                      </p>
+                      {assignment.employee?.employeeType && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {assignment.employee.employeeType}
+                        </p>
+                      )}
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {formatDate(assignment.assignedAt)}
+                      </p>
                     </div>
                   </div>
-                ))}
-            </SideCard>
-          )}
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      {
+                        label: t("details.retriesUsed"),
+                        val: assignment.contactTries,
+                      },
+                      {
+                        label: t("details.maxRetries"),
+                        val: assignment.maxRetriesAtAssignment,
+                      },
+                    ].map(({ label, val }) => (
+                      <div
+                        key={label}
+                        className="rounded-xl p-3 text-center border"
+                        style={{ background: P_06, borderColor: P_20 }}
+                      >
+                        <p className="text-xl font-black" style={{ color: P }}>
+                          {val ?? "—"}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+                          {label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </SideCard>
 
           {/* Status History Timeline */}
           {order.statusHistory?.length > 0 && (

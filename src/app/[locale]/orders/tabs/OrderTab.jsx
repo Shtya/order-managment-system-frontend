@@ -2872,16 +2872,6 @@ export default function OrdersTab({
               onToggleFilters={() => setGroupedFiltersOpen((v) => !v)}
               filterLabel={t("toolbar.filter")}
               actions={[
-                ...(showBulkUpload
-                  ? [{
-                    key: "bulk",
-                    label: t("toolbar.bulkUpload"),
-                    icon: <Upload size={14} />,
-                    color: "primary",
-                    onClick: () => setBulkUploadOpen(true),
-                    permission: "orders.create",
-                  }]
-                  : []),
                 {
                   key: "export",
                   label: t("toolbar.export"),
@@ -2895,6 +2885,16 @@ export default function OrdersTab({
                   disabled: exportLoading,
                   permission: "orders.read",
                 },
+                ...(showBulkUpload
+                  ? [{
+                    key: "bulk",
+                    label: t("toolbar.bulkUpload"),
+                    icon: <Upload size={14} />,
+                    color: "primary",
+                    onClick: () => setBulkUploadOpen(true),
+                    permission: "orders.create",
+                  }]
+                  : []),
               ]}
               toolbarExtra={viewSwitcher}
             />

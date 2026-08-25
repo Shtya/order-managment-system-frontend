@@ -22,15 +22,14 @@ const GROUPED_ORDERS_PAGE = 20;
 function StatPill({ label, value, color, strong = false }) {
   const style = strong
     ? {
-        background: "var(--primary)",
-        color: "var(--primary-foreground, #fff)",
-      }
+      background: "var(--primary)",
+      color: "var(--primary-foreground, #fff)",
+    }
     : {
-        background: `color-mix(in srgb, ${
-          color || "var(--muted-foreground)"
+      background: `color-mix(in srgb, ${color || "var(--muted-foreground)"
         } 12%, transparent)`,
-        color: color || "var(--muted-foreground)",
-      };
+      color: color || "var(--muted-foreground)",
+    };
 
   return (
     <span
@@ -141,19 +140,9 @@ export default function OrdersByDateGroups({
                   strong
                 />
                 <StatPill
-                  label={t("stats.shipped")}
-                  value={group.statistics?.shipped ?? 0}
-                  color={getStatusColor("shipped") || "#3b82f6"}
-                />
-                <StatPill
-                  label={t("stats.delayed")}
-                  value={group.statistics?.delayed ?? 0}
-                  color="#e84545"
-                />
-                <StatPill
-                  label={t("stats.delivered")}
-                  value={group.statistics?.delivered ?? 0}
-                  color={getStatusColor("delivered")}
+                  label={t("stats.confirmed")}
+                  value={group.statistics?.confirmed ?? 0}
+                  color={getStatusColor("confirmed") || "#19a85b"}
                 />
                 <StatPill
                   label={t("stats.postponed")}
@@ -161,14 +150,24 @@ export default function OrdersByDateGroups({
                   color={getStatusColor("postponed")}
                 />
                 <StatPill
-                  label={t("stats.confirmed")}
-                  value={group.statistics?.confirmed ?? 0}
-                  color={getStatusColor("confirmed") || "#19a85b"}
-                />
-                <StatPill
                   label={t("stats.cancelled")}
                   value={group.statistics?.cancelled ?? 0}
                   color={getStatusColor("cancelled") || "#e84545"}
+                />
+                <StatPill
+                  label={t("stats.shipped")}
+                  value={group.statistics?.shipped ?? 0}
+                  color={getStatusColor("shipped") || "#3b82f6"}
+                />
+                <StatPill
+                  label={t("stats.delivered")}
+                  value={group.statistics?.delivered ?? 0}
+                  color={getStatusColor("delivered")}
+                />
+                <StatPill
+                  label={t("stats.delayed")}
+                  value={group.statistics?.delayed ?? 0}
+                  color="#e84545"
                 />
               </div>
 

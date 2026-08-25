@@ -141,9 +141,34 @@ export default function OrdersByDateGroups({
                   strong
                 />
                 <StatPill
+                  label={t("stats.shipped")}
+                  value={group.statistics?.shipped ?? 0}
+                  color={getStatusColor("shipped") || "#3b82f6"}
+                />
+                <StatPill
                   label={t("stats.delayed")}
                   value={group.statistics?.delayed ?? 0}
                   color="#e84545"
+                />
+                <StatPill
+                  label={t("stats.delivered")}
+                  value={group.statistics?.delivered ?? 0}
+                  color={getStatusColor("delivered")}
+                />
+                <StatPill
+                  label={t("stats.postponed")}
+                  value={group.statistics?.postponed ?? 0}
+                  color={getStatusColor("postponed")}
+                />
+                <StatPill
+                  label={t("stats.confirmed")}
+                  value={group.statistics?.confirmed ?? 0}
+                  color={getStatusColor("confirmed") || "#19a85b"}
+                />
+                <StatPill
+                  label={t("stats.cancelled")}
+                  value={group.statistics?.cancelled ?? 0}
+                  color={getStatusColor("cancelled") || "#e84545"}
                 />
               </div>
 

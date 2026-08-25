@@ -6444,7 +6444,12 @@
       "showingOf": "عرض {shown} من {total} طلب",
       "stats": {
         "totalOrders": "إجمالي الطلبات",
-        "delayed": "متأخر",
+        "shipped": "شحنات خارجة",
+        "delivered": "تم التوصيل",
+        "postponed": "مؤجل",
+        "confirmed": "مؤكد",
+        "cancelled": "ملغي",
+        "delayed": "شحنات متأخرة",
         "totalAmount": "إجمالي المبلغ"
       }
     },

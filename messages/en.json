@@ -6446,7 +6446,12 @@
       "showingOf": "Showing {shown} of {total} orders",
       "stats": {
         "totalOrders": "Total Orders",
-        "delayed": "Delayed",
+        "shipped": "Shipments Out",
+        "delivered": "Delivered",
+        "postponed": "Postponed",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "delayed": "Delayed Shipments",
         "totalAmount": "Total Amount"
       }
     },

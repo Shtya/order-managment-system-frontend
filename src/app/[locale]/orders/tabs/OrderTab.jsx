@@ -1227,6 +1227,18 @@ export default function OrdersTab({
     fetchOrdersForDate(date, { cursor: entry.nextCursor });
   };
 
+  /** Select/deselect only loaded orders for one date group (grouped view). */
+  const selectAllGroupOrders = (dateKey) => {
+    const allIds = (dateOrders[dateKey]?.records || []).map((r) => r.id);
+    if (!allIds.length) return;
+    const areAllSelected = allIds.every((id) => selectedOrderIds.includes(id));
+    if (areAllSelected) {
+      setSelectedOrderIds((prev) => prev.filter((id) => !allIds.includes(id)));
+    } else {
+      setSelectedOrderIds((prev) => [...new Set([...prev, ...allIds])]);
+    }
+  };
+
   const handleDeleteStatus = (status) => {
     setDeletingStatus(status);
     setDeleteModalOpen(true);
@@ -2468,7 +2480,7 @@ export default function OrdersTab({
   // Handlers for assignment tab
 
 
-  console.log(cancelModalOpen.ids)
+  
 
   // ── Shared filter panel (used by both Normal and Group by Date views) ──
   const filtersNode = (
@@ -2984,6 +2996,8 @@ export default function OrdersTab({
                 dateOrders={dateOrders}
                 onToggleDate={toggleDateGroup}
                 onLoadMore={loadMoreOrdersForDate}
+                onSelectAllGroup={selectAllGroupOrders}
+                selectedOrderIds={selectedOrderIds}
                 isLoading={groupsLoading}
                 formatCurrency={formatCurrency}
                 getStatusColor={(code) => statusesMap[code]?.color || null}

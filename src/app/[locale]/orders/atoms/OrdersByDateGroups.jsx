@@ -14,6 +14,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 
 const GROUPED_ORDERS_PAGE = 20;
@@ -75,12 +76,38 @@ export default function OrdersByDateGroups({
   dateOrders = {},
   onToggleDate,
   onLoadMore,
+  onSelectAllGroup,
+  selectedOrderIds = [],
   isLoading = false,
   formatCurrency = (v) => v,
   getStatusColor = () => null,
 }) {
   const t = useTranslations("orders.groupedView");
   const { formatTrendLabel } = useTrendLabelFormatter();
+
+  const columnsForGroup = (dateKey, records) => {
+    const ids = records.map((r) => r.id).filter(Boolean);
+    const areAllSelected =
+      ids.length > 0 && ids.every((id) => selectedOrderIds.includes(id));
+
+    return columns.map((col) => {
+      if (col.key !== "select") return col;
+      return {
+        ...col,
+        header: (
+          <div
+            className="flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={areAllSelected}
+              onCheckedChange={() => onSelectAllGroup?.(dateKey)}
+            />
+          </div>
+        ),
+      };
+    });
+  };
 
   if (isLoading) {
     return (
@@ -104,6 +131,7 @@ export default function OrdersByDateGroups({
           group.statistics?.totalOrders ||
           entry.total_records ||
           0;
+        const groupColumns = columnsForGroup(dateKey, records);
 
         return (
           <section
@@ -207,7 +235,7 @@ export default function OrdersByDateGroups({
                         <ShadTable>
                           <TableHeader className="border-b border-border/40">
                             <TableRow className="hover:bg-transparent">
-                              {columns.map((col, idx) => (
+                              {groupColumns.map((col, idx) => (
                                 <TableHead
                                   key={idx}
                                   className="!px-4 whitespace-nowrap ltr:text-left rtl:text-right align-middle py-2.5"
@@ -225,7 +253,7 @@ export default function OrdersByDateGroups({
                                 key={row.id ?? i}
                                 className="border-b border-border/35"
                               >
-                                {columns.map((col, idx) => (
+                                {groupColumns.map((col, idx) => (
                                   <TableCell
                                     key={idx}
                                     className="!px-4 text-sm whitespace-nowrap ltr:text-left rtl:text-right py-2"

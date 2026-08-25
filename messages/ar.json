@@ -13765,14 +13765,17 @@
       "orderPostponeDate": "تأجيل تاريخ الطلب",
       "offerDiscount": "عرض خصم",
       "paymentMethod": "طريقة الدفع",
+      "orderCancelCause": "سبب الإلغاء",
       "confirmOrder": "تأكيد الطلب",
       "descriptions": {
         "orderPostponeDate": "دع العميل يختار تاريخ تسليم جديد",
         "offerDiscount": "أرسل عرض خصم يمكن للعميل قبوله",
         "paymentMethod": "اسأل العميل عن طريقة الدفع التي يفضلها",
+        "orderCancelCause": "إلغاء الطلب بسبب يختاره العميل"
         "confirmOrder": "اطلب من العميل تأكيد الطلب عبر واتساب"
       },
       "generatedRows": "التواريخ",
+      "cancelCauseRows": "أسباب الإلغاء",
       "businessConfigTitle": "خيارات العمل",
       "next": "التالي",
       "prev": "السابق",
@@ -13797,6 +13800,12 @@
         "buttonCod": "الدفع عند الاستلام",
         "buttonWallet": "محفظة إلكترونية",
         "buttonCard": "بطاقة ائتمانية"
+      },
+      "orderCancelCauseTexts": {
+        "headerText": "إلغاء طلبك",
+        "bodyText": "الرجاء اختيار سبب إلغاء الطلب {orderNumber}.",
+        "footerText": "نأسف لمغادرتك.",
+        "menuLabel": "اختر سبباً"
       }
     },
     "businessConfig": {
@@ -13806,13 +13815,22 @@
       "dateFormat": "صيغة التاريخ",
       "discountValue": "قيمة الخصم",
       "discountType": "نوع الخصم",
+      "cancelCauses": "أسباب الإلغاء",
+      "addCancelCause": "إضافة سبب إلغاء",
+      "removeCancelCause": "إزالة السبب",
+      "loadingCancelCauses": "جاري تحميل أسباب الإلغاء...",
+      "cancelCausesEmpty": "أضف سبب إلغاء واحد على الأقل للمتابعة.",
+      "cancelCausesCount": "{count} / {max} أسباب",
+      "cancelCausesLoadError": "فشل تحميل أسباب الإلغاء",
       "options": {
         "percentage": "نسبة مئوية",
         "fixed": "مبلغ ثابت"
       },
       "validation": {
         "min": "الحد الأدنى للقيمة هو {min}",
-        "max": "الحد الأقصى للقيمة هو {max}"
+        "max": "الحد الأقصى للقيمة هو {max}",
+        "minItems": "أضف على الأقل {min} سبب إلغاء",
+        "maxItems": "يمكنك إضافة {max} أسباب إلغاء كحد أقصى"
       }
     },
     "address": "العنوان",

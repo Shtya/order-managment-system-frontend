@@ -1,4 +1,4 @@
-import { CalendarDays, BadgePercent, Wallet } from "lucide-react";
+import { CalendarDays, BadgePercent, Wallet, Ban } from "lucide-react";
 import { DEFAULT_DATE_FORMATS } from "@/components/ui/dateConfig";
 
 // Registry only (no React logic). Adding a future business message =
@@ -83,6 +83,37 @@ export const businessMessageDefinitions = {
         },
         businessConfigFields: [],
         businessCommand: 'order.set_payment_method',
+    },
+
+    order_cancel_cause: {
+        id: 'order_cancel_cause',
+        labelKey: 'businessMessages.orderCancelCause',
+        descriptionKey: 'businessMessages.descriptions.orderCancelCause',
+        icon: Ban,
+        color: 'text-orange-500',
+        messageType: 'list',
+        // rows are generated from selected cancel causes; lock option titles
+        // and list structure, keep row descriptions + header/body editable.
+        disabledFields: ['editRowValue', 'removeRow', 'addRow', 'addSection', 'removeSection', 'reorder'],
+        messageValues: {
+            headerType: 'TEXT',
+            menuLabel: 'Choose a reason',
+        },
+        previewRows: [
+            { id: '__cancel_cause_preview_1__', title: 'Too expensive', description: '' },
+            { id: '__cancel_cause_preview_2__', title: 'Changed mind', description: '' },
+        ],
+        businessConfigFields: [
+            {
+                key: 'cancelCauses',
+                type: 'cancelCauses',
+                labelKey: 'businessConfig.cancelCauses',
+                defaultValue: [],
+                min: 1,
+                max: 10,
+            },
+        ],
+        businessCommand: 'order.set_cancel_cause',
     },
 };
 

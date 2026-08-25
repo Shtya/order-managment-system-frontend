@@ -9,6 +9,9 @@ import { DEFAULT_DATE_FORMATS } from "@/components/ui/dateConfig";
 const POSTPONE_NS = "businessMessages.orderPostponeDateTexts";
 const DISCOUNT_NS = "businessMessages.offerDiscountTexts";
 const PAYMENT_NS = "businessMessages.paymentMethodTexts";
+const CANCEL_CAUSE_NS = "businessMessages.orderCancelCauseTexts";
+
+const WHATSAPP_LIST_TITLE_MAX = 24;
 
 // Matches the backend's computeOffsetDate: offset N = the N-th working day
 // after the base (weekends Fri/Sat don't count when excludeWeekends is on),
@@ -117,6 +120,35 @@ export const businessMessageBuilders = {
                 ...btn,
                 text: buttonTexts[i] || btn.text,
             })),
+        };
+    },
+
+    order_cancel_cause: (messageValues, businessConfig, ctx) => {
+        const { t } = ctx;
+        const causes = Array.isArray(businessConfig?.cancelCauses)
+            ? businessConfig.cancelCauses.slice(0, 10)
+            : [];
+        const rows = causes.map((cause) => {
+            const name = String(cause?.name || "").trim() || String(cause?.id || "");
+            return {
+                id: `__cancel_cause_${cause.id}__`,
+                title: name.slice(0, WHATSAPP_LIST_TITLE_MAX),
+                description: "",
+            };
+        });
+        return {
+            ...messageValues,
+            headerType: messageValues.headerType || "TEXT",
+            headerText: t(`${CANCEL_CAUSE_NS}.headerText`),
+            bodyText: t(`${CANCEL_CAUSE_NS}.bodyText`, { orderNumber: "{{orderNumber}}" }),
+            footerText: t(`${CANCEL_CAUSE_NS}.footerText`),
+            menuLabel: t(`${CANCEL_CAUSE_NS}.menuLabel`),
+            sections: [
+                {
+                    title: t("businessMessages.cancelCauseRows"),
+                    rows,
+                },
+            ],
         };
     },
 };

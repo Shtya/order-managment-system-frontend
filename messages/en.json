@@ -13739,14 +13739,17 @@
       "orderPostponeDate": "Postpone Order Date",
       "offerDiscount": "Offer Discount",
       "paymentMethod": "Payment Method",
+      "orderCancelCause": "Cancel Reason",
       "confirmOrder": "Confirm Order",
       "descriptions": {
         "orderPostponeDate": "Let the customer choose a new delivery date",
         "offerDiscount": "Send a discount offer the customer can accept",
         "paymentMethod": "Ask the customer how they want to pay",
+        "orderCancelCause": "Cancel the order using a reason chosen by the customer"
         "confirmOrder": "Ask the customer to confirm the order on WhatsApp"
       },
       "generatedRows": "Dates",
+      "cancelCauseRows": "Cancel reasons",
       "businessConfigTitle": "Business Options",
       "next": "Next",
       "prev": "Previous",
@@ -13771,6 +13774,12 @@
         "buttonCod": "Cash on delivery",
         "buttonWallet": "E-Wallet",
         "buttonCard": "Credit Card"
+      },
+      "orderCancelCauseTexts": {
+        "headerText": "Cancel your order",
+        "bodyText": "Please choose a reason for cancelling order {orderNumber}.",
+        "footerText": "We’re sorry to see you go.",
+        "menuLabel": "Choose a reason"
       }
     },
     "businessConfig": {
@@ -13780,13 +13789,22 @@
       "dateFormat": "Date format",
       "discountValue": "Discount value",
       "discountType": "Discount type",
+      "cancelCauses": "Cancel causes",
+      "addCancelCause": "Add a cancel cause",
+      "removeCancelCause": "Remove cause",
+      "loadingCancelCauses": "Loading cancel causes...",
+      "cancelCausesEmpty": "Add at least one cancel cause to continue.",
+      "cancelCausesCount": "{count} / {max} causes",
+      "cancelCausesLoadError": "Failed to load cancel causes",
       "options": {
         "percentage": "Percentage",
         "fixed": "Fixed amount"
       },
       "validation": {
         "min": "Minimum value is {min}",
-        "max": "Maximum value is {max}"
+        "max": "Maximum value is {max}",
+        "minItems": "Add at least {min} cancel cause(s)",
+        "maxItems": "You can add at most {max} cancel causes"
       }
     },
     "address": "Address",

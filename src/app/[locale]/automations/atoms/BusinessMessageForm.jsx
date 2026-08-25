@@ -9,6 +9,10 @@ import { formatDateWithFormat, useDateLang, getNaturalDayName } from "@/componen
 import { ListMessageForm } from "../../whatsapp/atoms/chats/ListMessageModal";
 import { InteractiveMessageForm } from "../../whatsapp/atoms/chats/InteractiveMessageModal";
 import { businessMessageBuilders } from "./businessMessageBuilders";
+import api from "@/utils/api";
+import toast from "react-hot-toast";
+import { Loader2, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const getDisabledFieldsObject = (disabledFields) => {
     const obj = {};
@@ -52,8 +56,162 @@ const getBaseFromPayload = (payload) => {
     if (interactive.action?.button) {
         base.menuLabel = interactive.action.button;
     }
+    if (Array.isArray(interactive.action?.sections)) {
+        base.sections = interactive.action.sections;
+    }
     return base;
 };
+
+const mergeListSections = (builtSections, prevSections) => {
+    if (!prevSections?.length) return builtSections;
+    return builtSections.map((section, sIdx) => {
+        const prevSection = prevSections[sIdx] || prevSections[0];
+        const prevRowsById = Object.fromEntries(
+            (prevSection?.rows || []).map((row) => [row.id, row]),
+        );
+        return {
+            ...section,
+            title: prevSection?.title ?? section.title,
+            rows: (section.rows || []).map((row) => ({
+                ...row,
+                description: prevRowsById[row.id]?.description ?? row.description,
+            })),
+        };
+    });
+};
+
+function CancelCausesConfigField({ field, value, onChange, error, t }) {
+    const [availableCauses, setAvailableCauses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectKey, setSelectKey] = useState(0);
+    const selected = Array.isArray(value) ? value : [];
+    const selectedIds = useMemo(
+        () => new Set(selected.map((c) => String(c.id))),
+        [selected],
+    );
+    const remaining = useMemo(
+        () => availableCauses.filter((c) => !selectedIds.has(String(c.id))),
+        [availableCauses, selectedIds],
+    );
+    const atMax = selected.length >= (field.max ?? 10);
+
+    useEffect(() => {
+        let cancelled = false;
+        const fetchCauses = async () => {
+            try {
+                setLoading(true);
+                const { data } = await api.get("/cancel-causes/selectable");
+                if (!cancelled) {
+                    setAvailableCauses(data?.records || []);
+                }
+            } catch (err) {
+                console.error("Failed to fetch cancel causes:", err);
+                if (!cancelled) {
+                    toast.error(t("businessConfig.cancelCausesLoadError"));
+                    setAvailableCauses([]);
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+        fetchCauses();
+        return () => {
+            cancelled = true;
+        };
+    }, [t]);
+
+    const handleAdd = (id) => {
+        if (!id || atMax || selectedIds.has(String(id))) return;
+        const cause = availableCauses.find((c) => String(c.id) === String(id));
+        if (!cause) return;
+        onChange([...selected, { id: cause.id, name: cause.name }]);
+        setSelectKey((k) => k + 1);
+    };
+
+    const handleRemove = (id) => {
+        onChange(selected.filter((c) => String(c.id) !== String(id)));
+    };
+
+    return (
+        <div className="sm:col-span-2 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">
+                    {t(field.labelKey)}
+                </label>
+                <span className="text-[10px] font-bold text-slate-400">
+                    {t("businessConfig.cancelCausesCount", {
+                        count: selected.length,
+                        max: field.max ?? 10,
+                    })}
+                </span>
+            </div>
+
+            <div className="flex gap-2">
+                <Select
+                    key={selectKey}
+                    onValueChange={handleAdd}
+                    disabled={loading || atMax || remaining.length === 0}
+                >
+                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                        {loading ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>{t("businessConfig.loadingCancelCauses")}</span>
+                            </div>
+                        ) : (
+                            <SelectValue placeholder={t("businessConfig.addCancelCause")} />
+                        )}
+                    </SelectTrigger>
+                    <SelectContent>
+                        {remaining.map((cause) => (
+                            <SelectItem key={cause.id} value={String(cause.id)}>
+                                {cause.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {selected.length > 0 ? (
+                <ul className="space-y-2">
+                    {selected.map((cause) => (
+                        <li
+                            key={cause.id}
+                            className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 dark:bg-slate-800 px-4 py-3"
+                        >
+                            <span className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
+                                {cause.name}
+                            </span>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 shrink-0 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                                onClick={() => handleRemove(cause.id)}
+                                aria-label={t("businessConfig.removeCancelCause")}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p className="text-xs text-slate-400 font-medium">
+                    {t("businessConfig.cancelCausesEmpty")}
+                </p>
+            )}
+
+            {error && (
+                <p className="text-[10px] text-rose-500 font-bold mt-1">
+                    {t("businessConfig.validation." + error.type, {
+                        min: error.min,
+                        max: error.max,
+                    })}
+                </p>
+            )}
+        </div>
+    );
+}
 
 export const BusinessMessageForm = forwardRef(({
     definition,
@@ -75,20 +233,32 @@ export const BusinessMessageForm = forwardRef(({
 
     const disabledFields = useMemo(() => getDisabledFieldsObject(definition?.disabledFields), [definition]);
 
-    const numberErrors = useMemo(() => {
+    const configErrors = useMemo(() => {
         const errors = {};
         (definition?.businessConfigFields || []).forEach((field) => {
-            if (field.type !== 'number') return;
-            const value = Number(businessConfig[field.key]);
-            if (field.min !== undefined && value < field.min) {
-                errors[field.key] = { type: 'min', min: field.min };
-            } else if (field.max !== undefined && value > field.max) {
-                errors[field.key] = { type: 'max', max: field.max };
+            if (field.type === "number") {
+                const value = Number(businessConfig[field.key]);
+                if (field.min !== undefined && value < field.min) {
+                    errors[field.key] = { type: "min", min: field.min };
+                } else if (field.max !== undefined && value > field.max) {
+                    errors[field.key] = { type: "max", max: field.max };
+                }
+                return;
+            }
+            if (field.type === "cancelCauses") {
+                const list = Array.isArray(businessConfig[field.key])
+                    ? businessConfig[field.key]
+                    : [];
+                if (field.min !== undefined && list.length < field.min) {
+                    errors[field.key] = { type: "minItems", min: field.min };
+                } else if (field.max !== undefined && list.length > field.max) {
+                    errors[field.key] = { type: "maxItems", max: field.max };
+                }
             }
         });
         return errors;
     }, [businessConfig, definition]);
-    const isOptionsValid = Object.keys(numberErrors).length === 0;
+    const isOptionsValid = Object.keys(configErrors).length === 0;
 
     const buildFinal = useMemo(() => {
         const builder = businessMessageBuilders[definition?.id];
@@ -111,9 +281,10 @@ export const BusinessMessageForm = forwardRef(({
             buttons: base.buttons ?? messageValues.buttons ?? [],
         };
         if (definition?.messageType === "list") {
-            values.sections = messageValues.sections && messageValues.sections.length
+            const builtSections = messageValues.sections && messageValues.sections.length
                 ? messageValues.sections
                 : [{ title: t("businessMessages.generatedRows"), rows: definition?.previewRows || [] }];
+            values.sections = mergeListSections(builtSections, base.sections);
         }
         return values;
     }, [definition, buildFinal, businessConfig, t]);
@@ -186,6 +357,23 @@ export const BusinessMessageForm = forwardRef(({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {(definition?.businessConfigFields || []).map((field) => {
+                            if (field.type === "cancelCauses") {
+                                return (
+                                    <CancelCausesConfigField
+                                        key={field.key}
+                                        field={field}
+                                        value={businessConfig[field.key]}
+                                        error={configErrors[field.key]}
+                                        t={t}
+                                        onChange={(next) => {
+                                            setBusinessConfig((prev) => ({
+                                                ...prev,
+                                                [field.key]: next,
+                                            }));
+                                        }}
+                                    />
+                                );
+                            }
                             if (field.type === "boolean") {
                                 return (
                                     <div key={field.key} className="flex items-center gap-2">
@@ -257,11 +445,11 @@ export const BusinessMessageForm = forwardRef(({
                                         }}
                                         className="h-12 md:h-14 rounded-xl md:rounded-2xl px-4 md:px-6 text-xs md:text-sm"
                                     />
-                                    {numberErrors[field.key] && (
+                                    {configErrors[field.key] && (
                                         <p className="text-[10px] text-rose-500 font-bold mt-1">
-                                            {t("businessConfig.validation." + numberErrors[field.key].type, {
-                                                min: numberErrors[field.key].min,
-                                                max: numberErrors[field.key].max,
+                                            {t("businessConfig.validation." + configErrors[field.key].type, {
+                                                min: configErrors[field.key].min,
+                                                max: configErrors[field.key].max,
                                             })}
                                         </p>
                                     )}

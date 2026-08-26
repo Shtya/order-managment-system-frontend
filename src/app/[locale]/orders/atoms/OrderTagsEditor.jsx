@@ -148,8 +148,8 @@ export function OrderTagsDialog({ order, open, onClose, onUpdated }) {
 
   const toggle = (tag) => {
     if (!canEdit || saving) return;
+    if (!assignableIds.has(tag.id)) return;
     const checked = selectedIds.has(tag.id);
-    if (!checked && !assignableIds.has(tag.id)) return;
     if (single) {
       setSelected(checked ? [] : [tag]);
       return;
@@ -210,7 +210,7 @@ export function OrderTagsDialog({ order, open, onClose, onUpdated }) {
             {options.map((tag) => {
               const checked = selectedIds.has(tag.id);
               const canAssign = assignableIds.has(tag.id);
-              const disabled = !canEdit || saving || (!checked && !canAssign);
+              const disabled = !canEdit || saving || !canAssign;
               return (
                 <label
                   key={tag.id}

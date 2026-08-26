@@ -10,9 +10,13 @@ import {
   Pencil,
   Play,
   PlusCircle,
+  Power,
+  PowerOff,
   Settings,
   Tags,
   Trash2,
+  UserCheck,
+  UserX,
   Workflow,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -71,6 +75,7 @@ export default function TagsPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [togglingKey, setTogglingKey] = useState(null);
 
   useEffect(() => {
     setDocumentTitle(t("title"));
@@ -243,6 +248,82 @@ export default function TagsPage() {
     }
   }, [selected, viewMode, afterMutate, t]);
 
+  const patchRow = useCallback((id, patch) => {
+    setPager((prev) => ({
+      ...prev,
+      records: prev.records.map((row) =>
+        row.id === id ? { ...row, ...patch } : row,
+      ),
+    }));
+  }, []);
+
+  const isToggling = useCallback(
+    (id, type) => togglingKey === `${id}:${type}`,
+    [togglingKey],
+  );
+
+  const toggleTagActive = useCallback(
+    async (row) => {
+      const key = `${row.id}:active`;
+      if (togglingKey) return;
+      setTogglingKey(key);
+      try {
+        const res = await api.patch(`/tags/${row.id}/toggle-active`);
+        patchRow(row.id, { isActive: res.data?.isActive ?? !row.isActive });
+        toast.success(t("toast.saved"));
+        fetchStats();
+      } catch (e) {
+        toast.error(normalizeAxiosError(e));
+      } finally {
+        setTogglingKey(null);
+      }
+    },
+    [fetchStats, patchRow, t, togglingKey],
+  );
+
+  const toggleTagEmployeeUse = useCallback(
+    async (row) => {
+      const key = `${row.id}:employee`;
+      if (togglingKey) return;
+      setTogglingKey(key);
+      try {
+        const res = await api.patch(`/tags/${row.id}/toggle-employee-use`);
+        patchRow(row.id, {
+          allowManualAssignment:
+            res.data?.allowManualAssignment ?? !row.allowManualAssignment,
+        });
+        toast.success(t("toast.saved"));
+        fetchStats();
+      } catch (e) {
+        toast.error(normalizeAxiosError(e));
+      } finally {
+        setTogglingKey(null);
+      }
+    },
+    [fetchStats, patchRow, t, togglingKey],
+  );
+
+  const toggleAutomationEnabled = useCallback(
+    async (row) => {
+      const key = `${row.id}:enabled`;
+      if (togglingKey) return;
+      setTogglingKey(key);
+      try {
+        const res = await api.patch(`/tag-automations/${row.id}/toggle-enabled`);
+        patchRow(row.id, {
+          isEnabled: res.data?.isEnabled ?? !row.isEnabled,
+        });
+        toast.success(t("toast.saved"));
+        fetchStats();
+      } catch (e) {
+        toast.error(normalizeAxiosError(e));
+      } finally {
+        setTogglingKey(null);
+      }
+    },
+    [fetchStats, patchRow, t, togglingKey],
+  );
+
   const tagChip = (tag) => {
     if (!tag) return "—";
     return (
@@ -287,7 +368,7 @@ export default function TagsPage() {
           header: t("columns.manual"),
           cell: (row) => (
             <Badge variant={row.allowManualAssignment ? "secondary" : "outline"}>
-              {row.allowManualAssignment ? t("filters.active") : t("filters.inactive")}
+              {row.allowManualAssignment ? t("filters.allowed") : t("filters.notAllowed")}
             </Badge>
           ),
         },
@@ -303,6 +384,36 @@ export default function TagsPage() {
             <ActionButtons
               row={row}
               actions={[
+                {
+                  icon: isToggling(row.id, "active") ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : row.isActive ? (
+                    <PowerOff size={16} />
+                  ) : (
+                    <Power size={16} />
+                  ),
+                  tooltip: row.isActive ? t("actions.deactivate") : t("actions.activate"),
+                  onClick: () => toggleTagActive(row),
+                  variant: row.isActive ? "orange" : "emerald",
+                  permission: "tags.update",
+                  disabled: isToggling(row.id, "active"),
+                },
+                {
+                  icon: isToggling(row.id, "employee") ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : row.allowManualAssignment ? (
+                    <UserX size={16} />
+                  ) : (
+                    <UserCheck size={16} />
+                  ),
+                  tooltip: row.allowManualAssignment
+                    ? t("actions.disallowEmployeeUse")
+                    : t("actions.allowEmployeeUse"),
+                  onClick: () => toggleTagEmployeeUse(row),
+                  variant: row.allowManualAssignment ? "orange" : "emerald",
+                  permission: "tags.update",
+                  disabled: isToggling(row.id, "employee"),
+                },
                 {
                   icon: <Pencil size={16} />,
                   tooltip: t("actions.edit"),
@@ -324,7 +435,7 @@ export default function TagsPage() {
                   variant: "red",
                   permission: "tags.delete",
                 },
-              ]}
+              ]}  
             />
           ),
         },
@@ -381,6 +492,23 @@ export default function TagsPage() {
                 },
                 variant: "primary",
                 permission: "tag-automations.read",
+                disabled: Boolean(togglingKey),
+              },
+              {
+                icon: isToggling(row.id, "enabled") ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : row.isEnabled ? (
+                  <PowerOff size={16} />
+                ) : (
+                  <Power size={16} />
+                ),
+                tooltip: row.isEnabled
+                  ? t("actions.disableAutomation")
+                  : t("actions.enableAutomation"),
+                onClick: () => toggleAutomationEnabled(row),
+                variant: row.isEnabled ? "orange" : "emerald",
+                permission: "tag-automations.update",
+                disabled: Boolean(togglingKey),
               },
               {
                 icon: <Pencil size={16} />,
@@ -392,6 +520,7 @@ export default function TagsPage() {
                 },
                 variant: "primary",
                 permission: "tag-automations.update",
+                disabled: Boolean(togglingKey),
               },
               {
                 icon: <Trash2 size={16} />,
@@ -402,13 +531,23 @@ export default function TagsPage() {
                 },
                 variant: "red",
                 permission: "tag-automations.delete",
+                disabled: Boolean(togglingKey),
               },
             ]}
           />
         ),
       },
     ];
-  }, [t, tc, viewMode]);
+  }, [
+    isToggling,
+    t,
+    tc,
+    toggleAutomationEnabled,
+    toggleTagActive,
+    toggleTagEmployeeUse,
+    togglingKey,
+    viewMode,
+  ]);
 
   const headerStats = useMemo(
     () => [

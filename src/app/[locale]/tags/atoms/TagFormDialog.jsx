@@ -224,7 +224,9 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
         </div>
 
         <div className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3">
-          <Label className="text-sm font-medium">{t("dialog.allowManual")}</Label>
+          <Label className="text-sm font-medium" description={t("dialog.allowEmployeeDescription")}>
+            {t("dialog.allowEmployee")}
+          </Label>
           <Controller
             name="allowManualAssignment"
             control={control}

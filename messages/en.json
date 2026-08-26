@@ -1324,7 +1324,7 @@
       "color": "Color",
       "description": "Description",
       "active": "Active",
-      "manual": "Manual assign",
+      "manual": "Allow employees to use",
       "priority": "Priority",
       "tag": "Tag",
       "enabled": "Enabled",
@@ -1338,7 +1338,7 @@
       "enabled": "Enabled",
       "disabled": "Disabled",
       "tag": "Tag",
-      "manual": "Manual assignment",
+      "manual": "Allow employees to use",
       "allowed": "Allowed",
       "notAllowed": "Not allowed"
     },
@@ -1349,7 +1349,13 @@
       "export": "Export Excel",
       "view": "View",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "allowEmployeeUse": "Allow employees to use",
+      "disallowEmployeeUse": "Disallow employees from using",
+      "enableAutomation": "Enable",
+      "disableAutomation": "Disable"
     },
     "settings": {
       "title": "Tag Settings",
@@ -1390,7 +1396,8 @@
       "description": "Description",
       "descriptionPlaceholder": "Optional note for the team...",
       "isActive": "Active",
-      "allowManual": "Allow manual assignment",
+      "allowEmployee": "Allow employees to use",
+      "allowEmployeeDescription": "Disable this to hide the tag from employees. However, managers can always use all tags.",
       "priority": "Priority",
       "priorityHint": "Higher priority wins when only one tag is allowed.",
       "tag": "Tag",
@@ -1529,7 +1536,7 @@
       "tags": "Tags",
       "automations": "Automations",
       "activeTags": "Active tags",
-      "manualTags": "Manual tags",
+      "manualTags": "Tags employees can use",
       "activeAutomations": "Active automations"
     }
   },

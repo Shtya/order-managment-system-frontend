@@ -1326,7 +1326,7 @@
       "color": "اللون",
       "description": "الوصف",
       "active": "نشط",
-      "manual": "تعيين يدوي",
+      "manual": "السماح للموظفين بالاستخدام",
       "priority": "الأولوية",
       "tag": "الوسم",
       "enabled": "مفعّل",
@@ -1340,7 +1340,7 @@
       "enabled": "مفعّل",
       "disabled": "معطّل",
       "tag": "الوسم",
-      "manual": "التعيين اليدوي",
+      "manual": "السماح للموظفين بالاستخدام",
       "allowed": "مسموح",
       "notAllowed": "غير مسموح"
     },
@@ -1351,7 +1351,13 @@
       "export": "تصدير إكسل",
       "view": "عرض",
       "edit": "تعديل",
-      "delete": "حذف"
+      "delete": "حذف",
+      "activate": "تفعيل",
+      "deactivate": "إلغاء التفعيل",
+      "allowEmployeeUse": "السماح للموظفين بالاستخدام",
+      "disallowEmployeeUse": "منع الموظفين من الاستخدام",
+      "enableAutomation": "تفعيل",
+      "disableAutomation": "إيقاف"
     },
     "settings": {
       "title": "إعدادات الوسوم",
@@ -1392,7 +1398,8 @@
       "description": "الوصف",
       "descriptionPlaceholder": "ملاحظة اختيارية للفريق...",
       "isActive": "نشط",
-      "allowManual": "السماح بالتعيين اليدوي",
+      "allowEmployee": "السماح للموظفين بالاستخدام",
+      "allowEmployeeDescription": "أوقف هذا لإخفاء الوسم عن الموظفين. لكن المدير يمكنه استخدام كل الوسوم دائمًا.",
       "priority": "الأولوية",
       "priorityHint": "الأولوية الأعلى تفوز عند السماح بوسم واحد فقط.",
       "tag": "الوسم",
@@ -1531,7 +1538,7 @@
       "tags": "الوسوم",
       "automations": "الأتمتة",
       "activeTags": "وسوم نشطة",
-      "manualTags": "وسوم يدوية",
+      "manualTags": "وسوم يُسمح للموظفين باستخدامها",
       "activeAutomations": "أتمتة نشطة"
     }
   },

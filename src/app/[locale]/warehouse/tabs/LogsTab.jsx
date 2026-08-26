@@ -395,6 +395,7 @@ export default function LogsTab({ orders = [] }) {
       />
 
       <Table
+        tableKey="warehouse-logs"
         searchValue={search}
         onSearchChange={setSearch}
         onSearch={applyFilters}

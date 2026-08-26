@@ -648,6 +648,7 @@ export default function EmployeesPage() {
 
 
 			<Table
+        tableKey="employees"
 				t={t}
 				searchValue={search}
 				onSearchChange={setSearch}

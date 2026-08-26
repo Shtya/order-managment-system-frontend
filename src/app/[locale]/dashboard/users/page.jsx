@@ -891,6 +891,7 @@ export default function SuperAdminUsersPage() {
 			)}
 
 			<Table
+        tableKey="dashboard-users"
 				// search
 				searchValue={search}
 				onSearchChange={setSearch}

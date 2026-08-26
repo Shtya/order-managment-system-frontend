@@ -1811,6 +1811,7 @@ export default function CallCenterPage() {
             ) : (
                 <div data-getting-started="call_center.order_assignment_automation" data-getting-started-type="section">
                     <Table
+                    tableKey={viewMode === "manual" ? "call-center-employees" : "call-center-auto-rules"}
                     searchValue={search}
                     onSearchChange={setSearch}
                     onSearch={() => (viewMode === "manual" ? fetchEmployeeStats(1, pager.per_page) : fetchAutoAssignRules(1, pager.per_page))}

@@ -200,6 +200,7 @@ export default function StorageLocationsTab({ stats: _stats, onStatsChange }) {
     return (
         <>
             <Table
+        tableKey="warehouse-storage-locations"
                 searchValue={search}
                 onSearchChange={setSearch}
                 onSearch={onSearch}

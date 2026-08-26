@@ -1502,6 +1502,7 @@ export function ScanOutgoingSubtab({
 
 			<Panel>
 				<Table
+        tableKey="warehouse-outgoing-orders"
 					searchValue={search}
 					onSearchChange={setSearch}
 					data={pager.records}
@@ -1851,6 +1852,7 @@ function OutgoingFilesSubtab({
 
 	return (
 		<Table
+        tableKey="warehouse-outgoing-files"
 			searchValue={search}
 			onSearchChange={setSearch}
 			onApplyFilters={applyFilters}

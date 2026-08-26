@@ -165,7 +165,7 @@ export default function TicketTable({
       },
     },
     {
-      key: "lastMessageAt",
+      key: "created_at",
       header: t("columns.created_at"),
       cell: (row) => (
         <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -207,6 +207,7 @@ export default function TicketTable({
 
   return (
     <Table
+        tableKey="support-tickets"
       searchValue={searchValue}
       onSearchChange={onSearchChange}
       onSearch={onSearch}

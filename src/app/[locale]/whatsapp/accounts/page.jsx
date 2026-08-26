@@ -2235,6 +2235,7 @@ export default function WhatsAppAccountsPage() {
       />
 
       <Table
+        tableKey="whatsapp-accounts"
         isLoading={loading}
         data={pager.records}
         columns={columns}

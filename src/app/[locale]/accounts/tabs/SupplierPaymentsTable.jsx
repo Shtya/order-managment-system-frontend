@@ -270,6 +270,7 @@ export default function SupplierPaymentsTable({ supplierId: initialSupplierId, o
     return (
         <div className="space-y-4">
             <Table
+        tableKey="accounts-supplier-payments"
                 flat={flat}
                 searchValue={search}
                 onSearchChange={setSearch}

@@ -7349,6 +7349,7 @@
       "recordedAt": "تاريخ التسجيل",
       "replaceDete": "تاريخ الاستبدال",
       "createdat": "تاريخ الانشاء",
+      "select": "تحديد",
       "replacedBy": "تم الاستبدال بطلب رقم",
       "replaces": "طلب استبدال للطلب رقم"
     },
@@ -9163,6 +9164,17 @@
     "common": {
       "emptyTitle": "لا توجد بيانات للعرض",
       "emptySubtitle": "جرّب تغيير معايير البحث أو الفلترة"
+    },
+    "columnVisibility": {
+      "columns": "الأعمدة",
+      "chooseColumn": "اختر الأعمدة",
+      "search": "بحث",
+      "selectAll": "تحديد الكل",
+      "resetOrder": "استعادة الترتيب",
+      "ok": "موافق",
+      "cancel": "إلغاء",
+      "actionsColumn": "الإجراءات",
+      "selectColumn": "تحديد"
     }
   },
   "landing": {

@@ -199,6 +199,7 @@ export default function SmsLogs() {
             />
 
             <Table
+        tableKey="sms-logs"
                 searchValue={search}
                 onSearchChange={setSearch}
                 onSearch={() => { resetPager(); fetchData(1, pagination.per_page); }}

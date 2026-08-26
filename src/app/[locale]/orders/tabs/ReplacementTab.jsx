@@ -420,6 +420,7 @@ export function ReplacementTab({ statuses }) {
 		/>
 
 		<Table
+        tableKey="replacement-orders"
 			// ── Search ────────────────────────────────────────────────────────
 			searchValue={search}
 			onSearchChange={setSearch}

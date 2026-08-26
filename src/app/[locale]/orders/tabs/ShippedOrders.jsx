@@ -980,7 +980,7 @@ export default function ShippedOrders({ statuses = [] }) {
         ),
       },
       {
-        key: "shippingCost",
+        key: "finalTotal",
         header: t("table.finalTotal"),
         cell: (row) => (
           <span className="text-gray-600 dark:text-slate-200">
@@ -1234,6 +1234,7 @@ export default function ShippedOrders({ statuses = [] }) {
       />
 
       <Table
+        tableKey="shipped-orders"
         columns={columns}
         data={pager.records}
         isLoading={loading}

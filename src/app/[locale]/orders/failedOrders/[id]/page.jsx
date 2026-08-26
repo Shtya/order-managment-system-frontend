@@ -971,6 +971,7 @@ export default function FailedOrderDetailsPage() {
                 </CardHeader>
                 <div className="p-0">
                     <Table
+        tableKey="failed-order-items"
                         columns={itemColumns}
                         data={finalCartItems || []}
                         isLoading={loading}

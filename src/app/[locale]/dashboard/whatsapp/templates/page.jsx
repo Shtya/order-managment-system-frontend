@@ -281,6 +281,7 @@ export default function SuperAdminWhatsAppTemplatesPage() {
       />
 
       <Table
+        tableKey="dashboard-whatsapp-templates"
         isLoading={loading}
         data={pager.records}
         columns={columns}

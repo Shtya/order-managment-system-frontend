@@ -416,6 +416,7 @@ export default function RejectedTab({ resetToken }) {
       />
 
       <Table
+        tableKey="rejected-orders"
         searchValue={search}
         onSearchChange={setSearch}
         onSearch={() => fetchOrders(1, pager.per_page)}

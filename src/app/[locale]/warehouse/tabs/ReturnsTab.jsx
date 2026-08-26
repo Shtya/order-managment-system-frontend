@@ -2383,6 +2383,7 @@ function ReturnsFilesSubtab({
     <div className="space-y-4">
 
       <Table
+        tableKey="warehouse-returns-files"
         searchValue={search}
         onSearchChange={setSearch}
         onApplyFilters={applyFilters}

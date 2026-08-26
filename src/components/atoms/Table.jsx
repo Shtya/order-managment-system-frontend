@@ -17,7 +17,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight,
   ChevronsLeft, ChevronsRight,
   Image as ImageIcon, X, Maximize2, SlidersHorizontal,
-  Package,
+  Package, Columns3, Minus, Loader2, GripVertical, RotateCcw,
 } from "lucide-react";
 import { baseImg } from "@/utils/axios";
 import { useTranslations } from "next-intl";
@@ -26,9 +26,154 @@ import { useAuth } from "@/context/AuthContext";
 import { avatarSrc } from "./UserSelect";
 import { TutorialSpotlight } from "./TutorialSpotlight";
 import { useTutorial } from "@/context/TutorialContext";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const ACTION_KEYS = new Set(["actions", "options"]);
 const DEFAULT_PER_PAGE_OPTIONS = [6, 12, 24, 48];
+const TABLE_PREFS_LS_PREFIX = "tablePreferences_";
+
+/** Keep column drag on the Y axis only (no sideways stretch). */
+function restrictToVerticalAxis({ transform }) {
+  return { ...transform, x: 0 };
+}
+
+/** Keep the dragged row inside its scroll list (no tall overflow). */
+function restrictToParentElement({ transform, draggingNodeRect, containerNodeRect }) {
+  if (!draggingNodeRect || !containerNodeRect) {
+    return { ...transform, x: 0 };
+  }
+
+  const minY = containerNodeRect.top - draggingNodeRect.top;
+  const maxY = containerNodeRect.bottom - draggingNodeRect.bottom;
+
+  return {
+    ...transform,
+    x: 0,
+    y: Math.min(Math.max(transform.y, minY), maxY),
+  };
+}
+
+/** Normalize any stored pref (legacy string[] or { order, hidden }) */
+function normalizeTablePref(value) {
+  if (Array.isArray(value)) {
+    return {
+      order: [],
+      hidden: value.filter((k) => typeof k === "string"),
+    };
+  }
+  if (value && typeof value === "object") {
+    return {
+      order: Array.isArray(value.order) ? value.order.filter((k) => typeof k === "string") : [],
+      hidden: Array.isArray(value.hidden) ? value.hidden.filter((k) => typeof k === "string") : [],
+    };
+  }
+  return { order: [], hidden: [] };
+}
+
+/** Merge saved prefs with current column keys (append new cols, drop removed) */
+function resolveTablePref(prefs, columnKeys) {
+  const { order: savedOrder, hidden: savedHidden } = normalizeTablePref(prefs);
+  const keySet = new Set(columnKeys);
+  const order = [];
+  const seen = new Set();
+
+  for (const key of savedOrder) {
+    if (keySet.has(key) && !seen.has(key)) {
+      order.push(key);
+      seen.add(key);
+    }
+  }
+  for (const key of columnKeys) {
+    if (!seen.has(key)) {
+      order.push(key);
+      seen.add(key);
+    }
+  }
+
+  const hidden = savedHidden.filter((key) => keySet.has(key));
+  return { order, hidden };
+}
+
+function tablePrefsEqual(a, b) {
+  const na = normalizeTablePref(a);
+  const nb = normalizeTablePref(b);
+  if (na.order.length !== nb.order.length || na.hidden.length !== nb.hidden.length) return false;
+  if (na.order.some((k, i) => k !== nb.order[i])) return false;
+  const ha = new Set(na.hidden);
+  const hb = new Set(nb.hidden);
+  if (ha.size !== hb.size) return false;
+  for (const k of ha) if (!hb.has(k)) return false;
+  return true;
+}
+
+function readTablePrefsFromLS(tableKey) {
+  if (typeof window === "undefined" || !tableKey) return { order: [], hidden: [] };
+  try {
+    const raw = localStorage.getItem(`${TABLE_PREFS_LS_PREFIX}${tableKey}`);
+    return normalizeTablePref(raw ? JSON.parse(raw) : null);
+  } catch {
+    return { order: [], hidden: [] };
+  }
+}
+
+function writeTablePrefsToLS(tableKey, prefs) {
+  if (typeof window === "undefined" || !tableKey) return;
+  try {
+    localStorage.setItem(
+      `${TABLE_PREFS_LS_PREFIX}${tableKey}`,
+      JSON.stringify(normalizeTablePref(prefs)),
+    );
+  } catch {
+    // Ignore storage failures (private mode / quota).
+  }
+}
+
+function isEmptyHeader(header) {
+  if (header == null || header === false) return true;
+  if (typeof header === "string") return !header.trim();
+  return false;
+}
+
+function getColumnDisplayLabel(col, tColumn) {
+  if (typeof col?.title === "string" && col.title.trim()) return col.title;
+  if (typeof col?.header === "string" && col.header.trim()) return col.header;
+  if (typeof col?.header === "number") return String(col.header);
+
+  if (col?.key === "select") {
+    return tColumn?.("selectColumn") ?? "Select";
+  }
+  if (col?.key === "actions" || col?.key === "options") {
+    return tColumn?.("actionsColumn") ?? "Actions";
+  }
+  return String(col?.key ?? "");
+}
+
+/** Header content for the table <th> (keeps React node headers like checkboxes). */
+function getColumnHeaderContent(col, tColumn) {
+  if (!isEmptyHeader(col?.header)) return col.header;
+  if (col?.key === "select") return tColumn?.("selectColumn") ?? "Select";
+  if (col?.key === "actions" || col?.key === "options") {
+    return tColumn?.("actionsColumn") ?? "Actions";
+  }
+  return col?.header;
+}
 
 const ACTION_COLORS = {
   primary: "btn btn-solid btn-sm",
@@ -564,6 +709,365 @@ const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
 });
 
 /* ══════════════════════════════════════════════════════════════
+   COLUMN VISIBILITY + ORDER
+══════════════════════════════════════════════════════════════ */
+function SortableColumnRow({ id, label, checked, dragDisabled, disabled, onToggle }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id,
+    disabled: dragDisabled || disabled,
+    transition: { duration: 160, easing: "ease-out" },
+  });
+
+  const style = {
+    // Lock axis + scale so the held row never stretches wide/tall
+    transform: CSS.Transform.toString(
+      transform
+        ? { ...transform, x: 0, scaleX: 1, scaleY: 1 }
+        : null,
+    ),
+    transition: isDragging ? undefined : transition,
+    zIndex: isDragging ? 50 : undefined,
+    position: "relative",
+    width: "100%",
+    maxWidth: "100%",
+    boxSizing: "border-box",
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center gap-1.5 px-1.5 py-1.5 rounded-xl w-full max-w-full overflow-hidden border",
+        isDragging
+          ? "bg-card border-primary/45 shadow-[0_10px_24px_-6px_rgba(0,0,0,0.28)] ring-2 ring-primary/20"
+          : "border-transparent hover:bg-muted/50",
+      )}
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        disabled={dragDisabled || disabled}
+        className={cn(
+          "p-1 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed touch-none",
+          isDragging
+            ? "text-primary cursor-grabbing"
+            : "text-muted-foreground/70 hover:text-primary cursor-grab active:cursor-grabbing",
+        )}
+        aria-label="Reorder"
+      >
+        <GripVertical size={16} />
+      </button>
+
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={disabled}
+        className="min-w-0 flex-1 flex items-center gap-2.5 px-1 py-1 rounded-lg text-start disabled:cursor-not-allowed"
+      >
+        <Checkbox
+          checked={checked}
+          className="size-5 rounded-md pointer-events-none shrink-0"
+          size={14}
+          tabIndex={-1}
+        />
+        <span className={cn(
+          "text-sm truncate",
+          isDragging ? "text-foreground font-medium" : checked ? "text-foreground" : "text-muted-foreground",
+        )}>
+          {label}
+        </span>
+      </button>
+    </div>
+  );
+}
+
+const ColumnVisibilityControl = memo(function ColumnVisibilityControl({
+  columns = [],
+  prefs = { order: [], hidden: [] },
+  onConfirm,
+  labels = {},
+}) {
+  const tCol = useTranslations("pagination.columnVisibility");
+  const [open, setOpen] = useState(false);
+  const [draftOrder, setDraftOrder] = useState(prefs.order);
+  const [draftHidden, setDraftHidden] = useState(prefs.hidden);
+  const [search, setSearch] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const columnByKey = useMemo(() => {
+    const map = new Map();
+    columns.forEach((col) => {
+      if (col?.key) map.set(col.key, col);
+    });
+    return map;
+  }, [columns]);
+
+  const orderedColumns = useMemo(
+    () => draftOrder.map((key) => columnByKey.get(key)).filter(Boolean),
+    [draftOrder, columnByKey],
+  );
+
+  const filteredColumns = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return orderedColumns;
+    return orderedColumns.filter((col) =>
+      getColumnDisplayLabel(col, tCol).toLowerCase().includes(q),
+    );
+  }, [orderedColumns, search, tCol]);
+
+  const draftHiddenSet = useMemo(() => new Set(draftHidden), [draftHidden]);
+  const visibleCount = orderedColumns.filter((col) => !draftHiddenSet.has(col.key)).length;
+  const allSelected = orderedColumns.length > 0 && visibleCount === orderedColumns.length;
+  const noneSelected = visibleCount === 0;
+  const selectAllState = allSelected ? true : noneSelected ? false : "indeterminate";
+  const canConfirm = visibleCount >= 1;
+  const isSearching = search.trim().length > 0;
+  const defaultOrder = useMemo(
+    () => columns.map((col) => col.key).filter(Boolean),
+    [columns],
+  );
+  const isDefaultOrder = useMemo(() => {
+    if (draftOrder.length !== defaultOrder.length) return false;
+    return draftOrder.every((key, i) => key === defaultOrder[i]);
+  }, [draftOrder, defaultOrder]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const resetDraft = useCallback(() => {
+    const resolved = resolveTablePref(prefs, columns.map((c) => c.key).filter(Boolean));
+    setDraftOrder(resolved.order);
+    setDraftHidden(resolved.hidden);
+    setSearch("");
+  }, [prefs, columns]);
+
+  const openPanel = (nextOpen) => {
+    if (saving) return;
+    if (nextOpen) resetDraft();
+    setOpen(nextOpen);
+  };
+
+  const toggleKey = (key) => {
+    if (saving) return;
+    setDraftHidden((prev) => {
+      const set = new Set(prev);
+      if (set.has(key)) set.delete(key);
+      else set.add(key);
+      return [...set];
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (saving) return;
+    if (allSelected) {
+      setDraftHidden(orderedColumns.map((col) => col.key));
+    } else {
+      setDraftHidden([]);
+    }
+  };
+
+  const handleResetOrder = () => {
+    if (saving || isDefaultOrder) return;
+    setDraftOrder(defaultOrder);
+  };
+
+  const handleDragEnd = (event) => {
+    if (saving || isSearching) return;
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setDraftOrder((prev) => {
+      const oldIndex = prev.indexOf(active.id);
+      const newIndex = prev.indexOf(over.id);
+      if (oldIndex < 0 || newIndex < 0) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
+
+  const handleCancel = () => {
+    if (saving) return;
+    setOpen(false);
+    resetDraft();
+  };
+
+  const handleOk = async () => {
+    if (saving || !canConfirm) return;
+    setSaving(true);
+    try {
+      await onConfirm?.({
+        order: draftOrder,
+        hidden: draftHidden,
+      });
+      setOpen(false);
+      setSearch("");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={openPanel}>
+      <PopoverTrigger asChild>
+        <motion.button
+          whileHover={{ scale: 1.02, y: -1 }}
+          whileTap={{ scale: 0.97 }}
+          type="button"
+          className="btn btn-sm btn-outline gap-1.5"
+        >
+          <Columns3 size={13} />
+          {labels.columns ?? "Columns"}
+          <motion.span
+            animate={{ rotate: open ? 180 : 0 }}
+            transition={{ duration: 0.22 }}
+            style={{ display: "flex" }}
+          >
+            <ChevronDown size={12} />
+          </motion.span>
+        </motion.button>
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="end"
+        sideOffset={8}
+        className="w-[300px] p-0 overflow-hidden rounded-2xl border border-border/60 shadow-lg"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onInteractOutside={(e) => { if (saving) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (saving) e.preventDefault(); }}
+      >
+        <div className="px-4 pt-3.5 pb-2">
+          <p className="text-sm font-bold text-foreground">
+            {labels.chooseColumn ?? "Choose Column"}
+          </p>
+        </div>
+
+        <div className="px-3 pb-2">
+          <div className="relative">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={labels.search ?? "Search"}
+              disabled={saving}
+              className={cn(
+                "w-full h-9 rounded-xl border border-border/60 bg-background/60",
+                "text-sm ps-3 pe-9 outline-none",
+                "focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+              )}
+            />
+            <Search
+              size={14}
+              className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 pointer-events-none"
+            />
+          </div>
+        </div>
+
+        <div className="px-2 pb-1">
+          <button
+            type="button"
+            onClick={toggleSelectAll}
+            disabled={saving}
+            className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-muted/50 transition-colors text-start disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span
+              className={cn(
+                "size-5 shrink-0 rounded-md border flex items-center justify-center transition-colors",
+                selectAllState === false
+                  ? "border-input bg-background"
+                  : "border-primary bg-primary text-primary-foreground",
+              )}
+              aria-hidden
+            >
+              {selectAllState === true && (
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8L6.5 11.5L13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+              {selectAllState === "indeterminate" && <Minus size={12} />}
+            </span>
+            <span className="text-sm font-medium text-foreground">
+              {labels.selectAll ?? "Select All"}
+            </span>
+          </button>
+        </div>
+
+        <div className={cn("max-h-[260px] overflow-y-auto overflow-x-hidden px-2 pb-2", saving && "pointer-events-none opacity-60")}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={filteredColumns.map((col) => col.key)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-0.5 w-full max-w-full overflow-hidden">
+                {filteredColumns.map((col) => (
+                  <SortableColumnRow
+                    key={col.key}
+                    id={col.key}
+                    label={getColumnDisplayLabel(col, tCol)}
+                    checked={!draftHiddenSet.has(col.key)}
+                    dragDisabled={isSearching}
+                    disabled={saving}
+                    onToggle={() => toggleKey(col.key)}
+                  />
+                ))}
+                {filteredColumns.length === 0 && (
+                  <p className="px-2 py-4 text-xs text-muted-foreground text-center">—</p>
+                )}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-t border-border/50">
+          <button
+            type="button"
+            onClick={handleResetOrder}
+            disabled={saving || isDefaultOrder}
+            className="btn btn-ghost btn-sm gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={labels.resetOrder ?? "Reset order"}
+          >
+            <RotateCcw size={13} />
+            {labels.resetOrder ?? "Reset order"}
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={saving}
+              className="btn btn-ghost btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {labels.cancel ?? "Cancel"}
+            </button>
+            <button
+              type="button"
+              onClick={handleOk}
+              disabled={saving || !canConfirm}
+              className="btn btn-solid btn-sm gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving && <Loader2 size={13} className="animate-spin" />}
+              {labels.ok ?? "OK"}
+            </button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+});
+
+/* ══════════════════════════════════════════════════════════════
    MAIN TABLE
 ══════════════════════════════════════════════════════════════ */
 export default function Table({
@@ -575,17 +1079,104 @@ export default function Table({
   pagination = null, onPageChange,
   pageParamName = "page", limitParamName = "limit",
   perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "", flat = false,
-  rowClassName = () => "", tutorialActions = false, toolbarExtra
+  rowClassName = () => "", tutorialActions = false, toolbarExtra,
+  showColumnVisibility = true,
+  tableKey,
 }) {
   const { isTutorialMode } = useTutorial();
+  const { tablePreferences, updateTablePreferences } = useAuth();
   const displayData = isTutorialMode && tutorialData.length > 0 ? tutorialData : data;
   const isRTL = useIsRTL();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [imgModal, setImgModal] = useState({ open: false, src: "", alt: "" });
   const t = useTranslations("pagination");
+  const tColumn = useCallback((key) => t(`columnVisibility.${key}`), [t]);
   const openImage = useCallback((src, alt = "") => setImgModal({ open: true, src, alt }), []);
   const closeImage = useCallback(() => setImgModal({ open: false, src: "", alt: "" }), []);
   const helpers = useMemo(() => ({ openImage }), [openImage]);
+
+  const columnKeys = useMemo(
+    () => columns.map((c) => c.key).filter(Boolean),
+    [columns],
+  );
+
+  const [columnPrefs, setColumnPrefs] = useState(() => {
+    if (!showColumnVisibility || !tableKey) return { order: [], hidden: [] };
+    return resolveTablePref(readTablePrefsFromLS(tableKey), columnKeys);
+  });
+
+  // Apply prefs from AuthContext (loaded once per session, not per Table mount)
+  useEffect(() => {
+    if (!showColumnVisibility || !tableKey || tablePreferences == null) return;
+    const fromServer = resolveTablePref(tablePreferences?.[tableKey], columnKeys);
+    setColumnPrefs((prev) => {
+      if (tablePrefsEqual(prev, fromServer)) return prev;
+      writeTablePrefsToLS(tableKey, fromServer);
+      return fromServer;
+    });
+  }, [showColumnVisibility, tableKey, tablePreferences, columnKeys]);
+
+  // Keep prefs in sync when column definitions gain/lose keys
+  useEffect(() => {
+    if (!showColumnVisibility) return;
+    setColumnPrefs((prev) => {
+      const next = resolveTablePref(prev, columnKeys);
+      return tablePrefsEqual(prev, next) ? prev : next;
+    });
+  }, [showColumnVisibility, columnKeys]);
+
+  const handleConfirmColumnPrefs = useCallback(async (nextPrefs) => {
+    const normalized = resolveTablePref(nextPrefs, columnKeys);
+    const nextAll = await updateTablePreferences({ [tableKey]: normalized });
+    const fromServer = resolveTablePref(nextAll?.[tableKey], columnKeys);
+    setColumnPrefs(fromServer);
+    if (tableKey) writeTablePrefsToLS(tableKey, fromServer);
+  }, [tableKey, columnKeys, updateTablePreferences]);
+
+  const visibleColumns = useMemo(() => {
+    if (!showColumnVisibility) return columns;
+    const byKey = new Map(columns.map((col) => [col.key, col]));
+    const resolved = resolveTablePref(columnPrefs, columnKeys);
+    const hidden = new Set(resolved.hidden);
+    return resolved.order
+      .filter((key) => !hidden.has(key))
+      .map((key) => byKey.get(key))
+      .filter(Boolean);
+  }, [columns, showColumnVisibility, columnPrefs, columnKeys]);
+
+  const columnVisibilityLabels = useMemo(() => ({
+    columns: labels.columns ?? t("columnVisibility.columns"),
+    chooseColumn: labels.chooseColumn ?? t("columnVisibility.chooseColumn"),
+    search: labels.columnSearch ?? t("columnVisibility.search"),
+    selectAll: labels.selectAll ?? t("columnVisibility.selectAll"),
+    resetOrder: labels.resetOrder ?? t("columnVisibility.resetOrder"),
+    ok: labels.ok ?? t("columnVisibility.ok"),
+    cancel: labels.cancel ?? t("columnVisibility.cancel"),
+  }), [labels, t]);
+
+  const composedToolbarExtra = useMemo(() => {
+    if (!showColumnVisibility || !tableKey) return toolbarExtra;
+    return (
+      <>
+        <ColumnVisibilityControl
+          columns={columns}
+          prefs={resolveTablePref(columnPrefs, columnKeys)}
+          onConfirm={handleConfirmColumnPrefs}
+          labels={columnVisibilityLabels}
+        />
+        {toolbarExtra}
+      </>
+    );
+  }, [
+    showColumnVisibility,
+    tableKey,
+    toolbarExtra,
+    columns,
+    columnPrefs,
+    columnKeys,
+    handleConfirmColumnPrefs,
+    columnVisibilityLabels,
+  ]);
 
   const hasFilters = Boolean(filters);
   const stickyEnd = isRTL ? "left-0" : "right-0";
@@ -596,8 +1187,8 @@ export default function Table({
     if (!isTutorialMode) return false;
 
     // Returns true only if any column has both a header and a description
-    return columns.some(col => Boolean(col.header) && Boolean(col.description));
-  }, [isTutorialMode, columns]);
+    return visibleColumns.some(col => Boolean(col.header) && Boolean(col.description));
+  }, [isTutorialMode, visibleColumns]);
   return (
     <div className={cn("w-full", className)}>
       <motion.div
@@ -621,7 +1212,7 @@ export default function Table({
             hasActiveFilters={hasActiveFilters}
             filterLabel={labels.filter}
             actions={actions}
-            toolbarExtra={toolbarExtra}
+            toolbarExtra={composedToolbarExtra}
           />
           <AnimatePresence>
             {filtersOpen && hasFilters && (
@@ -651,9 +1242,11 @@ export default function Table({
               }}
             >
               <TableRow className="hover:bg-transparent">
-                {columns.map((col, idx) => (
+                {visibleColumns.map((col, idx) => {
+                  const headerContent = getColumnHeaderContent(col, tColumn);
+                  return (
                   <TableHead
-                    key={idx}
+                    key={`${col.key ?? "col"}-${idx}`}
                     className={cn(
                       "!px-5 whitespace-nowrap ltr:text-left rtl:text-right align-middle",
                       compact ? "py-3" : "py-3.5",
@@ -666,7 +1259,7 @@ export default function Table({
                   >
                     {/* 1. TutorialSpotlight goes INSIDE the TableHead */}
                     <TutorialSpotlight
-                      title={col.header}
+                      title={typeof headerContent === "string" ? headerContent : getColumnDisplayLabel(col, tColumn)}
                       description={col.description}
                       example={col.example}
                       overview={true}
@@ -679,11 +1272,12 @@ export default function Table({
                         transition={{ delay: idx * 0.035 }}
                         className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/80"
                       >
-                        {col.header}
+                        {headerContent}
                       </motion.span>
                     </TutorialSpotlight>
                   </TableHead>
-                ))}
+                  );
+                })}
               </TableRow>
             </TableHeader>
 
@@ -691,11 +1285,11 @@ export default function Table({
             <TableBody>
               <AnimatePresence>
                 {isLoading ? (
-                  <TableSkeleton key="skel" columns={columns} rows={Number(pagination?.per_page ?? 6)} compact={compact} />
+                  <TableSkeleton key="skel" columns={visibleColumns} rows={Number(pagination?.per_page ?? 6)} compact={compact} />
 
                 ) : displayData.length === 0 ? (
                   <TableRow key="empty">
-                    <TableCell colSpan={columns.length} className="py-20">
+                    <TableCell colSpan={Math.max(visibleColumns.length, 1)} className="py-20">
                       <motion.div
                         initial={{ opacity: 0, scale: 0.94 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -746,9 +1340,9 @@ export default function Table({
                         typeof rowClassName === "function" ? rowClassName(row, i) : rowClassName
                       )}
                     >
-                      {columns.map((col, idx) => {
+                      {visibleColumns.map((col, idx) => {
                         if (col.type === "img") return (
-                          <TableCell key={idx} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
+                          <TableCell key={`${col.key ?? "col"}-${idx}`} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
                             {!row[col.key] && typeof col.cell === "function" ? col.cell(row, i, helpers) : <ImgCell src={row[col.key]} alt={col.header ?? ""} onOpen={openImage} />}
                           </TableCell>
                         );
@@ -756,7 +1350,7 @@ export default function Table({
                         if (col.type === "imgs") {
                           const imgs = normalizeImages(row[col.key], col.header ?? "");
                           return (
-                            <TableCell key={idx} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
+                            <TableCell key={`${col.key ?? "col"}-${idx}`} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
                               <ImgsCell images={imgs} onOpen={openImage} />
                             </TableCell>
                           );
@@ -764,7 +1358,7 @@ export default function Table({
 
                         return (
                           <TableCell
-                            key={idx}
+                            key={`${col.key ?? "col"}-${idx}`}
                             className={cn(
                               "!px-5 text-sm whitespace-nowrap ltr:text-left rtl:text-right",
                               compact ? "py-2.5" : "py-3.5",

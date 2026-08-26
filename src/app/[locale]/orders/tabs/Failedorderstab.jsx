@@ -673,6 +673,7 @@ export function FailedOrdersTab() {
       />
 
       <Table
+        tableKey="failed-orders"
         // ── i18n ────────────────────────────────────────────────────────
         labels={{
           searchPlaceholder: t("failedOrders.searchPlaceholder"),

@@ -524,6 +524,7 @@ export default function SafesTab({ onRefresh }) {
 
                 <TabsContent value="transactions">
                     <Table
+        tableKey="accounts-safes-transactions"
                         isLoading={loading}
                         searchValue={txSearch}
                         onSearchChange={setTxSearch}
@@ -769,6 +770,7 @@ export default function SafesTab({ onRefresh }) {
 
                 <TabsContent value="transfers">
                     <Table
+        tableKey="accounts-safes-transfers"
                         isLoading={loading}
                         searchValue={trSearch}
                         onSearchChange={setTrSearch}
@@ -1024,6 +1026,7 @@ function TransactionsViewerModal({ open, onOpenChange, account }) {
 
                     <div className="flex-1 overflow-y-auto ">
                         <Table
+        tableKey="accounts-safes-dialog-transactions"
                             isLoading={loading}
                             searchValue={search}
                             flat={true}

@@ -1722,6 +1722,7 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 	return (
 		<div className="space-y-4">
 			<Table
+        tableKey="warehouse-preparation-in-progress"
 				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("inProgress.emptyTitle"), emptySubtitle: "" }}
 				actions={[{ key: "export", label: t("export"), icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" }]}
@@ -1808,6 +1809,7 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
 	return (
 		<div className="space-y-4">
 			<Table
+        tableKey="warehouse-preparation-completed"
 				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("prepared.emptyTitle"), emptySubtitle: "" }}
 				actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "primary", onClick: () => { } }]}

@@ -50,7 +50,7 @@ export const PaymentPurposeEnum = {
     FEATURE_PURCHASE: 'feature_purchase'
 };
 
-export default function TransactionTab({ defaultPurpose, allowedPurposes, showRelations = true, showDollar = false }) {
+export default function TransactionTab({ defaultPurpose, allowedPurposes, showRelations = true, showDollar = false, tableKey="dashboard-transactions", flat = false }) {
     const t = useTranslations("plans")
     const router = useRouter()
     const { isSuperAdmin } = useAuth()
@@ -353,6 +353,8 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
 
     return (
         <Table
+            tableKey={tableKey}
+            flat={flat}
             // ── Search ─────────────────────────────────────────────────────────────
             searchValue={search}
             onSearchChange={setSearch}

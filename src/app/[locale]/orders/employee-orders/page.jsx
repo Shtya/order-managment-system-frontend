@@ -392,6 +392,7 @@ export default function MyAssignedOrdersPage() {
 
 
 			<Table
+        tableKey="employee-orders"
 				columns={columns}
 				data={pager.records}
 				isLoading={loading}

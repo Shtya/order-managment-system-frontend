@@ -499,6 +499,7 @@ export default function SyncFailuresPage() {
       />
 
       <Table
+        tableKey="store-sync-failures"
         searchValue={search}
         onSearchChange={setSearch}
         labels={{

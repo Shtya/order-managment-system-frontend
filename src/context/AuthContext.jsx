@@ -9,26 +9,64 @@ const USER_STORAGE_KEY = "user";
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState();
+    /** null = not loaded yet; object = loaded once for the session (not on User /users/me). */
+    const [tablePreferences, setTablePreferences] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [token, setToken] = useState(() => typeof window !== 'undefined' ?  localStorage.getItem('accessToken') : null);
+
+    const fetchTablePreferences = useCallback(async () => {
+        if (!token) {
+            setTablePreferences(null);
+            return null;
+        }
+        try {
+            const res = await api.get("/users/me/table-preferences");
+            const prefs =
+                res.data?.tablePreferences && typeof res.data.tablePreferences === "object"
+                    ? res.data.tablePreferences
+                    : {};
+            setTablePreferences(prefs);
+            return prefs;
+        } catch (error) {
+            console.error("Failed to load table preferences:", error);
+            setTablePreferences({});
+            return {};
+        }
+    }, [token]);
+
+    const updateTablePreferences = useCallback(async (patch) => {
+        const res = await api.patch("/users/me/table-preferences", {
+            tablePreferences: patch,
+        });
+        const prefs =
+            res.data?.tablePreferences && typeof res.data.tablePreferences === "object"
+                ? res.data.tablePreferences
+                : {};
+        setTablePreferences(prefs);
+        return prefs;
+    }, []);
 
     const fetchUser = useCallback(async () => {
         if (!token) {
             setIsLoading(false);
+            setTablePreferences(null);
             return null;
         };
         try {
             setIsLoading(true);
             const res = await api.get("/users/me");
             setUser(res.data);
+            // Load once with auth — Tables read from context, not per-mount GET
+            await fetchTablePreferences();
             return res.data;
         } catch (error) {
             console.error("Auth initialization failed:", error);
+            setTablePreferences(null);
             return null;
         } finally {
             setIsLoading(false);
         }
-    }, [token]);
+    }, [token, fetchTablePreferences]);
 
     const setAuthToken = useCallback(async (newToken) => {
         const sanitizedToken = newToken?.trim() || null;
@@ -44,6 +82,7 @@ export function AuthProvider({ children }) {
             localStorage.removeItem(USER_STORAGE_KEY);
             setToken(null);
             setUser(null);
+            setTablePreferences(null);
         }
     }, [fetchUser, setToken, setUser]);
 
@@ -103,6 +142,18 @@ export function AuthProvider({ children }) {
 
         if (data?.user) {
             setUser(data.user);
+        }
+
+        // Prefs are select:false on User — load once after login (token already set above)
+        try {
+            const prefsRes = await api.get("/users/me/table-preferences");
+            const prefs =
+                prefsRes.data?.tablePreferences && typeof prefsRes.data.tablePreferences === "object"
+                    ? prefsRes.data.tablePreferences
+                    : {};
+            setTablePreferences(prefs);
+        } catch {
+            setTablePreferences({});
         }
 
         // Call local API for session management (cookie-based auth for middleware/SSR)
@@ -187,6 +238,7 @@ export function AuthProvider({ children }) {
             ["accessToken", USER_STORAGE_KEY].forEach((k) => localStorage.removeItem(k));
             setToken(null);
             setUser(null);
+            setTablePreferences(null);
             await fetch("/api/auth/logout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -238,6 +290,10 @@ export function AuthProvider({ children }) {
             value={{
                 user,
                 setUser,
+                tablePreferences,
+                setTablePreferences,
+                updateTablePreferences,
+                refreshTablePreferences: fetchTablePreferences,
                 isLoading,
                 refreshUser: fetchUser,
                 logout,

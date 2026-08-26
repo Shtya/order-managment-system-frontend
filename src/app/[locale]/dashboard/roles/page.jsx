@@ -276,6 +276,7 @@ export default function RolesPermissionsPage() {
 
 
 			<Table
+        tableKey="dashboard-roles"
 				// search
 				searchValue={search}
 				onSearchChange={(v) => {

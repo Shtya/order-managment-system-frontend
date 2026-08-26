@@ -734,6 +734,7 @@ export default function OrderCollectionPage() {
 
 
 			<Table
+				tableKey={activeTab === "not_collected" ? "order-collections-not-collected" : "order-collections-collected"}
 				searchValue={search}
 				onSearchChange={setSearch}
 				onSearch={applyFilters}

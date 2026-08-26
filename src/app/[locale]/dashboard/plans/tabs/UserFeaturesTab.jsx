@@ -154,6 +154,7 @@ export default function UserFeaturesTab() {
 
     return (
         <Table
+        tableKey="dashboard-user-features"
             searchValue={search}
             onSearchChange={setSearch}
             onSearch={applyFilters}

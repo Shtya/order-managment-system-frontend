@@ -159,6 +159,7 @@ export default function FeaturesTab() {
     return (
         <>
             <Table
+        tableKey="dashboard-plan-features"
                 searchValue={search}
                 onSearchChange={setSearch}
                 labels={{

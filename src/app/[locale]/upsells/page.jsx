@@ -373,6 +373,7 @@ export default function UpsellsPage() {
       />
 
       <Table
+        tableKey="upsells"
         isLoading={loading}
         data={pager.records}
         columns={columns}

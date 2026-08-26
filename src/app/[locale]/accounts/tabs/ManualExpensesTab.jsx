@@ -727,6 +727,7 @@ export default function ManualExpensesTab({
   return (
     <div className="space-y-5">
       <Table
+        tableKey="accounts-manual-expenses"
         searchValue={search}
         onSearchChange={setSearch}
         loading={loading}

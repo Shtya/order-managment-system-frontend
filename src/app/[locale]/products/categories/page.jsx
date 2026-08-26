@@ -537,6 +537,7 @@ export default function CategoriesPage() {
 			/>
 
 			<Table
+        tableKey="product-categories"
 				columns={columns}
 				data={pager.records}
 				isLoading={loading}

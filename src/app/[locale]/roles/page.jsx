@@ -833,6 +833,7 @@ export default function RolesPermissionsPage() {
 
 			{/* Table */}
 			<Table
+        tableKey="roles"
 				searchValue={search}
 				onSearchChange={setSearch}
 				columns={columns}

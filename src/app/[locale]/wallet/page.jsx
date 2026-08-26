@@ -172,6 +172,8 @@ export default function WalletPage() {
 
         <div className="p-6">
           <TransactionTab
+            tableKey="wallet-transactions"
+            flat={true}
             allowedPurposes={[
               PaymentPurposeEnum.WALLET_TOP_UP,
               PaymentPurposeEnum.WALLET_WITHDRAWAL,

@@ -328,6 +328,7 @@ export default function AutomationsPage() {
       />
 
       <Table
+        tableKey="dashboard-automations"
         isLoading={loading}
         data={pager.records}
         columns={columns}

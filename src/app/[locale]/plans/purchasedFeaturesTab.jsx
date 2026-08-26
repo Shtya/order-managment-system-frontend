@@ -183,6 +183,7 @@ export default function PurchasedFeaturesTab() {
     return (
         <div className="space-y-4">
             <Table
+        tableKey="purchased-features"
                 searchValue={search}
                 onSearchChange={setSearch}
                 labels={{

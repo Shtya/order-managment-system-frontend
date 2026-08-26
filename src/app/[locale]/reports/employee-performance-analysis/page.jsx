@@ -424,6 +424,7 @@ export function EmployeeStatisticsPage() {
             />
 
             <Table
+        tableKey="report-employee-performance"
                 // ── Search ──
                 searchValue={search}
                 onSearchChange={setSearch}

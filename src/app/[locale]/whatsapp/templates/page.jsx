@@ -450,6 +450,7 @@ export default function WhatsAppTemplatesPage() {
       />
 
       <Table
+        tableKey="whatsapp-templates"
         isLoading={loading}
         data={pager.records}
         columns={columns}

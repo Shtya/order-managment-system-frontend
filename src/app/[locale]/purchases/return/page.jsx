@@ -694,6 +694,7 @@ export default function PurchasesReturnPage() {
 			/>
 
 			<Table
+        tableKey="purchase-returns"
 				searchValue={search}
 				onSearchChange={setSearch}
 				onSearch={() => { }}

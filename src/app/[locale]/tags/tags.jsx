@@ -620,6 +620,7 @@ export default function TagsPage() {
       />
 
       <Table
+        tableKey={viewMode === "tags" ? "tags" : "tag-automations"}
         searchValue={search}
         onSearchChange={setSearch}
         onSearch={applyFilters}

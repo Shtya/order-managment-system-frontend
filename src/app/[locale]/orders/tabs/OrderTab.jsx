@@ -1553,6 +1553,7 @@ export default function OrdersTab({
       // ...(isAssign ? [
         {
         key: "select",
+        title: t("table.select"),
         header: (
           <div className="flex items-center justify-center">
             <Checkbox
@@ -1643,7 +1644,7 @@ export default function OrdersTab({
         ),
       },
       {
-        key: "shippingCost",
+        key: "finalTotal",
         header: t("table.finalTotal"),
         cell: (row) => (
           <span className="text-gray-600 dark:text-slate-200">
@@ -2790,6 +2791,7 @@ export default function OrdersTab({
 
       {viewMode === "normal" ? (
       <Table
+        tableKey="orders"
         // ── Row Styling ───────────────────────────────────────────────────────
         rowClassName={(row) =>
           row.duplicateCount > 0

@@ -163,6 +163,7 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
     return (
         <>
             <Table
+        tableKey="warehouses"
                 searchValue={search}
                 onSearchChange={setSearch}
                 onSearch={() => { resetPager(); fetchData(1, pagination.per_page); }}

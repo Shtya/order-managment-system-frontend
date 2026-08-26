@@ -468,6 +468,7 @@ export default function SupplierCategoriesPage() {
 
 			{/* Toolbar & Table */}
 			<Table
+        tableKey="supplier-categories"
 				searchValue={search}
 				onSearchChange={setSearch}
 				onSearch={fetchCategories}

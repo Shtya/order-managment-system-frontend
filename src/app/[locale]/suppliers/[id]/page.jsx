@@ -587,6 +587,7 @@ export default function SupplierDetailsPage() {
 
                 <TabsContent value="purchases">
                     <Table
+        tableKey="supplier-detail-purchases"
                         searchValue={Purchasesearch}
                         onSearchChange={setPurchaseSearch}
                         labels={{
@@ -629,6 +630,7 @@ export default function SupplierDetailsPage() {
 
                 <TabsContent value="returns">
                     <Table
+        tableKey="supplier-detail-returns"
                         searchValue={Returnsearch}
                         onSearchChange={setReturnSearch}
 
@@ -673,6 +675,7 @@ export default function SupplierDetailsPage() {
                 <TabsContent value="history">
 
                     <Table
+        tableKey="supplier-detail-history"
                         searchValue={Historysearch}
                         onSearchChange={setHistorySearch}
                         labels={{

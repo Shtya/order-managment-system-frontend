@@ -453,6 +453,7 @@ export default function CancelCausesPage() {
             />
 
             <Table
+        tableKey={viewMode === "main" ? "cancel-causes-main" : "cancel-causes-custom"}
                 searchValue={search}
                 onSearchChange={setSearch}
                 onSearch={() => fetchData(1, pager.per_page)}

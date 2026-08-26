@@ -271,6 +271,7 @@ export default function ManageCausesPage() {
             />
 
             <Table
+        tableKey="issue-causes"
                 searchValue={search}
                 onSearchChange={setSearch}
                 onSearch={() => { setPagination((p) => ({ ...p, current_page: 1 })); fetchData(1, pagination.per_page); }}

@@ -213,6 +213,7 @@ export default function SmsSenders() {
             />
 
             <Table
+        tableKey="sms-senders"
                 searchValue={search}
                 onSearchChange={setSearch}
                 onSearch={() => { resetPager(); fetchData(1, pagination.per_page); }}

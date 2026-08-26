@@ -422,6 +422,7 @@ export default function SuppliersPage() {
 
 
 			<Table
+        tableKey="suppliers"
 				searchValue={search}
 				onSearchChange={setSearch}
 				onSearch={() => { }}

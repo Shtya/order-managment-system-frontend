@@ -611,6 +611,7 @@ export default function ServerErrorsPage() {
             />
 
             <Table
+        tableKey="dashboard-errors"
                 isLoading={loading}
                 data={pager.records}
                 columns={columns}

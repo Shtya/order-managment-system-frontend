@@ -697,6 +697,7 @@ function NotPrintedSubtab({ resetToken, fetchStats }) {
   return (
     <div className="space-y-4">
       <Table
+        tableKey="warehouse-print-labels-not-printed"
         searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
         labels={{ searchPlaceholder: t("notPrinted.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("notPrinted.empty"), emptySubtitle: "" }}
         actions={[
@@ -858,6 +859,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
   return (
     <div className="space-y-4">
       <Table
+        tableKey="warehouse-print-labels-printed"
         searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
         labels={{ searchPlaceholder: t("printed.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("printed.empty"), emptySubtitle: "" }}
         actions={[

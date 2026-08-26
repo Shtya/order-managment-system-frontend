@@ -190,6 +190,7 @@ export default function MonthlyExpensesTab() {
   return (
     <div className="space-y-5">
       <Table
+        tableKey="accounts-monthly-expenses"
         searchValue={search}
         onSearchChange={setSearch}
         labels={{

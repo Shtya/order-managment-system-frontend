@@ -470,6 +470,7 @@ export default function SubscriptionsTab() {
   return (
     <>
       <Table
+        tableKey="dashboard-subscriptions"
         // ── Search ─────────────────────────────────────────────────────────────
         searchValue={search}
         onSearchChange={setSearch}

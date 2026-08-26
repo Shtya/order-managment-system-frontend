@@ -521,6 +521,13 @@ export default function ProductsPage() {
 			/>
 
 			<Table
+				tableKey={
+					["bundles", "deleted_bundles"].includes(active)
+						? `products-${active}`
+						: active === "idle"
+							? "products-idle"
+							: "products"
+				}
 				searchValue={search}
 				onSearchChange={setSearch}
 				onSearch={() => { }}

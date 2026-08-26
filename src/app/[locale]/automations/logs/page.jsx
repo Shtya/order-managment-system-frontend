@@ -377,6 +377,7 @@ export default function AutomationLogsPage() {
             />
 
             <Table
+        tableKey="automation-logs"
                 isLoading={loading}
                 data={pager.records}
                 columns={columns}

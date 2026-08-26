@@ -249,6 +249,7 @@ export default function ShippingReport() {
 
             <div className="mt-6">
                 <Table
+        tableKey="report-shipping"
                     searchValue={search}
                     onSearchChange={setSearch}
                     loading={loading}

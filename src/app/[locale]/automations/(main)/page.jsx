@@ -366,6 +366,7 @@ export default function AutomationsPage() {
       </TutorialSpotlight>
 
       <Table
+        tableKey="automations"
         isLoading={loading}
         data={pager.records}
         columns={columns}

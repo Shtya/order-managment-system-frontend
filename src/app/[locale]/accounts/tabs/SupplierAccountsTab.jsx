@@ -185,6 +185,7 @@ export default function SupplierAccountsTab() {
   return (
     <div className="space-y-6">
       <Table
+        tableKey="accounts-supplier-accounts"
         searchValue={search}
         onSearchChange={setSearch}
         labels={{

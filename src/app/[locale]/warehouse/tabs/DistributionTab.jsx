@@ -908,6 +908,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
   return (
     <div className="space-y-4">
       <Table
+        tableKey="warehouse-distribution-pending"
         searchValue={search}
         onSearchChange={setSearch}
         onSearch={applyFilters}
@@ -1429,6 +1430,7 @@ function AssignedOrdersSubtab({
   return (
     <div className="space-y-4">
       <Table
+        tableKey="warehouse-distribution-assigned"
         searchValue={search}
         onSearchChange={setSearch}
         onSearch={applyFilters}

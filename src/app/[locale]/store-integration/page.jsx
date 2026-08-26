@@ -1752,6 +1752,7 @@ export function StoresTable({
         <h2 className="text-base font-bold text-foreground">{t("table.title")}</h2>
       </div> */}
       <Table
+        tableKey="store-integrations"
         flat={!!compact}
         className={compact ? "border border-border/50 rounded-2xl" : ""}
         searchValue={search}

@@ -1051,6 +1051,7 @@ function CitiesTab() {
     >
       <SectionHead title={tSet("label")} subtitle={tSet("description")} />
       <Table
+        tableKey="settings-cities"
         flat={true}
         columns={columns}
         data={pager.records}

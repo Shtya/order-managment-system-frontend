@@ -1829,6 +1829,7 @@ export default function PurchasesPage() {
 				data-getting-started-type="section"
 			>
 			<Table
+        tableKey="purchases"
 				searchValue={search}
 				onSearchChange={setSearch}
 				onSearch={() => { }}

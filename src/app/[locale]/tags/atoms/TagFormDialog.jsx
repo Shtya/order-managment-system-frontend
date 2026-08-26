@@ -1,26 +1,36 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Tags } from "lucide-react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
+import { cn } from "@/utils/cn";
 import { PrimaryBtn, GhostBtn } from "@/components/atoms/Button";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import MultiSelect from "@/components/atoms/MultiSelect";
 
 const HEX = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
+
+function unwrapUsers(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.records)) return data.records;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
+}
 
 export function TagFormDialog({ tag, open, onClose, onSaved }) {
   const t = useTranslations("tags");
   const isEdit = !!tag;
+  const [initialEmployees, setInitialEmployees] = useState([]);
 
   const schema = useMemo(
     () =>
@@ -43,6 +53,7 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
           .nullable(),
         isActive: yup.boolean().default(true),
         allowManualAssignment: yup.boolean().default(true),
+        employeeIds: yup.array().of(yup.string()).default([]),
         priority: yup
           .number()
           .transform((v) =>
@@ -58,6 +69,7 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
@@ -67,9 +79,12 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
       description: "",
       isActive: true,
       allowManualAssignment: true,
+      employeeIds: [],
       priority: 0,
     },
   });
+
+  const allowEmployees = useWatch({ control, name: "allowManualAssignment" });
 
   useEffect(() => {
     if (!open) return;
@@ -79,19 +94,61 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
       description: tag?.description || "",
       isActive: tag?.isActive ?? true,
       allowManualAssignment: tag?.allowManualAssignment ?? true,
+      employeeIds: Array.isArray(tag?.employeeIds) ? tag.employeeIds : [],
       priority: tag?.priority ?? 0,
     });
   }, [open, tag, reset]);
 
+  useEffect(() => {
+    if (!open) {
+      setInitialEmployees([]);
+      return;
+    }
+    const ids = Array.isArray(tag?.employeeIds) ? tag.employeeIds.filter(Boolean) : [];
+    if (!ids.length) {
+      setInitialEmployees([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.get("/users/list", {
+          params: { active: "true", limit: 200 },
+        });
+        const list = unwrapUsers(res.data);
+        if (!cancelled) {
+          setInitialEmployees(list.filter((user) => ids.includes(user.id)));
+        }
+      } catch {
+        if (!cancelled) setInitialEmployees([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, tag?.employeeIds]);
+
+  useEffect(() => {
+    if (!allowEmployees) {
+      setValue("employeeIds", []);
+    }
+  }, [allowEmployees, setValue]);
+
   const onSubmit = useCallback(
     async (values) => {
       try {
+        const allowManualAssignment = values.allowManualAssignment ?? true;
         const payload = {
           name: values.name.trim(),
           color: values.color.trim(),
           description: values.description?.trim() || null,
           isActive: values.isActive ?? true,
-          allowManualAssignment: values.allowManualAssignment ?? true,
+          allowManualAssignment,
+          employeeIds: allowManualAssignment
+            ? (values.employeeIds || []).map((id) =>
+                typeof id === "string" ? id : id?.id,
+              ).filter(Boolean)
+            : [],
           priority: values.priority ?? 0,
         };
         if (isEdit) {
@@ -112,14 +169,14 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
   if (!open) return null;
 
   return (
-    <ModalShell onClose={onClose}>
+    <ModalShell onClose={onClose} maxWidth="max-w-2xl">
       <ModalHeader
         icon={Tags}
         title={isEdit ? t("dialog.editTagTitle") : t("dialog.addTagTitle")}
         subtitle={t("dialog.tagSubtitle")}
         onClose={onClose}
       />
-      <form className="p-6 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+      <form className="p-6 space-y-5 max-h-[80vh] overflow-y-auto" onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">{t("dialog.name")}</Label>
           <Controller
@@ -138,8 +195,8 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
             <p className="text-xs text-red-500">{errors.name.message}</p>
           )}
         </div>
-        <div className=" grid grid-cols-1 md:grid-cols-2 gap-2">
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">{t("dialog.priority")}</Label>
             <Controller
@@ -187,7 +244,6 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
           </div>
         </div>
 
-
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">{t("dialog.description")}</Label>
           <Controller
@@ -207,36 +263,74 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
           )}
         </div>
 
-
-
-        <div className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3">
-          <Label className="text-sm font-medium">{t("dialog.isActive")}</Label>
-          <Controller
-            name="isActive"
-            control={control}
-            render={({ field }) => (
-              <Switch
-                checked={Boolean(field.value)}
-                onCheckedChange={field.onChange}
-              />
-            )}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3 gap-3">
+            <Label className="text-sm font-medium">{t("dialog.isActive")}</Label>
+            <Controller
+              name="isActive"
+              control={control}
+              render={({ field }) => (
+                <Switch
+                  checked={Boolean(field.value)}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3 gap-3">
+            <Label
+              className="text-sm font-medium"
+              description={t("dialog.allowEmployeeDescription")}
+            >
+              {t("dialog.allowEmployee")}
+            </Label>
+            <Controller
+              name="allowManualAssignment"
+              control={control}
+              render={({ field }) => (
+                <Switch
+                  checked={Boolean(field.value)}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
+          </div>
         </div>
 
-        <div className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3">
-          <Label className="text-sm font-medium" description={t("dialog.allowEmployeeDescription")}>
-            {t("dialog.allowEmployee")}
+        <div
+          className={cn(
+            "space-y-2",
+            !allowEmployees && "opacity-50 pointer-events-none",
+          )}
+        >
+          <Label
+            className="text-sm font-medium"
+            description={t("dialog.employeesDescription")}
+          >
+            {t("dialog.employees")}
           </Label>
           <Controller
-            name="allowManualAssignment"
+            name="employeeIds"
             control={control}
             render={({ field }) => (
-              <Switch
-                checked={Boolean(field.value)}
-                onCheckedChange={field.onChange}
+              <MultiSelect
+                endpoint="/users/list"
+                params={{ active: "true" }}
+                value={field.value}
+                initialValues={initialEmployees}
+                onChange={(newVal) =>
+                  field.onChange(
+                    (newVal || []).map((v) =>
+                      typeof v === "string" ? v : v.id,
+                    ),
+                  )
+                }
+                placeholder={t("dialog.employeesPlaceholder")}
+                labelKey="name"
               />
             )}
           />
+          <p className="text-xs text-muted-foreground">{t("dialog.employeesHint")}</p>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">

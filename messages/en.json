@@ -7515,7 +7515,8 @@
       "autoMoveStatus": "New Order Status",
       "autoMoveHint": "Example: choose \"No Response\" or \"Under Review\" so the order appears in a list that needs manual follow-up",
       "autoAssignment": {
-        "title": "Automation Settings",
+        "title": "Assign Settings",
+        "sectionTitle": "Automation Settings",
         "subtitle": "Configure automatic order assignment settings",
         "disabled": "Disabled",
         "disabledDesc": "New orders will not be assigned automatically.",
@@ -7530,7 +7531,11 @@
         "delayTimeDesc": "Choose how long to wait before running the assignment rules.",
         "minutes": "Minutes",
         "hours": "Hours",
-        "days": "Days"
+        "days": "Days",
+        "expiryEnabled": "Auto-unassign after time",
+        "expiryEnabledDesc": "Automatically remove the order from the employee after the configured number of hours, whether it was assigned manually or automatically.",
+        "expiryHours": "Unassign after (hours)",
+        "expiryHoursDesc": "How many hours after assignment the order is removed from the employee and becomes unassigned, for both manual and automatic distribution."
       },
       "selectStatus": "Select status…",
       "retryStatusesTitle": "Statuses that trigger retries",

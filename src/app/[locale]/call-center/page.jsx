@@ -1772,7 +1772,7 @@ export default function CallCenterPage() {
                 items={viewModes}
                 active={viewMode}
                 setActive={handleViewModeChange}
-                buttons={viewMode === "automatic" && (
+                buttons={(viewMode === "automatic" || viewMode === "manual") && (
                     <div className="flex items-center gap-2">
                         <Button_
                             size="sm"
@@ -1781,19 +1781,21 @@ export default function CallCenterPage() {
                             onClick={() => setSettingsOpen(true)}
                             icon={<Settings size={18} />}
                         />
-                        <Button_
-                            size="sm"
-                            label={t("callCenter.autoAssign.toolbar.addRole")}
-                            variant="solid"
-                            onClick={() => {
-                                setSelectedRule(null);
-                                setFormOpen(true);
-                            }}
-                            icon={<PlusCircle size={18} />}
-                            permission="orders.assign"
-                            data-getting-started="order_assignment_automation.create"
-                            data-getting-started-type="button"
-                        />
+                        {viewMode === "automatic" && (
+                            <Button_
+                                size="sm"
+                                label={t("callCenter.autoAssign.toolbar.addRole")}
+                                variant="solid"
+                                onClick={() => {
+                                    setSelectedRule(null);
+                                    setFormOpen(true);
+                                }}
+                                icon={<PlusCircle size={18} />}
+                                permission="orders.assign"
+                                data-getting-started="order_assignment_automation.create"
+                                data-getting-started-type="button"
+                            />
+                        )}
                     </div>
                 )}
             />
@@ -1972,100 +1974,161 @@ export default function CallCenterPage() {
                     </DialogHeader>
 
                     <div className="p-6 space-y-6">
-                        <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-                            <h3 className="text-base font-bold flex items-center gap-2">
-                                <Users className="text-primary" size={20} />
-                                {t("orders.retrySettings.autoAssignment.title")}
-                            </h3>
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                    <Users className="text-amber-500" size={18} />
+                                    {t("orders.retrySettings.autoAssignment.sectionTitle")}
+                                </h3>
+                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                    {t("orders.retrySettings.autoAssignment.subtitle")}
+                                </p>
+                            </div>
 
-                            <div className="space-y-3">
-                                <div
-                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${tempSettings.assignmentMode === "disabled"
-                                        ? "border-primary bg-primary/5"
-                                        : "border-slate-200 dark:border-slate-700"
-                                        }`}
-                                    onClick={() => patch({ assignmentMode: "disabled" })}
-                                >
-                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: tempSettings.assignmentMode === "disabled" ? "#6366f1" : "#d1d5db" }}>
-                                        {tempSettings.assignmentMode === "disabled" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="font-medium flex items-center gap-2">
-                                            {t("orders.retrySettings.autoAssignment.disabled")}
-                                            <FieldTooltip description={t("orders.retrySettings.autoAssignment.disabledDescription")} stopPropagation />
+                            <div className="space-y-2.5">
+                                {[
+                                    {
+                                        mode: "disabled",
+                                        tooltip: t("orders.retrySettings.autoAssignment.disabledDescription"),
+                                    },
+                                    {
+                                        mode: "immediate",
+                                        tooltip: t("orders.retrySettings.autoAssignment.immediateDescription"),
+                                    },
+                                    {
+                                        mode: "delayed",
+                                        tooltip: t("orders.retrySettings.autoAssignment.delayedDescription"),
+                                    },
+                                ].map(({ mode, tooltip }) => {
+                                    const isActive = tempSettings.assignmentMode === mode;
+                                    return (
+                                        <div
+                                            key={mode}
+                                            className={cn(
+                                                "flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all duration-200",
+                                                isActive
+                                                    ? "border-[var(--primary)]/40 bg-[var(--primary)]/5"
+                                                    : "border-border/60 hover:border-border hover:bg-muted/30",
+                                            )}
+                                            onClick={() => patch({ assignmentMode: mode })}
+                                        >
+                                            <div
+                                                className={cn(
+                                                    "flex items-center justify-center w-[18px] h-[18px] rounded-full border-2 shrink-0 transition-all duration-200",
+                                                    isActive
+                                                        ? "border-[var(--primary)]"
+                                                        : "border-slate-300 dark:border-slate-600",
+                                                )}
+                                            >
+                                                {isActive && (
+                                                    <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />
+                                                )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="font-semibold text-sm text-foreground flex items-center gap-1.5">
+                                                    {t(`orders.retrySettings.autoAssignment.${mode}`)}
+                                                    <FieldTooltip description={tooltip} stopPropagation />
+                                                </div>
+                                                <div className="text-xs text-muted-foreground mt-0.5">
+                                                    {t(`orders.retrySettings.autoAssignment.${mode}Desc`)}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.disabledDesc")}</div>
-                                    </div>
-                                </div>
-
-                                <div
-                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${tempSettings.assignmentMode === "immediate"
-                                        ? "border-primary bg-primary/5"
-                                        : "border-slate-200 dark:border-slate-700"
-                                        }`}
-                                    onClick={() => patch({ assignmentMode: "immediate" })}
-                                >
-                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: tempSettings.assignmentMode === "immediate" ? "#6366f1" : "#d1d5db" }}>
-                                        {tempSettings.assignmentMode === "immediate" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="font-medium flex items-center gap-2">
-                                            {t("orders.retrySettings.autoAssignment.immediate")}
-                                            <FieldTooltip description={t("orders.retrySettings.autoAssignment.immediateDescription")} stopPropagation />
-                                        </div>
-                                        <div className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.immediateDesc")}</div>
-                                    </div>
-                                </div>
-
-                                <div
-                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${tempSettings.assignmentMode === "delayed"
-                                        ? "border-primary bg-primary/5"
-                                        : "border-slate-200 dark:border-slate-700"
-                                        }`}
-                                    onClick={() => patch({ assignmentMode: "delayed" })}
-                                >
-                                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all" style={{ borderColor: tempSettings.assignmentMode === "delayed" ? "#6366f1" : "#d1d5db" }}>
-                                        {tempSettings.assignmentMode === "delayed" && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#6366f1" }} />}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="font-medium flex items-center gap-2">
-                                            {t("orders.retrySettings.autoAssignment.delayed")}
-                                            <FieldTooltip description={t("orders.retrySettings.autoAssignment.delayedDescription")} stopPropagation />
-                                        </div>
-                                        <div className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.delayedDesc")}</div>
-                                    </div>
-                                </div>
+                                    );
+                                })}
                             </div>
 
                             {tempSettings.assignmentMode === "delayed" && (
-                                <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 space-y-3">
-                                    <label className="text-sm font-medium">{t("orders.retrySettings.autoAssignment.delayTime")}</label>
+                                <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-3">
+                                    <label className="text-xs font-bold text-muted-foreground">
+                                        {t("orders.retrySettings.autoAssignment.delayTime")}
+                                    </label>
                                     <div className="flex gap-3">
-                                        <div className="flex-1">
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={tempSettings.assignmentDelay}
-                                                onChange={(e) => patch({ assignmentDelay: Math.max(1, parseInt(e.target.value) || 1) })}
-                                                className="w-full px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
-                                            />
-                                        </div>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={tempSettings.assignmentDelay}
+                                            onChange={(e) =>
+                                                patch({
+                                                    assignmentDelay: Math.max(1, parseInt(e.target.value) || 1),
+                                                })
+                                            }
+                                            className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all"
+                                        />
                                         <select
                                             value={tempSettings.assignmentDelayUnit}
                                             onChange={(e) => patch({ assignmentDelayUnit: e.target.value })}
-                                            className="px-3  py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                                            className="px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all"
                                         >
-                                            <option value="minutes">{t("orders.retrySettings.autoAssignment.minutes")}</option>
-                                            <option value="hours">{t("orders.retrySettings.autoAssignment.hours")}</option>
-                                            <option value="days">{t("orders.retrySettings.autoAssignment.days")}</option>
+                                            <option value="minutes">
+                                                {t("orders.retrySettings.autoAssignment.minutes")}
+                                            </option>
+                                            <option value="hours">
+                                                {t("orders.retrySettings.autoAssignment.hours")}
+                                            </option>
+                                            <option value="days">
+                                                {t("orders.retrySettings.autoAssignment.days")}
+                                            </option>
                                         </select>
                                     </div>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">{t("orders.retrySettings.autoAssignment.delayTimeDesc")}</p>
+                                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                        {t("orders.retrySettings.autoAssignment.delayTimeDesc")}
+                                    </p>
+                                </div>
+                            )}
+
+                            <div
+                                className={cn(
+                                    "flex items-center gap-4 px-4 py-3.5 rounded-lg border transition-all duration-200",
+                                    tempSettings.assignmentExpiryEnabled
+                                        ? "border-[var(--primary)]/30"
+                                        : "border-border bg-muted/20",
+                                )}
+                            >
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-bold text-foreground">
+                                        {t("orders.retrySettings.autoAssignment.expiryEnabled")}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                                        {t("orders.retrySettings.autoAssignment.expiryEnabledDesc")}
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={!!tempSettings.assignmentExpiryEnabled}
+                                    onCheckedChange={(checked) =>
+                                        patch({ assignmentExpiryEnabled: checked })
+                                    }
+                                    className="shrink-0 ms-auto"
+                                />
+                            </div>
+
+                            {tempSettings.assignmentExpiryEnabled && (
+                                <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-3">
+                                    <label className="text-xs font-bold text-muted-foreground">
+                                        {t("orders.retrySettings.autoAssignment.expiryHours")}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={tempSettings.assignmentExpiryHours ?? 24}
+                                        onChange={(e) =>
+                                            patch({
+                                                assignmentExpiryHours: Math.max(
+                                                    1,
+                                                    parseInt(e.target.value) || 1,
+                                                ),
+                                            })
+                                        }
+                                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all"
+                                    />
+                                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                        {t("orders.retrySettings.autoAssignment.expiryHoursDesc")}
+                                    </p>
                                 </div>
                             )}
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-4 border-t dark:border-slate-800">
+                        <div className="flex justify-end gap-3 pt-4 border-t border-border">
                             <Button
                                 variant="outline"
                                 onClick={() => setSettingsOpen(false)}

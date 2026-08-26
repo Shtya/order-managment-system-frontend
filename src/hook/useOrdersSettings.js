@@ -24,6 +24,8 @@ const defaultSettings =  {
     assignmentMode: "immediate",
     assignmentDelay: 1,
     assignmentDelayUnit: "minutes",
+    assignmentExpiryEnabled: false,
+    assignmentExpiryHours: 24,
     enabled: true,
     maxRetries: 3,
     retryInterval: 30,
@@ -68,6 +70,10 @@ const buildSettingsObject = (data, prevSettings) => ({
   assignmentMode: data.assignmentMode ?? prevSettings.assignmentMode,
   assignmentDelay: data.assignmentDelay ?? prevSettings.assignmentDelay,
   assignmentDelayUnit: data.assignmentDelayUnit ?? prevSettings.assignmentDelayUnit,
+  assignmentExpiryEnabled:
+    data.assignmentExpiryEnabled ?? prevSettings.assignmentExpiryEnabled ?? false,
+  assignmentExpiryHours:
+    data.assignmentExpiryHours ?? prevSettings.assignmentExpiryHours ?? 24,
   enabled: data.enabled ?? prevSettings.enabled,
   defaultLang: data.defaultLang ?? prevSettings.defaultLang,
   maxRetries: data.maxRetries ?? prevSettings.maxRetries,

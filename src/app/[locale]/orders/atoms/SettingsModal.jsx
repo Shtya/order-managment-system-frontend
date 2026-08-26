@@ -829,13 +829,13 @@ export function GeneralTab({ settings, patch, t, tTutorial }) {
       <SectionCard
         icon={Users}
         iconColor="#f59e0b"
-        title={t("retrySettings.autoAssignment.title")}
+        title={t("retrySettings.autoAssignment.sectionTitle")}
         subtitle={t("retrySettings.autoAssignment.subtitle")}
       >
         <TutorialSpotlight
           overview={true}
           card="sm"
-          title={t("retrySettings.autoAssignment.title")}
+          title={t("retrySettings.autoAssignment.sectionTitle")}
           description={tTutorial("fields.assignmentMode.description")}
           example={tTutorial("fields.assignmentMode.example")}
         >
@@ -922,6 +922,50 @@ export function GeneralTab({ settings, patch, t, tTutorial }) {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <div className="mt-4 space-y-3">
+          <ToggleRow
+            label={t("retrySettings.autoAssignment.expiryEnabled")}
+            description={t("retrySettings.autoAssignment.expiryEnabledDesc")}
+            checked={!!settings.assignmentExpiryEnabled}
+            onCheckedChange={(checked) =>
+              patch({ assignmentExpiryEnabled: checked })
+            }
+          />
+          <AnimatePresence>
+            {settings.assignmentExpiryEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-3">
+                  <label className="text-xs font-bold text-muted-foreground">
+                    {t("retrySettings.autoAssignment.expiryHours")}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={settings.assignmentExpiryHours ?? 24}
+                    onChange={(e) =>
+                      patch({
+                        assignmentExpiryHours: Math.max(
+                          1,
+                          parseInt(e.target.value) || 1,
+                        ),
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all"
+                  />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {t("retrySettings.autoAssignment.expiryHoursDesc")}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </SectionCard>
 
       {/* ── Order tags ── */}

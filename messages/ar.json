@@ -13132,6 +13132,7 @@
           "deliveredAt": "تاريخ التوصيل",
           "created_at": "تاريخ إنشاء الطلب",
           "allowOpenPackage": "السماح بفتح الطلب",
+          "isReplacement": "طلب استبدال",
           "items": "كل المنتجات",
           "productName": "اسم المنتج",
           "productNameFirst": "اسم المنتج (الأول)",

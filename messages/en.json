@@ -13108,6 +13108,7 @@
           "deliveredAt": "Delivered At",
           "created_at": "Order Created At",
           "allowOpenPackage": "Allow Open Package",
+          "isReplacement": "Is Replacement Order",
           "items": "All products",
           "productName": "Product Name",
           "productNameFirst": "Product Name (First)",

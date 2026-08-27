@@ -6466,6 +6466,24 @@
         "totalAmount": "Total sales"
       }
     },
+    "statsVisibility": {
+      "button": "Statistics visibility",
+      "title": "Statistics visibility",
+      "subtitle": "Choose which order statistics appear on the orders page. Hiding a statistic only affects the cards — statuses stay available in workflows and reports.",
+      "listTitle": "Statistics",
+      "visibleCount": "{count} / {total} visible",
+      "empty": "No statistics available.",
+      "hide": "Hide",
+      "show": "Show",
+      "orderCount": "{count} orders",
+      "tip": "Note: This only controls which statistic cards are shown. Order statuses themselves are unchanged.",
+      "reset": "Show all",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "saved": "Statistics visibility saved",
+      "saveFailed": "Failed to save statistics visibility"
+    },
     "actions": {
       "duplicate": "Duplicate Order",
       "addStatus": "Add Status",

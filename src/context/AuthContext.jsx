@@ -6,11 +6,43 @@ import api, { getLang } from "@/utils/api";
 const AuthContext = createContext();
 
 const USER_STORAGE_KEY = "user";
+const ORDER_STATS_PREFS_LS_KEY = "orderStatisticsPreferences";
+
+function readOrderStatsPrefsFromLs() {
+    if (typeof window === "undefined") return null;
+    try {
+        const raw = localStorage.getItem(ORDER_STATS_PREFS_LS_KEY);
+        if (!raw) return { hidden: [] };
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+            return { hidden: parsed.filter((k) => typeof k === "string") };
+        }
+        if (parsed && typeof parsed === "object") {
+            return {
+                hidden: Array.isArray(parsed.hidden)
+                    ? parsed.hidden.filter((k) => typeof k === "string")
+                    : [],
+            };
+        }
+        return { hidden: [] };
+    } catch {
+        return { hidden: [] };
+    }
+}
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState();
     /** null = not loaded yet; object = loaded once for the session (not on User /users/me). */
     const [tablePreferences, setTablePreferences] = useState(null);
+    /**
+     * null = logged out / no token.
+     * Seeded from localStorage when a token exists so UI can apply prefs before the API returns.
+     */
+    const [orderStatisticsPreferences, setOrderStatisticsPreferences] = useState(() => {
+        if (typeof window === "undefined") return null;
+        if (!localStorage.getItem("accessToken")) return null;
+        return readOrderStatsPrefsFromLs();
+    });
     const [isLoading, setIsLoading] = useState(true);
     const [token, setToken] = useState(() => typeof window !== 'undefined' ?  localStorage.getItem('accessToken') : null);
 
@@ -46,27 +78,85 @@ export function AuthProvider({ children }) {
         return prefs;
     }, []);
 
+    const fetchOrderStatisticsPreferences = useCallback(async () => {
+        if (!token) {
+            setOrderStatisticsPreferences(null);
+            return null;
+        }
+        try {
+            const res = await api.get("/users/me/order-statistics-preferences");
+            const prefs =
+                res.data?.orderStatisticsPreferences &&
+                typeof res.data.orderStatisticsPreferences === "object"
+                    ? res.data.orderStatisticsPreferences
+                    : { hidden: [] };
+            setOrderStatisticsPreferences(prefs);
+            try {
+                localStorage.setItem(ORDER_STATS_PREFS_LS_KEY, JSON.stringify({
+                    hidden: Array.isArray(prefs.hidden)
+                        ? prefs.hidden.filter((k) => typeof k === "string")
+                        : [],
+                }));
+            } catch {
+                // Ignore storage failures
+            }
+            return prefs;
+        } catch (error) {
+            console.error("Failed to load order statistics preferences:", error);
+            // Keep LS seed if API fails — don't wipe to empty
+            setOrderStatisticsPreferences((prev) => prev ?? readOrderStatsPrefsFromLs() ?? { hidden: [] });
+            return readOrderStatsPrefsFromLs() ?? { hidden: [] };
+        }
+    }, [token]);
+
+    const updateOrderStatisticsPreferences = useCallback(async (patch) => {
+        const res = await api.patch("/users/me/order-statistics-preferences", {
+            orderStatisticsPreferences: patch,
+        });
+        const prefs =
+            res.data?.orderStatisticsPreferences &&
+            typeof res.data.orderStatisticsPreferences === "object"
+                ? res.data.orderStatisticsPreferences
+                : { hidden: [] };
+        setOrderStatisticsPreferences(prefs);
+        try {
+            localStorage.setItem(ORDER_STATS_PREFS_LS_KEY, JSON.stringify({
+                hidden: Array.isArray(prefs.hidden)
+                    ? prefs.hidden.filter((k) => typeof k === "string")
+                    : [],
+            }));
+        } catch {
+            // Ignore storage failures
+        }
+        return prefs;
+    }, []);
+
     const fetchUser = useCallback(async () => {
         if (!token) {
             setIsLoading(false);
             setTablePreferences(null);
+            setOrderStatisticsPreferences(null);
             return null;
         };
         try {
             setIsLoading(true);
             const res = await api.get("/users/me");
             setUser(res.data);
-            // Load once with auth — Tables read from context, not per-mount GET
-            await fetchTablePreferences();
+            // Load once with auth — Tables / OrderTab read from context, not per-mount GET
+            await Promise.all([
+                fetchTablePreferences(),
+                fetchOrderStatisticsPreferences(),
+            ]);
             return res.data;
         } catch (error) {
             console.error("Auth initialization failed:", error);
             setTablePreferences(null);
+            setOrderStatisticsPreferences(null);
             return null;
         } finally {
             setIsLoading(false);
         }
-    }, [token, fetchTablePreferences]);
+    }, [token, fetchTablePreferences, fetchOrderStatisticsPreferences]);
 
     const setAuthToken = useCallback(async (newToken) => {
         const sanitizedToken = newToken?.trim() || null;
@@ -83,6 +173,7 @@ export function AuthProvider({ children }) {
             setToken(null);
             setUser(null);
             setTablePreferences(null);
+            setOrderStatisticsPreferences(null);
         }
     }, [fetchUser, setToken, setUser]);
 
@@ -146,14 +237,33 @@ export function AuthProvider({ children }) {
 
         // Prefs are select:false on User — load once after login (token already set above)
         try {
-            const prefsRes = await api.get("/users/me/table-preferences");
+            const [prefsRes, statsPrefsRes] = await Promise.all([
+                api.get("/users/me/table-preferences"),
+                api.get("/users/me/order-statistics-preferences"),
+            ]);
             const prefs =
                 prefsRes.data?.tablePreferences && typeof prefsRes.data.tablePreferences === "object"
                     ? prefsRes.data.tablePreferences
                     : {};
             setTablePreferences(prefs);
+            const statsPrefs =
+                statsPrefsRes.data?.orderStatisticsPreferences &&
+                typeof statsPrefsRes.data.orderStatisticsPreferences === "object"
+                    ? statsPrefsRes.data.orderStatisticsPreferences
+                    : { hidden: [] };
+            setOrderStatisticsPreferences(statsPrefs);
+            try {
+                localStorage.setItem(ORDER_STATS_PREFS_LS_KEY, JSON.stringify({
+                    hidden: Array.isArray(statsPrefs.hidden)
+                        ? statsPrefs.hidden.filter((k) => typeof k === "string")
+                        : [],
+                }));
+            } catch {
+                // Ignore storage failures
+            }
         } catch {
             setTablePreferences({});
+            setOrderStatisticsPreferences(readOrderStatsPrefsFromLs() ?? { hidden: [] });
         }
 
         // Call local API for session management (cookie-based auth for middleware/SSR)
@@ -239,6 +349,7 @@ export function AuthProvider({ children }) {
             setToken(null);
             setUser(null);
             setTablePreferences(null);
+            setOrderStatisticsPreferences(null);
             await fetch("/api/auth/logout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -294,6 +405,10 @@ export function AuthProvider({ children }) {
                 setTablePreferences,
                 updateTablePreferences,
                 refreshTablePreferences: fetchTablePreferences,
+                orderStatisticsPreferences,
+                setOrderStatisticsPreferences,
+                updateOrderStatisticsPreferences,
+                refreshOrderStatisticsPreferences: fetchOrderStatisticsPreferences,
                 isLoading,
                 refreshUser: fetchUser,
                 logout,

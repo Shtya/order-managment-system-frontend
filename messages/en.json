@@ -12862,6 +12862,8 @@
           "selectAiModel": "Select AI model...",
           "aiAddressShippingCompanyDesc": "Select the shipping company to prepare the address for.",
           "selectShippingCompany": "Select shipping company...",
+          "updateWrittenAddress": "Update written address",
+          "updateWrittenAddressDesc": "When enabled, AI may rewrite the order address text. When disabled, only city, zone, and district are updated.",
           "assignShippingProviderTitle": "Assign Shipping Provider",
           "assignShippingProviderDesc": "Distribute this order to an active shipping company.",
           "shippingAssignmentMode": "Assignment Mode",

@@ -155,9 +155,11 @@ export function OrderCreatedConfig({ value, onChange, errors, setDisabled, onClo
 
     return (
         <div className="space-y-4">
-            <FormGroup label={t('store')} description={t('storeDesc')} error={errors.store}>
+            <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t('store')}</Label>
+                <p className="text-xs text-muted-foreground">{t('storeDesc')}</p>
                 <Select value={value.storeId || (value.store === "all" ? "all" : "")} onValueChange={handleStoreChange}>
-                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                    <SelectTrigger className="h-[50px] rounded-xl">
                         {loading && !isSuperAdmin ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -174,7 +176,8 @@ export function OrderCreatedConfig({ value, onChange, errors, setDisabled, onClo
                         ))}
                     </SelectContent>
                 </Select>
-            </FormGroup>
+                {errors.store && <p className="text-xs text-red-600">{errors.store}</p>}
+            </div>
         </div>
     );
 }
@@ -219,7 +222,7 @@ export function OrderStatusUpdatedConfig({ value, onChange, errors, setDisabled 
         <div className="space-y-4">
             <FormGroup label={tConfig('targetStatus')} description={tConfig('targetStatusDesc')} error={errors.status}>
                 <Select value={value.statusId?.toString() || ""} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                    <SelectTrigger className="">
                         {loading ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -278,7 +281,7 @@ export function ShipmentCreatedConfig({ value, onChange, errors, setDisabled, on
         <div className="space-y-4">
             <FormGroup label={t('shippingCompany')} description={t('shippingCompanyDesc')} error={errors.shippingCompany}>
                 <Select value={value.shippingCompanyId || (value.shippingCompany === "all" ? "all" : "")} onValueChange={handleShippingCompanyChange}>
-                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                    <SelectTrigger className="">
                         <SelectValue placeholder={t('selectShippingCompany')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -338,7 +341,7 @@ export function ShipmentStatusUpdatedConfig({ value, onChange, errors, setDisabl
         <div className="space-y-4">
             <FormGroup label={t('targetShipmentStatus')} description={t('targetShipmentStatusDesc')} error={errors.shipmentStatus}>
                 <Select value={value.shipmentStatus || ""} onValueChange={handleShipmentStatusChange}>
-                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                    <SelectTrigger className="">
                         {loading ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -370,7 +373,7 @@ export function WhatsappIncomingConfig({ value, onChange, errors, setDisabled })
         <div className="space-y-4">
             <FormGroup label={t('whatsappAccount')} description={t('whatsappAccountDesc')} error={errors.account}>
                 <Select value={value.accountId || ""} onValueChange={(v) => onChange({ ...value, accountId: v })}>
-                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                    <SelectTrigger className="">
                         <SelectValue placeholder={t('selectAccount')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -462,7 +465,7 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
         <div className="space-y-4">
             <FormGroup label={tConfig('newStatus')} description={tConfig('changeStatusToDesc')} error={errors.newStatus}>
                 <Select value={value.newStatusId?.toString() || ""} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                    <SelectTrigger className="">
                         {loading ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -485,7 +488,7 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
             {isCancelled && (
                 <FormGroup label={tConfig('cancelCause')} description={tConfig('cancelCauseDesc')} error={errors.cancelCauseId}>
                     <Select value={value.cancelCauseId?.toString() || ""} onValueChange={handleCauseChange}>
-                        <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                        <SelectTrigger className="">
                             {loadingCauses ? (
                                 <div className="flex items-center gap-2">
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -544,6 +547,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
         shippingCompanyId: value?.shippingCompanyId || "",
         shippingCompany: value?.shippingCompany || "",
         provider: value?.provider || "",
+        updateWrittenAddress: value?.updateWrittenAddress !== false,
         branches: value?.branches || [
             { id: "address_corrected", label: tNodes("branches.addressCorrected"), condition: "address_corrected" },
             { id: "address_not_corrected", label: tNodes("branches.addressNotCorrected"), condition: "address_not_corrected" },
@@ -648,23 +652,25 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="sm:max-w-[560px] w-full flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
-                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
+            <DialogContent className="sm:max-w-[560px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
-                            <Bot size={20} className="md:size-6" />
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                            <Bot size={20} />
                         </div>
-                        <div>
-                            <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig("aiAddressCorrectionTitle")}</h3>
-                            <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig("aiAddressCorrectionDesc")}</p>
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="truncate">{tConfig("aiAddressCorrectionTitle")}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                                {tConfig("aiAddressCorrectionDesc")}
+                            </DialogDescription>
                         </div>
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
                     <FormGroup label={tConfig("aiProvider")} description={tConfig("aiProviderDesc")} error={errors.provider}>
                         <Select value={tempValue.providerId || ""} onValueChange={handleProviderChange}>
-                            <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                            <SelectTrigger className="">
                                 {loading ? (
                                     <div className="flex items-center gap-2">
                                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -684,7 +690,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
 
                     <FormGroup label={tConfig("aiModel")} description={tConfig("aiModelDesc")} error={errors.model}>
                         <Select value={tempValue.modelId || ""} onValueChange={handleModelChange} disabled={!tempValue.providerId}>
-                            <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                            <SelectTrigger className="">
                                 <SelectValue placeholder={tConfig("selectAiModel")} />
                             </SelectTrigger>
                             <SelectContent>
@@ -699,7 +705,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
 
                     <FormGroup label={tConfig("shippingCompany")} description={tConfig("aiAddressShippingCompanyDesc")} error={errors.shippingCompany}>
                         <Select value={tempValue.shippingCompanyId || ""} onValueChange={handleShippingCompanyChange}>
-                            <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                            <SelectTrigger className="">
                                 {loading ? (
                                     <div className="flex items-center gap-2">
                                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -716,14 +722,35 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                             </SelectContent>
                         </Select>
                     </FormGroup>
+
+                    <FormGroup label={tConfig("updateWrittenAddress")} description={tConfig("updateWrittenAddressDesc")}>
+                        <div className="flex items-center gap-3 rounded-2xl bg-slate-50 dark:bg-slate-800 px-4 h-12">
+                            <Checkbox
+                                id="updateWrittenAddress"
+                                checked={tempValue.updateWrittenAddress !== false}
+                                onCheckedChange={(checked) => {
+                                    setTempValue((prev) => ({
+                                        ...prev,
+                                        updateWrittenAddress: checked === true,
+                                    }));
+                                }}
+                            />
+                            <label
+                                htmlFor="updateWrittenAddress"
+                                className="text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer"
+                            >
+                                {tConfig("updateWrittenAddress")}
+                            </label>
+                        </div>
+                    </FormGroup>
                 </div>
 
-                <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
-                    <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
-                        <Button variant="ghost" onClick={() => onClose(null)} className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
+                    <div className="flex items-center justify-end gap-3 w-full">
+                        <Button type="button" variant="outline" onClick={() => onClose(null)} className="rounded-xl px-6">
                             {tCommon("cancel")}
                         </Button>
-                        <Button disabled={loading || !tempValue.providerId || !tempValue.modelId || !tempValue.shippingCompanyId} onClick={handleSave} className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                        <Button type="button" disabled={loading || !tempValue.providerId || !tempValue.modelId || !tempValue.shippingCompanyId} onClick={handleSave} className="rounded-xl px-8">
                             {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
                         </Button>
                     </div>
@@ -799,23 +826,25 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="sm:max-w-[560px] w-full flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
-                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
+            <DialogContent className="sm:max-w-[560px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
-                            <Truck size={20} className="md:size-6" />
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                            <Truck size={20} />
                         </div>
-                        <div>
-                            <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig("assignShippingProviderTitle")}</h3>
-                            <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig("assignShippingProviderDesc")}</p>
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="truncate">{tConfig("assignShippingProviderTitle")}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                                {tConfig("assignShippingProviderDesc")}
+                            </DialogDescription>
                         </div>
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
                     <FormGroup label={tConfig("shippingCompany")} description={tConfig("shippingCompanyAssignDesc")} error={errors.shippingCompany}>
                         <Select value={tempValue.shippingCompanyId || ""} onValueChange={handleShippingCompanyChange}>
-                            <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
+                            <SelectTrigger className="">
                                 {loading ? (
                                     <div className="flex items-center gap-2">
                                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -836,12 +865,12 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
                     </FormGroup>
                 </div>
 
-                <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
-                    <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
-                        <Button variant="ghost" onClick={() => onClose(null)} className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
+                    <div className="flex items-center justify-end gap-3 w-full">
+                        <Button type="button" variant="outline" onClick={() => onClose(null)} className="rounded-xl px-6">
                             {tCommon("cancel")}
                         </Button>
-                        <Button disabled={!isValid} onClick={handleSave} className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                        <Button type="button" disabled={!isValid} onClick={handleSave} className="rounded-xl px-8">
                             {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
                         </Button>
                     </div>
@@ -908,7 +937,7 @@ export function WaitConfig({ value, onChange, errors, setDisabled }) {
                     value={value?.waitMinutes ?? ''}
                     onChange={(e) => onChange({ ...value, waitMinutes: Number(e.target.value) })}
                     placeholder={tConfig('waitMinutesPlaceholder')}
-                    className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none"
+                    className=""
                 />
             </FormGroup>
         </div>
@@ -1043,22 +1072,22 @@ export function AssignOrderToEmployeeConfig({ value, onChange, errors, setDisabl
 
     return (
         <Dialog open={true} onOpenChange={() => onClose(null)}>
-            <DialogContent className="sm:max-w-[550px] w-full flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
-                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
-                    <div className="flex items-center justify-between">
-                        <DialogTitle className="flex items-center gap-3">
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
-                                <Users size={20} className="md:size-6" />
-                            </div>
-                            <div className="">
-                                <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('assignOrderToEmployee')}</h3>
-                                <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('assignOrderToEmployeeDesc')}</p>
-                            </div>
-                        </DialogTitle>
-                    </div>
+            <DialogContent className="sm:max-w-[550px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                            <Users size={20} />
+                        </div>
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="truncate">{tConfig('assignOrderToEmployee')}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                                {tConfig('assignOrderToEmployeeDesc')}
+                            </DialogDescription>
+                        </div>
+                    </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
                     <div className="space-y-4">
                         <FormGroup label={tConfig('selectEmployee')} description={tConfig('selectEmployeeDesc')} error={errors.employee}>
                             <UserSelect
@@ -1074,19 +1103,20 @@ export function AssignOrderToEmployeeConfig({ value, onChange, errors, setDisabl
                     </div>
                 </div>
 
-                {/* Footer */}
-                <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
-                    <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
+                <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
+                    <div className="flex items-center justify-end gap-3 w-full">
                         <Button
-                            variant="ghost"
+                            type="button"
+                            variant="outline"
                             onClick={() => onClose(null)}
-                            className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                            className="rounded-xl px-6"
                         >
                             {tCommon('cancel')}
                         </Button>
                         <Button
+                            type="button"
                             onClick={handleSave}
-                            className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                            className="rounded-xl px-8"
                         >
                             {mode === "create" ? tConfig('addStep') : tConfig('saveChanges')}
                         </Button>
@@ -1397,22 +1427,22 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="sm:max-w-[950px] w-full h-[95vh] md:h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
-                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
-                    <div className="flex items-center justify-between">
-                        <DialogTitle className="flex items-center gap-3">
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
-                                <MessageSquareQuote size={20} className="md:size-6" />
-                            </div>
-                            <div className="">
-                                <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('whatsappTemplateTitle')}</h3>
-                                <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('whatsappTemplateDesc')}</p>
-                            </div>
-                        </DialogTitle>
-                    </div>
+            <DialogContent className="sm:max-w-[950px] w-full h-[90vh] md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                            <MessageSquareQuote size={20} />
+                        </div>
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="truncate">{tConfig('whatsappTemplateTitle')}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                                {tConfig('whatsappTemplateDesc')}
+                            </DialogDescription>
+                        </div>
+                    </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 overflow-y-auto custom-scrollbar bg-card">
                     <div className="flex flex-col lg:flex-row min-h-full">
                         {/* Main Content Side */}
                         <div className="flex-1 p-4 md:p-8 bg-white dark:bg-slate-900">
@@ -1614,19 +1644,21 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                 </div>
 
                 {/* Footer */}
-                <DialogFooter className="px-4 md:px-8 py-4 md:py-6 border-t bg-white dark:bg-slate-900 shrink-0">
-                    <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
+                <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
+                    <div className="flex items-center justify-end gap-3 w-full">
                         <Button
-                            variant="ghost"
+                            type="button"
+                            variant="outline"
                             onClick={() => onClose(null)}
-                            className="w-full sm:w-auto px-8 h-10 md:h-12 rounded-xl md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                            className="rounded-xl px-6"
                         >
                             {tCommon('cancel')}
                         </Button>
                         <Button
+                            type="button"
                             disabled={!isAllFilled}
                             onClick={handleSave}
-                            className="w-full sm:w-auto px-8 md:px-10 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
+                            className="rounded-xl px-8"
                         >
                             {mode === "create" ? tConfig('addStep') : tConfig('saveChanges')}
                         </Button>
@@ -2165,23 +2197,23 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
 
     return (
         <Dialog open={isOpen} onOpenChange={() => handleCloseDialog(null)}>
-            <DialogContent className="sm:max-w-[950px] w-full h-[95vh] md:h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[20px] md:rounded-[30px] border-none shadow-2xl">
-                <DialogHeader className="px-4 md:px-8 py-4 md:py-6 border-b bg-white dark:bg-slate-900 shrink-0">
-                    <div className="flex items-center justify-between">
-                        <DialogTitle className="flex items-center gap-3">
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
-                                <MessageSquare size={20} className="md:size-6" />
-                            </div>
-                            <div className="">
-                                <h3 className="text-sm md:text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('whatsappMessageTitle')}</h3>
-                                <p className="text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">{tConfig('whatsappMessageDesc')}</p>
-                            </div>
-                        </DialogTitle>
-                    </div>
+            <DialogContent className="sm:max-w-[950px] w-full h-[90vh] md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                            <MessageSquare size={20} />
+                        </div>
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="truncate">{tConfig('whatsappMessageTitle')}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                                {tConfig('whatsappMessageDesc')}
+                            </DialogDescription>
+                        </div>
+                    </DialogTitle>
                 </DialogHeader>
 
                 {step === 'select' && (
-                    <div className="flex-1 overflow-y-auto p-4 md:p-8">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                             <FormGroup label={tConfig('recipientNumber')}>
                                 <Input
@@ -2247,7 +2279,8 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                         {renderMessageForm()}
                     </div>
                 </div>}
-                <DialogFooter className="px-4 md:px-8 py-4 border-t bg-white dark:bg-slate-900 shrink-0 gap-2 flex flex-col-reverse sm:flex-row">
+                <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 w-full">
                     {step === 'select' ?
                         <>
                             <Button_
@@ -2255,12 +2288,12 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                 variant="outline"
                                 onClick={() => handleCloseDialog(null)}
                                 label={tCommon('cancel')}
-                                className="w-full sm:w-auto"
+                                className="w-full sm:w-auto rounded-xl px-6"
                             />
                             <Button_
                                 type="button"
                                 onClick={handleSave}
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+                                className="w-full sm:w-auto rounded-xl px-8"
                                 label={tConfig('saveStep')}
                                 disabled={!configuredType}
                             />
@@ -2272,14 +2305,14 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                 variant="outline"
                                 onClick={() => handleBack()}
                                 label={tCommon('back')}
-                                className="w-full sm:w-auto"
+                                className="w-full sm:w-auto rounded-xl px-6"
                             />
                             {selectedMessage?.mode === 'business' && hasBusinessConfig && businessStep === 'options' && (
                                 <Button_
                                     type="button"
                                     onClick={() => formRef.current?.next?.()}
                                     label={tChats('businessMessages.next')}
-                                    className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+                                    className="w-full sm:w-auto rounded-xl px-8"
                                 />
                             )}
                             {selectedMessage?.mode === 'business' && hasBusinessConfig && businessStep === 'message' && (
@@ -2288,16 +2321,17 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                     variant="outline"
                                     onClick={() => formRef.current?.prev?.()}
                                     label={tChats('businessMessages.prev')}
-                                    className="w-full sm:w-auto"
+                                    className="w-full sm:w-auto rounded-xl px-6"
                                 />
                             )}
                             <Button_
                                 type="button"
                                 onClick={handleSubmitClick}
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+                                className="w-full sm:w-auto rounded-xl px-8"
                                 label={tChats('save')}
                                 disabled={selectedMessage?.mode === 'business' && hasBusinessConfig && businessStep === 'options'}
                             /> </>}
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -2652,51 +2686,56 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="sm:max-w-[900px] w-full h-[95vh] md:h-[85vh] p-0 overflow-hidden rounded-[20px] md:rounded-[30px] border-none shadow-2xl bg-[#f8f9fc] dark:bg-slate-950">
+            <DialogContent className="sm:max-w-[900px] w-full h-[90vh] md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <div className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
-                    <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 md:pe-[60px]">
+                    <div className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0 md:pe-[60px]">
                         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             {activeIndex !== null ? (
                                 <div className="flex flex-col sm:flex-row justify-between flex-1 gap-4 w-full">
                                     <div className="md:px-6 overflow-x-auto custom-scrollbar pb-2 md:pb-0">
                                         <div className="flex items-center gap-2 md:gap-3 min-w-max">
-                                            <span className="text-[11px] md:text-[13px] font-black text-slate-900 dark:text-slate-100">{tConfig("preview")}</span>
-                                            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-primary/10 text-primary text-[10px] md:text-[12px] font-black border border-primary/20 shadow-sm">
+                                            <span className="text-sm font-semibold">{tConfig("preview")}</span>
+                                            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-primary/10 text-primary text-[10px] md:text-[12px] font-semibold border border-primary/20">
                                                 {fieldDef?.label}
                                             </div>
-                                            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] md:text-[12px] font-black border border-slate-200 dark:border-slate-700 shadow-sm">
+                                            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-muted text-muted-foreground text-[10px] md:text-[12px] font-semibold border border-border">
                                                 {operators.find(o => o.id === currentCheck?.operator)?.label || "..."}
                                             </div>
-                                            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] md:text-[12px] font-black border border-slate-200 dark:border-slate-700 shadow-sm">
+                                            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-muted text-muted-foreground text-[10px] md:text-[12px] font-semibold border border-border">
                                                 {currentCheck?.targetLabel || currentCheck?.targetValue || "..."}
                                             </div>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setActiveIndex(null)}
-                                        className="px-4 h-9 md:h-10 flex items-center justify-center gap-2 rounded-lg md:rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 transition-all shrink-0 w-full sm:w-auto"
+                                        className="px-4 h-9 md:h-10 flex items-center justify-center gap-2 rounded-xl bg-muted text-muted-foreground hover:bg-muted/80 transition-all shrink-0 w-full sm:w-auto"
                                     >
                                         <X size={18} />
-                                        <span className="text-[11px] md:text-[12px] font-black">{tConfig("backToMain")}</span>
+                                        <span className="text-xs font-semibold">{tConfig("backToMain")}</span>
                                     </button>
                                 </div>
                             ) : (
                                 <>
-                                    <div className=" flex-1 md:px-4">
-                                        <h2 className="text-[15px] md:text-[17px] font-black text-slate-900 dark:text-slate-100">{tConfig("orderCheckTitle")}</h2>
-                                        <p className="text-[10px] md:text-[11px] text-slate-400 font-bold mt-0.5">{tConfig("orderCheckDesc")}</p>
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                                            <GitBranch size={20} />
+                                        </div>
+                                        <div className="flex flex-col gap-0.5 min-w-0">
+                                            <span className="truncate font-semibold">{tConfig("orderCheckTitle")}</span>
+                                            <p className="text-xs text-muted-foreground">{tConfig("orderCheckDesc")}</p>
+                                        </div>
                                     </div>
                                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-                                        <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 dark:border-slate-700 text-center">
+                                        <div className="bg-muted px-4 py-2 md:py-2.5 rounded-xl text-[10px] md:text-[11px] font-semibold text-muted-foreground uppercase tracking-widest border border-border text-center">
                                             {tConfig("conditionsCount", { count: checks.length })}
                                         </div>
                                         <button
                                             onClick={handleAddCheck}
-                                            className="text-xs md:text-sm px-4 py-2 md:py-2.5 flex items-center justify-center gap-2 rounded-lg md:rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 w-full sm:w-auto"
+                                            className="text-xs md:text-sm px-4 py-2 md:py-2.5 flex items-center justify-center gap-2 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all active:scale-95 w-full sm:w-auto"
                                         >
                                             <Plus size={18} className="md:size-5" />
-                                            <span className="text-[11px] md:text-[12px] font-black">{tConfig("addNewCondition")}</span>
+                                            <span className="text-[11px] md:text-[12px] font-semibold">{tConfig("addNewCondition")}</span>
                                         </button>
                                     </div>
                                 </>
@@ -2705,7 +2744,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-0 mb-4 md:mb-6 custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-10 md:py-20 gap-3">
                                 <Loader2 className="w-8 h-8 md:w-10 md:h-10 animate-spin text-primary" />
@@ -2886,28 +2925,31 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                     </div>
 
                     {/* Footer - Using DialogFooter structure */}
-                    <DialogFooter className="p-4 md:p-6 bg-white dark:bg-slate-900 border-t dark:border-slate-800 shrink-0">
-                        <div className="flex flex-col-reverse sm:flex-row w-full justify-between items-center gap-3">
+                    <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
+                        <div className="flex items-center justify-end gap-3 w-full">
                             <Button
-                                variant="ghost"
+                                type="button"
+                                variant="outline"
                                 onClick={() => activeIndex !== null ? setActiveIndex(null) : onClose(null)}
-                                className="w-full sm:w-auto px-6 md:px-8 h-10 md:h-12 rounded-lg md:rounded-2xl text-slate-600 dark:text-slate-300 text-xs md:text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                                className="rounded-xl px-6"
                             >
                                 {tCommon("cancel")}
                             </Button>
                             {activeIndex !== null ? (
                                 <Button
+                                    type="button"
                                     disabled={!currentCheck?.targetValue}
                                     onClick={handleConfirm}
-                                    className="w-full sm:w-auto px-6 md:px-8 h-10 md:h-12 rounded-lg md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
+                                    className="rounded-xl px-8"
                                 >
                                     {tConfig("addCondition")}
                                 </Button>
                             ) : (
                                 <Button
+                                    type="button"
                                     disabled={checks.length === 0}
                                     onClick={handleSaveAll}
-                                    className="w-full sm:w-auto px-6 md:px-8 h-10 md:h-12 rounded-lg md:rounded-2xl bg-primary text-white text-xs md:text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
+                                    className="rounded-xl px-8"
                                 >
                                     {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
                                 </Button>
@@ -2964,7 +3006,7 @@ export function QuickOrderStatusConfig({ value, onChange, errors, setDisabled })
         <div className="space-y-4">
             <FormGroup label={tConfig("quickCheckTitle")} description={tConfig("quickCheckDesc")} error={errors.status}>
                 <Select value={value.statusId?.toString() || ""} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6">
+                    <SelectTrigger className=" px-6">
                         {loading ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -28,6 +28,17 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
 
     const ConfigComponent = Configs[step.configComponent];
 
+    const typeKeyByStepType = {
+        trigger: "triggerTypes",
+        action: "actionTypes",
+        condition: "conditionTypes",
+    };
+    const typeKey = typeKeyByStepType[step.type];
+    const stepName = step.label
+        || (typeKey && step.id ? t(`${typeKey}.${step.id}`) : null)
+        || step.id
+        || "";
+
     if (step.hasCustom && ConfigComponent) {
             
         return (
@@ -56,22 +67,22 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className={`${className} p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900`}>
-                <DialogHeader className="p-6 border-b dark:border-slate-800">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                            {step.icon ? <step.icon size={24} /> : <Settings2 size={24} />}
+            <DialogContent className={`${className} w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950`}>
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                            {step.icon ? <step.icon size={20} /> : <Settings2 size={20} />}
                         </div>
-                        <div>
-                            <DialogTitle className="text-xl font-bold">{step.label}</DialogTitle>
-                            <DialogDescription className="text-xs text-slate-400 mt-1">
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="truncate">{stepName}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal">
                                 {mode === "create" ? t('config.modalTitle.create') : t('config.modalTitle.edit')}
                             </DialogDescription>
                         </div>
-                    </div>
+                    </DialogTitle>
                 </DialogHeader>
 
-                <div className="p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
                     {ConfigComponent ? (
                         <ConfigComponent
                             value={config}
@@ -85,19 +96,29 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
                             flowData={{ nodes, edges }}
                         />
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
-                            <AlertCircle size={32} className="text-slate-300 mb-4" />
-                            <p className="text-sm text-slate-500 font-medium">{t('config.noSettings')}</p>
+                        <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-border rounded-xl">
+                            <AlertCircle size={32} className="text-muted-foreground mb-4" />
+                            <p className="text-sm text-muted-foreground font-medium">{t('config.noSettings')}</p>
                         </div>
                     )}
                 </div>
 
-                <DialogFooter className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t dark:border-slate-800">
-                    <div className="flex w-full justify-between items-center">
-                        <Button variant="ghost" onClick={() => onClose(null)} className="rounded-xl px-6">
+                <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
+                    <div className="flex items-center justify-end gap-3 w-full">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onClose(null)}
+                            className="rounded-xl px-6"
+                        >
                             {tCommon('cancel')}
                         </Button>
-                        <Button disabled={disabled} onClick={handleSave} className="rounded-xl px-8 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+                        <Button
+                            type="button"
+                            disabled={disabled}
+                            onClick={handleSave}
+                            className="rounded-xl px-8"
+                        >
                             {mode === "create" ? t('config.addStep') : t('config.saveChanges')}
                         </Button>
                     </div>

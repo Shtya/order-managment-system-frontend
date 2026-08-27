@@ -12886,6 +12886,8 @@
           "selectAiModel": "اختر نموذج الذكاء الاصطناعي...",
           "aiAddressShippingCompanyDesc": "اختر شركة الشحن لتجهيز العنوان لها.",
           "selectShippingCompany": "اختر شركة الشحن...",
+          "updateWrittenAddress": "تحديث العنوان المكتوب",
+          "updateWrittenAddressDesc": "عند التفعيل، يمكن للذكاء الاصطناعي إعادة كتابة نص عنوان الطلب. عند الإيقاف، يتم تحديث المدينة والمنطقة والحي فقط.",
           "assignShippingProviderTitle": "تعيين شركة الشحن",
           "assignShippingProviderDesc": "وزع هذا الطلب على شركة شحن مفعلة.",
           "shippingAssignmentMode": "طريقة التعيين",

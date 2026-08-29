@@ -12706,7 +12706,8 @@
         "order_created": "New Order Created",
         "order_updated": "Order Status Updated",
         "shipment_created": "New Shipment Created",
-        "shipment_updated": "Shipment Status Updated"
+        "shipment_updated": "Shipment Status Updated",
+        "assignment_cancelled": "Assignment Cancelled"
       },
       "statuses": {
         "published": "Published",
@@ -12719,7 +12720,8 @@
           "order_created": "New Order Created",
           "order_updated": "Order Status Updated",
           "shipment_created": "New Shipment Created",
-          "shipment_updated": "Shipment Status Updated"
+          "shipment_updated": "Shipment Status Updated",
+          "assignment_cancelled": "Assignment Cancelled"
         },
         "actionTypes": {
           "send_whatsapp_template": "Send WhatsApp Template",
@@ -12944,6 +12946,12 @@
           "shippingCompany": "Shipping Company",
           "shippingCompanyDesc": "Choose the shipping company to monitor shipments in",
           "allShippingCompanies": "All Shipping Companies",
+          "assignmentCancelSource": "Cancellation type",
+          "assignmentCancelSourceDesc": "Choose when this automation should run after an assignment is cancelled",
+          "selectAssignmentCancelSource": "Select cancellation type...",
+          "assignmentCancelAutomatic": "Automatic expiry only",
+          "assignmentCancelManual": "Manual cancellation only",
+          "assignmentCancelBoth": "Both automatic and manual",
           "whatsappAccount": "WhatsApp Account",
           "whatsappAccountDesc": "Choose the account that will receive messages",
           "selectAccount": "Select account...",

@@ -12730,7 +12730,8 @@
         "order_created": "إنشاء طلب جديد",
         "order_updated": "تحديث حالة الطلب",
         "shipment_created": "إنشاء شحنة جديدة",
-        "shipment_updated": "تحديث حالة الشحنة"
+        "shipment_updated": "تحديث حالة الشحنة",
+        "assignment_cancelled": "إلغاء التعيين"
       },
       "statuses": {
         "published": "نشط",
@@ -12743,7 +12744,8 @@
           "order_created": "إنشاء طلب جديد",
           "order_updated": "تحديث حالة الطلب",
           "shipment_created": "إنشاء شحنة جديدة",
-          "shipment_updated": "تحديث حالة الشحنة"
+          "shipment_updated": "تحديث حالة الشحنة",
+          "assignment_cancelled": "إلغاء التعيين"
         },
         "actionTypes": {
           "send_whatsapp_template": "إرسال قالب واتساب",
@@ -12968,6 +12970,12 @@
           "shippingCompany": "شركة الشحن",
           "shippingCompanyDesc": "اختر شركة الشحن التي سيتم مراقبة الشحنات فيها",
           "allShippingCompanies": "جميع شركات الشحن",
+          "assignmentCancelSource": "نوع الإلغاء",
+          "assignmentCancelSourceDesc": "اختار متى الأتمتة تشتغل بعد إلغاء التعيين",
+          "selectAssignmentCancelSource": "اختار نوع الإلغاء...",
+          "assignmentCancelAutomatic": "الإلغاء التلقائي فقط",
+          "assignmentCancelManual": "الإلغاء اليدوي فقط",
+          "assignmentCancelBoth": "الإلغاء التلقائي واليدوي",
           "whatsappAccount": "حساب الواتساب",
           "whatsappAccountDesc": "اختر الحساب الذي سيستقبل الرسائل",
           "selectAccount": "اختر الحساب...",

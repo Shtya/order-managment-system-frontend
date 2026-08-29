@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Position } from '@xyflow/react';
-import { Play, ShoppingCart, RefreshCw, Loader2, Truck } from 'lucide-react';
+import { Play, ShoppingCart, RefreshCw, Loader2, Truck, UserX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { BaseNode } from './BaseNode';
 import { useFlowStore } from '@/hook/useFlowStore';
@@ -13,6 +13,7 @@ export function TriggerNode({ id, data, selected }) {
         'order_updated': { label: t('triggerTypes.order_updated'), icon: RefreshCw, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
         'shipment_created': { label: t('triggerTypes.shipment_created'), icon: Truck, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
         'shipment_updated': { label: t('triggerTypes.shipment_updated'), icon: RefreshCw, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+        'assignment_cancelled': { label: t('triggerTypes.assignment_cancelled'), icon: UserX, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
     }), [t]);
 
     const trigger = TRIGGER_TYPES[data.type] || { label: t('nodes.trigger.unknown'), icon: Play, color: 'text-emerald-600', bg: 'bg-emerald-50' };
@@ -64,6 +65,18 @@ export function TriggerNode({ id, data, selected }) {
                             <div className="flex items-center justify-between">
                                 <span className="opacity-50 font-bold">{t('nodes.trigger.onStatusChange')}</span>
                                 <span className="font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tight">{data.config?.shipmentStatus || '—'}</span>
+                            </div>
+                        )}
+                        {data.type === 'assignment_cancelled' && (
+                            <div className="flex items-center justify-between">
+                                <span className="opacity-50 font-bold">{t('config.assignmentCancelSource')}</span>
+                                <span className="font-black text-emerald-700 dark:text-emerald-400">
+                                    {data.config?.cancelSource === 'manual'
+                                        ? t('config.assignmentCancelManual')
+                                        : data.config?.cancelSource === 'both'
+                                            ? t('config.assignmentCancelBoth')
+                                            : t('config.assignmentCancelAutomatic')}
+                                </span>
                             </div>
                         )}
                     </>

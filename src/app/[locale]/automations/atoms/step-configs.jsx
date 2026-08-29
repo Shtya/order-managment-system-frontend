@@ -303,6 +303,46 @@ export function ShipmentCreatedConfig({ value, onChange, errors, setDisabled, on
 }
 
 /**
+ * Trigger: Assignment Cancelled
+ */
+export function AssignmentCancelledConfig({ value, onChange, errors, setDisabled }) {
+    const t = useTranslations("whatsApp.automations.builder.config");
+    const cancelSource = value.cancelSource || "automatic";
+
+    useEffect(() => {
+        setDisabled(false);
+    }, [setDisabled]);
+
+    const handleCancelSourceChange = (v) => {
+        onChange({ ...value, cancelSource: v });
+    };
+
+    return (
+        <div className="space-y-4">
+            <FormGroup
+                label={t("assignmentCancelSource")}
+                description={t("assignmentCancelSourceDesc")}
+                error={errors.cancelSource}
+            >
+                <Select
+                    value={cancelSource}
+                    onValueChange={handleCancelSourceChange}
+                >
+                    <SelectTrigger className="">
+                        <SelectValue placeholder={t("selectAssignmentCancelSource")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="automatic">{t("assignmentCancelAutomatic")}</SelectItem>
+                        <SelectItem value="manual">{t("assignmentCancelManual")}</SelectItem>
+                        <SelectItem value="both">{t("assignmentCancelBoth")}</SelectItem>
+                    </SelectContent>
+                </Select>
+            </FormGroup>
+        </div>
+    );
+}
+
+/**
  * Trigger: Shipment Status Updated
  */
 export function ShipmentStatusUpdatedConfig({ value, onChange, errors, setDisabled }) {

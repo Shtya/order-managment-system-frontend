@@ -1,4 +1,4 @@
-import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle, Bot } from 'lucide-react';
+import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle, Bot, UserX } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -84,6 +84,26 @@ export const BASE_CONFIG = {
                                 shipmentStatus: config.shipmentStatus
                             })
                         }
+                    },
+                    {
+                        id: 'assignment_cancelled',
+                        icon: UserX,
+                        type: 'trigger',
+                        entity: 'order',
+                        configComponent: 'AssignmentCancelledConfig',
+                        className: 'max-w-xl!',
+                        preview: {
+                            requiresOrder: true,
+                            getFiltersFromConfig: () => ({}),
+                            getMockParamsFromConfig: (config) => ({
+                                assignmentCancelSource:
+                                    config.cancelSource === 'manual'
+                                        ? 'manual'
+                                        : config.cancelSource === 'both'
+                                            ? 'automatic'
+                                            : 'automatic',
+                            }),
+                        },
                     }
                 ]
             }

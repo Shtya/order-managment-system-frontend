@@ -533,7 +533,8 @@ function buildPresetMockOrders({
     }
 
     return [
-        buildMockOrder({
+        {
+            ...buildMockOrder({
             seed: 101,
             index: 0,
             triggerType,
@@ -541,8 +542,11 @@ function buildPresetMockOrders({
             status: triggerAlignedStatus,
             pinnedLabel: 'Pinned preview order',
             adminId,
-        }),
-        buildMockOrder({
+            }),
+            ...mockParams,
+        },
+        {
+            ...buildMockOrder({
             seed: 102,
             index: 1,
             triggerType,
@@ -550,7 +554,9 @@ function buildPresetMockOrders({
             status: triggerAlignedStatus,
             pinnedLabel: 'Pinned preview order',
             adminId
-        }),
+            }),
+            ...mockParams,
+        },
     ];
 }
 

@@ -7167,6 +7167,7 @@
       "errorMismatch": "كود الطلب غير متطابق"
     },
     "stats": {
+      "percentOfTotalOrders": "من إجمالي الطلبات",
       "pendingConfirmation": "بانتظار التأكيد",
       "pending_confirmation": "بانتظار التأكيد",
       "confirmed": "تم التأكيد",

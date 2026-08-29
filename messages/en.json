@@ -7179,6 +7179,7 @@
       "errorMismatch": "Order number does not match"
     },
     "stats": {
+      "percentOfTotalOrders": "of all orders",
       "pendingConfirmation": "Pending Confirmation",
       "pending_confirmation": "Pending Confirmation",
       "confirmed": "Confirmed",

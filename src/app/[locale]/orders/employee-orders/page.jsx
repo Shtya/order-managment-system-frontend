@@ -169,18 +169,39 @@ export default function MyAssignedOrdersPage() {
 	const statsCards = useMemo(() => {
 		if (!stats.length) return [];
 
-		return stats.map((stat, i) => {
-			const Icon = getIconForStatus(stat.code);
+		const totalCount = stats.reduce(
+			(sum, stat) => sum + (Number(stat.count) || 0),
+			0,
+		);
 
-			return {
-				id: stat.id,
-				name: stat.system ? t(`statuses.${stat.code}`) : stat.name,
-				value: String(stat.count ?? 0),
-				icon: Icon,
-				color: stat.color || "#64748B",
-				sortOrder: i,
-			};
-		});
+		return [
+			{
+				key: "total",
+				id: "total",
+				name: t("stats.total"),
+				value: String(totalCount),
+				icon: Package,
+				color: "#3b82f6",
+				sortOrder: -100,
+			},
+			...stats.map((stat, i) => {
+				const Icon = getIconForStatus(stat.code);
+
+				return {
+					id: stat.id,
+					name: stat.system ? t(`statuses.${stat.code}`) : stat.name,
+					value: String(stat.count ?? 0),
+					icon: Icon,
+					color: stat.color || "#64748B",
+					sortOrder: i,
+					trend: {
+						label: t("stats.percentOfTotalOrders"),
+						value: `${stat.percent ?? 0}%`,
+						showArrow: false,
+					},
+				};
+			}),
+		];
 	}, [stats, t]);
 
 	const handleStartWork = () => {

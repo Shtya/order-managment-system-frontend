@@ -384,7 +384,9 @@ function InfoCard({
 							<span className="space-x-1" style={{ fontSize: 10, fontWeight: 600, color: "var(--muted-foreground)" }}>
 								<span style={{
 									// تلوين النسبة فقط بلون الحالة لسهولة القراءة
-									color: trend.isUp ? "#10b981" : "var(--destructive)",
+									color: trend.showArrow
+										? (trend.isUp ? "#10b981" : "var(--destructive)")
+										: "inherit",
 									marginRight: 4
 								}}>
 									{trend.value !== undefined ? trend.value : ""}

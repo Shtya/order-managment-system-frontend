@@ -1257,7 +1257,7 @@ export default function OrdersTab({
   const statsCards = useMemo(() => {
     const final = (readOnlyStatus ? filteredStats : stats) || [];
     if (!final.length) return [];
-
+    
     return final
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((stat) => {
@@ -1268,6 +1268,7 @@ export default function OrdersTab({
           id: stat.id,
           title: stat.system ? t(`statuses.${stat.code}`) : stat.name,
           value: String(stat.count || 0),
+          percent: Number(stat.percent) || 0,
           icon: Icon,
           bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
           bgInlineLight: bgColors.light,
@@ -2772,6 +2773,18 @@ export default function OrdersTab({
           button: t("statsVisibility.button"),
         }}
         stats={[
+          {
+            key: "total",
+            id: "total",
+            name: t("stats.total"),
+            value: String(
+              statsCards.reduce((sum, s) => sum + (Number(s.value) || 0), 0),
+            ),
+            icon: Package,
+            color: "#3b82f6",
+            sortOrder: -100,
+            editable: false,
+          },
           ...statsCards.map((stat) => ({
             key: stat.code,
             id: stat.id,
@@ -2783,6 +2796,11 @@ export default function OrdersTab({
             editable: !stat.system,
             onEdit: () => handleEditStatus(stat.fullData),
             onDelete: () => handleDeleteStatus(stat),
+            trend: {
+              label: t("stats.percentOfTotalOrders"),
+              value: `${stat.percent ?? 0}%`,
+              showArrow: false,
+            },
           })),
           ...(!readOnlyStatus ? [{
             id: "add",

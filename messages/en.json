@@ -1326,6 +1326,7 @@
       "active": "Active",
       "manual": "Allow employees to use",
       "priority": "Priority",
+      "ordersCount": "Orders",
       "tag": "Tag",
       "enabled": "Enabled",
       "logic": "Logic",

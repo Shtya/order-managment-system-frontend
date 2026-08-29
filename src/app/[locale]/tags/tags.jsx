@@ -378,6 +378,13 @@ export default function TagsPage() {
           cell: (row) => <span className="tabular-nums">{row.priority ?? 0}</span>,
         },
         {
+          key: "ordersCount",
+          header: t("columns.ordersCount"),
+          cell: (row) => (
+            <span className="tabular-nums">{row.ordersCount ?? 0}</span>
+          ),
+        },
+        {
           key: "actions",
           header: tc("actions"),
           cell: (row) => (

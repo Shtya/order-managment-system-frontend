@@ -79,7 +79,7 @@ function normalizeTablePrefLocal(value) {
   return normalizeTablePref(value);
 }
 
-/** Merge saved prefs with current column keys (append new cols, drop removed) */
+/** Merge saved prefs with current column keys (insert new cols at default index, drop removed) */
 function resolveTablePref(prefs, columnKeys) {
   const { order: savedOrder, hidden: savedHidden } = normalizeTablePrefLocal(prefs);
   const keySet = new Set(columnKeys);
@@ -92,9 +92,12 @@ function resolveTablePref(prefs, columnKeys) {
       seen.add(key);
     }
   }
-  for (const key of columnKeys) {
+
+  // New columns (e.g. internalNotes) go at their definition index, not the end
+  for (let i = 0; i < columnKeys.length; i++) {
+    const key = columnKeys[i];
     if (!seen.has(key)) {
-      order.push(key);
+      order.splice(Math.min(i, order.length), 0, key);
       seen.add(key);
     }
   }

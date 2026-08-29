@@ -2,46 +2,30 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import api, { getLang } from "@/utils/api";
+import {
+    readAllTablePrefsFromLS,
+    readAllStatisticsPrefsFromLS,
+    writeAllTablePrefsToLS,
+    writeAllStatisticsPrefsToLS,
+} from "@/utils/userPreferencesStorage";
 
 const AuthContext = createContext();
 
 const USER_STORAGE_KEY = "user";
-const ORDER_STATS_PREFS_LS_KEY = "orderStatisticsPreferences";
-
-function readOrderStatsPrefsFromLs() {
-    if (typeof window === "undefined") return null;
-    try {
-        const raw = localStorage.getItem(ORDER_STATS_PREFS_LS_KEY);
-        if (!raw) return { hidden: [] };
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-            return { hidden: parsed.filter((k) => typeof k === "string") };
-        }
-        if (parsed && typeof parsed === "object") {
-            return {
-                hidden: Array.isArray(parsed.hidden)
-                    ? parsed.hidden.filter((k) => typeof k === "string")
-                    : [],
-            };
-        }
-        return { hidden: [] };
-    } catch {
-        return { hidden: [] };
-    }
-}
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState();
     /** null = not loaded yet; object = loaded once for the session (not on User /users/me). */
-    const [tablePreferences, setTablePreferences] = useState(null);
-    /**
-     * null = logged out / no token.
-     * Seeded from localStorage when a token exists so UI can apply prefs before the API returns.
-     */
-    const [orderStatisticsPreferences, setOrderStatisticsPreferences] = useState(() => {
+    const [tablePreferences, setTablePreferences] = useState(() => {
         if (typeof window === "undefined") return null;
         if (!localStorage.getItem("accessToken")) return null;
-        return readOrderStatsPrefsFromLs();
+        return readAllTablePrefsFromLS();
+    });
+    /** null = not loaded yet; object = loaded once for the session (not on User /users/me). */
+    const [statisticsPreferences, setStatisticsPreferences] = useState(() => {
+        if (typeof window === "undefined") return null;
+        if (!localStorage.getItem("accessToken")) return null;
+        return readAllStatisticsPrefsFromLS();
     });
     const [isLoading, setIsLoading] = useState(true);
     const [token, setToken] = useState(() => typeof window !== 'undefined' ?  localStorage.getItem('accessToken') : null);
@@ -58,11 +42,13 @@ export function AuthProvider({ children }) {
                     ? res.data.tablePreferences
                     : {};
             setTablePreferences(prefs);
+            writeAllTablePrefsToLS(prefs);
             return prefs;
         } catch (error) {
             console.error("Failed to load table preferences:", error);
-            setTablePreferences({});
-            return {};
+            const fromLs = readAllTablePrefsFromLS();
+            setTablePreferences(fromLs);
+            return fromLs;
         }
     }, [token]);
 
@@ -75,59 +61,44 @@ export function AuthProvider({ children }) {
                 ? res.data.tablePreferences
                 : {};
         setTablePreferences(prefs);
+        writeAllTablePrefsToLS(prefs);
         return prefs;
     }, []);
 
-    const fetchOrderStatisticsPreferences = useCallback(async () => {
+    const fetchStatisticsPreferences = useCallback(async () => {
         if (!token) {
-            setOrderStatisticsPreferences(null);
+            setStatisticsPreferences(null);
             return null;
         }
         try {
-            const res = await api.get("/users/me/order-statistics-preferences");
+            const res = await api.get("/users/me/statistics-preferences");
             const prefs =
-                res.data?.orderStatisticsPreferences &&
-                typeof res.data.orderStatisticsPreferences === "object"
-                    ? res.data.orderStatisticsPreferences
-                    : { hidden: [] };
-            setOrderStatisticsPreferences(prefs);
-            try {
-                localStorage.setItem(ORDER_STATS_PREFS_LS_KEY, JSON.stringify({
-                    hidden: Array.isArray(prefs.hidden)
-                        ? prefs.hidden.filter((k) => typeof k === "string")
-                        : [],
-                }));
-            } catch {
-                // Ignore storage failures
-            }
+                res.data?.statisticsPreferences &&
+                typeof res.data.statisticsPreferences === "object"
+                    ? res.data.statisticsPreferences
+                    : {};
+            setStatisticsPreferences(prefs);
+            writeAllStatisticsPrefsToLS(prefs);
             return prefs;
         } catch (error) {
-            console.error("Failed to load order statistics preferences:", error);
-            // Keep LS seed if API fails — don't wipe to empty
-            setOrderStatisticsPreferences((prev) => prev ?? readOrderStatsPrefsFromLs() ?? { hidden: [] });
-            return readOrderStatsPrefsFromLs() ?? { hidden: [] };
+            console.error("Failed to load statistics preferences:", error);
+            const fromLs = readAllStatisticsPrefsFromLS();
+            setStatisticsPreferences(fromLs);
+            return fromLs;
         }
     }, [token]);
 
-    const updateOrderStatisticsPreferences = useCallback(async (patch) => {
-        const res = await api.patch("/users/me/order-statistics-preferences", {
-            orderStatisticsPreferences: patch,
+    const updateStatisticsPreferences = useCallback(async (patch) => {
+        const res = await api.patch("/users/me/statistics-preferences", {
+            statisticsPreferences: patch,
         });
         const prefs =
-            res.data?.orderStatisticsPreferences &&
-            typeof res.data.orderStatisticsPreferences === "object"
-                ? res.data.orderStatisticsPreferences
-                : { hidden: [] };
-        setOrderStatisticsPreferences(prefs);
-        try {
-            localStorage.setItem(ORDER_STATS_PREFS_LS_KEY, JSON.stringify({
-                hidden: Array.isArray(prefs.hidden)
-                    ? prefs.hidden.filter((k) => typeof k === "string")
-                    : [],
-            }));
-        } catch {
-            // Ignore storage failures
-        }
+            res.data?.statisticsPreferences &&
+            typeof res.data.statisticsPreferences === "object"
+                ? res.data.statisticsPreferences
+                : {};
+        setStatisticsPreferences(prefs);
+        writeAllStatisticsPrefsToLS(prefs);
         return prefs;
     }, []);
 
@@ -135,28 +106,27 @@ export function AuthProvider({ children }) {
         if (!token) {
             setIsLoading(false);
             setTablePreferences(null);
-            setOrderStatisticsPreferences(null);
+            setStatisticsPreferences(null);
             return null;
         };
         try {
             setIsLoading(true);
             const res = await api.get("/users/me");
             setUser(res.data);
-            // Load once with auth — Tables / OrderTab read from context, not per-mount GET
             await Promise.all([
                 fetchTablePreferences(),
-                fetchOrderStatisticsPreferences(),
+                fetchStatisticsPreferences(),
             ]);
             return res.data;
         } catch (error) {
             console.error("Auth initialization failed:", error);
             setTablePreferences(null);
-            setOrderStatisticsPreferences(null);
+            setStatisticsPreferences(null);
             return null;
         } finally {
             setIsLoading(false);
         }
-    }, [token, fetchTablePreferences, fetchOrderStatisticsPreferences]);
+    }, [token, fetchTablePreferences, fetchStatisticsPreferences]);
 
     const setAuthToken = useCallback(async (newToken) => {
         const sanitizedToken = newToken?.trim() || null;
@@ -173,7 +143,7 @@ export function AuthProvider({ children }) {
             setToken(null);
             setUser(null);
             setTablePreferences(null);
-            setOrderStatisticsPreferences(null);
+            setStatisticsPreferences(null);
         }
     }, [fetchUser, setToken, setUser]);
 
@@ -192,7 +162,6 @@ export function AuthProvider({ children }) {
         initializeAuth();
     }, [fetchUser]);
 
-    // Persist user data to localStorage on every change (login, refresh, logout)
     useEffect(() => {
         if (typeof window === "undefined") return;
         try {
@@ -235,41 +204,29 @@ export function AuthProvider({ children }) {
             setUser(data.user);
         }
 
-        // Prefs are select:false on User — load once after login (token already set above)
         try {
             const [prefsRes, statsPrefsRes] = await Promise.all([
                 api.get("/users/me/table-preferences"),
-                api.get("/users/me/order-statistics-preferences"),
+                api.get("/users/me/statistics-preferences"),
             ]);
             const prefs =
                 prefsRes.data?.tablePreferences && typeof prefsRes.data.tablePreferences === "object"
                     ? prefsRes.data.tablePreferences
                     : {};
             setTablePreferences(prefs);
+            writeAllTablePrefsToLS(prefs);
             const statsPrefs =
-                statsPrefsRes.data?.orderStatisticsPreferences &&
-                typeof statsPrefsRes.data.orderStatisticsPreferences === "object"
-                    ? statsPrefsRes.data.orderStatisticsPreferences
-                    : { hidden: [] };
-            setOrderStatisticsPreferences(statsPrefs);
-            try {
-                localStorage.setItem(ORDER_STATS_PREFS_LS_KEY, JSON.stringify({
-                    hidden: Array.isArray(statsPrefs.hidden)
-                        ? statsPrefs.hidden.filter((k) => typeof k === "string")
-                        : [],
-                }));
-            } catch {
-                // Ignore storage failures
-            }
+                statsPrefsRes.data?.statisticsPreferences &&
+                typeof statsPrefsRes.data.statisticsPreferences === "object"
+                    ? statsPrefsRes.data.statisticsPreferences
+                    : {};
+            setStatisticsPreferences(statsPrefs);
+            writeAllStatisticsPrefsToLS(statsPrefs);
         } catch {
-            setTablePreferences({});
-            setOrderStatisticsPreferences(readOrderStatsPrefsFromLs() ?? { hidden: [] });
+            setTablePreferences(readAllTablePrefsFromLS());
+            setStatisticsPreferences(readAllStatisticsPrefsFromLS());
         }
 
-        // Call local API for session management (cookie-based auth for middleware/SSR)
-        // NOTE: This must NOT break the login flow if it fails. localStorage is sufficient
-        // for client-side; the middleware cookie will be refreshed on subsequent requests
-        // via the user fetched from /users/me.
         try {
             const cookieRes = await fetch('/api/auth/login', {
                 method: 'POST',
@@ -281,19 +238,15 @@ export function AuthProvider({ children }) {
             });
 
             if (!cookieRes.ok) {
-                // Log but don't throw — the user already has a valid localStorage token.
-                // In production, transient reverse-proxy errors (502) should not break UX.
                 console.error(
                     `[handleAuthSuccess] Session cookie API returned ${cookieRes.status}.` +
                     ' Client-side localStorage auth still works; navigation will proceed.'
                 );
             }
         } catch (err) {
-            // Network errors or uncaught exceptions: log but never block login.
             console.error('[handleAuthSuccess] Failed to call session cookie API. Network or proxy error.', err);
         }
 
-        // Navigation Logic
         const targetPath = getDashboardRoute(data.user);
 
         if (typeof window !== "undefined") {
@@ -349,7 +302,7 @@ export function AuthProvider({ children }) {
             setToken(null);
             setUser(null);
             setTablePreferences(null);
-            setOrderStatisticsPreferences(null);
+            setStatisticsPreferences(null);
             await fetch("/api/auth/logout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -405,10 +358,10 @@ export function AuthProvider({ children }) {
                 setTablePreferences,
                 updateTablePreferences,
                 refreshTablePreferences: fetchTablePreferences,
-                orderStatisticsPreferences,
-                setOrderStatisticsPreferences,
-                updateOrderStatisticsPreferences,
-                refreshOrderStatisticsPreferences: fetchOrderStatisticsPreferences,
+                statisticsPreferences,
+                setStatisticsPreferences,
+                updateStatisticsPreferences,
+                refreshStatisticsPreferences: fetchStatisticsPreferences,
                 isLoading,
                 refreshUser: fetchUser,
                 logout,

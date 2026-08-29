@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -13,6 +13,37 @@ import {
 import { Info } from "lucide-react";
 import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 import { useTutorial } from "@/context/TutorialContext";
+import { useAuth } from "@/context/AuthContext";
+import StatisticsVisibilityControl from "@/components/atoms/StatisticsVisibilityControl";
+import {
+	readStatsPrefsFromLS,
+	writeStatsPrefsToLS,
+	normalizeStatsPref,
+} from "@/utils/userPreferencesStorage";
+
+function resolveStatsPref(prefs, statKeys = []) {
+	const { hidden: savedHidden } = normalizeStatsPref(prefs);
+	if (!statKeys?.length) {
+		return { hidden: savedHidden };
+	}
+	const keySet = new Set(statKeys.filter(Boolean));
+	return {
+		hidden: savedHidden.filter((key) => keySet.has(key)),
+	};
+}
+
+function statsPrefsEqual(a, b) {
+	const na = normalizeStatsPref(a);
+	const nb = normalizeStatsPref(b);
+	if (na.hidden.length !== nb.hidden.length) return false;
+	const ha = new Set(na.hidden);
+	return nb.hidden.every((k) => ha.has(k));
+}
+
+export function getStatItemKey(stat) {
+	if (!stat || stat.isAddCard) return null;
+	return stat.key ?? stat.code ?? (stat.id != null ? String(stat.id) : null);
+}
 /* ══════════════════════════════════════════════════════════════
 	 ANIMATED COUNTER
 ══════════════════════════════════════════════════════════════ */
@@ -873,6 +904,9 @@ export function PageHeader({
 	stats,
 	statsLoading = false,
 	statsCount = 6,
+	showStatisticsVisibility = false,
+	statsKey,
+	statsVisibilityLabels = {},
 	className = "",
 	items = [],
 	active,
@@ -882,9 +916,115 @@ export function PageHeader({
 	...props
 }) {
 	const { isTutorialMode } = useTutorial();
-	const hasStats = statsLoading || (Array.isArray(stats) ? stats.length > 0 : !!stats);
+	const { statisticsPreferences, updateStatisticsPreferences } = useAuth();
+	const tPagination = useTranslations("pagination");
+
+	const statKeys = useMemo(
+		() => (Array.isArray(stats) ? stats.map(getStatItemKey).filter(Boolean) : []),
+		[stats],
+	);
+
+	const [statsPrefs, setStatsPrefs] = useState(() => {
+		if (!showStatisticsVisibility || !statsKey) return { hidden: [] };
+		return resolveStatsPref(readStatsPrefsFromLS(statsKey), statKeys);
+	});
+
+	useEffect(() => {
+		if (!showStatisticsVisibility || !statsKey || statisticsPreferences == null) return;
+		const fromServer = resolveStatsPref(statisticsPreferences?.[statsKey], statKeys);
+		setStatsPrefs((prev) => {
+			if (statsPrefsEqual(prev, fromServer)) return prev;
+			writeStatsPrefsToLS(statsKey, fromServer);
+			return fromServer;
+		});
+	}, [showStatisticsVisibility, statsKey, statisticsPreferences, statKeys]);
+
+	useEffect(() => {
+		if (!showStatisticsVisibility) return;
+		setStatsPrefs((prev) => {
+			const next = resolveStatsPref(prev, statKeys);
+			return statsPrefsEqual(prev, next) ? prev : next;
+		});
+	}, [showStatisticsVisibility, statKeys]);
+
+	const handleConfirmStatsPrefs = useCallback(async (nextPrefs) => {
+		const normalized = resolveStatsPref(nextPrefs, statKeys);
+		const nextAll = await updateStatisticsPreferences({ [statsKey]: normalized });
+		const fromServer = resolveStatsPref(nextAll?.[statsKey], statKeys);
+		setStatsPrefs(fromServer);
+		if (statsKey) writeStatsPrefsToLS(statsKey, fromServer);
+	}, [statsKey, statKeys, updateStatisticsPreferences]);
+
+	const visibleStats = useMemo(() => {
+		if (!Array.isArray(stats)) return stats;
+		if (!showStatisticsVisibility || !statsKey) return stats;
+		const hidden = new Set(resolveStatsPref(statsPrefs, statKeys).hidden);
+		return stats.filter((stat) => {
+			if (stat.isAddCard) return true;
+			const key = getStatItemKey(stat);
+			return !key || !hidden.has(key);
+		});
+	}, [stats, showStatisticsVisibility, statsKey, statsPrefs, statKeys]);
+
+	const controlStats = useMemo(
+		() =>
+			(Array.isArray(stats) ? stats : [])
+				.filter((stat) => !stat.isAddCard)
+				.map((stat) => ({
+					key: getStatItemKey(stat),
+					title: stat.name ?? stat.title,
+					value: stat.value,
+					icon: stat.icon,
+				}))
+				.filter((stat) => stat.key),
+		[stats],
+	);
+
+	const statsVisibilityControlLabels = useMemo(
+		() => ({
+			button: statsVisibilityLabels.button ?? tPagination("statisticsVisibility.button"),
+			title: statsVisibilityLabels.title ?? tPagination("statisticsVisibility.title"),
+			subtitle: statsVisibilityLabels.subtitle ?? tPagination("statisticsVisibility.subtitle"),
+			listTitle: statsVisibilityLabels.listTitle ?? tPagination("statisticsVisibility.listTitle"),
+			empty: statsVisibilityLabels.empty ?? tPagination("statisticsVisibility.empty"),
+			hide: statsVisibilityLabels.hide ?? tPagination("statisticsVisibility.hide"),
+			show: statsVisibilityLabels.show ?? tPagination("statisticsVisibility.show"),
+			tip: statsVisibilityLabels.tip ?? tPagination("statisticsVisibility.tip"),
+			reset: statsVisibilityLabels.reset ?? tPagination("statisticsVisibility.reset"),
+			cancel: statsVisibilityLabels.cancel ?? tPagination("statisticsVisibility.cancel"),
+			save: statsVisibilityLabels.save ?? tPagination("statisticsVisibility.save"),
+			saving: statsVisibilityLabels.saving ?? tPagination("statisticsVisibility.saving"),
+		}),
+		[statsVisibilityLabels, tPagination],
+	);
+
+	const composedButtons = useMemo(() => {
+		if (!showStatisticsVisibility || !statsKey) return buttons;
+		return (
+			<>
+				{buttons}
+				<StatisticsVisibilityControl
+					stats={controlStats}
+					prefs={resolveStatsPref(statsPrefs, statKeys)}
+					onConfirm={handleConfirmStatsPrefs}
+					labels={statsVisibilityControlLabels}
+				/>
+			</>
+		);
+	}, [
+		buttons,
+		showStatisticsVisibility,
+		statsKey,
+		controlStats,
+		statsPrefs,
+		statKeys,
+		handleConfirmStatsPrefs,
+		statsVisibilityControlLabels,
+	]);
+
+	const hasStats = statsLoading || (Array.isArray(visibleStats) ? visibleStats.length > 0 : !!visibleStats);
 	const hasTabs = items?.length >= 1;
-	const hasButtons = !!buttons;
+	const hasButtons = !!composedButtons;
 	
 	const shouldElevateTabs = React.useMemo(() => {
 		if (!isTutorialMode) return false;
@@ -1150,13 +1290,13 @@ export function PageHeader({
 						</ol>
 					</nav>
 
-					{buttons && (
+					{composedButtons && (
 						<AnimatePresence mode="wait">
 							<motion.div
 								transition={{ type: "spring", stiffness: 400, damping: 30 }}
 								className="grid grid-cols-1 xs:flex! items-center gap-2 flex-wrap justify-end relative max-xs:w-full xs:ml-auto sm:ml-0"
 							>
-								{buttons}
+								{composedButtons}
 							</motion.div>
 						</AnimatePresence>
 					)}
@@ -1174,7 +1314,7 @@ export function PageHeader({
 					>
 						{statsLoading
 							? <PageHeaderStatsSkeleton count={statsCount} />
-							: <StatsGrid stats={stats} />
+							: <StatsGrid stats={visibleStats} />
 						}
 					</motion.div>
 				)}

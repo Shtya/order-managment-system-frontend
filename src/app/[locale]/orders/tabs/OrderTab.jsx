@@ -103,9 +103,6 @@ import Table, {
 } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import SettingsModal from "../atoms/SettingsModal";
-import OrderStatsVisibilityControl, {
-  useOrderStatsVisibility,
-} from "../atoms/OrderStatsVisibilityControl";
 import OrdersByDateGroups, {
   GROUPED_ORDERS_PAGE,
 } from "../atoms/OrdersByDateGroups";
@@ -1286,20 +1283,6 @@ export default function OrdersTab({
         };
       });
   }, [stats, readOnlyStatus, filteredStats, t]);
-
-  const statsVisibilityKeys = useMemo(
-    () => statsCards.map((s) => s.code).filter(Boolean),
-    [statsCards],
-  );
-  const statsVisibilityPrefs = useOrderStatsVisibility(statsVisibilityKeys);
-  const hiddenStatsSet = useMemo(
-    () => new Set(statsVisibilityPrefs.hidden || []),
-    [statsVisibilityPrefs.hidden],
-  );
-  const visibleStatsCards = useMemo(
-    () => statsCards.filter((s) => !s.code || !hiddenStatsSet.has(s.code)),
-    [statsCards, hiddenStatsSet],
-  );
 
   // Create statusesMap for filters and dropdowns
   const statusesMap = useMemo(() => {
@@ -2767,7 +2750,6 @@ export default function OrdersTab({
                   data-getting-started="orders.create"
                   data-getting-started-type="button"
                 />
-                <OrderStatsVisibilityControl stats={statsCards} />
                 <Button_
                   size="sm"
                   label={t("actions.settings")}
@@ -2783,8 +2765,15 @@ export default function OrdersTab({
         }
         statsLoading={statsLoading}
         statsCount={12}
+        statsKey="orders"
+        showStatisticsVisibility={showTopActions}
+        statsVisibilityLabels={{
+          title: t("statsVisibility.title"),
+          button: t("statsVisibility.button"),
+        }}
         stats={[
-          ...visibleStatsCards.map((stat) => ({
+          ...statsCards.map((stat) => ({
+            key: stat.code,
             id: stat.id,
             name: stat.title,
             value: stat.value,

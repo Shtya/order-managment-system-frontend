@@ -44,10 +44,14 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import {
+  readTablePrefsFromLS,
+  writeTablePrefsToLS,
+  normalizeTablePref,
+} from "@/utils/userPreferencesStorage";
 
 const ACTION_KEYS = new Set(["actions", "options"]);
 const DEFAULT_PER_PAGE_OPTIONS = [6, 12, 24, 48];
-const TABLE_PREFS_LS_PREFIX = "tablePreferences_";
 
 /** Keep column drag on the Y axis only (no sideways stretch). */
 function restrictToVerticalAxis({ transform }) {
@@ -71,25 +75,13 @@ function restrictToParentElement({ transform, draggingNodeRect, containerNodeRec
 }
 
 /** Normalize any stored pref (legacy string[] or { order, hidden }) */
-function normalizeTablePref(value) {
-  if (Array.isArray(value)) {
-    return {
-      order: [],
-      hidden: value.filter((k) => typeof k === "string"),
-    };
-  }
-  if (value && typeof value === "object") {
-    return {
-      order: Array.isArray(value.order) ? value.order.filter((k) => typeof k === "string") : [],
-      hidden: Array.isArray(value.hidden) ? value.hidden.filter((k) => typeof k === "string") : [],
-    };
-  }
-  return { order: [], hidden: [] };
+function normalizeTablePrefLocal(value) {
+  return normalizeTablePref(value);
 }
 
 /** Merge saved prefs with current column keys (append new cols, drop removed) */
 function resolveTablePref(prefs, columnKeys) {
-  const { order: savedOrder, hidden: savedHidden } = normalizeTablePref(prefs);
+  const { order: savedOrder, hidden: savedHidden } = normalizeTablePrefLocal(prefs);
   const keySet = new Set(columnKeys);
   const order = [];
   const seen = new Set();
@@ -112,8 +104,8 @@ function resolveTablePref(prefs, columnKeys) {
 }
 
 function tablePrefsEqual(a, b) {
-  const na = normalizeTablePref(a);
-  const nb = normalizeTablePref(b);
+  const na = normalizeTablePrefLocal(a);
+  const nb = normalizeTablePrefLocal(b);
   if (na.order.length !== nb.order.length || na.hidden.length !== nb.hidden.length) return false;
   if (na.order.some((k, i) => k !== nb.order[i])) return false;
   const ha = new Set(na.hidden);
@@ -121,28 +113,6 @@ function tablePrefsEqual(a, b) {
   if (ha.size !== hb.size) return false;
   for (const k of ha) if (!hb.has(k)) return false;
   return true;
-}
-
-function readTablePrefsFromLS(tableKey) {
-  if (typeof window === "undefined" || !tableKey) return { order: [], hidden: [] };
-  try {
-    const raw = localStorage.getItem(`${TABLE_PREFS_LS_PREFIX}${tableKey}`);
-    return normalizeTablePref(raw ? JSON.parse(raw) : null);
-  } catch {
-    return { order: [], hidden: [] };
-  }
-}
-
-function writeTablePrefsToLS(tableKey, prefs) {
-  if (typeof window === "undefined" || !tableKey) return;
-  try {
-    localStorage.setItem(
-      `${TABLE_PREFS_LS_PREFIX}${tableKey}`,
-      JSON.stringify(normalizeTablePref(prefs)),
-    );
-  } catch {
-    // Ignore storage failures (private mode / quota).
-  }
 }
 
 function isEmptyHeader(header) {

@@ -366,6 +366,8 @@ export default function MyAssignedOrdersPage() {
 				breadcrumbs={[
 					{ name: t('myOrders.title') }
 				]}
+				statsKey="employee-orders"
+        		showStatisticsVisibility={true}
 				stats={statsCards}
 				statsLoading={statsLoading}
 				buttons={

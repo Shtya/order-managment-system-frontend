@@ -9206,6 +9206,22 @@
       "cancel": "Cancel",
       "actionsColumn": "Actions",
       "selectColumn": "Select"
+    },
+    "statisticsVisibility": {
+      "button": "Statistics visibility",
+      "title": "Statistics visibility",
+      "subtitle": "Choose which statistics appear on this page. Hiding a statistic only affects the cards — underlying data stays available in workflows and reports.",
+      "listTitle": "Statistics",
+      "visibleCount": "{count} / {total} visible",
+      "empty": "No statistics available.",
+      "hide": "Hide",
+      "show": "Show",
+      "orderCount": "{count} orders",
+      "tip": "Note: This only controls which statistic cards are shown. The underlying data is unchanged.",
+      "reset": "Show all",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "saving": "Saving..."
     }
   },
   "landing": {

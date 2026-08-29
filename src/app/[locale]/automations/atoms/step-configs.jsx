@@ -2586,6 +2586,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
         { id: "status", label: tBuilder('orderProperties.status'), type: "select", icon: Activity, color: "text-cyan-500", bg: "bg-cyan-50", options: statuses.map(s => ({ id: s.id, label: s.system ? tOrders(`statuses.${s.code}`) : s.name })) },
         { id: "allowOpenPackage", label: tBuilder('orderProperties.allowOpenPackage'), type: "boolean", icon: PackageOpen, color: "text-slate-500", bg: "bg-slate-50" },
         { id: "isReplacement", label: tBuilder('orderProperties.isReplacement'), type: "boolean", icon: RefreshCw, color: "text-teal-500", bg: "bg-teal-50" },
+        { id: "hasEnoughStock", label: tBuilder('orderProperties.hasEnoughStock'), type: "boolean", icon: Package, color: "text-emerald-500", bg: "bg-emerald-50" },
         { id: "deposit", label: tBuilder('orderProperties.deposit'), type: "number", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },
     ];
 

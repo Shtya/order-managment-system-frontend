@@ -13168,6 +13168,7 @@
           "created_at": "تاريخ إنشاء الطلب",
           "allowOpenPackage": "السماح بفتح الطلب",
           "isReplacement": "طلب استبدال",
+          "hasEnoughStock": "المخزون كافٍ",
           "items": "كل المنتجات",
           "productName": "اسم المنتج",
           "productNameFirst": "اسم المنتج (الأول)",

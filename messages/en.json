@@ -7317,7 +7317,7 @@
       "shipmentStatusPlaceholder": "Select the shipment status",
       "shipmentStatus": "Shipment status",
       "tags": "Tags",
-      "tagsPlaceholder": "Select tag"
+      "tagsPlaceholder": "Select tags"
     },
     "cancelCausesTitle": "Cancel Causes History",
     "tags": {

@@ -7305,7 +7305,7 @@
       "shipmentStatusPlaceholder": "اختر حالة الشحنة",
       "shipmentStatus": "حالة الشحنة",
       "tags": "الوسوم",
-      "tagsPlaceholder": "اختر وسم"
+      "tagsPlaceholder": "اختر وسوم"
     },
     "cancelCausesTitle": "سجل أسباب الإلغاء",
     "tags": {

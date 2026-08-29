@@ -109,6 +109,7 @@ import OrdersByDateGroups, {
 import ActionButtons from "@/components/atoms/Actions";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import MultiSelect from "@/components/atoms/MultiSelect";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useClipboard } from "@/hook/useClipboard";
 import { useAuth } from "@/context/AuthContext";
@@ -939,7 +940,7 @@ export default function OrdersTab({
     shippingStatus: "all",
     store: "all",
     shippingCompany: "all",
-    tagId: "all",
+    tagIds: [],
   });
   const [cancelCauses, setCancelCauses] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
@@ -1050,7 +1051,9 @@ export default function OrdersTab({
       params.storeId = filters.store;
     if (filters.employee && filters.employee !== "all")
       params.userId = filters.employee;
-    if (filters.tagId && filters.tagId !== "all") params.tagId = filters.tagId;
+    if (Array.isArray(filters.tagIds) && filters.tagIds.length) {
+      params.tagIds = filters.tagIds.join(",");
+    }
 
     if (adminId && adminId !== "all") {
       params.adminId = adminId;
@@ -1339,7 +1342,9 @@ export default function OrdersTab({
         params.storeId = filters.store;
       if (filters.employee && filters.employee !== "all")
         params.userId = filters.employee;
-      if (filters.tagId && filters.tagId !== "all") params.tagId = filters.tagId;
+      if (Array.isArray(filters.tagIds) && filters.tagIds.length) {
+        params.tagIds = filters.tagIds.join(",");
+      }
 
       const response = await api.get("/orders/export", {
         params,
@@ -2651,22 +2656,19 @@ export default function OrdersTab({
       </FilterField>
 
       <FilterField label={t("filters.tags")}>
-        <Select
-          value={filters.tagId}
-          onValueChange={(v) => setFilters((f) => ({ ...f, tagId: v }))}
-        >
-          <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
-            <SelectValue placeholder={t("filters.tagsPlaceholder")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("filters.all")}</SelectItem>
-            {tagOptions.map((tag) => (
-              <SelectItem key={tag.id} value={tag.id}>
-                {tag.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MultiSelect
+          variant="select"
+          options={tagOptions}
+          value={filters.tagIds}
+          onChange={(newVal) =>
+            setFilters((f) => ({
+              ...f,
+              tagIds: newVal.map((v) => (typeof v === "string" ? v : v.id)),
+            }))
+          }
+          placeholder={t("filters.tagsPlaceholder")}
+          labelKey="name"
+        />
       </FilterField>
 
       <StoreFilter
@@ -2878,9 +2880,10 @@ export default function OrdersTab({
             }]
             : []),
         ]}
-        hasActiveFilters={Object.values(filters).some(
-          (v) => v && v !== "all" && v !== null,
-        )}
+        hasActiveFilters={Object.values(filters).some((v) => {
+          if (Array.isArray(v)) return v.length > 0;
+          return v && v !== "all" && v !== null;
+        })}
         onApplyFilters={applyFilters}
         filters={filtersNode}
         toolbarExtra={showTopActions ? viewSwitcher : undefined}

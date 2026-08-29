@@ -94,8 +94,65 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Content (dropdown panel)
+   Shared dropdown chrome (also used by MultiSelect select variant)
 ───────────────────────────────────────────────────────────────────────── */
+export const selectContentClassName = [
+  "relative z-50 overflow-hidden !rounded-md",
+  "border border-[var(--primary)]/20",
+  "bg-popover/95 backdrop-blur-sm text-popover-foreground",
+  "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)]",
+  "dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),0_2px_8px_rgba(0,0,0,0.3)]",
+]
+
+export function SelectContentSheen() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-x-0 top-0 h-16
+        bg-gradient-to-b from-white/[0.04] to-transparent dark:from-white/[0.03]"
+    />
+  )
+}
+
+export function SelectContentFade() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-x-0 bottom-0 h-4
+        bg-gradient-to-t from-popover/80 to-transparent"
+    />
+  )
+}
+
+function selectScrollButtonClass(direction, className) {
+  return cn(
+    "flex w-full cursor-default items-center justify-center py-1.5",
+    "text-muted-foreground hover:text-[var(--primary)]",
+    direction === "up"
+      ? "bg-gradient-to-b from-popover to-transparent"
+      : "bg-gradient-to-t from-popover to-transparent",
+    "transition-colors duration-150",
+    className,
+  )
+}
+
+/** Presentational scroll chevron — works outside Radix Select (e.g. MultiSelect). */
+export function SelectOverflowScrollButton({ direction = "up", className, hidden, ...props }) {
+  if (hidden) return null
+  const isUp = direction === "up"
+  return (
+    <button
+      type="button"
+      tabIndex={-1}
+      data-slot={isUp ? "select-scroll-up-button" : "select-scroll-down-button"}
+      className={selectScrollButtonClass(direction, className)}
+      {...props}
+    >
+      {isUp ? <ChevronUpIcon className="size-4" /> : <ChevronDownIcon className="size-4" />}
+    </button>
+  )
+}
+
 function SelectContent({ className, children, position = "popper", align = "start", ...props }) {
   useUnlockBodyScrollWhileMounted(true)
 
@@ -122,14 +179,8 @@ function SelectContent({ className, children, position = "popper", align = "star
           minWidth: "var(--radix-select-trigger-width)",
         }}
         className={cn(
-          "relative  z-50 overflow-hidden !rounded-md",
-          "border border-[var(--primary)]/20",
-          "bg-popover/95 backdrop-blur-sm text-popover-foreground",
-          // shadow
-          "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)]",
-          "dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),0_2px_8px_rgba(0,0,0,0.3)]",
+          ...selectContentClassName,
           "max-h-[var(--radix-select-content-available-height)]",
-          // animations
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-100",
@@ -139,29 +190,13 @@ function SelectContent({ className, children, position = "popper", align = "star
         )}
         {...props}
       >
-
-
-        {/* Inner top sheen */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-16
-            bg-gradient-to-b from-white/[0.04] to-transparent dark:from-white/[0.03]"
-        />
-
+        <SelectContentSheen />
         <SelectScrollUpButton />
-
         <SelectPrimitive.Viewport className="w-full p-1.5">
           {children}
         </SelectPrimitive.Viewport>
-
         <SelectScrollDownButton />
-
-        {/* Bottom gradient fade */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-4
-            bg-gradient-to-t from-popover/80 to-transparent"
-        />
+        <SelectContentFade />
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
   )
@@ -248,13 +283,7 @@ function SelectScrollUpButton({ className, ...props }) {
   return (
     <SelectPrimitive.ScrollUpButton
       data-slot="select-scroll-up-button"
-      className={cn(
-        "flex cursor-default items-center justify-center py-1.5",
-        "text-muted-foreground hover:text-[var(--primary)]",
-        "bg-gradient-to-b from-popover to-transparent",
-        "transition-colors duration-150",
-        className,
-      )}
+      className={selectScrollButtonClass("up", className)}
       {...props}
     >
       <ChevronUpIcon className="size-4" />
@@ -266,13 +295,7 @@ function SelectScrollDownButton({ className, ...props }) {
   return (
     <SelectPrimitive.ScrollDownButton
       data-slot="select-scroll-down-button"
-      className={cn(
-        "flex cursor-default items-center justify-center py-1.5",
-        "text-muted-foreground hover:text-[var(--primary)]",
-        "bg-gradient-to-t from-popover to-transparent",
-        "transition-colors duration-150",
-        className,
-      )}
+      className={selectScrollButtonClass("down", className)}
       {...props}
     >
       <ChevronDownIcon className="size-4" />

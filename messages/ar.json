@@ -6463,7 +6463,8 @@
         "confirmed": "مؤكد",
         "cancelled": "ملغي",
         "delayed": "شحنات متأخرة",
-        "totalAmount": "إجمالي المبيعات"
+        "totalAmount": "إجمالي المبيعات",
+        "tags": "الوسوم"
       }
     },
     "statsVisibility": {

@@ -6465,7 +6465,8 @@
         "confirmed": "Confirmed",
         "cancelled": "Cancelled",
         "delayed": "Delayed Shipments",
-        "totalAmount": "Total sales"
+        "totalAmount": "Total sales",
+        "tags": "Tags"
       }
     },
     "statsVisibility": {

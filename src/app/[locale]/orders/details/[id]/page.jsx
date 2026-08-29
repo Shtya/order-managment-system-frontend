@@ -71,6 +71,7 @@ import Button_ from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
+import { useSocket } from "@/context/SocketContext";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import {
@@ -78,6 +79,7 @@ import {
   OrderTagsDialog,
   unwrapOrderTags,
 } from "../../atoms/OrderTagsEditor";
+import OrderInternalNotesDialog from "../../atoms/OrderInternalNotesDialog";
 import {
   calcShippingDaysElapsed,
   getShippingDaysBadgeStyles,
@@ -243,7 +245,7 @@ function InfoRow({ icon: Icon, label, value, valueClassName, children }) {
 }
 
 // ── SideCard ──────────────────────────────────────────────────────────────────
-function SideCard({ title, icon: Icon, children, delay = 0, accent }) {
+function SideCard({ title, icon: Icon, children, delay = 0, accent, trailing }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -269,6 +271,7 @@ function SideCard({ title, icon: Icon, children, delay = 0, accent }) {
         <h3 className="text-sm font-bold text-foreground tracking-tight">
           {title}
         </h3>
+        {trailing}
       </div>
       <div className="p-4">{children}</div>
     </motion.div>
@@ -309,6 +312,8 @@ function MetaCell({ label, icon, children, hero, className }) {
 export default function OrderDetailsPageWrapper() {
   const params = useParams();
   const t = useTranslations("orders");
+  const { user } = useAuth();
+  const { subscribe } = useSocket() || {};
   const orderId = params?.id;
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -316,6 +321,36 @@ export default function OrderDetailsPageWrapper() {
   useEffect(() => {
     if (orderId) fetchOrderDetails();
   }, [orderId]);
+
+  useEffect(() => {
+    if (!subscribe || !orderId) return undefined;
+    const offs = [
+      subscribe("ORDER_INTERNAL_NOTE_CREATED", (payload) => {
+        if (payload?.orderId !== orderId) return;
+        setOrder((prev) =>
+          prev
+            ? {
+                ...prev,
+                lastInternalNote: payload.lastInternalNote || payload.note,
+                lastInternalNoteAt: payload.note?.created_at,
+                myUnreadCount: Number(
+                  payload.internalNotesUnreadCounts?.[user?.id] || 0,
+                ),
+              }
+            : prev,
+        );
+      }),
+      subscribe("ORDER_INTERNAL_NOTE_READ", (payload) => {
+        if (payload?.orderId !== orderId) return;
+        if (payload.readByUserId === user?.id) {
+          setOrder((prev) =>
+            prev ? { ...prev, myUnreadCount: 0 } : prev,
+          );
+        }
+      }),
+    ];
+    return () => offs.forEach((off) => off?.());
+  }, [subscribe, orderId, user?.id]);
 
   useEffect(() => {
     setDocumentTitle(order?.orderNumber);
@@ -349,7 +384,7 @@ export default function OrderDetailsPageWrapper() {
 // MAIN PAGE
 // ──────────────────────────────────────────────────────────────────────────────
 export function OrderDetailsPage({ order, loading, setOrder }) {
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, hasPermission } = useAuth();
   const t = useTranslations("orders");
   const router = useRouter();
   const locale = useLocale();
@@ -357,6 +392,7 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
   const [fetchedLocation, setFetchedLocation] = useState(null);
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
 
   useEffect(() => {
     if (!order?.latitude || !order?.longitude) return;
@@ -430,13 +466,26 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
           { name: order.orderNumber },
         ]}
         buttons={
-          !isSuperAdmin && <Button_
-            onClick={() => router.push(`/orders/edit/${order.id}`)}
-            size="sm"
-            disabled={order.status.code === "delivered" || !!order.monthlyClosingId}
-            icon={<Edit size={18} />}
-            label={t("actions.edit")}
-          />
+          <>
+            {hasPermission("orders.internalNotes") && (
+              <Button_
+                size="sm"
+                label={t("actions.internalNotes")}
+                tone="ghost"
+                icon={<StickyNote size={18} />}
+                onClick={() => setNotesOpen(true)}
+              />
+            )}
+            {!isSuperAdmin && (
+              <Button_
+                onClick={() => router.push(`/orders/edit/${order.id}`)}
+                size="sm"
+                disabled={order.status.code === "delivered" || !!order.monthlyClosingId}
+                icon={<Edit size={18} />}
+                label={t("actions.edit")}
+              />
+            )}
+          </>
         }
       />
 
@@ -1125,6 +1174,55 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
             </div>
           </SideCard>
 
+          {/* Internal notes */}
+          {hasPermission("orders.internalNotes") && (
+            <SideCard
+              title={t("internalNotes.title")}
+              icon={StickyNote}
+              delay={0.065}
+              // trailing={
+              //   Number(order.myUnreadCount || 0) > 0 ? (
+              //     <span className="ms-auto min-w-[18px] h-[18px] rounded-full bg-primary text-white grid place-items-center text-[10px] font-bold">
+              //       {Number(order.myUnreadCount || 0)}
+              //     </span>
+              //   ) : null
+              // }
+            >
+              <div className="space-y-0">
+                <InfoRow
+                  icon={StickyNote}
+                  label={t("internalNotes.lastNote")}
+                  valueClassName={
+                    order.lastInternalNote?.body
+                      ? "whitespace-pre-wrap break-words line-clamp-3"
+                      : "text-muted-foreground font-medium"
+                  }
+                  value={
+                    order.lastInternalNote?.body || t("internalNotes.empty")
+                  }
+                />
+                <InfoRow icon={StickyNote} label={t("internalNotes.unread")}>
+                  {Number(order.myUnreadCount || 0) > 0 ? (
+                    <span className="inline-grid min-w-[18px] h-[18px] rounded-full bg-primary text-white place-items-center text-[10px] font-bold">
+                      {Number(order.myUnreadCount || 0)}
+                    </span>
+                  ) : (
+                    "0"
+                  )}
+                </InfoRow>
+                {/* <div className="pt-3">
+                  <Button_
+                    size="sm"
+                    label={t("actions.internalNotes")}
+                    tone="ghost"
+                    icon={<StickyNote size={16} />}
+                    onClick={() => setNotesOpen(true)}
+                  />
+                </div> */}
+              </div>
+            </SideCard>
+          )}
+
           {/* Cancellation / postpone extras */}
           {(order.lastCancelCauseText || order.lastCancelCause || order.cancelledAt || order.postponedDate || order.rejectReason || order.returnedAt) && (
             <SideCard title={t("details.orderFlags")} icon={Ban} delay={0.07}>
@@ -1462,6 +1560,15 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
           setOrder?.((prev) =>
             prev ? { ...prev, orderTags: rows } : prev,
           );
+        }}
+      />
+
+      <OrderInternalNotesDialog
+        open={notesOpen}
+        onClose={() => setNotesOpen(false)}
+        order={order}
+        onOrderPatched={(_orderId, patch) => {
+          setOrder?.((prev) => (prev ? { ...prev, ...patch } : prev));
         }}
       />
     </div>

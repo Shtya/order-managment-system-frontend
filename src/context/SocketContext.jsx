@@ -279,6 +279,14 @@ export const SocketProvider = ({ children }) => {
       publish({ type: "ISSUE_READ", payload });
     });
 
+    socket.on("order_internal_note:created", (payload) => {
+      publish({ type: "ORDER_INTERNAL_NOTE_CREATED", payload });
+    });
+
+    socket.on("order_internal_note:read", (payload) => {
+      publish({ type: "ORDER_INTERNAL_NOTE_READ", payload });
+    });
+
     // Cleanup listeners
     return () => {
       socket.off("connect");
@@ -307,6 +315,8 @@ export const SocketProvider = ({ children }) => {
       socket.off("issue:message-created");
       socket.off("issue:message-updated");
       socket.off("issue:read");
+      socket.off("order_internal_note:created");
+      socket.off("order_internal_note:read");
 
       socket.disconnect();
       socketRef.current = null;

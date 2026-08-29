@@ -2770,6 +2770,7 @@
       "orders_replace": "Replace order",
       "orders_update": "Update orders",
       "orders_updateTags": "Update order tags",
+      "orders_internalNotes": "Order internal notes",
       "payments_read": "View payments",
       "permissions_create": "Create permissions",
       "permissions_delete": "Delete permissions",
@@ -6521,7 +6522,8 @@
       "bulkCancelAssignmentsCount": "Cancel Selected Assignments({count})",
       "viewReplace": "View new order",
       "escalateIssue": "Escalate Issue",
-      "tags": "Tags"
+      "tags": "Tags",
+      "internalNotes": "Internal notes"
     },
     "shipmentLogs": {
       "title": "Shipment Logs",
@@ -7317,7 +7319,10 @@
       "shipmentStatusPlaceholder": "Select the shipment status",
       "shipmentStatus": "Shipment status",
       "tags": "Tags",
-      "tagsPlaceholder": "Select tags"
+      "tagsPlaceholder": "Select tags",
+      "internalNotes": "Unread internal notes",
+      "internalNotesPlaceholder": "All notes",
+      "unreadOnly": "Unread"
     },
     "cancelCausesTitle": "Cancel Causes History",
     "tags": {
@@ -7382,7 +7387,29 @@
       "createdat": "Creation date",
       "select": "Select",
       "replacedBy": "Replaced by order ",
-      "replaces": "Replacement order for order "
+      "replaces": "Replacement order for order ",
+      "internalNotes": "Internal notes"
+    },
+    "internalNotes": {
+      "title": "Internal notes",
+      "orderNumber": "Order number: #{number}",
+      "close": "Close",
+      "addTab": "Add a new note",
+      "logTab": "Notes log",
+      "placeholder": "Write an internal note...",
+      "add": "Add note",
+      "lastNote": "Last note",
+      "viewLog": "View log",
+      "infoNew": "Internal notes appear to employees only. The unread count in the table belongs to the current employee.",
+      "logTitle": "Notes log ({count})",
+      "markAllRead": "Mark all as read",
+      "infoLogTitle": "Reading is personal for each employee.",
+      "infoLog": "The same note can be read for one employee and unread for another.",
+      "empty": "No internal notes yet",
+      "loadMore": "Load more",
+      "read": "Read",
+      "unread": "Unread",
+      "addNote": "Add a note"
     },
     "bulkUpload": {
       "clickToChangeFile": "Click to change file",

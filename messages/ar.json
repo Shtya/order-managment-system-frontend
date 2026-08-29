@@ -2771,6 +2771,7 @@
       "orders_replace": "استبدال الطلب",
       "orders_update": "تعديل الطلبات",
       "orders_updateTags": "تعديل وسوم الطلبات",
+      "orders_internalNotes": "الملاحظات الداخلية للطلبات",
       "payments_read": "عرض المدفوعات",
       "permissions_create": "إنشاء الصلاحيات",
       "permissions_delete": "حذف الصلاحيات",
@@ -6519,7 +6520,8 @@
       "bulkCancelAssignmentsCount": "إلغاء الإسنادات ({count})",
       "viewReplace": "عرض الطلب الجديد",
       "escalateIssue": "تصعيد مشكلة",
-      "tags": "الوسوم"
+      "tags": "الوسوم",
+      "internalNotes": "الملاحظات الداخلية"
     },
     "shipmentLogs": {
       "title": "سجلات الشحنة",
@@ -7305,7 +7307,10 @@
       "shipmentStatusPlaceholder": "اختر حالة الشحنة",
       "shipmentStatus": "حالة الشحنة",
       "tags": "الوسوم",
-      "tagsPlaceholder": "اختر وسوم"
+      "tagsPlaceholder": "اختر وسوم",
+      "internalNotes": "ملاحظات داخلية غير مقروءة",
+      "internalNotesPlaceholder": "كل الملاحظات",
+      "unreadOnly": "غير مقروءة"
     },
     "cancelCausesTitle": "سجل أسباب الإلغاء",
     "tags": {
@@ -7370,7 +7375,29 @@
       "createdat": "تاريخ الانشاء",
       "select": "تحديد",
       "replacedBy": "تم الاستبدال بطلب رقم",
-      "replaces": "طلب استبدال للطلب رقم"
+      "replaces": "طلب استبدال للطلب رقم",
+      "internalNotes": "الملاحظات الداخلية"
+    },
+    "internalNotes": {
+      "title": "الملاحظات الداخلية",
+      "orderNumber": "رقم الطلب: #{number}",
+      "close": "إغلاق",
+      "addTab": "إضافة ملاحظة جديدة",
+      "logTab": "سجل الملاحظات",
+      "placeholder": "اكتب ملاحظة داخلية...",
+      "add": "إضافة ملاحظة",
+      "lastNote": "آخر ملاحظة",
+      "viewLog": "عرض السجل",
+      "infoNew": "الملاحظات الداخلية تظهر للموظفين فقط. عدد غير المقروء في الجدول يخص الموظف الحالي.",
+      "logTitle": "سجل الملاحظات ({count})",
+      "markAllRead": "تحديد الكل كمقروء",
+      "infoLogTitle": "القراءة شخصية لكل موظف.",
+      "infoLog": "الملاحظة نفسها يمكن أن تكون مقروءة عند موظف وغير مقروءة عند موظف آخر.",
+      "empty": "لا توجد ملاحظات داخلية بعد",
+      "loadMore": "تحميل المزيد",
+      "read": "تمت القراءة",
+      "unread": "غير مقروءة",
+      "addNote": "إضافة ملاحظة"
     },
     "bulkUpload": {
       "clickToChangeFile": "اضغط لتغيير الملف",

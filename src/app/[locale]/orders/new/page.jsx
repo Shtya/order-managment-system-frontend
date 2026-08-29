@@ -3,7 +3,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Trash2, Plus, Minus, Loader2, Info, Save, Package } from "lucide-react";
+import { ChevronLeft, Trash2, Plus, Minus, Loader2, Info, Save, Package, StickyNote } from "lucide-react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -35,6 +35,7 @@ import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
 import { setDocumentTitle } from "@/utils/documentTitle";
+import OrderInternalNotesDialog from "../atoms/OrderInternalNotesDialog";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -672,6 +673,8 @@ export default function CreateOrderPageComplete({
 	const t = useTranslations("createOrder");
 
 	const [loading, setLoading] = useState(false);
+	const [notesOpen, setNotesOpen] = useState(false);
+	const tOrders = useTranslations("orders");
 	const [selectedSkus, setSelectedSkus] = useState([]);
 	const [initialLoading, setInitialLoading] = useState((isEditMode && !propExistingOrder) || !!fromId);
 
@@ -1208,6 +1211,16 @@ export default function CreateOrderPageComplete({
 				]}
 				buttons={
 					<>
+						{isEditMode && orderId && (
+							<Button_
+								size="sm"
+								label={tOrders("actions.internalNotes")}
+								tone="ghost"
+								icon={<StickyNote size={18} />}
+								onClick={() => setNotesOpen(true)}
+								permission="orders.internalNotes"
+							/>
+						)}
 						{!isEditMode && (
 							<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
 						)}
@@ -1773,6 +1786,14 @@ export default function CreateOrderPageComplete({
 					</div>
 				</div>
 			</form>
+
+			{isEditMode && orderId ? (
+				<OrderInternalNotesDialog
+					open={notesOpen}
+					onClose={() => setNotesOpen(false)}
+					order={existingOrder || { id: orderId }}
+				/>
+			) : null}
 		</motion.div>
 	);
 }

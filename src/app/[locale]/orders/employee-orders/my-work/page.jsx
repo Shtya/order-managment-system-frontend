@@ -44,6 +44,9 @@ import {
   unwrapOrderTags,
 } from "../../atoms/OrderTagsEditor";
 import { useAuth } from "@/context/AuthContext";
+import OrderInternalNotesDialog, {
+  OrderInternalNoteCell,
+} from "../../atoms/OrderInternalNotesDialog";
 
 
 
@@ -488,6 +491,7 @@ export default function OrderConfirmationWorkPage() {
 
   const [issueDialog, setIssueDialog] = useState({ open: false, order: null });
   const [tagsOpen, setTagsOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
   const [issueOptions, setIssueOptions] = useState({ statuses: [], causes: [], roles: [], users: [] });
   const [selectableCancelCauses, setSelectableCancelCauses] = useState([]);
   const [cancelCauseOpen, setCancelCauseOpen] = useState(false);
@@ -910,7 +914,7 @@ export default function OrderConfirmationWorkPage() {
       <div style={{ height: 4, background: `linear-gradient(90deg,${HEX.orange},${HEX.amber},${HEX.flame})`, flexShrink: 0 }} />
 
       {/* ── HERO HEADER ─────────────────────────── */}
-      <Hero order={editedOrder} onOpenTags={() => setTagsOpen(true)} {...sh} />
+      <Hero order={editedOrder} onOpenTags={() => setTagsOpen(true)} onOpenNotes={() => setNotesOpen(true)} {...sh} />
 
       {/* ── BODY GRID ───────────────────────────── */}
       <div style={{ padding: "20px 24px 150px 24px", display: "grid", gridTemplateColumns: "minmax(0,1.85fr) minmax(0,3fr)", gap: 20, alignItems: "start" }}>
@@ -1004,14 +1008,25 @@ export default function OrderConfirmationWorkPage() {
         initialStatusId={openIssueStatusId}
         order={issueDialog.order}
       />
+
+      <OrderInternalNotesDialog
+        open={notesOpen}
+        onClose={() => setNotesOpen(false)}
+        order={originalOrder || editedOrder}
+        onOrderPatched={(_id, patch) => {
+          setOriginalOrder((prev) => (prev ? { ...prev, ...patch } : prev));
+          setEditedOrder((prev) => (prev ? { ...prev, ...patch } : prev));
+        }}
+      />
     </div>
   );
 }
 
 // ─── HERO HEADER ───────────────────────────────────────────────────────────
-function Hero({ order, isRtl, onOpenTags }) {
+function Hero({ order, isRtl, onOpenTags, onOpenNotes }) {
   const tOrders = useTranslations("orders");
   const t = useTranslations("orders-work");
+  const { hasPermission } = useAuth();
   if (!order) return null;
 
   const status = order.status;
@@ -1119,6 +1134,12 @@ function Hero({ order, isRtl, onOpenTags }) {
                 <Ping color={status.color} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: status.color }}>{status.system ? tOrders(`statuses.${status.code}`) : status.name}</span>
               </motion.div>
+            )}
+            {hasPermission("orders.internalNotes") && (
+              <OrderInternalNoteCell
+                order={order}
+                onOpen={() => onOpenNotes?.()}
+              />
             )}
             <button
               type="button"

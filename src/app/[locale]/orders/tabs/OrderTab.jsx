@@ -53,6 +53,7 @@ import {
   Tag,
   UserMinus,
   Ban,
+  StickyNote,
 } from "lucide-react";
 
 import { useLocale, useTranslations } from "next-intl";
@@ -125,6 +126,10 @@ import {
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { FaBan, FaChartPie, FaListAlt } from "react-icons/fa";
 import { BundleBadge } from "@/components/atoms/BundleBadge";
+import OrderInternalNotesDialog, {
+  OrderInternalNoteCell,
+} from "../atoms/OrderInternalNotesDialog";
+import { useSocket } from "@/context/SocketContext";
 
 //order status flow
 // New => Confirmed => Distrebuted (Assed to shipment company) =>  Printed (Waybills printed) =>  preparing (scanign its items for preparation)
@@ -757,7 +762,8 @@ export default function OrdersTab({
   const { formatCurrency } = usePlatformSettings();
   const t = useTranslations("orders");
   const locale = useLocale();
-  const { user, isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin, hasPermission } = useAuth();
+  const { subscribe } = useSocket() || {};
   const restrictedSet = useMemo(() => {
     return new Set(restrictedStatuses || []);
   }, [restrictedStatuses]);
@@ -941,7 +947,9 @@ export default function OrdersTab({
     store: "all",
     shippingCompany: "all",
     tagIds: [],
+    unreadInternalNotes: "all",
   });
+  const [notesOrder, setNotesOrder] = useState(null);
   const [cancelCauses, setCancelCauses] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
   const [tagsOrder, setTagsOrder] = useState(null);
@@ -1054,6 +1062,9 @@ export default function OrdersTab({
     if (Array.isArray(filters.tagIds) && filters.tagIds.length) {
       params.tagIds = filters.tagIds.join(",");
     }
+    if (filters.unreadInternalNotes === "unread") {
+      params.unreadInternalNotes = true;
+    }
 
     if (adminId && adminId !== "all") {
       params.adminId = adminId;
@@ -1092,6 +1103,42 @@ export default function OrdersTab({
       setOrdersLoading(false);
     }
   };
+
+  const patchOrderNotes = (orderId, patch) => {
+    if (!orderId || !patch) return;
+    setPager((p) => ({
+      ...p,
+      records: (p.records || []).map((r) =>
+        r.id === orderId ? { ...r, ...patch } : r,
+      ),
+    }));
+    setNotesOrder((prev) =>
+      prev?.id === orderId ? { ...prev, ...patch } : prev,
+    );
+  };
+
+  useEffect(() => {
+    if (!subscribe) return undefined;
+    const offs = [
+      subscribe("ORDER_INTERNAL_NOTE_CREATED", (payload) => {
+        if (!payload?.orderId) return;
+        patchOrderNotes(payload.orderId, {
+          lastInternalNote: payload.lastInternalNote || payload.note,
+          lastInternalNoteAt: payload.note?.created_at,
+          myUnreadCount: Number(
+            payload.internalNotesUnreadCounts?.[user?.id] || 0,
+          ),
+        });
+      }),
+      subscribe("ORDER_INTERNAL_NOTE_READ", (payload) => {
+        if (!payload?.orderId) return;
+        if (payload.readByUserId === user?.id) {
+          patchOrderNotes(payload.orderId, { myUnreadCount: 0 });
+        }
+      }),
+    ];
+    return () => offs.forEach((off) => off?.());
+  }, [subscribe, user?.id]);
 
   // ── Group by Date handlers ──────────────────────────────────────────────
   const resetGroupedState = () => {
@@ -1344,6 +1391,9 @@ export default function OrdersTab({
         params.userId = filters.employee;
       if (Array.isArray(filters.tagIds) && filters.tagIds.length) {
         params.tagIds = filters.tagIds.join(",");
+      }
+      if (filters.unreadInternalNotes === "unread") {
+        params.unreadInternalNotes = true;
       }
 
       const response = await api.get("/orders/export", {
@@ -2268,6 +2318,20 @@ export default function OrdersTab({
           </span>
         ),
       },
+      ...(hasPermission("orders.internalNotes")
+        ? [
+            {
+              key: "internalNotes",
+              header: t("table.internalNotes"),
+              cell: (row) => (
+                <OrderInternalNoteCell
+                  order={row}
+                  onOpen={(r) => setNotesOrder(r)}
+                />
+              ),
+            },
+          ]
+        : []),
       {
         key: "actions",
         header: t("table.actions"),
@@ -2281,6 +2345,13 @@ export default function OrdersTab({
                 onClick: (r) => setTagsOrder(r),
                 variant: "primary",
                 permission: "orders.read",
+              },
+              {
+                icon: <StickyNote />,
+                tooltip: t("actions.internalNotes"),
+                onClick: (r) => setNotesOrder(r),
+                variant: "primary",
+                permission: "orders.internalNotes",
               },
               {
                 icon: <Eye />,
@@ -2403,6 +2474,13 @@ export default function OrdersTab({
                 permission: "orders.read",
               },
               {
+                icon: <StickyNote />,
+                tooltip: t("actions.internalNotes"),
+                onClick: (r) => setNotesOrder(r),
+                variant: "primary",
+                permission: "orders.internalNotes",
+              },
+              {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
                 onClick: (r) => {
@@ -2481,6 +2559,7 @@ export default function OrdersTab({
     toggleOrderSelection,
     selectAllOrders,
     cancelSingleAssignment,
+    hasPermission,
   ]);
 
   const { handleExport: handleExportLogs, exportLoading: exportLogsLoading } = useExport();
@@ -2669,6 +2748,23 @@ export default function OrdersTab({
           placeholder={t("filters.tagsPlaceholder")}
           labelKey="name"
         />
+      </FilterField>
+
+      <FilterField label={t("filters.internalNotes")}>
+        <Select
+          value={filters.unreadInternalNotes}
+          onValueChange={(v) =>
+            setFilters((f) => ({ ...f, unreadInternalNotes: v }))
+          }
+        >
+          <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
+            <SelectValue placeholder={t("filters.internalNotesPlaceholder")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("filters.all")}</SelectItem>
+            <SelectItem value="unread">{t("filters.unreadOnly")}</SelectItem>
+          </SelectContent>
+        </Select>
       </FilterField>
 
       <StoreFilter
@@ -3235,6 +3331,13 @@ export default function OrdersTab({
           setHistoryOrder(null);
         }}
         order={historyOrder}
+      />
+
+      <OrderInternalNotesDialog
+        open={!!notesOrder}
+        onClose={() => setNotesOrder(null)}
+        order={notesOrder}
+        onOrderPatched={patchOrderNotes}
       />
 
       <ShipmentLogsModal

@@ -2982,6 +2982,7 @@ export default function OrdersTab({
         })}
         onApplyFilters={applyFilters}
         filters={filtersNode}
+        
         toolbarExtra={showTopActions ? viewSwitcher : undefined}
         // ── Table ─────────────────────────────────────────────────────────────
         columns={columns}

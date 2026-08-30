@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import DataTable from "@/components/atoms/DataTable";
 import api from "@/utils/api";
 import { cn } from "@/utils/cn";
-import { generateBgColors, getIconForStatus } from "../page";
+import { generateBgColors, getIconForStatus, getPercentTrendLabel } from "../page";
 import InfoCard from "@/components/atoms/InfoCard";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
@@ -195,7 +195,7 @@ export default function MyAssignedOrdersPage() {
 					color: stat.color || "#64748B",
 					sortOrder: i,
 					trend: {
-						label: t("stats.percentOfTotalOrders"),
+						label: getPercentTrendLabel(t, stat.percentFrom),
 						value: `${stat.percent ?? 0}%`,
 						showArrow: false,
 					},

@@ -7201,6 +7201,16 @@
     },
     "stats": {
       "percentOfTotalOrders": "من إجمالي الطلبات",
+      "percentOfStatus": "من {status}",
+      "percentFromLabels": {
+        "new": "الجديد",
+        "confirmed": "المؤكد",
+        "cancelled": "الملغي",
+        "shipped": "المشحون",
+        "delivered": "المسلّم",
+        "returned": "المرتجع",
+        "previously_confirmed": "إجمالي الذي سبق تأكيده"
+      },
       "pendingConfirmation": "بانتظار التأكيد",
       "pending_confirmation": "بانتظار التأكيد",
       "confirmed": "تم التأكيد",
@@ -7261,6 +7271,9 @@
       "color": "اللون",
       "sortOrder": "ترتيب العرض",
       "sortOrderHelp": "يستخدم لترتيب البطاقات في واجهة المستخدم",
+      "percentFrom": "حساب نسبة الإحصائيات من",
+      "percentFromHelp": "نسبة بطاقة الحالة هي عدد هذه الحالة مقسومًا على الأساس المختار. إجمالي الطلبات هو الافتراضي.",
+      "percentFromTotal": "إجمالي الطلبات",
       "create": "إنشاء الحالة",
       "update": "تحديث الحالة",
       "cancel": "إلغاء",

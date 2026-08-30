@@ -229,6 +229,33 @@ export const getIconForStatus = (code) => {
 	return iconMap[code] || Package;
 };
 
+export const STATS_PERCENT_FROM_OPTIONS = [
+	"total",
+	"previously_confirmed",
+	"new",
+	"confirmed",
+	"cancelled",
+	"shipped",
+	"delivered",
+	"returned",
+];
+
+export const getPercentFromOptionLabel = (t, option) => {
+	if (!option || option === "total") {
+		return t("statusForm.percentFromTotal");
+	}
+	return t(`stats.percentFromLabels.${option}`);
+};
+
+export const getPercentTrendLabel = (t, percentFrom) => {
+	if (!percentFrom || percentFrom === "total") {
+		return t("stats.percentOfTotalOrders");
+	}
+	return t("stats.percentOfStatus", {
+		status: t(`stats.percentFromLabels.${percentFrom}`),
+	});
+};
+
 
 export const generateBgColors = (hex) => {
 	const hexToRgb = (h) => {

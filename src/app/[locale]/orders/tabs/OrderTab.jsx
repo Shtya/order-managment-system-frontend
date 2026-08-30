@@ -90,7 +90,7 @@ import Flatpickr from "react-flatpickr";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
-import { generateBgColors, getIconForStatus } from "../page";
+import { generateBgColors, getIconForStatus, STATS_PERCENT_FROM_OPTIONS, getPercentFromOptionLabel, getPercentTrendLabel } from "../page";
 import DistributionModal from "../atoms/DistrubtionModal";
 import BulkUploadModal from "../atoms/BulkUploadModal";
 import CancelAssignmentsModal from "../atoms/CancelAssignmentsModal";
@@ -1321,6 +1321,7 @@ export default function OrdersTab({
           title: stat.system ? t(`statuses.${stat.code}`) : stat.name,
           value: String(stat.count || 0),
           percent: Number(stat.percent) || 0,
+          percentFrom: stat.percentFrom || "total",
           icon: Icon,
           bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
           bgInlineLight: bgColors.light,
@@ -2906,7 +2907,7 @@ export default function OrdersTab({
             onEdit: () => handleEditStatus(stat.fullData),
             onDelete: () => handleDeleteStatus(stat),
             trend: {
-              label: t("stats.percentOfTotalOrders"),
+              label: getPercentTrendLabel(t, stat.percentFrom),
               value: `${stat.percent ?? 0}%`,
               showArrow: false,
             },
@@ -4494,6 +4495,7 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
     description: "",
     color: "#2196F3",
     sortOrder: 0,
+    percentFrom: "total",
   });
 
   const [errors, setErrors] = useState({});
@@ -4506,6 +4508,7 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
         description: status.description || "",
         color: status.color || "#2196F3",
         sortOrder: status.sortOrder || status.sortorder || 0,
+        percentFrom: status.percentFrom || "total",
       });
     } else {
       setFormData({
@@ -4513,6 +4516,7 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
         description: "",
         color: "#2196F3",
         sortOrder: 0,
+        percentFrom: "total",
       });
     }
     setErrors({});
@@ -4656,6 +4660,32 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
             )}
             <p className="text-xs text-gray-500 dark:text-slate-400">
               {t("statusForm.sortOrderHelp")}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm text-gray-600 dark:text-slate-300">
+              {t("statusForm.percentFrom")}
+            </Label>
+            <Select
+              value={formData.percentFrom}
+              onValueChange={(value) =>
+                setFormData({ ...formData, percentFrom: value })
+              }
+            >
+              <SelectTrigger className="rounded-xl h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATS_PERCENT_FROM_OPTIONS.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {getPercentFromOptionLabel(t, option)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500 dark:text-slate-400">
+              {t("statusForm.percentFromHelp")}
             </p>
           </div>
 

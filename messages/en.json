@@ -7213,6 +7213,16 @@
     },
     "stats": {
       "percentOfTotalOrders": "of all orders",
+      "percentOfStatus": "of {status}",
+      "percentFromLabels": {
+        "new": "new",
+        "confirmed": "confirmed",
+        "cancelled": "cancelled",
+        "shipped": "shipped",
+        "delivered": "delivered",
+        "returned": "returned",
+        "previously_confirmed": "Total Previously Confirmed"
+      },
       "pendingConfirmation": "Pending Confirmation",
       "pending_confirmation": "Pending Confirmation",
       "confirmed": "Confirmed",
@@ -7273,6 +7283,9 @@
       "color": "Color",
       "sortOrder": "Display Order",
       "sortOrderHelp": "Used to sort cards in the user interface",
+      "percentFrom": "Calculate statistics percent from",
+      "percentFromHelp": "The status card percent is this status count divided by the selected base. All orders is the default.",
+      "percentFromTotal": "All orders (total)",
       "create": "Create Status",
       "update": "Update Status",
       "cancel": "Cancel",

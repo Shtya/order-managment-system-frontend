@@ -101,6 +101,8 @@ import Table, {
   TableToolbar,
   TableFilters,
   TablePagination,
+  ColumnVisibilityControl,
+  useTableColumnPrefs,
 } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import SettingsModal from "../atoms/SettingsModal";
@@ -2562,6 +2564,15 @@ export default function OrdersTab({
     hasPermission,
   ]);
 
+  const {
+    visibleColumns: groupedVisibleColumns,
+    handleConfirmColumnPrefs: handleGroupedColumnPrefs,
+    columnVisibilityLabels: groupedColumnVisibilityLabels,
+    resolvedPrefs: groupedColumnPrefs,
+  } = useTableColumnPrefs("orders", columns, {
+    showColumnVisibility: viewMode === "grouped",
+  });
+
   const { handleExport: handleExportLogs, exportLoading: exportLogsLoading } = useExport();
   // Handlers for assignment tab
 
@@ -3035,7 +3046,17 @@ export default function OrdersTab({
                   }]
                   : []),
               ]}
-              toolbarExtra={viewSwitcher}
+              toolbarExtra={
+                <>
+                  <ColumnVisibilityControl
+                    columns={columns}
+                    prefs={groupedColumnPrefs}
+                    onConfirm={handleGroupedColumnPrefs}
+                    labels={groupedColumnVisibilityLabels}
+                  />
+                  {viewSwitcher}
+                </>
+              }
             />
             <AnimatePresence>
               {groupedFiltersOpen && (
@@ -3118,7 +3139,7 @@ export default function OrdersTab({
             ) : (
               <OrdersByDateGroups
                 groups={groupPager.records}
-                columns={columns}
+                columns={groupedVisibleColumns}
                 expandedDates={expandedDates}
                 dateOrders={dateOrders}
                 onToggleDate={toggleDateGroup}

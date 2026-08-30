@@ -25,6 +25,8 @@ import Table, {
   TableToolbar,
   TableFilters,
   TablePagination,
+  ColumnVisibilityControl,
+  useTableColumnPrefs,
 } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import UserSelect from "@/components/atoms/UserSelect";
@@ -1440,6 +1442,16 @@ export default function ShippedOrders({ statuses = [] }) {
     [statusesMap, t, ts],
   );
 
+  const groupsTableKey = "group-shipped-orders"
+  const {
+    visibleColumns: groupedVisibleColumns,
+    handleConfirmColumnPrefs: handleGroupedColumnPrefs,
+    columnVisibilityLabels: groupedColumnVisibilityLabels,
+    resolvedPrefs: groupedColumnPrefs,
+  } = useTableColumnPrefs(groupsTableKey, columns, {
+    showColumnVisibility: viewMode === "groups",
+  });
+
   const groupFiltersNode = (
     <>
       <FilterField>
@@ -1553,7 +1565,17 @@ export default function ShippedOrders({ statuses = [] }) {
                   permission: "orders.read",
                 },
               ]}
-              toolbarExtra={groupsSubModeSwitcher}
+              toolbarExtra={
+                <>
+                  <ColumnVisibilityControl
+                    columns={columns}
+                    prefs={groupedColumnPrefs}
+                    onConfirm={handleGroupedColumnPrefs}
+                    labels={groupedColumnVisibilityLabels}
+                  />
+                  {groupsSubModeSwitcher}
+                </>
+              }
             />
             <AnimatePresence>
               {groupedFiltersOpen && (
@@ -1585,7 +1607,7 @@ export default function ShippedOrders({ statuses = [] }) {
             ) : (
               <ShipmentsByDateGroups
                 groups={groupPager.records}
-                columns={columns}
+                columns={groupedVisibleColumns}
                 expandedDates={expandedDates}
                 dateShipments={dateShipments}
                 onToggleDate={toggleDateGroup}

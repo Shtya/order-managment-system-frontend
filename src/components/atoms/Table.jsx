@@ -763,7 +763,7 @@ function SortableColumnRow({ id, label, checked, dragDisabled, disabled, onToggl
   );
 }
 
-const ColumnVisibilityControl = memo(function ColumnVisibilityControl({
+export const ColumnVisibilityControl = memo(function ColumnVisibilityControl({
   columns = [],
   prefs = { order: [], hidden: [] },
   onConfirm,
@@ -1041,32 +1041,15 @@ const ColumnVisibilityControl = memo(function ColumnVisibilityControl({
 });
 
 /* ══════════════════════════════════════════════════════════════
-   MAIN TABLE
+   TABLE COLUMN PREFS (shared by Table + grouped views)
 ══════════════════════════════════════════════════════════════ */
-export default function Table({
-  searchValue = "", onSearchChange, onSearch, hasSearch = true, 
-  actions = [], filters, hasActiveFilters = false, onApplyFilters,
-  labels = {}, columns = [], data = [], tutorialData = [], isLoading = false,
-  rowKey = (row, i) => row?.id ?? i,
-  emptyState, striped = false, compact = false, hoverable = true,
-  pagination = null, onPageChange,
-  pageParamName = "page", limitParamName = "limit",
-  perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "", flat = false,
-  rowClassName = () => "", tutorialActions = false, toolbarExtra,
-  showColumnVisibility = true,
+export function useTableColumnPrefs(
   tableKey,
-}) {
-  const { isTutorialMode } = useTutorial();
+  columns = [],
+  { showColumnVisibility = true, labels = {} } = {},
+) {
   const { tablePreferences, updateTablePreferences } = useAuth();
-  const displayData = isTutorialMode && tutorialData.length > 0 ? tutorialData : data;
-  const isRTL = useIsRTL();
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [imgModal, setImgModal] = useState({ open: false, src: "", alt: "" });
   const t = useTranslations("pagination");
-  const tColumn = useCallback((key) => t(`columnVisibility.${key}`), [t]);
-  const openImage = useCallback((src, alt = "") => setImgModal({ open: true, src, alt }), []);
-  const closeImage = useCallback(() => setImgModal({ open: false, src: "", alt: "" }), []);
-  const helpers = useMemo(() => ({ openImage }), [openImage]);
 
   const columnKeys = useMemo(
     () => columns.map((c) => c.key).filter(Boolean),
@@ -1127,13 +1110,62 @@ export default function Table({
     cancel: labels.cancel ?? t("columnVisibility.cancel"),
   }), [labels, t]);
 
+  const resolvedPrefs = useMemo(
+    () => resolveTablePref(columnPrefs, columnKeys),
+    [columnPrefs, columnKeys],
+  );
+
+  return {
+    visibleColumns,
+    columnPrefs,
+    columnKeys,
+    handleConfirmColumnPrefs,
+    columnVisibilityLabels,
+    resolvedPrefs,
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MAIN TABLE
+══════════════════════════════════════════════════════════════ */
+export default function Table({
+  searchValue = "", onSearchChange, onSearch, hasSearch = true, 
+  actions = [], filters, hasActiveFilters = false, onApplyFilters,
+  labels = {}, columns = [], data = [], tutorialData = [], isLoading = false,
+  rowKey = (row, i) => row?.id ?? i,
+  emptyState, striped = false, compact = false, hoverable = true,
+  pagination = null, onPageChange,
+  pageParamName = "page", limitParamName = "limit",
+  perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "", flat = false,
+  rowClassName = () => "", tutorialActions = false, toolbarExtra,
+  showColumnVisibility = true,
+  tableKey,
+}) {
+  const { isTutorialMode } = useTutorial();
+  const displayData = isTutorialMode && tutorialData.length > 0 ? tutorialData : data;
+  const isRTL = useIsRTL();
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [imgModal, setImgModal] = useState({ open: false, src: "", alt: "" });
+  const t = useTranslations("pagination");
+  const tColumn = useCallback((key) => t(`columnVisibility.${key}`), [t]);
+  const openImage = useCallback((src, alt = "") => setImgModal({ open: true, src, alt }), []);
+  const closeImage = useCallback(() => setImgModal({ open: false, src: "", alt: "" }), []);
+  const helpers = useMemo(() => ({ openImage }), [openImage]);
+
+  const {
+    visibleColumns,
+    handleConfirmColumnPrefs,
+    columnVisibilityLabels,
+    resolvedPrefs,
+  } = useTableColumnPrefs(tableKey, columns, { showColumnVisibility, labels });
+
   const composedToolbarExtra = useMemo(() => {
     if (!showColumnVisibility || !tableKey) return toolbarExtra;
     return (
       <>
         <ColumnVisibilityControl
           columns={columns}
-          prefs={resolveTablePref(columnPrefs, columnKeys)}
+          prefs={resolvedPrefs}
           onConfirm={handleConfirmColumnPrefs}
           labels={columnVisibilityLabels}
         />
@@ -1145,8 +1177,7 @@ export default function Table({
     tableKey,
     toolbarExtra,
     columns,
-    columnPrefs,
-    columnKeys,
+    resolvedPrefs,
     handleConfirmColumnPrefs,
     columnVisibilityLabels,
   ]);

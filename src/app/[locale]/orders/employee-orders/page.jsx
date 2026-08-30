@@ -12,6 +12,7 @@ import {
 	Timer,
 	Download,
 	Loader2,
+	Activity,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -403,6 +404,14 @@ export default function MyAssignedOrdersPage() {
 						> </Button_>
 
 						<Button_
+							variant="outline"
+							tone="primary"
+							onClick={() => router.push("/orders/employee-orders/dashboard")}
+							icon={<Activity size={16} />}
+							label={t("employeeDashboard.title")}
+						> </Button_>
+
+						<Button_
 							tone="primary"
 							onClick={handleStartWork}
 							icon={<PlayCircle size={16} className={cn(loading && "animate-spin")} />}
@@ -448,7 +457,7 @@ export default function MyAssignedOrdersPage() {
 						),
 						disabled: exportLoading,
 						onClick: onExport,
-						color: 'emerald'
+						color: "primary",
 					}
 				]}
 				compact={false}

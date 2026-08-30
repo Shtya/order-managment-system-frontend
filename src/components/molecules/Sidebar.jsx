@@ -531,6 +531,13 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
       gettingStartedType: "sidebar_item",
     },
     {
+      icon: Activity,
+      labelKey: "employee-performance",
+      href: "/orders/employee-orders/dashboard",
+      permission: "orders.confirm-incoming",
+      notRoles: ["ADMIN", "SUPER_ADMIN"],
+    },
+    {
       icon: PackageCheck,
       labelKey: "orders-assign-to-you",
       href: "/orders/employee-orders",

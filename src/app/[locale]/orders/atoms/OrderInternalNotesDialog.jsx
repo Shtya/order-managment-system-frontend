@@ -267,7 +267,7 @@ export default function OrderInternalNotesDialog({
           </button>
         </div>
 
-        <div ref={listRef} className="px-3 py-2 overflow-y-auto min-h-[140px] max-h-[300px]">
+        <div ref={listRef} className="px-3 py-2 overflow-y-auto min-h-[200px] max-h-[300px]">
           {loading ? (
             <NotesListSkeleton />
           ) : (
@@ -310,10 +310,11 @@ export default function OrderInternalNotesDialog({
                   addNote();
                 }
               }}
+              maxLength={2000}
               placeholder={t("placeholder")}
               rows={2}
               disabled={sending}
-              className="flex-1 min-h-[60px] max-h-[72px] border-0 outline-none resize-none bg-transparent text-sm text-foreground disabled:opacity-60 disabled:cursor-not-allowed focus-visible:!outline-none"
+              className="flex-1 min-h-[45px] max-h-[120px] border-0 outline-none resize-none bg-transparent text-sm text-foreground disabled:opacity-60 disabled:cursor-not-allowed focus-visible:!outline-none"
             />
             <button
               type="button"

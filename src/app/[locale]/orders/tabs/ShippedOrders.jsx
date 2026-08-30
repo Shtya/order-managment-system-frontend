@@ -1442,13 +1442,40 @@ export default function ShippedOrders({ statuses = [] }) {
     [statusesMap, t, ts],
   );
 
+  const groupColumns = useMemo(() => {
+    const openTicketsCol = {
+      key: "openTicketsCount",
+      header: ts("groupedView.table.openTickets"),
+      cell: (row) => {
+        const count = row.openTicketsCount ?? 0;
+        return (
+          <span
+            className={cn(
+              "inline-flex min-w-[28px] h-6 px-2 items-center justify-center rounded-full text-xs font-black tabular-nums",
+              count > 0
+                ? "bg-violet-500/15 text-violet-700 dark:text-violet-300"
+                : "text-muted-foreground",
+            )}
+          >
+            {count}
+          </span>
+        );
+      },
+    };
+    const orderIdx = columns.findIndex((c) => c.key === "orderNumber");
+    if (orderIdx < 0) return [...columns, openTicketsCol];
+    const next = [...columns];
+    next.splice(orderIdx + 1, 0, openTicketsCol);
+    return next;
+  }, [columns, ts]);
+
   const groupsTableKey = "group-shipped-orders"
   const {
     visibleColumns: groupedVisibleColumns,
     handleConfirmColumnPrefs: handleGroupedColumnPrefs,
     columnVisibilityLabels: groupedColumnVisibilityLabels,
     resolvedPrefs: groupedColumnPrefs,
-  } = useTableColumnPrefs(groupsTableKey, columns, {
+  } = useTableColumnPrefs(groupsTableKey, groupColumns, {
     showColumnVisibility: viewMode === "groups",
   });
 
@@ -1568,7 +1595,7 @@ export default function ShippedOrders({ statuses = [] }) {
               toolbarExtra={
                 <>
                   <ColumnVisibilityControl
-                    columns={columns}
+                    columns={groupColumns}
                     prefs={groupedColumnPrefs}
                     onConfirm={handleGroupedColumnPrefs}
                     labels={groupedColumnVisibilityLabels}

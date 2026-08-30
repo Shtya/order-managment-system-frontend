@@ -6819,11 +6819,18 @@
         "showingOf": "Showing {shown} of {total} shipments",
         "stats": {
           "totalShipments": "Shipments",
+          "total": "Total",
+          "outForDelivery": "Out for Delivery",
+          "current": "Remaining",
+          "openTickets": "Open Tickets",
           "delivered": "Delivered",
           "returned": "Returned",
           "late": "Late",
           "totalSales": "Total Sales",
           "tags": "Tags"
+        },
+        "table": {
+          "openTickets": "Open Tickets"
         }
       },
       "stats": {

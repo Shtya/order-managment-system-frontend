@@ -6807,11 +6807,18 @@
         "showingOf": "عرض {shown} من {total} شحنة",
         "stats": {
           "totalShipments": "شحنات",
+          "total": "إجمالي",
+          "outForDelivery": "خرج للتوصيل",
+          "current": "متبقية",
+          "openTickets": "تذاكر مفتوحة",
           "delivered": "تم التسليم",
           "returned": "مرتجعة",
           "late": "متأخرة",
           "totalSales": "إجمالي المبيعات",
           "tags": "الوسوم"
+        },
+        "table": {
+          "openTickets": "تذاكر مفتوحة"
         }
       },
       "stats": {

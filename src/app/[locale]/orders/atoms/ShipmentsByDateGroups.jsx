@@ -45,7 +45,15 @@ function StatPill({ label, value, color, strong = false }) {
   );
 }
 
-function CompanyStatPill({ name, count, active, onClick }) {
+function CompanyStatPill({
+  name,
+  count,
+  current,
+  totalLabel,
+  currentLabel,
+  active,
+  onClick,
+}) {
   return (
     <button
       type="button"
@@ -57,7 +65,15 @@ function CompanyStatPill({ name, count, active, onClick }) {
       )}
     >
       <span className="font-semibold">{name}</span>
-      <span className="font-black tabular-nums text-[var(--primary)]">{count}</span>
+      <span className="inline-flex items-center gap-0.5">
+        <span className="font-black tabular-nums text-[var(--primary)]">{count}</span>
+        <span className="font-semibold opacity-70">{totalLabel}</span>
+      </span>
+      <span className="text-muted-foreground/40">·</span>
+      <span className="inline-flex items-center gap-0.5">
+        <span className="font-black tabular-nums">{current ?? 0}</span>
+        <span className="font-semibold opacity-70">{currentLabel}</span>
+      </span>
     </button>
   );
 }
@@ -185,6 +201,9 @@ export default function ShipmentsByDateGroups({
                       key={`${dateKey}-${companyKey}`}
                       name={company.companyName || noCompanyLabel}
                       count={company.count ?? 0}
+                      current={company.current ?? 0}
+                      totalLabel={t("stats.total")}
+                      currentLabel={t("stats.current")}
                       active={
                         isExpanded && activeCompanyFilter === companyKey
                       }
@@ -194,6 +213,16 @@ export default function ShipmentsByDateGroups({
                     />
                   );
                 })}
+                <StatPill
+                  label={t("stats.outForDelivery")}
+                  value={group.statistics?.outForDelivery ?? 0}
+                  color="#3b82f6"
+                />
+                <StatPill
+                  label={t("stats.openTickets")}
+                  value={group.statistics?.openTickets ?? 0}
+                  color="#8b5cf6"
+                />
                 <StatPill
                   label={t("stats.delivered")}
                   value={group.statistics?.delivered ?? 0}

@@ -6802,7 +6802,29 @@
       "breadcrumb": "Shipped Orders",
       "views": {
         "normal": "All Shipped",
-        "late": "Late Orders"
+        "late": "Late Orders",
+        "groups": "Groups",
+        "groupsDescription": "Shipments grouped by shipped date with company and status statistics.",
+        "groupsExample": "View daily shipment totals, filter by shipping company, and expand to see order rows."
+      },
+      "groupedView": {
+        "subModes": {
+          "normal": "All Shipments",
+          "late": "Late Shipments Only"
+        },
+        "emptyGrouped": "No shipments within the selected period",
+        "editFilters": "Edit Filters",
+        "loadMore": "Load More",
+        "loadingShipments": "Loading shipments...",
+        "showingOf": "Showing {shown} of {total} shipments",
+        "stats": {
+          "totalShipments": "Shipments",
+          "delivered": "Delivered",
+          "returned": "Returned",
+          "late": "Late",
+          "totalSales": "Total Sales",
+          "tags": "Tags"
+        }
       },
       "stats": {
         "noCompany": "No Shipping Company",

@@ -11,6 +11,7 @@ import {
   Eye,
   LucideMessageCircle,
   PhoneCall,
+  LayoutList,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
@@ -19,13 +20,22 @@ import api from "@/utils/api";
 import { cn } from "@/utils/cn";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import Table, { FilterField } from "@/components/atoms/Table";
+import Table, {
+  FilterField,
+  TableToolbar,
+  TableFilters,
+  TablePagination,
+} from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import UserSelect from "@/components/atoms/UserSelect";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { OrderStatus } from "./OrderTab";
 import { generateBgColors } from "../page";
+import ShipmentsByDateGroups from "../atoms/ShipmentsByDateGroups";
+import { GROUPED_ORDERS_PAGE } from "../atoms/OrdersByDateGroups";
+import { Button } from "@/components/ui/button";
+import { AnimatePresence } from "framer-motion";
 import {
   calcShippingDaysElapsed,
   getShippingDaysBadgeStyles,
@@ -688,10 +698,21 @@ export default function ShippedOrders({ statuses = [] }) {
   const t = useTranslations("orders");
   const { formatCurrency } = usePlatformSettings();
   const [viewMode, setViewMode] = useState("normal");
+  const [groupsFilterMode, setGroupsFilterMode] = useState("normal");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [loading, setLoading] = useState(false);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [groupedFiltersOpen, setGroupedFiltersOpen] = useState(false);
+  const [expandedDates, setExpandedDates] = useState(new Set());
+  const [dateShipments, setDateShipments] = useState({});
+  const [groupPager, setGroupPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 10,
+    records: [],
+  });
   const [statsLoading, setStatsLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [companyStats, setCompanyStats] = useState([]);
@@ -717,8 +738,17 @@ export default function ShippedOrders({ statuses = [] }) {
     () => [
       { id: "normal", label: ts("views.normal"), icon: Truck, description: tTutorial("shipping.tabs.normal.description"), example: tTutorial("shipping.tabs.normal.example") },
       { id: "late", label: ts("views.late"), icon: AlertTriangle, description: tTutorial("shipping.tabs.late.description"), example: tTutorial("shipping.tabs.late.example") },
+      { id: "groups", label: ts("views.groups"), icon: LayoutList, description: ts("views.groupsDescription"), example: ts("views.groupsExample") },
     ],
     [ts, tTutorial],
+  );
+
+  const groupsSubModes = useMemo(
+    () => [
+      { id: "normal", label: ts("groupedView.subModes.normal") },
+      { id: "late", label: ts("groupedView.subModes.late") },
+    ],
+    [ts],
   );
 
   useEffect(() => {
@@ -744,11 +774,37 @@ export default function ShippedOrders({ statuses = [] }) {
 
   const buildStatsParams = useCallback(() => {
     const params = { status: OrderStatus.SHIPPED };
-    if (viewMode === "late") {
+    const isLate =
+      viewMode === "late" ||
+      (viewMode === "groups" && groupsFilterMode === "late");
+    if (isLate) {
       params.lateShipping = true;
     }
     return params;
-  }, [viewMode]);
+  }, [viewMode, groupsFilterMode]);
+
+  const buildGroupParams = useCallback(() => {
+    const params = {};
+
+    if (debouncedSearch) params.search = debouncedSearch;
+
+    if (filters.shippingCompany && filters.shippingCompany !== "all") {
+      params.shippingCompanyId = filters.shippingCompany;
+    }
+
+    if (filters.shippedStartDate) params.shippedStartDate = filters.shippedStartDate;
+    if (filters.shippedEndDate) params.shippedEndDate = filters.shippedEndDate;
+
+    if (filters.employee && filters.employee !== "all") {
+      params.userId = filters.employee;
+    }
+
+    if (groupsFilterMode === "late") {
+      params.lateShipping = true;
+    }
+
+    return params;
+  }, [debouncedSearch, filters, groupsFilterMode]);
 
   const buildParams = useCallback(
     (page = pager.current_page, per_page = pager.per_page) => {
@@ -811,6 +867,144 @@ export default function ShippedOrders({ statuses = [] }) {
     [buildParams, pager.per_page, ts],
   );
 
+  const resetGroupedState = () => {
+    setExpandedDates(new Set());
+    setDateShipments({});
+  };
+
+  const fetchShipmentGroups = useCallback(
+    async (
+      page = groupPager.current_page,
+      per_page = groupPager.per_page,
+    ) => {
+      setGroupsLoading(true);
+      try {
+        const params = {
+          ...buildGroupParams(),
+          page,
+          limit: per_page,
+        };
+        const res = await api.get("/orders/shipped/grouped-by-date", { params });
+        const data = res.data || {};
+        setGroupPager({
+          total_records: data.total_records || 0,
+          current_page: data.current_page || page,
+          per_page: data.per_page || per_page,
+          records: Array.isArray(data.records) ? data.records : [],
+        });
+      } catch (e) {
+        console.error(e);
+        toast.error(ts("messages.fetchFailed"));
+      } finally {
+        setGroupsLoading(false);
+      }
+    },
+    [buildGroupParams, groupPager.current_page, groupPager.per_page, ts],
+  );
+
+  const fetchShipmentsForDate = async (
+    dateKey,
+    { cursor, companyId, resetCompanyFilter = false } = {},
+  ) => {
+    const base = buildGroupParams();
+    const params = {
+      ...base,
+      shipmentGroupDate: dateKey,
+      limit: GROUPED_ORDERS_PAGE,
+      useCursor: true,
+    };
+
+    const entry = dateShipments[dateKey] || {};
+    const resolvedCompany = resetCompanyFilter
+      ? null
+      : companyId !== undefined
+        ? companyId
+        : entry.companyFilter ?? null;
+
+    if (resolvedCompany) {
+      params.shipmentGroupCompanyId = resolvedCompany;
+    }
+
+    if (cursor?.value != null && cursor?.id != null) {
+      params["cursor[value]"] = cursor.value;
+      params["cursor[id]"] = cursor.id;
+    }
+
+    setDateShipments((prev) => ({
+      ...prev,
+      [dateKey]: {
+        ...(prev[dateKey] || {}),
+        loading: true,
+        companyFilter: resetCompanyFilter ? null : resolvedCompany,
+        records: cursor ? prev[dateKey]?.records || [] : [],
+      },
+    }));
+
+    try {
+      const res = await api.get("/orders/shipped/grouped-by-date/rows", { params });
+      const data = res.data || {};
+      const newRecords = Array.isArray(data.records) ? data.records : [];
+      setDateShipments((prev) => {
+        const prevEntry = prev[dateKey] || {};
+        return {
+          ...prev,
+          [dateKey]: {
+            records: cursor
+              ? [...(prevEntry.records || []), ...newRecords]
+              : newRecords,
+            total_records: data.total_records || prevEntry.total_records || 0,
+            nextCursor: data.nextCursor,
+            hasMore: !!data.hasMore,
+            loading: false,
+            companyFilter: resetCompanyFilter ? null : resolvedCompany,
+          },
+        };
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error(ts("messages.fetchFailed"));
+      setDateShipments((prev) => ({
+        ...prev,
+        [dateKey]: { ...(prev[dateKey] || {}), loading: false },
+      }));
+    }
+  };
+
+  const toggleDateGroup = (dateKey) => {
+    const willExpand = !expandedDates.has(dateKey);
+    setExpandedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateKey)) next.delete(dateKey);
+      else next.add(dateKey);
+      return next;
+    });
+    if (willExpand) {
+      fetchShipmentsForDate(dateKey, { resetCompanyFilter: true });
+    }
+  };
+
+  const handleCompanyClick = (e, dateKey, companyId) => {
+    e.stopPropagation();
+    const isAlreadySelected = dateShipments[dateKey]?.companyFilter === companyId;
+    setExpandedDates((prev) => new Set([...prev, dateKey]));
+    if (isAlreadySelected) {
+      fetchShipmentsForDate(dateKey, { resetCompanyFilter: true });
+      return;
+    }
+    fetchShipmentsForDate(dateKey, { companyId, resetCompanyFilter: false });
+  };
+
+  const loadMoreShipmentsForDate = (dateKey) => {
+    const entry = dateShipments[dateKey];
+    if (!entry || entry.loading || !entry.nextCursor) return;
+    fetchShipmentsForDate(dateKey, { cursor: entry.nextCursor });
+  };
+
+  const handleGroupPageChange = ({ page, per_page }) => {
+    resetGroupedState();
+    fetchShipmentGroups(page, per_page);
+  };
+
   const fetchCompanyStats = useCallback(async () => {
     setStatsLoading(true);
     try {
@@ -826,27 +1020,50 @@ export default function ShippedOrders({ statuses = [] }) {
   }, [buildStatsParams, ts]);
 
   useEffect(() => {
-    fetchOrders(1, pager.per_page);
+    if (viewMode === "groups") {
+      resetGroupedState();
+      fetchShipmentGroups(1, groupPager.per_page);
+    } else {
+      fetchOrders(1, pager.per_page);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, viewMode]);
+  }, [debouncedSearch, viewMode, groupsFilterMode]);
 
   useEffect(() => {
     fetchCompanyStats();
-  }, [fetchCompanyStats]);
+  }, [fetchCompanyStats, viewMode, groupsFilterMode]);
 
   const handleViewModeChange = (mode) => {
     setViewMode(mode);
     setFilters({ ...DEFAULT_FILTERS });
     setSearch("");
     setDebouncedSearch("");
+    setGroupedFiltersOpen(false);
+    resetGroupedState();
     setPager((p) => ({
+      ...p,
+      current_page: 1,
+      records: [],
+    }));
+    setGroupPager((p) => ({
       ...p,
       current_page: 1,
       records: [],
     }));
   };
 
+  const handleGroupsFilterModeChange = (mode) => {
+    if (mode === groupsFilterMode) return;
+    setGroupsFilterMode(mode);
+    resetGroupedState();
+  };
+
   const applyFilters = () => {
+    if (viewMode === "groups") {
+      resetGroupedState();
+      fetchShipmentGroups(1, groupPager.per_page);
+      return;
+    }
     fetchOrders(1, pager.per_page);
   };
 
@@ -869,19 +1086,28 @@ export default function ShippedOrders({ statuses = [] }) {
     setExportLoading(true);
     const toastId = toast.loading(t("messages.exportStarted"));
     try {
-      const params = buildParams();
+      const isGroups = viewMode === "groups";
+      const params = isGroups ? { ...buildGroupParams() } : buildParams();
       delete params.page;
       delete params.limit;
 
-      const response = await api.get("/orders/export", {
-        params,
-        responseType: "blob",
-      });
+      const response = await api.get(
+        isGroups ? "/orders/shipped/export/grouped-by-date" : "/orders/export",
+        {
+          params,
+          responseType: "blob",
+        },
+      );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `shipped_orders_${Date.now()}.xlsx`);
+      link.setAttribute(
+        "download",
+        isGroups
+          ? `shipments_grouped_by_date_${Date.now()}.xlsx`
+          : `shipped_orders_${Date.now()}.xlsx`,
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -954,6 +1180,18 @@ export default function ShippedOrders({ statuses = [] }) {
         ),
       },
       {
+        key: "trackingNumber",
+        header: ts("table.trackingNumber"),
+        cell: (row) => {
+          const ship = row.shipments?.[0];
+          return (
+            <span className="font-mono text-sm">
+              {ship?.trackingNumber || row.trackingNumber || "—"}
+            </span>
+          );
+        },
+      },
+      {
         key: "customerName",
         header: ts("table.customerName"),
         cell: (row) => (
@@ -968,7 +1206,7 @@ export default function ShippedOrders({ statuses = [] }) {
         header: t("table.products"),
         cell: (row) => (
           <div className="text-sm">
-            {row.items.map((p, i) => (
+            {row.items?.map((p, i) => (
               <div key={i} className="flex gap-2">
                 <span>{p.variant.product.name}</span> -
                 <span>{p.variant.sku}</span> -
@@ -1113,21 +1351,11 @@ export default function ShippedOrders({ statuses = [] }) {
       },
      
       {
-        key: "trackingNumber",
-        header: ts("table.trackingNumber"),
-        cell: (row) => {
-          const ship = row.shipments?.[0];
-          return (
-            <span className="font-mono text-sm">{ship?.trackingNumber || row.trackingNumber || "—"}</span>
-          );
-        },
-      },
-      {
         key: "shipmentStatus",
         header: ts("table.shipmentStatus"),
         cell: (row) => {
           const ship = row.shipments?.[0];
-          const status = ship?.unifiedStatus || ship?.status;
+          const status = ship?.status;
           if (!status) return <span className="text-muted-foreground text-sm">—</span>;
 
           return (
@@ -1212,6 +1440,71 @@ export default function ShippedOrders({ statuses = [] }) {
     [statusesMap, t, ts],
   );
 
+  const groupFiltersNode = (
+    <>
+      <FilterField>
+        <ShippingCompanyFilter
+          value={filters.shippingCompany}
+          onChange={(v) => setFilters((f) => ({ ...f, shippingCompany: v }))}
+        />
+      </FilterField>
+
+      <FilterField label={ts("filters.shippedDate")}>
+        <DateRangePicker
+          value={{
+            startDate: filters.shippedStartDate,
+            endDate: filters.shippedEndDate,
+          }}
+          onChange={(newDates) =>
+            setFilters((prev) => ({
+              ...prev,
+              shippedStartDate: newDates.startDate ?? null,
+              shippedEndDate: newDates.endDate ?? null,
+            }))
+          }
+          placeholder={ts("filters.shippedDatePlaceholder")}
+          dataSize="default"
+          maxDate="today"
+        />
+      </FilterField>
+
+      {/* <FilterField label={ts("filters.employee")}>
+        <UserSelect
+          value={filters.employee}
+          onSelect={(user) =>
+            setFilters((f) => ({
+              ...f,
+              employee: user ? String(user.id) : "all",
+            }))
+          }
+          placeholder={ts("filters.employeePlaceholder")}
+          allowAll
+          allLabel={ts("filters.all")}
+        />
+      </FilterField> */}
+    </>
+  );
+
+  const groupsSubModeSwitcher = (
+    <div className="inline-flex items-center rounded-xl border border-border/60 p-0.5 bg-muted/30">
+      {groupsSubModes.map((mode) => (
+        <button
+          key={mode.id}
+          type="button"
+          onClick={() => handleGroupsFilterModeChange(mode.id)}
+          className={cn(
+            "px-3 py-1.5 rounded-lg text-xs font-bold transition-colors",
+            groupsFilterMode === mode.id
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {mode.label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div>
       <PageHeader
@@ -1233,8 +1526,88 @@ export default function ShippedOrders({ statuses = [] }) {
         itemsCompact={false}
       />
 
+      {viewMode === "groups" ? (
+        <div className="main-card rounded-2xl border border-border/50 overflow-hidden">
+          <div className="px-5 py-4 border-b border-border/40">
+            <TableToolbar
+              searchValue={search}
+              onSearchChange={setSearch}
+              onSearch={applyFilters}
+              hasSearch
+              searchPlaceholder={t("search.placeholder")}
+              isFiltersOpen={groupedFiltersOpen}
+              onToggleFilters={() => setGroupedFiltersOpen((v) => !v)}
+              filterLabel={t("actions.filter")}
+              actions={[
+                {
+                  key: "export",
+                  label: t("actions.export"),
+                  icon: exportLoading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Download size={14} />
+                  ),
+                  color: "primary",
+                  onClick: handleExport,
+                  disabled: exportLoading,
+                  permission: "orders.read",
+                },
+              ]}
+              toolbarExtra={groupsSubModeSwitcher}
+            />
+            <AnimatePresence>
+              {groupedFiltersOpen && (
+                <TableFilters
+                  onApply={applyFilters}
+                  applyLabel={ts("filters.apply")}
+                >
+                  {groupFiltersNode}
+                </TableFilters>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="p-4">
+            {!groupsLoading && groupPager.records.length === 0 ? (
+              <div className="py-16 flex flex-col items-center gap-3">
+                <Package size={26} className="text-muted-foreground/60" />
+                <p className="text-sm font-bold text-foreground">
+                  {ts("groupedView.emptyGrouped")}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setGroupedFiltersOpen(true)}
+                >
+                  {ts("groupedView.editFilters")}
+                </Button>
+              </div>
+            ) : (
+              <ShipmentsByDateGroups
+                groups={groupPager.records}
+                columns={columns}
+                expandedDates={expandedDates}
+                dateShipments={dateShipments}
+                onToggleDate={toggleDateGroup}
+                onCompanyClick={handleCompanyClick}
+                onLoadMore={loadMoreShipmentsForDate}
+                isLoading={groupsLoading}
+                formatCurrency={formatCurrency}
+                noCompanyLabel={ts("stats.noCompany")}
+              />
+            )}
+          </div>
+
+          <div className="h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+          <TablePagination
+            pagination={groupPager}
+            onPageChange={handleGroupPageChange}
+            isLoading={groupsLoading}
+          />
+        </div>
+      ) : (
       <Table
-        tableKey="shipped-orders"
+        tableKey={viewMode === "late" ? "late-shipped-orders" : "shipped-orders"}
         columns={columns}
         data={pager.records}
         isLoading={loading}
@@ -1347,6 +1720,7 @@ export default function ShippedOrders({ statuses = [] }) {
         onPageChange={handlePageChange}
         emptyState={ts("empty")}
       />
+      )}
     </div>
   );
 }

@@ -367,7 +367,7 @@ export default function ListMessageBuilder({
                   type="button"
                   disabled={disabled.removeSection}
                   onClick={() => handleRemoveSection(sIdx)}
-                  className="absolute top-4 right-4 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-all opacity-0 group-hover/section:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-slate-300 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
+                  className="absolute top-3 end-3 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-all opacity-0 group-hover/section:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-slate-300 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
                 >
                   <Trash2 size={16} />
                 </button>

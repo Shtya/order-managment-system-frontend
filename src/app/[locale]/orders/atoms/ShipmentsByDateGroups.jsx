@@ -213,11 +213,11 @@ export default function ShipmentsByDateGroups({
                     />
                   );
                 })}
-                <StatPill
+                {/* <StatPill
                   label={t("stats.outForDelivery")}
                   value={group.statistics?.outForDelivery ?? 0}
                   color="#3b82f6"
-                />
+                /> */}
                 <StatPill
                   label={t("stats.openTickets")}
                   value={group.statistics?.openTickets ?? 0}

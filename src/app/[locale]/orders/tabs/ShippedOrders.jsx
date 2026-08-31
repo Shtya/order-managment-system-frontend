@@ -1600,7 +1600,7 @@ export default function ShippedOrders({ statuses = [] }) {
                     onConfirm={handleGroupedColumnPrefs}
                     labels={groupedColumnVisibilityLabels}
                   />
-                  {groupsSubModeSwitcher}
+                  {/* {groupsSubModeSwitcher} */}
                 </>
               }
             />

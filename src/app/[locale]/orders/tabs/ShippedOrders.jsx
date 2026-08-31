@@ -904,9 +904,11 @@ export default function ShippedOrders({ statuses = [] }) {
     [buildGroupParams, groupPager.current_page, groupPager.per_page, ts],
   );
 
+  const emptyGroupFilters = () => ({ companyId: null, stats: [] });
+
   const fetchShipmentsForDate = async (
     dateKey,
-    { cursor, companyId, resetCompanyFilter = false } = {},
+    { cursor, groupFilters, resetFilters = false } = {},
   ) => {
     const base = buildGroupParams();
     const params = {
@@ -917,14 +919,16 @@ export default function ShippedOrders({ statuses = [] }) {
     };
 
     const entry = dateShipments[dateKey] || {};
-    const resolvedCompany = resetCompanyFilter
-      ? null
-      : companyId !== undefined
-        ? companyId
-        : entry.companyFilter ?? null;
+    const resolvedFilters = resetFilters
+      ? emptyGroupFilters()
+      : groupFilters ?? entry.groupFilters ?? emptyGroupFilters();
 
-    if (resolvedCompany) {
-      params.shipmentGroupCompanyId = resolvedCompany;
+    if (resolvedFilters.companyId) {
+      params.shipmentGroupCompanyId = resolvedFilters.companyId;
+    }
+
+    if (resolvedFilters.stats?.length) {
+      params.shipmentGroupStatFilters = resolvedFilters.stats.join(",");
     }
 
     if (cursor?.value != null && cursor?.id != null) {
@@ -937,7 +941,7 @@ export default function ShippedOrders({ statuses = [] }) {
       [dateKey]: {
         ...(prev[dateKey] || {}),
         loading: true,
-        companyFilter: resetCompanyFilter ? null : resolvedCompany,
+        groupFilters: resetFilters ? emptyGroupFilters() : resolvedFilters,
         records: cursor ? prev[dateKey]?.records || [] : [],
       },
     }));
@@ -958,7 +962,7 @@ export default function ShippedOrders({ statuses = [] }) {
             nextCursor: data.nextCursor,
             hasMore: !!data.hasMore,
             loading: false,
-            companyFilter: resetCompanyFilter ? null : resolvedCompany,
+            groupFilters: resetFilters ? emptyGroupFilters() : resolvedFilters,
           },
         };
       });
@@ -981,19 +985,34 @@ export default function ShippedOrders({ statuses = [] }) {
       return next;
     });
     if (willExpand) {
-      fetchShipmentsForDate(dateKey, { resetCompanyFilter: true });
+      fetchShipmentsForDate(dateKey, { resetFilters: true });
     }
   };
 
   const handleCompanyClick = (e, dateKey, companyId) => {
     e.stopPropagation();
-    const isAlreadySelected = dateShipments[dateKey]?.companyFilter === companyId;
+    const entry = dateShipments[dateKey] || {};
+    const current = entry.groupFilters ?? emptyGroupFilters();
+    const isAlreadySelected = current.companyId === companyId;
+    const nextFilters = {
+      ...current,
+      companyId: isAlreadySelected ? null : companyId,
+    };
     setExpandedDates((prev) => new Set([...prev, dateKey]));
-    if (isAlreadySelected) {
-      fetchShipmentsForDate(dateKey, { resetCompanyFilter: true });
-      return;
-    }
-    fetchShipmentsForDate(dateKey, { companyId, resetCompanyFilter: false });
+    fetchShipmentsForDate(dateKey, { groupFilters: nextFilters });
+  };
+
+  const handleStatClick = (e, dateKey, statKey) => {
+    e.stopPropagation();
+    const entry = dateShipments[dateKey] || {};
+    const current = entry.groupFilters ?? emptyGroupFilters();
+    const stats = [...(current.stats || [])];
+    const statIndex = stats.indexOf(statKey);
+    if (statIndex >= 0) stats.splice(statIndex, 1);
+    else stats.push(statKey);
+    const nextFilters = { ...current, stats };
+    setExpandedDates((prev) => new Set([...prev, dateKey]));
+    fetchShipmentsForDate(dateKey, { groupFilters: nextFilters });
   };
 
   const loadMoreShipmentsForDate = (dateKey) => {
@@ -1639,6 +1658,7 @@ export default function ShippedOrders({ statuses = [] }) {
                 dateShipments={dateShipments}
                 onToggleDate={toggleDateGroup}
                 onCompanyClick={handleCompanyClick}
+                onStatClick={handleStatClick}
                 onLoadMore={loadMoreShipmentsForDate}
                 isLoading={groupsLoading}
                 formatCurrency={formatCurrency}

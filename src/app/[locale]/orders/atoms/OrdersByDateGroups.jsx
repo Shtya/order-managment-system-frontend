@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 
-const GROUPED_ORDERS_PAGE = 5;
+const GROUPED_ORDERS_PAGE = 20;
 
 /* Compact rounded stat pill — strong variant = solid primary (strongest hierarchy) */
 function StatPill({ label, value, color, strong = false }) {

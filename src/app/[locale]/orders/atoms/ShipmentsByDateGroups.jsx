@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
 import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 
-function StatPill({ label, value, color, strong = false }) {
+function StatPill({ label, value, color, strong = false, active = false, onClick }) {
   const style = strong
     ? {
         background: "var(--primary)",
@@ -28,11 +28,16 @@ function StatPill({ label, value, color, strong = false }) {
         color: color || "var(--muted-foreground)",
       };
 
-  return (
-    <span
-      className="inline-flex items-center gap-1 h-[22px] px-2 rounded-full text-[11px] leading-none whitespace-nowrap"
-      style={style}
-    >
+  const className = cn(
+    "inline-flex items-center gap-1 h-[22px] px-2 rounded-full text-[11px] leading-none whitespace-nowrap transition-all",
+    onClick &&
+      "border border-border/60 hover:bg-muted/40 cursor-pointer",
+    active &&
+      "ring-2 ring-[var(--primary)] border-[var(--primary)] bg-[color-mix(in_oklab,var(--primary)_8%,transparent)]",
+  );
+
+  const content = (
+    <>
       {!strong && (
         <span
           className="w-1.5 h-1.5 rounded-full shrink-0"
@@ -41,6 +46,20 @@ function StatPill({ label, value, color, strong = false }) {
       )}
       <span className="font-black tabular-nums">{value}</span>
       <span className="font-semibold opacity-75">{label}</span>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={className} style={style}>
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <span className={className} style={style}>
+      {content}
     </span>
   );
 }
@@ -127,6 +146,7 @@ export default function ShipmentsByDateGroups({
   dateShipments = {},
   onToggleDate,
   onCompanyClick,
+  onStatClick,
   onLoadMore,
   isLoading = false,
   formatCurrency = (v) => v,
@@ -159,7 +179,10 @@ export default function ShipmentsByDateGroups({
         const tagStats = Array.isArray(group.statistics?.tags)
           ? group.statistics.tags
           : [];
-        const activeCompanyFilter = entry.companyFilter ?? null;
+        const activeCompanyFilter = entry.groupFilters?.companyId ?? null;
+        const activeStatFilters = Array.isArray(entry.groupFilters?.stats)
+          ? entry.groupFilters.stats
+          : [];
 
         return (
           <section
@@ -222,21 +245,41 @@ export default function ShipmentsByDateGroups({
                   label={t("stats.delivered")}
                   value={group.statistics?.delivered ?? 0}
                   color="#19a85b"
+                  active={isExpanded && activeStatFilters.includes("delivered")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStatClick?.(e, dateKey, "delivered");
+                  }}
                 />
                 <StatPill
                   label={t("stats.returned")}
                   value={group.statistics?.returned ?? 0}
                   color="#f59e0b"
+                  active={isExpanded && activeStatFilters.includes("returned")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStatClick?.(e, dateKey, "returned");
+                  }}
                 />
                 <StatPill
                   label={t("stats.openTickets")}
                   value={group.statistics?.openTickets ?? 0}
                   color="#8b5cf6"
+                  active={isExpanded && activeStatFilters.includes("openTickets")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStatClick?.(e, dateKey, "openTickets");
+                  }}
                 />
                 <StatPill
                   label={t("stats.late")}
                   value={group.statistics?.late ?? 0}
                   color="#e84545"
+                  active={isExpanded && activeStatFilters.includes("late")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStatClick?.(e, dateKey, "late");
+                  }}
                 />
               </div>
 

@@ -3,7 +3,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { ChevronDown, Download, Loader2 } from "lucide-react";
 
 import {
   Table as ShadTable,
@@ -147,6 +147,8 @@ export default function ShipmentsByDateGroups({
   onToggleDate,
   onCompanyClick,
   onStatClick,
+  onExportGroup,
+  exportingDateKey = null,
   onLoadMore,
   isLoading = false,
   formatCurrency = (v) => v,
@@ -180,9 +182,8 @@ export default function ShipmentsByDateGroups({
           ? group.statistics.tags
           : [];
         const activeCompanyFilter = entry.groupFilters?.companyId ?? null;
-        const activeStatFilters = Array.isArray(entry.groupFilters?.stats)
-          ? entry.groupFilters.stats
-          : [];
+        const activeStatFilter = entry.groupFilters?.stat ?? null;
+        const isAllCompaniesActive = isExpanded && activeCompanyFilter === null;
 
         return (
           <section
@@ -194,104 +195,130 @@ export default function ShipmentsByDateGroups({
                 : {}
             }
           >
-            <button
-              type="button"
-              onClick={() => onToggleDate?.(dateKey)}
-              className="w-full px-3.5 py-2 flex items-center gap-2.5 flex-wrap hover:bg-[color-mix(in_oklab,var(--primary)_3%,transparent)] transition-colors text-start"
-            >
-              <motion.span
-                animate={{ rotate: isExpanded ? 180 : 0 }}
-                transition={{ duration: 0.22 }}
-                style={{ display: "flex", color: "var(--primary)" }}
+            <div className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-[color-mix(in_oklab,var(--primary)_3%,transparent)] transition-colors">
+              <button
+                type="button"
+                onClick={() => onToggleDate?.(dateKey)}
+                className="flex flex-1 min-w-0 items-center gap-2.5 flex-wrap text-start"
               >
-                <ChevronDown size={15} />
-              </motion.span>
+                <motion.span
+                  animate={{ rotate: isExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.22 }}
+                  style={{ display: "flex", color: "var(--primary)" }}
+                >
+                  <ChevronDown size={15} />
+                </motion.span>
 
-              <span className="text-sm font-extrabold text-foreground whitespace-nowrap">
-                {formatTrendLabel(`${dateKey}T00:00:00`)}
-              </span>
+                <span className="text-sm font-extrabold text-foreground whitespace-nowrap">
+                  {formatTrendLabel(`${dateKey}T00:00:00`)}
+                </span>
 
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <StatPill
-                  label={t("stats.totalShipments")}
-                  value={totalForDate}
-                  strong
-                />
-                {companies.map((company) => {
-                  const companyKey = company.companyId ?? "none";
-                  return (
-                    <CompanyStatPill
-                      key={`${dateKey}-${companyKey}`}
-                      name={company.companyName || noCompanyLabel}
-                      count={company.count ?? 0}
-                      current={company.current ?? 0}
-                      totalLabel={t("stats.total")}
-                      currentLabel={t("stats.current")}
-                      active={
-                        isExpanded && activeCompanyFilter === companyKey
-                      }
-                      onClick={(e) =>
-                        onCompanyClick?.(e, dateKey, companyKey)
-                      }
-                    />
-                  );
-                })}
-                {/* <StatPill
-                  label={t("stats.outForDelivery")}
-                  value={group.statistics?.outForDelivery ?? 0}
-                  color="#3b82f6"
-                /> */}
-                <StatPill
-                  label={t("stats.delivered")}
-                  value={group.statistics?.delivered ?? 0}
-                  color="#19a85b"
-                  active={isExpanded && activeStatFilters.includes("delivered")}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <StatPill
+                    label={t("stats.totalShipments")}
+                    value={totalForDate}
+                    strong
+                    active={isAllCompaniesActive}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCompanyClick?.(e, dateKey, null);
+                    }}
+                  />
+                  {companies.map((company) => {
+                    const companyKey = company.companyId ?? "none";
+                    return (
+                      <CompanyStatPill
+                        key={`${dateKey}-${companyKey}`}
+                        name={company.companyName || noCompanyLabel}
+                        count={company.count ?? 0}
+                        current={company.current ?? 0}
+                        totalLabel={t("stats.total")}
+                        currentLabel={t("stats.current")}
+                        active={
+                          isExpanded && activeCompanyFilter === companyKey
+                        }
+                        onClick={(e) =>
+                          onCompanyClick?.(e, dateKey, companyKey)
+                        }
+                      />
+                    );
+                  })}
+                  <StatPill
+                    label={t("stats.delivered")}
+                    value={group.statistics?.delivered ?? 0}
+                    color="#19a85b"
+                    active={isExpanded && activeStatFilter === "delivered"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStatClick?.(e, dateKey, "delivered");
+                    }}
+                  />
+                  <StatPill
+                    label={t("stats.returned")}
+                    value={group.statistics?.returned ?? 0}
+                    color="#f59e0b"
+                    active={isExpanded && activeStatFilter === "returned"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStatClick?.(e, dateKey, "returned");
+                    }}
+                  />
+                  <StatPill
+                    label={t("stats.openTickets")}
+                    value={group.statistics?.openTickets ?? 0}
+                    color="#8b5cf6"
+                    active={isExpanded && activeStatFilter === "openTickets"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStatClick?.(e, dateKey, "openTickets");
+                    }}
+                  />
+                  <StatPill
+                    label={t("stats.late")}
+                    value={group.statistics?.late ?? 0}
+                    color="#e84545"
+                    active={isExpanded && activeStatFilter === "late"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStatClick?.(e, dateKey, "late");
+                    }}
+                  />
+                </div>
+              </button>
+
+              <div className="ms-auto flex items-center gap-2 shrink-0">
+
+                <span className="inline-flex items-baseline gap-1 whitespace-nowrap">
+                  <span className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground/70">
+                    {t("stats.totalSales")}
+                  </span>
+                  <span className="text-[13px] font-black text-[var(--primary)] tabular-nums">
+                    {formatCurrency(group.statistics?.totalAmount ?? 0)}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  title={t("exportRows")}
+                  aria-label={t("exportRows")}
+                  disabled={exportingDateKey === dateKey}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onStatClick?.(e, dateKey, "delivered");
+                    onExportGroup?.(dateKey);
                   }}
-                />
-                <StatPill
-                  label={t("stats.returned")}
-                  value={group.statistics?.returned ?? 0}
-                  color="#f59e0b"
-                  active={isExpanded && activeStatFilters.includes("returned")}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStatClick?.(e, dateKey, "returned");
-                  }}
-                />
-                <StatPill
-                  label={t("stats.openTickets")}
-                  value={group.statistics?.openTickets ?? 0}
-                  color="#8b5cf6"
-                  active={isExpanded && activeStatFilters.includes("openTickets")}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStatClick?.(e, dateKey, "openTickets");
-                  }}
-                />
-                <StatPill
-                  label={t("stats.late")}
-                  value={group.statistics?.late ?? 0}
-                  color="#e84545"
-                  active={isExpanded && activeStatFilters.includes("late")}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStatClick?.(e, dateKey, "late");
-                  }}
-                />
+                  className={cn(
+                    "inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border/60",
+                    "text-muted-foreground hover:text-[var(--primary)] hover:border-[var(--primary)]/40 hover:bg-muted/40 transition-colors",
+                    "disabled:opacity-50 disabled:pointer-events-none",
+                  )}
+                >
+                  {exportingDateKey === dateKey ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <Download size={15} />
+                  )}
+                </button>
               </div>
-
-              <span className="ms-auto inline-flex items-baseline gap-1 whitespace-nowrap">
-                <span className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground/70">
-                  {t("stats.totalSales")}
-                </span>
-                <span className="text-[13px] font-black text-[var(--primary)] tabular-nums">
-                  {formatCurrency(group.statistics?.totalAmount ?? 0)}
-                </span>
-              </span>
-            </button>
+            </div>
 
            {tagStats.length > 0 ? (<div className="px-3.5 pb-2.5 flex items-center gap-2 border-t border-border/30">
               <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap shrink-0">

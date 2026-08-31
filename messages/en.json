@@ -6913,7 +6913,8 @@
         },
         "table": {
           "openTickets": "Open Tickets"
-        }
+        },
+        "exportRows": "Export rows"
       },
       "stats": {
         "noCompany": "No Shipping Company",

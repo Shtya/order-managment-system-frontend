@@ -717,6 +717,7 @@ export default function ShippedOrders({ statuses = [] }) {
   });
   const [statsLoading, setStatsLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [exportingGroupDate, setExportingGroupDate] = useState(null);
   const [companyStats, setCompanyStats] = useState([]);
   // const [unifiedShipmentStatuses, setUnifiedShipmentStatuses] = useState([]);
   const [pager, setPager] = useState({
@@ -904,7 +905,7 @@ export default function ShippedOrders({ statuses = [] }) {
     [buildGroupParams, groupPager.current_page, groupPager.per_page, ts],
   );
 
-  const emptyGroupFilters = () => ({ companyId: null, stats: [] });
+  const emptyGroupFilters = () => ({ companyId: null, stat: null });
 
   const fetchShipmentsForDate = async (
     dateKey,
@@ -927,8 +928,8 @@ export default function ShippedOrders({ statuses = [] }) {
       params.shipmentGroupCompanyId = resolvedFilters.companyId;
     }
 
-    if (resolvedFilters.stats?.length) {
-      params.shipmentGroupStatFilters = resolvedFilters.stats.join(",");
+    if (resolvedFilters.stat) {
+      params.shipmentGroupStatFilters = resolvedFilters.stat;
     }
 
     if (cursor?.value != null && cursor?.id != null) {
@@ -993,10 +994,15 @@ export default function ShippedOrders({ statuses = [] }) {
     e.stopPropagation();
     const entry = dateShipments[dateKey] || {};
     const current = entry.groupFilters ?? emptyGroupFilters();
-    const isAlreadySelected = current.companyId === companyId;
+    const nextCompanyId =
+      companyId === null
+        ? null
+        : current.companyId === companyId
+          ? null
+          : companyId;
     const nextFilters = {
       ...current,
-      companyId: isAlreadySelected ? null : companyId,
+      companyId: nextCompanyId,
     };
     setExpandedDates((prev) => new Set([...prev, dateKey]));
     fetchShipmentsForDate(dateKey, { groupFilters: nextFilters });
@@ -1006,13 +1012,56 @@ export default function ShippedOrders({ statuses = [] }) {
     e.stopPropagation();
     const entry = dateShipments[dateKey] || {};
     const current = entry.groupFilters ?? emptyGroupFilters();
-    const stats = [...(current.stats || [])];
-    const statIndex = stats.indexOf(statKey);
-    if (statIndex >= 0) stats.splice(statIndex, 1);
-    else stats.push(statKey);
-    const nextFilters = { ...current, stats };
+    const nextFilters = {
+      ...current,
+      stat: current.stat === statKey ? null : statKey,
+    };
     setExpandedDates((prev) => new Set([...prev, dateKey]));
     fetchShipmentsForDate(dateKey, { groupFilters: nextFilters });
+  };
+
+  const handleGroupRowsExport = async (dateKey) => {
+    setExportingGroupDate(dateKey);
+    const toastId = toast.loading(t("messages.exportStarted"));
+    try {
+      const entry = dateShipments[dateKey] || {};
+      const groupFilters = entry.groupFilters ?? emptyGroupFilters();
+      const params = {
+        ...buildGroupParams(),
+        shipmentGroupDate: dateKey,
+      };
+
+      if (groupFilters.companyId) {
+        params.shipmentGroupCompanyId = groupFilters.companyId;
+      }
+
+      if (groupFilters.stat) {
+        params.shipmentGroupStatFilters = groupFilters.stat;
+      }
+
+      const response = await api.get("/orders/shipped/export/grouped-by-date/rows", {
+        params,
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `shipments_group_${dateKey}_${Date.now()}.xlsx`,
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success(t("messages.exportSuccess"), { id: toastId });
+    } catch (e) {
+      console.error(e);
+      toast.error(ts("messages.exportFailed"), { id: toastId });
+    } finally {
+      setExportingGroupDate(null);
+    }
   };
 
   const loadMoreShipmentsForDate = (dateKey) => {
@@ -1659,6 +1708,8 @@ export default function ShippedOrders({ statuses = [] }) {
                 onToggleDate={toggleDateGroup}
                 onCompanyClick={handleCompanyClick}
                 onStatClick={handleStatClick}
+                onExportGroup={handleGroupRowsExport}
+                exportingDateKey={exportingGroupDate}
                 onLoadMore={loadMoreShipmentsForDate}
                 isLoading={groupsLoading}
                 formatCurrency={formatCurrency}

@@ -6901,7 +6901,8 @@
         },
         "table": {
           "openTickets": "تذاكر مفتوحة"
-        }
+        },
+        "exportRows": "تصدير الصفوف"
       },
       "stats": {
         "noCompany": "بدون شركة شحن",

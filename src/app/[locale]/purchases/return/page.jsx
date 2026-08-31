@@ -494,7 +494,6 @@ export default function PurchasesReturnPage() {
 				description: tTutorial("columns.tax.description"),
 				example: tTutorial("columns.tax.example"),
 			},
-			,
 			{
 				key: "totalReturn",
 				header: t("table.totalReturn"),

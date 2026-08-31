@@ -1091,7 +1091,12 @@ export function useTableColumnPrefs(
 
   const visibleColumns = useMemo(() => {
     if (!showColumnVisibility) return columns;
-    const byKey = new Map(columns.map((col) => [col.key, col]));
+    
+    const byKey = new Map(
+  columns
+    .filter((col) => col?.key)
+    .map((col) => [col.key, col])
+);
     const resolved = resolveTablePref(columnPrefs, columnKeys);
     const hidden = new Set(resolved.hidden);
     return resolved.order

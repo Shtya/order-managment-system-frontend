@@ -6885,7 +6885,7 @@
       "views": {
         "normal": "All Shipped",
         "late": "Late Orders",
-        "groups": "Groups",
+        "groups": "Shipment Batch Tracking",
         "groupsDescription": "Shipments grouped by shipped date with company and status statistics.",
         "groupsExample": "View daily shipment totals, filter by shipping company, and expand to see order rows."
       },
@@ -6900,13 +6900,13 @@
         "loadingShipments": "Loading shipments...",
         "showingOf": "Showing {shown} of {total} shipments",
         "stats": {
-          "totalShipments": "Shipments",
+          "totalShipments": "Total Shipments",
           "total": "Total",
           "outForDelivery": "Out for Delivery",
           "current": "Remaining",
           "openTickets": "Open Tickets",
           "delivered": "Delivered",
-          "returned": "Returned",
+          "returned": "Return Collected",
           "late": "Late",
           "totalSales": "Total Sales",
           "tags": "Tags"

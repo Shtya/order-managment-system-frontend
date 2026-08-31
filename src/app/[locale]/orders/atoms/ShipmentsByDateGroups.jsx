@@ -219,24 +219,24 @@ export default function ShipmentsByDateGroups({
                   color="#3b82f6"
                 /> */}
                 <StatPill
-                  label={t("stats.openTickets")}
-                  value={group.statistics?.openTickets ?? 0}
-                  color="#8b5cf6"
-                />
-                <StatPill
                   label={t("stats.delivered")}
                   value={group.statistics?.delivered ?? 0}
                   color="#19a85b"
                 />
                 <StatPill
-                  label={t("stats.late")}
-                  value={group.statistics?.late ?? 0}
-                  color="#e84545"
-                />
-                <StatPill
                   label={t("stats.returned")}
                   value={group.statistics?.returned ?? 0}
                   color="#f59e0b"
+                />
+                <StatPill
+                  label={t("stats.openTickets")}
+                  value={group.statistics?.openTickets ?? 0}
+                  color="#8b5cf6"
+                />
+                <StatPill
+                  label={t("stats.late")}
+                  value={group.statistics?.late ?? 0}
+                  color="#e84545"
                 />
               </div>
 

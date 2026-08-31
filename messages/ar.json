@@ -6873,7 +6873,7 @@
       "views": {
         "normal": "كل المشحون",
         "late": "طلبات متأخرة",
-        "groups": "مجموعات",
+        "groups": "متابعة دفعات الشحن",
         "groupsDescription": "شحنات مجمّعة حسب تاريخ الشحن مع إحصائيات الشركات والحالات.",
         "groupsExample": "اعرض إجماليات الشحن اليومية، وفلتر حسب شركة الشحن، ووسّع المجموعة لعرض صفوف الطلبات."
       },
@@ -6888,13 +6888,13 @@
         "loadingShipments": "جاري تحميل الشحنات...",
         "showingOf": "عرض {shown} من {total} شحنة",
         "stats": {
-          "totalShipments": "شحنات",
+          "totalShipments": "إجمالي الشحنات",
           "total": "إجمالي",
           "outForDelivery": "خرج للتوصيل",
           "current": "متبقية",
           "openTickets": "تذاكر مفتوحة",
-          "delivered": "تم التسليم",
-          "returned": "مرتجعة",
+          "delivered": "تم التوصيل",
+          "returned": "تم استلام المرتجع",
           "late": "متأخرة",
           "totalSales": "إجمالي المبيعات",
           "tags": "الوسوم"

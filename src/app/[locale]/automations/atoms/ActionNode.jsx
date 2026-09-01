@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { Position, useUpdateNodeInternals } from '@xyflow/react';
-import { MessageSquare, RefreshCw, Send, Loader2, Zap, Users, MessageCircle, Hourglass, AlertTriangle, Bot, Truck } from 'lucide-react';
+import { MessageSquare, RefreshCw, Send, Loader2, Zap, Users, MessageCircle, Hourglass, AlertTriangle, Bot, Truck, UserPlus } from 'lucide-react';
 import { useLocale, useTranslations } from "next-intl";
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
@@ -22,6 +22,7 @@ export function ActionNode({ id, data, selected }) {
         'assign_shipping_provider': { label: t('actionTypes.assign_shipping_provider'), subtitle: t('nodes.action.management'), icon: Truck, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-500/10' },
         'send_upsell': { label: t('actionTypes.send_upsell'), subtitle: t('nodes.action.upsell'), icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
         'assign_order_to_employee': { label: t('actionTypes.assign_order_to_employee'), subtitle: t('nodes.action.management'), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+        'assign_order_to_client': { label: t('actionTypes.assign_order_to_client'), subtitle: t('nodes.action.management'), icon: UserPlus, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
         'send_sms': { label: t('actionTypes.send_sms'), subtitle: t('nodes.action.subtitle'), icon: Send, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-500/10', },
         'wait': { label: t('actionTypes.wait'), subtitle: t('nodes.action.management'), icon: Hourglass, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-500/10' },
         'create_issue': { label: t('actionTypes.create_issue'), subtitle: t('nodes.action.management'), icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50 dark:bg-rose-500/10' },
@@ -153,6 +154,19 @@ export function ActionNode({ id, data, selected }) {
                                 <span className="font-black text-blue-700 dark:text-blue-400 truncate">
                                     {data.config?.employeeName || t('nodes.autoAssign')}
                                 </span>
+                            </div>
+                        )}
+                        {data.type === 'assign_order_to_client' && (
+                            <div className="flex flex-col gap-1.5">
+                                <div className="text-[10px] leading-relaxed font-medium text-emerald-700 dark:text-emerald-400">
+                                    {t('nodes.linkOrderToClientByPhone')}
+                                </div>
+                                <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                    <span className="opacity-50 text-[9px]">{t('nodes.createClientIfMissing')}</span>
+                                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tight">
+                                        {data.config?.createIfMissing ? t('nodes.yes') : t('nodes.no')}
+                                    </span>
+                                </div>
                             </div>
                         )}
                         {data.type === 'send_whatsapp_message' && (

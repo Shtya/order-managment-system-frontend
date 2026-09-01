@@ -572,6 +572,7 @@
     "issuesAndStatuses": "Manage Issues",
     "manageCauses": "Manage Issue Types",
     "cancelCauses": "Cancel Causes",
+    "customers": "Customers",
     "tags": "Tags",
     "cancelCausesStatistics": "Cancel Causes Statistics",
     "gettingStartedStatistics": "Getting Started Statistics",
@@ -6526,7 +6527,27 @@
       "viewReplace": "View new order",
       "escalateIssue": "Escalate Issue",
       "tags": "Tags",
-      "internalNotes": "Internal notes"
+      "internalNotes": "Internal notes",
+      "connectClient": "Connect client",
+      "changeClient": "Change client",
+      "viewClientProfile": "View client profile"
+    },
+    "connectClient": {
+      "title": "Connect client",
+      "changeTitle": "Change client",
+      "description": "Search and attach a client to order {orderNumber}.",
+      "changeDescription": "Choose another client for order {orderNumber}.",
+      "current": "Currently linked",
+      "searchPlaceholder": "Search by name, email, or phone...",
+      "empty": "No clients found",
+      "emptyHint": "Try a different name or phone number",
+      "loadMore": "Load more",
+      "connecting": "Connecting...",
+      "connect": "Connect",
+      "change": "Change client",
+      "alreadyLinked": "This client is already linked",
+      "selectHint": "Select a client to continue",
+      "cancel": "Cancel"
     },
     "shipmentLogs": {
       "title": "Shipment Logs",
@@ -6550,6 +6571,8 @@
       "errorFetchingStats": "An error occurred while loading statistics",
       "confirmDeleteStatus": "Are you sure you want to delete the status \"{{name}}\"?",
       "orderDeleted": "Order deleted successfully",
+      "clientLinked": "Client linked to order",
+      "clientChanged": "Order moved to another client",
       "errorDeletingOrder": "An error occurred while deleting the order",
       "errorFetchingOrders": "An error occurred while loading orders",
       "errorUpdatingStatus": "Error updating status",
@@ -6677,35 +6700,35 @@
         "shipping": "Shipping and delivery (from orders you confirmed)"
       },
       "kpis": {
-  "assigned": "Total Assigned Orders",
-  "assignedHint": "Orders assigned to you during the selected period",
-  "activeAssignments": "Active Assignments",
-  "activeHint": "Assigned to you and still open",
-  "locked": "Locked Assignments",
-  "lockedHint": "The retry lock has not expired yet",
-  "contactTries": "Contact Attempts",
-  "contactTriesHint": "Total contact attempts during the period",
-  "confirmRate": "Confirmation Rate",
-  "confirmRateHint": "Confirmed orders divided by total assigned orders",
-  "avgTries": "Average Attempts per Order",
-  "avgTriesHint": "Total contact attempts divided by the number of assigned orders",
-  "shippedNow": "Currently Shipped Orders",
-  "shippedNowHint": "Current order status: Shipped",
-  "delivered": "Delivered Orders",
-  "deliveredHint": "Orders delivered to the customer",
-  "returned": "Returned Orders",
-  "returnedHint": "Orders returned after shipping",
-  "shippedOfConfirmed": "Shipped of Total Confirmed",
-  "shippedOfConfirmedHint": "Orders that reached shipping divided by the orders you confirmed",
-  "confirmedNotShipped": "Confirmed but Not Yet Shipped",
-  "confirmedNotShippedHint": "Orders you confirmed that are still being prepared or waiting at the warehouse",
-  "ofAssigned": "{percent}% of Assigned",
-  "ofConfirmed": "{percent}% of Confirmed",
-  "fromAssigned": "of Assigned",
-  "fromConfirmed": "of Confirmed",
-  "fromStatus": "of {status}",
-  "perOrder": "Attempts / Order"
-},
+        "assigned": "Total Assigned Orders",
+        "assignedHint": "Orders assigned to you during the selected period",
+        "activeAssignments": "Active Assignments",
+        "activeHint": "Assigned to you and still open",
+        "locked": "Locked Assignments",
+        "lockedHint": "The retry lock has not expired yet",
+        "contactTries": "Contact Attempts",
+        "contactTriesHint": "Total contact attempts during the period",
+        "confirmRate": "Confirmation Rate",
+        "confirmRateHint": "Confirmed orders divided by total assigned orders",
+        "avgTries": "Average Attempts per Order",
+        "avgTriesHint": "Total contact attempts divided by the number of assigned orders",
+        "shippedNow": "Currently Shipped Orders",
+        "shippedNowHint": "Current order status: Shipped",
+        "delivered": "Delivered Orders",
+        "deliveredHint": "Orders delivered to the customer",
+        "returned": "Returned Orders",
+        "returnedHint": "Orders returned after shipping",
+        "shippedOfConfirmed": "Shipped of Total Confirmed",
+        "shippedOfConfirmedHint": "Orders that reached shipping divided by the orders you confirmed",
+        "confirmedNotShipped": "Confirmed but Not Yet Shipped",
+        "confirmedNotShippedHint": "Orders you confirmed that are still being prepared or waiting at the warehouse",
+        "ofAssigned": "{percent}% of Assigned",
+        "ofConfirmed": "{percent}% of Confirmed",
+        "fromAssigned": "of Assigned",
+        "fromConfirmed": "of Confirmed",
+        "fromStatus": "of {status}",
+        "perOrder": "Attempts / Order"
+      },
       "statusHints": {
         "confirmed": "Customer accepted the order",
         "cancelled": "Cancelled after contact",
@@ -7212,6 +7235,13 @@
       "autoRetrieved": "Auto-retrieved",
       "statusUpdated": "Status updated successfully",
       "customerInfo": "Customer Information",
+      "clientProfile": "Client profile",
+      "statTotal": "Total",
+      "statConfirmed": "Confirmed",
+      "statShipped": "Shipped",
+      "statDelivered": "Delivered",
+      "statReturned": "Returned",
+      "joinDate": "Joined {date}",
       "orderItems": "Order Products",
       "paymentInfo": "Payment Information",
       "shippingInfo": "Shipping Information",
@@ -7485,6 +7515,7 @@
       "duplicate": "Duplicate",
       "from": "From",
       "assignedEmployee": "Assigned Employee",
+      "client": "Client",
       "notAssigned": "Not Assigned",
       "customerName": "Customer Name",
       "phoneNumber": "Phone Number",
@@ -10612,6 +10643,17 @@
     "customerNotes": "Customer Note",
     "internalNotes": "Internal Notes",
     "statusHistory": "Status History",
+    "linkedClient": "Linked client",
+    "viewClientProfile": "View client profile",
+    "clientDetails": "Client profile",
+    "ordersCount": "{count} orders",
+    "statTotal": "Total",
+    "statConfirmed": "Confirmed",
+    "statShipped": "Shipped",
+    "statDelivered": "Delivered",
+    "statReturned": "Returned",
+    "totalSpend": "Total sales {amount}",
+    "joinDate": "Join date: {date}",
     "editCustomerInfo": "Edit customer details",
     "editFinancials": "Edit financial details",
     "financials": "Financial details",
@@ -12887,7 +12929,8 @@
           "assign_order_to_employee": "Assign Order to Employee",
           "send_sms": "Send SMS message",
           "wait": "Wait",
-          "create_issue": "Create Issue"
+          "create_issue": "Create Issue",
+          "assign_order_to_client": "Add Order to Client"
         },
         "conditionTypes": {
           "order_check": "Check Order Data",
@@ -12925,6 +12968,8 @@
           "sendOffers": "Send Offers",
           "proposedForOrder": "Proposed for order",
           "assignTo": "Assign to",
+          "linkOrderToClientByPhone": "Link by order phone number",
+          "createClientIfMissing": "Create client if missing",
           "autoAssign": "Auto Assign",
           "branches": {
             "assigned": "Assigned",
@@ -13055,6 +13100,11 @@
           "selectShippingCompany": "Select shipping company...",
           "updateWrittenAddress": "Update written address",
           "updateWrittenAddressDesc": "When enabled, AI may rewrite the order address text. When disabled, only city, zone, and district are updated.",
+          "assignOrderToClientTitle": "Add Order to Client",
+          "assignOrderToClientDesc": "Link this order to the client matching the order's phone number.",
+          "assignOrderToClientHelp": "The order will be added to the client linked to this phone number.",
+          "createClientIfMissing": "Create a New Client if Missing",
+          "createClientIfMissingDesc": "When enabled, if no client is linked to the number, a new client will be created using the name, email, and phone number from the order, and the order will be added to them. When disabled, no new client will be created.",
           "assignShippingProviderTitle": "Assign Shipping Provider",
           "assignShippingProviderDesc": "Distribute this order to an active shipping company.",
           "shippingAssignmentMode": "Assignment Mode",
@@ -13862,6 +13912,208 @@
     },
     "failedSave": "Failed to save upsell"
   },
+  "customers": {
+    "breadcrumb": {
+      "home": "Dashboard",
+      "customers": "Customers"
+    },
+    "stats": {
+      "totalCustomers": "All Customers",
+      "customersWithOrders": "With Orders",
+      "customersWithDeliveredOrders": "With Delivered Orders",
+      "customersWithOrdersLast30Days": "Ordered Last 30 Days",
+      "totalClients": "All Clients",
+      "clientsWithOrders": "With Orders",
+      "clientsWithDeliveredOrders": "With Delivered Orders",
+      "clientsWithOrdersLast30Days": "Ordered Last 30 Days",
+      "percentOfTotalOrders": "of all orders"
+    },
+    "actions": {
+      "new": "Add Customer",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save",
+      "chat": "Chat"
+    },
+    "client": {
+      "contacts": "contacts",
+      "chooseContact": "Choose WhatsApp Number",
+      "fields": {
+        "name": "Client Name",
+        "email": "Email",
+        "profilePicture": "Profile Picture",
+        "phones": "Contact Numbers",
+        "addPhone": "Add number",
+        "phonesHint": "The first number is the primary WhatsApp contact.",
+        "notes": "Notes"
+      },
+      "validation": {
+        "nameRequired": "Client name is required",
+        "invalidEmail": "Enter a valid email",
+        "phoneRequired": "Phone number is required"
+      }
+    },
+    "toolbar": {
+      "exportCustomers": "Export",
+      "exportAddresses": "Export Addresses"
+    },
+    "table": {
+      "searchPlaceholder": "Search customers...",
+      "filter": "Filter",
+      "apply": "Apply",
+      "emptyTitle": "No customers found",
+      "emptySubtitle": "Create a customer or adjust your search."
+    },
+    "filters": {
+      "sortBy": "Sort By",
+      "sortDir": "Direction"
+    },
+    "sort": {
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "name": "Name",
+      "phoneNumber": "Phone Number"
+    },
+    "sortDir": {
+      "DESC": "Newest First",
+      "ASC": "Oldest First"
+    },
+    "columns": {
+      "customer": "Customer",
+      "phoneNumber": "Phone",
+      "secondaryPhoneNumber": "Second Phone",
+      "contacts": "Contact Numbers",
+      "email": "Email",
+      "ordersCount": "Orders Count",
+      "lastMessageAt": "Last Message",
+      "lastMessageDate": "Last Message Date",
+      "createdAt": "Created At",
+      "actions": "Actions",
+      "primaryContactPhoneNumber": "Primary Phone"
+    },
+    "delete": {
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "title": "Delete Customer",
+      "desc": "This will delete {name} permanently."
+    },
+    "toast": {
+      "fetchFailed": "Failed to load customers",
+      "deleted": "Customer deleted successfully",
+      "deleteFailed": "Failed to delete customer",
+      "chatFailed": "Failed to open chat",
+      "saveFailed": "Failed to save client"
+    },
+    "details": {
+      "title": "Customer Details",
+      "loading": "Loading customer profile...",
+      "errorTitle": "Unable to load customer",
+      "notFound": "Customer was not found.",
+      "retry": "Retry",
+      "back": "Back",
+      "unknownCustomer": "Unknown customer",
+      "customerId": "Customer ID",
+      "statsTitle": "Order Statistics",
+      "joinedAt": "Joined {date}",
+      "noNotes": "No notes added for this customer.",
+      "statsEmpty": "No order statistics are available for this customer yet.",
+      "tagStats": "Order Tag Statistics",
+      "status": {
+        "active": "Active"
+      },
+      "actions": {
+        "chat": "Chat",
+        "editCustomer": "Edit Customer",
+        "editNotes": "Edit Notes",
+        "save": "Save",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "fields": {
+        "phoneNumber": "Phone Number",
+        "phone": "Primary Phone",
+        "secondaryPhone": "Alternative Phone",
+        "email": "Email",
+        "primaryAddress": "Primary Address",
+        "notes": "Notes"
+      },
+      "contacts": {
+        "link": "Link Contact",
+        "openChat": "Open Chat",
+        "setPrimary": "Set Primary",
+        "unlink": "Unlink",
+        "toast": {
+          "linked": "Contact linked successfully",
+          "primaryUpdated": "Primary contact updated",
+          "unlinked": "Contact unlinked successfully"
+        }
+      },
+      "stats": {
+        "totalOrders": "Total Orders",
+        "returnedCount": "Returned Orders",
+        "confirmedCount": "Confirmed Orders",
+        "confirmedRate": "Confirmation Rate",
+        "totalSales": "Total Sales",
+        "deliveredCount": "Delivered Orders",
+        "shippedCount": "Shipped Orders",
+        "deliveredRevenue": "Delivered Revenue",
+        "deliveredOrders": "Delivered Orders",
+        "cancelledOrders": "Cancelled Orders",
+        "totalSpent": "Total Spent",
+        "averageOrderValue": "Average Order Value",
+        "lastOrderDate": "Last Order Date"
+      },
+      "addresses": {
+        "title": "Customer Addresses",
+        "subtitle": "Saved delivery addresses for this customer.",
+        "add": "Add Address",
+        "addTitle": "Add Address",
+        "editTitle": "Edit Address",
+        "defaultLabel": "Address",
+        "defaultBadge": "Default",
+        "primaryAddress": "Primary address",
+        "setDefault": "Set as default",
+        "emptyTitle": "No addresses yet",
+        "emptySubtitle": "Add the first delivery address for this customer.",
+        "fields": {
+          "label": "Label",
+          "city": "City",
+          "area": "Area",
+          "district": "District",
+          "address": "Full Address",
+          "landmark": "Landmark",
+          "isDefault": "Make this the default address"
+        },
+        "placeholders": {
+          "label": "Home, work, branch...",
+          "city": "Select city",
+          "area": "Select area",
+          "address": "Write the full address",
+          "landmark": "Nearby landmark or district"
+        },
+        "validation": {
+          "addressRequired": "Address is required"
+        },
+        "toast": {
+          "created": "Address added successfully",
+          "updated": "Address updated successfully",
+          "deleted": "Address deleted successfully",
+          "defaultUpdated": "Default address updated"
+        },
+        "delete": {
+          "title": "Delete Address",
+          "desc": "This will delete {label} permanently.",
+          "confirm": "Delete"
+        }
+      },
+      "orders": {
+        "title": "Customer Orders"
+      }
+    }
+  },
   "chats": {
     "title": "Conversations",
     "search": "Search conversations...",
@@ -13876,22 +14128,31 @@
     "online": "Online",
     "offline": "Offline",
     "closeChat": "Close Chat",
-    "customerDetails": "Customer Details",
+    "chatFailed": "Failed to open chat",
+    "customerDetails": "Contact details",
     "conversationDetails": "Conversation Details",
     "notes": "Notes",
+    "contactNotes": "Contact notes",
+    "noContactNotes": "No contact notes yet",
     "addNote": "Add Note",
     "noNotes": "No notes yet",
     "blockContact": "Block Contact",
     "deleteConversation": "Delete Conversation",
-    "editClient": "Edit Client Data",
-    "addCustomer": "Add New Customer",
+    "editClient": "Edit contact",
+    "editContact": "Edit contact",
+    "addCustomer": "Add new contact",
+    "addContactPerson": "Add new contact",
+    "contactName": "Contact name",
     "customerName": "Customer Name",
     "phoneNumber": "Phone Number",
+    "secondaryPhoneNumber": "Second Phone Number",
     "profilePicture": "Profile Picture",
     "cancel": "Cancel",
     "save": "Save",
-    "customerAdded": "Customer added successfully",
-    "customerUpdated": "Customer updated successfully",
+    "customerAdded": "Contact added successfully",
+    "customerUpdated": "Contact updated successfully",
+    "contactAdded": "Contact added successfully",
+    "contactUpdated": "Contact updated successfully",
     "loadingMessages": "Loading messages...",
     "typeMessage": "Type a message...",
     "noPermissionToSend": "You don't have permission to send messages",
@@ -13900,8 +14161,23 @@
     "assignedTo": "Assigned To",
     "openedAt": "Opened At",
     "channel": "Channel",
-    "customerSince": "Customer Since",
-    "viewFullProfile": "View Full Profile",
+    "customerSince": "Contact since",
+    "viewFullProfile": "View full client profile",
+    "noLinkedClient": "This contact is not linked to a client yet.",
+    "clientSection": "Client",
+    "contactInformation": "Contact information",
+    "copied": "Copied",
+    "statOrders": "Orders",
+    "statSpent": "Sales",
+    "primaryNumber": "Primary number",
+    "primaryAddress": "Main address",
+    "clientNotes": "Client notes",
+    "noClientNotes": "No client notes",
+    "statTotal": "Total",
+    "statConfirmed": "Confirmed",
+    "statShipped": "Shipped",
+    "statDelivered": "Delivered",
+    "statReturned": "Returned",
     "email": "Email",
     "country": "Country",
     "language": "Language",
@@ -14559,6 +14835,18 @@
         "delete": {
           "description": "Permanently deletes this order after confirmation. Cannot be undone.",
           "example": "A duplicate test order was created by mistake. Click delete to permanently remove it from the system."
+        },
+        "internalNotes": {
+          "description": "Opens internal notes for this order.",
+          "example": "Click the note icon to add a reminder for the confirmation team."
+        },
+        "connectClient": {
+          "description": "Search existing clients and attach one to this order.",
+          "example": "Order #1234 has no client. Click connect client, search by name or phone, then confirm to link that client."
+        },
+        "changeClient": {
+          "description": "Search existing clients and move this order to a different client.",
+          "example": "Order #1234 is linked to Ahmed. Click change client, search for Sara, then confirm to move the order to Sara."
         },
         "bulkCancelAssignments": {
           "description": "Removes the employee assignment from all currently selected orders in bulk, making them available for reassignment.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import ChatList from "../atoms/chats/ChatList";
@@ -62,8 +62,10 @@ export default function Chats() {
         setDocumentTitle(t("title"));
     }, [t]);
     return (
-        <ConversationProvider>
-            <ChatsContent />
-        </ConversationProvider>
+        <Suspense fallback={null}>
+            <ConversationProvider>
+                <ChatsContent />
+            </ConversationProvider>
+        </Suspense>
     );
 }

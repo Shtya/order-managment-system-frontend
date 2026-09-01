@@ -126,7 +126,7 @@ export default function IssueFormDialog({
     },
   });
 
-  console.log(errors)
+  
   useEffect(() => {
     if (!open) return;
     setSelectedOrder(

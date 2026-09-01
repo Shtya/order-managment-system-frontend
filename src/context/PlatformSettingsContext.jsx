@@ -29,7 +29,7 @@ export function PlatformSettingsProvider({ children }) {
     }
   }, []);
 
-const hasUserReadPermission = hasPermission("users.read");
+const hasUserReadPermission = hasPermission("users.read") || hasPermission("orders.confirm-incoming");
   
   const fetchCompany = useCallback(async () => {
     if (!accessToken || !hasUserReadPermission) return;
@@ -96,7 +96,7 @@ const hasUserReadPermission = hasPermission("users.read");
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     });
-
+    
     return `${formatted} ${(sign || defaultCurrency || currency).trim()}`;
   }, [currency]);
 

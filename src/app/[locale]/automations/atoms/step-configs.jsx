@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot, Ban } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot, Ban, UserPlus } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
@@ -791,6 +791,90 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                             {tCommon("cancel")}
                         </Button>
                         <Button type="button" disabled={loading || !tempValue.providerId || !tempValue.modelId || !tempValue.shippingCompanyId} onClick={handleSave} className="rounded-xl px-8">
+                            {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
+                        </Button>
+                    </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+/**
+ * Action: Assign order to client by phone
+ */
+export function AssignOrderToClientConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tCommon = useTranslations("common");
+    const [tempValue, setTempValue] = useState({
+        createIfMissing: value?.createIfMissing === true,
+    });
+
+    useEffect(() => {
+        setTempValue({
+            createIfMissing: value?.createIfMissing === true,
+        });
+    }, [isOpen, value?.createIfMissing]);
+
+    useEffect(() => {
+        setDisabled(false);
+    }, [setDisabled]);
+
+    const handleSave = () => {
+        onChange(tempValue);
+        onClose(tempValue);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
+            <DialogContent className="sm:max-w-[560px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                            <UserPlus size={20} />
+                        </div>
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="truncate">{tConfig("assignOrderToClientTitle")}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                                {tConfig("assignOrderToClientDesc")}
+                            </DialogDescription>
+                        </div>
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
+                    <div className="rounded-2xl border border-border bg-slate-50 dark:bg-slate-900/60 p-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        {tConfig("assignOrderToClientHelp")}
+                    </div>
+
+                    <FormGroup label={tConfig("createClientIfMissing")} description={tConfig("createClientIfMissingDesc")}>
+                        <div className="flex items-center gap-3 rounded-2xl bg-slate-50 dark:bg-slate-800 px-4 h-12">
+                            <Checkbox
+                                id="createIfMissing"
+                                checked={tempValue.createIfMissing === true}
+                                onCheckedChange={(checked) => {
+                                    setTempValue((prev) => ({
+                                        ...prev,
+                                        createIfMissing: checked === true,
+                                    }));
+                                }}
+                            />
+                            <label
+                                htmlFor="createIfMissing"
+                                className="text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer"
+                            >
+                                {tConfig("createClientIfMissing")}
+                            </label>
+                        </div>
+                    </FormGroup>
+                </div>
+
+                <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
+                    <div className="flex items-center justify-end gap-3 w-full">
+                        <Button type="button" variant="outline" onClick={() => onClose(null)} className="rounded-xl px-6">
+                            {tCommon("cancel")}
+                        </Button>
+                        <Button type="button" onClick={handleSave} className="rounded-xl px-8">
                             {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
                         </Button>
                     </div>

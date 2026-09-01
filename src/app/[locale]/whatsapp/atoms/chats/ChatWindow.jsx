@@ -24,7 +24,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import WhatsAppAccountSelect from "../WhatsAppAccountSelect";
-import CustomerModal from "./CustomerModal";
+import CustomerModal from "../../../customers/atoms/CustomerModal";
 import MediaPreviewOverlay from "./MediaPreviewOverlay";
 import InteractiveMessageModal from "./InteractiveMessageModal";
 import LocationRequestModal from "./LocationRequestModal";
@@ -469,7 +469,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                 {hasPermission("customer.update") && (
                                     <DropdownMenuItem onClick={() => setIsEditModalOpen(true)} className="gap-2 cursor-pointer">
                                         <Edit className="w-4 h-4" />
-                                        {t("editClient")}
+                                        {t("editContact")}
                                     </DropdownMenuItem>
                                 )}
                                 {/* <DropdownMenuItem className="gap-2 text-red-600">

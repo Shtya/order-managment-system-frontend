@@ -93,8 +93,13 @@ export default function OrderInternalNotesDialog({
   const { user } = useAuth();
   const { subscribe } = useSocket() || {};
   const listRef = useRef(null);
+  const inputRef = useRef(null);
   const onOrderPatchedRef = useRef(onOrderPatched);
   onOrderPatchedRef.current = onOrderPatched;
+
+  const focusInput = useCallback(() => {
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
 
   const orderId = order?.id;
   const orderNumber = order?.orderNumber;
@@ -239,6 +244,7 @@ export default function OrderInternalNotesDialog({
       toast.error(normalizeAxiosError(err));
     } finally {
       setSending(false);
+      focusInput();
     }
   };
 
@@ -248,6 +254,10 @@ export default function OrderInternalNotesDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose?.()}>
       <DialogContent
         showCloseButton={false}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          focusInput();
+        }}
         className="!max-w-[420px] w-[min(420px,94vw)] p-0 gap-0 overflow-hidden rounded-xl border border-border shadow-xl max-h-[70vh] flex flex-col"
       >
         <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between gap-3">
@@ -302,6 +312,7 @@ export default function OrderInternalNotesDialog({
         <div className="p-3 border-t border-border shrink-0 bg-background">
           <div className="flex items-end gap-2 rounded-sm border border-border bg-muted/30 px-2 py-1.5">
             <textarea
+              ref={inputRef}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
@@ -313,8 +324,7 @@ export default function OrderInternalNotesDialog({
               maxLength={2000}
               placeholder={t("placeholder")}
               rows={2}
-              disabled={sending}
-              className="flex-1 min-h-[45px] max-h-[120px] border-0 outline-none resize-none bg-transparent text-sm text-foreground disabled:opacity-60 disabled:cursor-not-allowed focus-visible:!outline-none"
+              className="flex-1 min-h-[45px] max-h-[120px] border-0 outline-none resize-none bg-transparent text-sm text-foreground focus-visible:!outline-none"
             />
             <button
               type="button"

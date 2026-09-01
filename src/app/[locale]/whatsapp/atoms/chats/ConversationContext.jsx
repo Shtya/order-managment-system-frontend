@@ -1,12 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
 import { useSocket } from "@/context/SocketContext";
 import toast from "react-hot-toast";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useTranslations } from "next-intl";
 import { cacheMediaUrl, checkIfMediaUploadNeeded, handleMediaUpload } from "@/utils/whatsapp-healper";
+import { usePathname, useRouter } from "@/i18n/navigation";
 
 const ConversationContext = createContext();
 
@@ -14,6 +16,10 @@ export const useConversation = () => useContext(ConversationContext);
 
 export const ConversationProvider = ({ children }) => {
     const t = useTranslations("chats");
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    const customerIdFromUrl = searchParams.get("customerId");
     const { settings } = useOrdersSettings();
     const scrollRef = useRef(null);
     const prevScrollHeight = useRef(0);
@@ -263,6 +269,48 @@ export const ConversationProvider = ({ children }) => {
         setSelectedConversation(conversation);
         setMessages([]);
     }, [setSelectedConversation]);
+
+    const selectedConversationRef = useRef(selectedConversation);
+    selectedConversationRef.current = selectedConversation;
+
+    useEffect(() => {
+        console.log("customerIdFromUrl: ", customerIdFromUrl)
+        if (!customerIdFromUrl) return;
+
+        const selected = selectedConversationRef.current;
+        const alreadyOpen =
+            selected?.customerId === customerIdFromUrl ||
+            selected?.customer?.id === customerIdFromUrl;
+        if (alreadyOpen) {
+            router.replace(pathname, { scroll: false });
+            return;
+        }
+
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await api.post(`/customer/${customerIdFromUrl}/conversation`);
+                const conversation = res.data;
+                if (cancelled || !conversation?.id) return;
+
+                setConversations((prev) => {
+                    const withoutCurrent = prev.filter((c) => c.id !== conversation.id);
+                    return [conversation, ...withoutCurrent];
+                });
+                onSelectConversation(conversation);
+                setMobileView("chat");
+                router.replace(pathname, { scroll: false });
+            } catch (error) {
+                if (!cancelled) {
+                    toast.error(t("chatFailed"));
+                }
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [customerIdFromUrl, onSelectConversation, pathname, router, t]);
 
     const activeConvIdRef = useRef(selectedConversation?.id);
     useEffect(() => {

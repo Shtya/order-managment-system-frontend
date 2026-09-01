@@ -591,6 +591,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
         },
       ],
     },
+    {
+      icon: Users,
+      labelKey: "customers",
+      href: "/customers",
+      permission: "customers.read",
+    },
 
     //show to /warehouse?tab=distribution if isDirectShippingEnabled enable
     (isDirectShippingEnabled

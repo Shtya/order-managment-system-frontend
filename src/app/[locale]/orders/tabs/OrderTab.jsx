@@ -52,6 +52,7 @@ import {
   TrendingUp,
   Tag,
   UserMinus,
+  UserRoundSearch,
   Ban,
   StickyNote,
 } from "lucide-react";
@@ -95,6 +96,7 @@ import DistributionModal from "../atoms/DistrubtionModal";
 import BulkUploadModal from "../atoms/BulkUploadModal";
 import CancelAssignmentsModal from "../atoms/CancelAssignmentsModal";
 import IssueFormDialog from "../../issues/atoms/IssueFormDialog";
+import ConnectOrderClientDialog from "../atoms/ConnectOrderClientDialog";
 import { OrderTagChips, OrderTagsDialog, unwrapOrderTags } from "../atoms/OrderTagsEditor";
 import Table, {
   FilterField,
@@ -747,6 +749,7 @@ export const WAREHOUSE_STATUSES = new Set([
 
 // Main Orders Page Component
 export default function OrdersTab({
+  tableKey,
   stats = [], fetchStats, statsLoading,
   readOnlyStatus = false,
   restrictedStatuses = [],
@@ -757,7 +760,11 @@ export default function OrdersTab({
   setAdminId,
   isAssign = false,
   hideHeader = false,
-  onOrdersFetched
+  onOrdersFetched,
+  customerId,
+  clientId,
+  flat = false,
+  customerOrdersMode = false,
 }) {
 
   const tTutorial = useTranslations("tutorial.orders");
@@ -955,6 +962,7 @@ export default function OrdersTab({
   const [cancelCauses, setCancelCauses] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
   const [tagsOrder, setTagsOrder] = useState(null);
+  const [clientOrder, setClientOrder] = useState(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -1019,7 +1027,7 @@ export default function OrdersTab({
       resetGroupedState();
       fetchOrderGroups(1, groupPager.per_page);
     }
-  }, [debouncedSearch, adminId]);
+  }, [debouncedSearch, adminId, customerId, clientId]);
 
   const buildParams = (
     page = pager.current_page,
@@ -1070,6 +1078,14 @@ export default function OrdersTab({
 
     if (adminId && adminId !== "all") {
       params.adminId = adminId;
+    }
+
+    if (customerId) {
+      params.customerId = customerId;
+    }
+
+    if (clientId) {
+      params.clientId = clientId;
     }
 
     if (isAssign) {
@@ -1398,6 +1414,12 @@ export default function OrdersTab({
       if (filters.unreadInternalNotes === "unread") {
         params.unreadInternalNotes = true;
       }
+      if (customerId) {
+        params.customerId = customerId;
+      }
+      if (clientId) {
+        params.clientId = clientId;
+      }
 
       const response = await api.get("/orders/export", {
         params,
@@ -1608,6 +1630,20 @@ export default function OrdersTab({
   const columns = useMemo(() => {
     const allIds = pager.records.map(r => r.id);
     const areAllSelected = allIds.length > 0 && allIds.every(id => selectedOrderIds.includes(id));
+    const clientAction = (row) => ({
+      icon: <UserRoundSearch size={18} />,
+      tooltip: row.client ? t("actions.changeClient") : t("actions.connectClient"),
+      onClick: (r) => setClientOrder(r),
+      variant: "primary",
+      permission: "orders.update",
+      hidden: isSuperAdmin || customerOrdersMode,
+      description: row.client
+        ? tTutorial("actions.changeClient.description")
+        : tTutorial("actions.connectClient.description"),
+      example: row.client
+        ? tTutorial("actions.changeClient.example")
+        : tTutorial("actions.connectClient.example"),
+    });
     return [
       // ...(isAssign ? [
         {
@@ -2296,6 +2332,41 @@ export default function OrdersTab({
           );
         },
       },
+      {
+        key: "client",
+        header: t("table.client"),
+        cell: (row) => {
+          const client = row.client;
+          if (!client) {
+            return <span className="text-muted-foreground">—</span>;
+          }
+          return (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/customers/${client.id}`);
+              }}
+              className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/30  p-2 min-w-[180px] max-w-[220px] text-left transition-colors hover:bg-primary/10"
+            >
+              <Avatar className="h-9 w-9 shrink-0 ring-2 ring-primary/20">
+                <AvatarImage src={avatarSrc(client.profilePicture)} alt={client.name} />
+                <AvatarFallback className="text-xs bg-primary/15 text-primary">
+                  {(client.name || "?").slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium text-sm">{client.name}</div>
+                {client.email && (
+                  <div className="truncate text-xs text-muted-foreground">
+                    {client.email}
+                  </div>
+                )}
+              </div>
+            </button>
+          );
+        },
+      },
       // {
       //   key: "replacementOrder",
       //   header: t("table.replacementOrder"),
@@ -2341,7 +2412,23 @@ export default function OrdersTab({
         cell: (row) => (
           <ActionButtons
             row={row}
-            actions={isAssign ? [
+            actions={customerOrdersMode ? [
+              {
+                icon: <Eye />,
+                tooltip: t("actions.view"),
+                onClick: (r) => {
+                  if (isSuperAdmin) {
+                    router.push(`/dashboard/orders/details/${r.id}`);
+                  } else {
+                    router.push(`/orders/details/${r.id}`);
+                  }
+                },
+                variant: "primary",
+                permission: "orders.read",
+                description: tTutorial("actions.view.description"),
+                example: tTutorial("actions.view.example"),
+              }
+            ] : isAssign ? [
               {
                 icon: <Tag />,
                 tooltip: t("actions.tags"),
@@ -2356,6 +2443,7 @@ export default function OrdersTab({
                 variant: "primary",
                 permission: "orders.internalNotes",
               },
+              clientAction(row),
               {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
@@ -2483,6 +2571,7 @@ export default function OrdersTab({
                 variant: "primary",
                 permission: "orders.internalNotes",
               },
+              clientAction(row),
               {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
@@ -2563,6 +2652,9 @@ export default function OrdersTab({
     selectAllOrders,
     cancelSingleAssignment,
     hasPermission,
+    customerOrdersMode,
+    tTutorial,
+    isSuperAdmin,
   ]);
 
   const {
@@ -2926,7 +3018,8 @@ export default function OrdersTab({
 
       {viewMode === "normal" ? (
       <Table
-        tableKey="orders"
+        tableKey={tableKey ?? "orders"}
+        flat={flat}
         // ── Row Styling ───────────────────────────────────────────────────────
         rowClassName={(row) =>
           row.duplicateCount > 0
@@ -3188,6 +3281,19 @@ export default function OrdersTab({
           fetchStats();
         }}
       />
+
+      {clientOrder && (
+        <ConnectOrderClientDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setClientOrder(null);
+          }}
+          order={clientOrder}
+          onConnected={() => {
+            fetchOrders(pager.current_page, pager.per_page);
+          }}
+        />
+      )}
 
       <StatusFormModal
         isOpen={statusFormOpen}
@@ -3893,7 +3999,7 @@ export function OrderCancelCausesModal({ isOpen, onClose, order }) {
       setPager(res.data);
     } catch (error) {
       console.error(error);
-      toast.error(t("messages.errorFetching") || "Failed to fetch cancel causes.");
+      toast.error("Failed to fetch cancel causes history.");
     } finally {
       setLoading(false);
     }
@@ -4273,6 +4379,7 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
                                     console.log(row?.sentConfig)
                                     setPreviewState({ open: true, upsell: row })
                                   },
+                                  permission: "upsells.read",
                                   variant: "primary",
                                 },
                               ]}

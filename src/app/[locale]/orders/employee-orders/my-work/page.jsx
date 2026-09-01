@@ -11,9 +11,10 @@ import {
   AlertTriangle,
   PenLine,
   Tags,
+  Calendar,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textarea";
 import api from "@/utils/api";
@@ -28,6 +29,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/utils/cn";
 import { AddressSection } from "../../new/page";
 import { GEO_CONFIG } from "@/utils/order-utils";
@@ -1672,19 +1674,144 @@ function HistSection({ order, t, isRtl }) {
 
 // ─── CUSTOMER SECTION ──────────────────────────────────────────────────────
 function CustomerSection({
+  order,
   control,
   errors,
   t,
+  isRtl,
   shippingProvider,
   providerMeta,
   providerErrors,
   setValue,
   setProviderMeta
 }) {
-
+  const client = order?.client;
+  const clientId = client?.id || order?.clientId;
+  const primaryNumber = client?.primaryNumber || client?.primaryContact?.phoneNumber;
+  const defaultAddress = client?.addresses?.[0];
+  const location = [defaultAddress?.area, defaultAddress?.city].filter(Boolean).join(isRtl ? "، " : ", ");
+  const joinDate = client?.createdAt
+    ? new Date(client.createdAt).toLocaleDateString(isRtl ? "ar-EG" : "en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+      {clientId && (
+        <div
+          className="main-card !p-0 overflow-hidden"
+          style={{ marginBottom: 16 }}
+        >
+          <CardHead
+            icon={User}
+            color={HEX.violet}
+            eyebrow={t("customer")}
+            title={t("clientDetails")}
+            right={
+              <Link
+                href={`/customers/${clientId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-80 transition-opacity"
+                style={{
+                  border: `1px solid ${rgba(HEX.violet, 0.35)}`,
+                  background: rgba(HEX.violet, 0.08),
+                  color: HEX.violet,
+                }}
+              >
+                <User size={14} />
+                {t("viewClientProfile")}
+              </Link>
+            }
+          />
+          <div style={{ padding: "18px 20px 16px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(0,1.1fr) minmax(0,0.9fr)",
+                gap: 20,
+                alignItems: "center",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+                <Avatar className="h-16 w-16 shrink-0 ring-2 ring-primary/20">
+                  <AvatarImage
+                    src={avatarSrc(client?.profilePicture)}
+                    alt={client?.name || ""}
+                  />
+                  <AvatarFallback className="text-sm bg-primary/15 text-primary">
+                    {(client?.name || "?").slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div style={{ minWidth: 0, textAlign: isRtl ? "right" : "left" }}>
+                  <div className="serif" style={{ fontSize: 22, color: "var(--foreground)", lineHeight: 1.15, fontWeight: 700 }}>
+                    {client?.name || t("linkedClient")}
+                  </div>
+                  <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {[
+                      { label: t("statTotal"), value: client?.totalOrders ?? 0, color: HEX.violet },
+                      { label: t("statConfirmed"), value: client?.confirmedCount ?? 0, color: HEX.green },
+                      { label: t("statShipped"), value: client?.shippedCount ?? 0, color: HEX.sky },
+                      { label: t("statDelivered"), value: client?.deliveredCount ?? 0, color: HEX.orange },
+                      { label: t("statReturned"), value: client?.returnedCount ?? 0, color: HEX.red },
+                    ].map((stat) => (
+                      <span
+                        key={stat.label}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 5,
+                          padding: "3px 8px",
+                          borderRadius: 999,
+                          background: rgba(stat.color, 0.08),
+                          border: `1px solid ${rgba(stat.color, 0.16)}`,
+                          color: `color-mix(in srgb, ${stat.color}, var(--foreground) 28%)`,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        <span className="mono" style={{ fontWeight: 700 }}>{stat.value}</span>
+                        <span style={{ opacity: 0.78, fontWeight: 500 }}>{stat.label}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {primaryNumber && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Phone size={14} style={{ color: "var(--muted-foreground)", flexShrink: 0 }} />
+                    <span className="mono" style={{ fontSize: 13, color: "var(--foreground)" }}>{primaryNumber}</span>
+                  </div>
+                )}
+                {client?.email && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Mail size={14} style={{ color: "var(--muted-foreground)", flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: "var(--foreground)", wordBreak: "break-all" }}>{client.email}</span>
+                  </div>
+                )}
+                {/* {location && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <MapPin size={14} style={{ color: "var(--muted-foreground)", flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: "var(--foreground)" }}>{location}</span>
+                  </div>
+                )} */}
+                {joinDate && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Calendar size={14} style={{ color: "var(--muted-foreground)", flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: "var(--foreground)" }}>{t("joinDate", { date: joinDate })}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="main-card !p-0 overflow-hidden">
         <CardHead icon={User} color={HEX.violet} eyebrow={t("customer")} title={t("editCustomerInfo")} />
         <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 13 }}>

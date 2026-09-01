@@ -23,7 +23,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import CustomerModal from "./CustomerModal";
+import CustomerModal from "../../../customers/atoms/CustomerModal";
 import { useConversation } from "./ConversationContext";
 import { useDebounce } from "@/hook/useDebounce";
 import { avatarSrc } from "@/components/atoms/UserSelect";
@@ -177,7 +177,7 @@ export default function ChatList() {
                                         {hasPermission("conversation.create") && (
                                             <DropdownMenuItem onClick={() => setIsAddModalOpen(true)} className="gap-2 cursor-pointer">
                                                 <UserPlus className="w-4 h-4" />
-                                                {t("addCustomer")}
+                                                {t("addContactPerson")}
                                             </DropdownMenuItem>
                                         )}
                                     </DropdownMenuContent>

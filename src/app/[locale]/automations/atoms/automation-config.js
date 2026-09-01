@@ -1,4 +1,4 @@
-import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle, Bot, UserX } from 'lucide-react';
+import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle, Bot, UserX, UserPlus } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -167,6 +167,14 @@ export const BASE_CONFIG = {
                         icon: Users,
                         type: 'action',
                         configComponent: 'AssignOrderToEmployeeConfig',
+                        className: 'max-w-xl!',
+                        hasCustom: true
+                    },
+                    {
+                        id: 'assign_order_to_client',
+                        icon: UserPlus,
+                        type: 'action',
+                        configComponent: 'AssignOrderToClientConfig',
                         className: 'max-w-xl!',
                         hasCustom: true
                     },

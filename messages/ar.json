@@ -572,6 +572,7 @@
     "issuesAndStatuses": "إدارة المشكلات",
     "manageCauses": "إدارة أنواع المشكلات",
     "cancelCauses": "أسباب الإلغاء",
+    "customers": "العملاء",
     "tags": "الوسوم",
     "cancelCausesStatistics": "إحصائيات أسباب الإلغاء",
     "gettingStartedStatistics": "إحصائيات الاعداد",
@@ -6524,7 +6525,27 @@
       "viewReplace": "عرض الطلب الجديد",
       "escalateIssue": "تصعيد مشكلة",
       "tags": "الوسوم",
-      "internalNotes": "الملاحظات الداخلية"
+      "internalNotes": "الملاحظات الداخلية",
+      "connectClient": "ربط عميل",
+      "changeClient": "تغيير العميل",
+      "viewClientProfile": "عرض ملف العميل"
+    },
+    "connectClient": {
+      "title": "ربط عميل",
+      "changeTitle": "تغيير العميل",
+      "description": "ابحث عن عميل واربطه بالطلب {orderNumber}.",
+      "changeDescription": "اختر عميلاً آخر للطلب {orderNumber}.",
+      "current": "المرتبط حالياً",
+      "searchPlaceholder": "ابحث بالاسم أو البريد أو الهاتف...",
+      "empty": "لا يوجد عملاء",
+      "emptyHint": "جرب اسماً أو رقم هاتف مختلف",
+      "loadMore": "تحميل المزيد",
+      "connecting": "جاري الربط...",
+      "connect": "ربط",
+      "change": "تغيير العميل",
+      "alreadyLinked": "هذا العميل مرتبط بالفعل",
+      "selectHint": "اختر عميلاً للمتابعة",
+      "cancel": "إلغاء"
     },
     "shipmentLogs": {
       "title": "سجلات الشحنة",
@@ -6548,6 +6569,8 @@
       "errorFetchingStats": "حدث خطأ أثناء تحميل الإحصائيات",
       "confirmDeleteStatus": "هل أنت متأكد من حذف الحالة \"{name}\"؟",
       "orderDeleted": "تم حذف الطلب بنجاح",
+      "clientLinked": "تم ربط العميل بالطلب",
+      "clientChanged": "تم نقل الطلب إلى عميل آخر",
       "errorDeletingOrder": "حدث خطأ أثناء حذف الطلب",
       "errorFetchingOrders": "حدث خطأ أثناء تحميل الطلبات",
       "errorUpdatingStatus": "خطأ أثناء تحديث الحالة",
@@ -6665,35 +6688,35 @@
         "shipping": "نتائج الشحن والتسليم (من الطلبات التي أكّدتها)"
       },
       "kpis": {
-  "assigned": "إجمالي الطلبات المعيّنة",
-  "assignedHint": "طلبات وُزّعت عليك في الفترة المحددة",
-  "activeAssignments": "تعيينات نشطة الآن",
-  "activeHint": "معيّنة لك وما زالت مفتوحة",
-  "locked": "تعيينات مقفلة",
-  "lockedHint": "قفل إعادة المحاولة لم ينتهِ بعد",
-  "contactTries": "محاولات الاتصال",
-  "contactTriesHint": "مجموع محاولات التواصل في الفترة",
-  "confirmRate": "نسبة التأكيد",
-  "confirmRateHint": "ما أكّدته مقسوم علي إجمالي المعيّن لك",
-  "avgTries": "متوسط المحاولات لكل طلب",
-  "avgTriesHint": "إجمالي محاولات الاتصال مقسوم علي عدد المعيّن لك",
-  "shippedNow": "طلبات مشحونة الآن",
-  "shippedNowHint": "الحالة الحالية للطلبات: تم الشحن",
-  "delivered": "طلبات تم تسليمها",
-  "deliveredHint": "طلبات وصلت للعميل",
-  "returned": "طلبات مرتجعة",
-  "returnedHint": "عادت بعد الشحن",
-  "shippedOfConfirmed": "مشحونة من إجمالي مؤكدك",
-  "shippedOfConfirmedHint": "وصل للشحن مقسوم علي ما أكّدته أنت",
-  "confirmedNotShipped": "مؤكد ولم يُشحن بعد",
-  "confirmedNotShippedHint": "أكّدته وما زال في التجهيز مقسوم علي المخزن",
-  "ofAssigned": "{percent}% من المعيّن",
-  "ofConfirmed": "{percent}% من المؤكد",
-  "fromAssigned": "من المعيّن",
-  "fromConfirmed": "من المؤكد",
-  "fromStatus": "من {status}",
-  "perOrder": "محاولة / طلب"
-},
+        "assigned": "إجمالي الطلبات المعيّنة",
+        "assignedHint": "طلبات وُزّعت عليك في الفترة المحددة",
+        "activeAssignments": "تعيينات نشطة الآن",
+        "activeHint": "معيّنة لك وما زالت مفتوحة",
+        "locked": "تعيينات مقفلة",
+        "lockedHint": "قفل إعادة المحاولة لم ينتهِ بعد",
+        "contactTries": "محاولات الاتصال",
+        "contactTriesHint": "مجموع محاولات التواصل في الفترة",
+        "confirmRate": "نسبة التأكيد",
+        "confirmRateHint": "ما أكّدته مقسوم علي إجمالي المعيّن لك",
+        "avgTries": "متوسط المحاولات لكل طلب",
+        "avgTriesHint": "إجمالي محاولات الاتصال مقسوم علي عدد المعيّن لك",
+        "shippedNow": "طلبات مشحونة الآن",
+        "shippedNowHint": "الحالة الحالية للطلبات: تم الشحن",
+        "delivered": "طلبات تم تسليمها",
+        "deliveredHint": "طلبات وصلت للعميل",
+        "returned": "طلبات مرتجعة",
+        "returnedHint": "عادت بعد الشحن",
+        "shippedOfConfirmed": "مشحونة من إجمالي مؤكدك",
+        "shippedOfConfirmedHint": "وصل للشحن مقسوم علي ما أكّدته أنت",
+        "confirmedNotShipped": "مؤكد ولم يُشحن بعد",
+        "confirmedNotShippedHint": "أكّدته وما زال في التجهيز مقسوم علي المخزن",
+        "ofAssigned": "{percent}% من المعيّن",
+        "ofConfirmed": "{percent}% من المؤكد",
+        "fromAssigned": "من المعيّن",
+        "fromConfirmed": "من المؤكد",
+        "fromStatus": "من {status}",
+        "perOrder": "محاولة / طلب"
+      },
       "statusHints": {
         "confirmed": "العميل وافق على الطلب",
         "cancelled": "تم إلغاء الطلب بعد التواصل",
@@ -7198,6 +7221,13 @@
     "details": {
       "statusUpdated": "تم تحديث الحالة",
       "customerInfo": "معلومات العميل",
+      "clientProfile": "ملف العميل",
+      "statTotal": "الإجمالي",
+      "statConfirmed": "مؤكد",
+      "statShipped": "مشحون",
+      "statDelivered": "مسلم",
+      "statReturned": "مرتجع",
+      "joinDate": "انضم {date}",
       "orderItems": "منتجات الطلب",
       "paymentInfo": "معلومات الدفع",
       "shippingInfo": "معلومات الشحن",
@@ -7463,6 +7493,7 @@
       "duplicate": "مكرر",
       "from": "من",
       "assignedEmployee": "الموظف المسؤول",
+      "client": "العميل",
       "notAssigned": "غير محدد",
       "customerName": "اسم العميل",
       "phoneNumber": "رقم الهاتف",
@@ -10599,6 +10630,17 @@
     "customerNotes": "ملاحظات العميل",
     "internalNotes": "ملاحظات داخلية",
     "statusHistory": "سجل الحالات",
+    "linkedClient": "العميل المرتبط",
+    "viewClientProfile": "عرض الملف العميل",
+    "clientDetails": "ملف العميل",
+    "ordersCount": "{count} طلب",
+    "statTotal": "الإجمالي",
+    "statConfirmed": "مؤكد",
+    "statShipped": "مشحون",
+    "statDelivered": "مسلم",
+    "statReturned": "مرتجع",
+    "totalSpend": "إجمالي المبيعات {amount}",
+    "joinDate": "تاريخ الانضمام: {date}",
     "editCustomerInfo": "تعديل بيانات العميل",
     "editFinancials": "تعديل البيانات المالية",
     "financials": "البيانات المالية",
@@ -12911,7 +12953,8 @@
           "assign_order_to_employee": "تعيين الطلب لموظف",
           "send_sms": "إرسال رسالة ٍ SMS",
           "wait": "انتظار",
-          "create_issue": "إنشاء مشكلة"
+          "create_issue": "إنشاء مشكلة",
+          "assign_order_to_client": "إضافة الطلب إلى عميل"
         },
         "conditionTypes": {
           "order_check": "فحص بيانات الطلب",
@@ -12949,6 +12992,8 @@
           "sendOffers": "إرسال العروض",
           "proposedForOrder": "المقترحة للطلب",
           "assignTo": "تعيين إلى",
+          "linkOrderToClientByPhone": "الربط برقم هاتف الطلب",
+          "createClientIfMissing": "إنشاء عميل إن لم يوجد",
           "autoAssign": "تعيين تلقائي",
           "branches": {
             "assigned": "تم التعيين",
@@ -13079,6 +13124,11 @@
           "selectShippingCompany": "اختر شركة الشحن...",
           "updateWrittenAddress": "تحديث العنوان المكتوب",
           "updateWrittenAddressDesc": "عند التفعيل، يمكن للذكاء الاصطناعي إعادة كتابة نص عنوان الطلب. عند الإيقاف، يتم تحديث المدينة والمنطقة والحي فقط.",
+          "assignOrderToClientTitle": "إضافة الطلب إلى عميل",
+          "assignOrderToClientDesc": "اربط هذا الطلب بالعميل المطابق لرقم هاتف الطلب.",
+          "assignOrderToClientHelp": "سيتم إضافة الطلب للعميل المرتبط برقم هاتف هذا الطلب.",
+          "createClientIfMissing": "إنشاء عميل جديد إن لم يوجد",
+          "createClientIfMissingDesc": "عند التفعيل، إذا لم يوجد عميل مرتبط بالرقم، يُنشأ عميل جديد باستخدام اسم العميل وبريده ورقمه في الطلب، ثم يُضاف الطلب إليه. عند الإيقاف، لن يتم إنشاء عميل جديد.",
           "assignShippingProviderTitle": "تعيين شركة الشحن",
           "assignShippingProviderDesc": "وزع هذا الطلب على شركة شحن مفعلة.",
           "shippingAssignmentMode": "طريقة التعيين",
@@ -13887,6 +13937,208 @@
     },
     "failedSave": "فشل حفظ العرض"
   },
+  "customers": {
+    "breadcrumb": {
+      "home": "لوحة التحكم",
+      "customers": "العملاء"
+    },
+    "stats": {
+      "totalCustomers": "كل العملاء",
+      "customersWithOrders": "لديهم طلبات",
+      "customersWithDeliveredOrders": "لديهم طلبات مسلمة",
+      "customersWithOrdersLast30Days": "طلبوا آخر 30 يوم",
+      "totalClients": "كل العملاء",
+      "clientsWithOrders": "لديهم طلبات",
+      "clientsWithDeliveredOrders": "لديهم طلبات مسلمة",
+      "clientsWithOrdersLast30Days": "طلبوا آخر 30 يوم",
+      "percentOfTotalOrders": "من إجمالي الطلبات"
+    },
+    "actions": {
+      "new": "إضافة عميل",
+      "view": "عرض",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "chat": "محادثة"
+    },
+    "client": {
+      "contacts": "أرقام",
+      "chooseContact": "اختر رقم واتساب",
+      "fields": {
+        "name": "اسم العميل",
+        "email": "البريد الإلكتروني",
+        "profilePicture": "الصورة الشخصية",
+        "phones": "أرقام الاتصال",
+        "addPhone": "إضافة رقم",
+        "phonesHint": "الرقم الأول هو رقم واتساب الأساسي.",
+        "notes": "ملاحظات"
+      },
+      "validation": {
+        "nameRequired": "اسم العميل مطلوب",
+        "invalidEmail": "أدخل بريدًا إلكترونيًا صحيحًا",
+        "phoneRequired": "رقم الهاتف مطلوب"
+      }
+    },
+    "toolbar": {
+      "exportCustomers": "تصدير",
+      "exportAddresses": "تصدير العناوين"
+    },
+    "table": {
+      "searchPlaceholder": "البحث في العملاء...",
+      "filter": "فلترة",
+      "apply": "تطبيق",
+      "emptyTitle": "لا يوجد عملاء",
+      "emptySubtitle": "أضف عميلًا جديدًا أو عدّل البحث."
+    },
+    "filters": {
+      "sortBy": "ترتيب حسب",
+      "sortDir": "الاتجاه"
+    },
+    "sort": {
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "name": "الاسم",
+      "phoneNumber": "رقم الهاتف"
+    },
+    "sortDir": {
+      "DESC": "الأحدث أولاً",
+      "ASC": "الأقدم أولاً"
+    },
+    "columns": {
+      "customer": "العميل",
+      "phoneNumber": "الهاتف",
+      "secondaryPhoneNumber": "الهاتف الثاني",
+      "contacts": "أرقام الاتصال",
+      "email": "البريد الإلكتروني",
+      "ordersCount": "عدد الطلبات",
+      "lastMessageAt": "آخر رسالة",
+      "lastMessageDate": "تاريخ آخر رسالة",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "الإجراءات",
+      "primaryContactPhoneNumber": "الهاتف الأساسي"
+    },
+    "delete": {
+      "confirm": "حذف",
+      "cancel": "إلغاء",
+      "title": "حذف العميل",
+      "desc": "سيتم حذف {name} نهائيًا."
+    },
+    "toast": {
+      "fetchFailed": "فشل تحميل العملاء",
+      "deleted": "تم حذف العميل بنجاح",
+      "deleteFailed": "فشل حذف العميل",
+      "chatFailed": "فشل فتح المحادثة",
+      "saveFailed": "فشل حفظ العميل"
+    },
+    "details": {
+      "title": "تفاصيل العميل",
+      "loading": "جاري تحميل ملف العميل...",
+      "errorTitle": "تعذر تحميل العميل",
+      "notFound": "لم يتم العثور على العميل.",
+      "retry": "إعادة المحاولة",
+      "back": "رجوع",
+      "unknownCustomer": "عميل غير معروف",
+      "customerId": "معرف العميل",
+      "statsTitle": "إحصائيات الطلبات",
+      "joinedAt": "انضم في {date}",
+      "noNotes": "لا توجد ملاحظات لهذا العميل.",
+      "statsEmpty": "لا توجد إحصائيات طلبات لهذا العميل حتى الآن.",
+      "tagStats": "إحصائيات وسوم الطلبات",
+      "status": {
+        "active": "نشط"
+      },
+      "actions": {
+        "chat": "محادثة",
+        "editCustomer": "تعديل العميل",
+        "editNotes": "تعديل الملاحظات",
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "edit": "تعديل",
+        "delete": "حذف"
+      },
+      "fields": {
+        "phoneNumber": "رقم الهاتف",
+        "phone": "الهاتف الأساسي",
+        "secondaryPhone": "الهاتف البديل",
+        "email": "البريد الإلكتروني",
+        "primaryAddress": "العنوان الأساسي",
+        "notes": "ملاحظات"
+      },
+      "contacts": {
+        "link": "ربط رقم",
+        "openChat": "فتح المحادثة",
+        "setPrimary": "تعيين كأساسي",
+        "unlink": "إلغاء الربط",
+        "toast": {
+          "linked": "تم ربط الرقم بنجاح",
+          "primaryUpdated": "تم تحديث الرقم الأساسي",
+          "unlinked": "تم إلغاء ربط الرقم بنجاح"
+        }
+      },
+      "stats": {
+        "totalOrders": "إجمالي الطلبات",
+        "returnedCount": "الطلبات المرتجعة",
+        "confirmedCount": "الطلبات المؤكدة",
+        "confirmedRate": "نسبة التأكيد",
+        "totalSales": "إجمالي المبيعات",
+        "deliveredCount": "الطلبات المسلمة",
+        "shippedCount": "الطلبات المشحونة",
+        "deliveredRevenue": "إيراد الطلبات المسلمة",
+        "deliveredOrders": "الطلبات المسلمة",
+        "cancelledOrders": "الطلبات الملغاة",
+        "totalSpent": "إجمالي المبيعات",
+        "averageOrderValue": "متوسط قيمة الطلب",
+        "lastOrderDate": "تاريخ آخر طلب"
+      },
+      "addresses": {
+        "title": "عناوين العميل",
+        "subtitle": "عناوين التوصيل المحفوظة لهذا العميل.",
+        "add": "إضافة عنوان",
+        "addTitle": "إضافة عنوان",
+        "editTitle": "تعديل العنوان",
+        "defaultLabel": "عنوان",
+        "defaultBadge": "افتراضي",
+        "primaryAddress": "العنوان الأساسي",
+        "setDefault": "تعيين كافتراضي",
+        "emptyTitle": "لا توجد عناوين بعد",
+        "emptySubtitle": "أضف أول عنوان توصيل لهذا العميل.",
+        "fields": {
+          "label": "الاسم",
+          "city": "المدينة",
+          "area": "المنطقة",
+          "district": "الحي",
+          "address": "العنوان الكامل",
+          "landmark": "علامة مميزة",
+          "isDefault": "اجعل هذا العنوان افتراضيًا"
+        },
+        "placeholders": {
+          "label": "المنزل، العمل، الفرع...",
+          "city": "اختر المدينة",
+          "area": "اختر المنطقة",
+          "address": "اكتب العنوان الكامل",
+          "landmark": "علامة مميزة أو حي قريب"
+        },
+        "validation": {
+          "addressRequired": "العنوان مطلوب"
+        },
+        "toast": {
+          "created": "تمت إضافة العنوان بنجاح",
+          "updated": "تم تحديث العنوان بنجاح",
+          "deleted": "تم حذف العنوان بنجاح",
+          "defaultUpdated": "تم تحديث العنوان الافتراضي"
+        },
+        "delete": {
+          "title": "حذف العنوان",
+          "desc": "سيتم حذف {label} نهائيًا.",
+          "confirm": "حذف"
+        }
+      },
+      "orders": {
+        "title": "طلبات العميل"
+      }
+    }
+  },
   "chats": {
     "title": "المحادثات",
     "search": "البحث في المحادثات...",
@@ -13901,22 +14153,31 @@
     "online": "متصل",
     "offline": "غير متصل",
     "closeChat": "إغلاق المحادثة",
-    "customerDetails": "تفاصيل العميل",
+    "chatFailed": "فشل فتح المحادثة",
+    "customerDetails": "تفاصيل جهة الاتصال",
     "conversationDetails": "تفاصيل المحادثة",
     "notes": "ملاحظات",
+    "contactNotes": "ملاحظات جهة الاتصال",
+    "noContactNotes": "لا توجد ملاحظات لجهة الاتصال",
     "addNote": "إضافة ملاحظة",
     "noNotes": "لا توجد ملاحظات بعد",
     "blockContact": "حظر جهة الاتصال",
     "deleteConversation": "حذف المحادثة",
-    "editClient": "تعديل بيانات العميل",
-    "addCustomer": "إضافة عميل جديد",
+    "editClient": "تعديل جهة الاتصال",
+    "editContact": "تعديل جهة الاتصال",
+    "addCustomer": "إضافة جهة اتصال",
+    "addContactPerson": "إضافة جهة اتصال",
+    "contactName": "اسم جهة الاتصال",
     "customerName": "اسم العميل",
     "phoneNumber": "رقم الهاتف",
+    "secondaryPhoneNumber": "رقم الهاتف الثاني",
     "profilePicture": "صورة الملف الشخصي",
     "cancel": "إلغاء",
     "save": "حفظ",
-    "customerAdded": "تم إضافة العميل بنجاح",
-    "customerUpdated": "تم تحديث بيانات العميل بنجاح",
+    "customerAdded": "تم إضافة جهة الاتصال بنجاح",
+    "customerUpdated": "تم تحديث جهة الاتصال بنجاح",
+    "contactAdded": "تم إضافة جهة الاتصال بنجاح",
+    "contactUpdated": "تم تحديث جهة الاتصال بنجاح",
     "loadingMessages": "جاري تحميل الرسائل...",
     "typeMessage": "اكتب رسالة...",
     "noPermissionToSend": "ليس لديك صلاحية لإرسال الرسائل",
@@ -13925,8 +14186,23 @@
     "assignedTo": "مخصص لـ",
     "openedAt": "فتحت في",
     "channel": "القناة",
-    "customerSince": "عميل منذ",
-    "viewFullProfile": "عرض الملف الشخصي الكامل",
+    "customerSince": "جهة اتصال منذ",
+    "viewFullProfile": "عرض الملف الكامل للعميل",
+    "noLinkedClient": "جهة الاتصال غير مرتبطة بعميل حتى الآن.",
+    "clientSection": "العميل",
+    "contactInformation": "بيانات الاتصال",
+    "copied": "تم النسخ",
+    "statOrders": "الطلبات",
+    "statSpent": "المبيعات",
+    "primaryNumber": "الرقم الأساسي",
+    "primaryAddress": "العنوان الرئيسي",
+    "clientNotes": "ملاحظات العميل",
+    "noClientNotes": "لا توجد ملاحظات للعميل",
+    "statTotal": "الإجمالي",
+    "statConfirmed": "مؤكد",
+    "statShipped": "مشحون",
+    "statDelivered": "مسلم",
+    "statReturned": "مرتجع",
     "email": "البريد الإلكتروني",
     "country": "البلد",
     "language": "اللغة",
@@ -14589,6 +14865,14 @@
         "delete": {
           "description": "حذف هذا الطلب بشكل دائم بعد التأكيد. لا يمكن التراجع.",
           "example": "تم إنشاء طلب اختبار مكرر عن طريق الخطأ. انقر على الحذف لإزالته بشكل دائم من النظام."
+        },
+        "connectClient": {
+          "description": "البحث عن العملاء الحاليين وربط أحدهم بهذا الطلب.",
+          "example": "الطلب رقم 1234 بدون عميل. انقر على ربط عميل، ابحث بالاسم أو الهاتف، ثم أكد لربط ذلك العميل."
+        },
+        "changeClient": {
+          "description": "البحث عن العملاء الحاليين ونقل هذا الطلب إلى عميل آخر.",
+          "example": "الطلب رقم 1234 مرتبط بأحمد. انقر على تغيير العميل، ابحث عن سارة، ثم أكد لنقل الطلب إلى سارة."
         },
         "bulkCancelAssignments": {
           "description": "إزالة تعيين الموظف من جميع الطلبات المحددة حاليًا دفعةً واحدة، مما يجعلها متاحة لإعادة التعيين.",

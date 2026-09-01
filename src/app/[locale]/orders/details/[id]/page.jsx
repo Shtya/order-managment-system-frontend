@@ -41,6 +41,7 @@ import {
   Ban,
   UserCheck,
   PackageOpen,
+  Mail,
 } from "lucide-react";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import {
@@ -57,7 +58,7 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1173,6 +1174,106 @@ export function OrderDetailsPage({ order, loading, setOrder }) {
               )}
             </div>
           </SideCard>
+
+          {(order.clientId || order.client?.id) && (
+            <SideCard
+              title={t("details.clientProfile")}
+              icon={User}
+              delay={0.07}
+              accent
+              trailing={
+                <Link
+                  href={`/customers/${order.clientId || order.client.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ms-auto inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold hover:opacity-80 transition-opacity shrink-0"
+                  style={{
+                    border: `1px solid ${P_20}`,
+                    background: P_10,
+                    color: P,
+                  }}
+                >
+                  <ExternalLink size={11} />
+                  {t("actions.viewClientProfile")}
+                </Link>
+              }
+            >
+              {(() => {
+                const client = order.client;
+                const primaryNumber =
+                  client?.primaryNumber || client?.primaryContact?.phoneNumber;
+                const joinDate = client?.createdAt
+                  ? formatDate(client.createdAt, true)
+                  : null;
+                const stats = [
+                  { label: t("details.statTotal"), value: client?.totalOrders ?? 0, color: "#6763af" },
+                  { label: t("details.statConfirmed"), value: client?.confirmedCount ?? 0, color: "#16a34a" },
+                  { label: t("details.statShipped"), value: client?.shippedCount ?? 0, color: "#0369a1" },
+                  { label: t("details.statDelivered"), value: client?.deliveredCount ?? 0, color: P },
+                  { label: t("details.statReturned"), value: client?.returnedCount ?? 0, color: "#dc2626" },
+                ];
+                return (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Avatar className="h-9 w-9 shrink-0 ring-1 ring-primary/20">
+                        <AvatarImage
+                          src={avatarSrc(client?.profilePicture)}
+                          alt={client?.name || ""}
+                        />
+                        <AvatarFallback
+                          className="text-[10px] font-bold"
+                          style={{ background: P_15, color: P }}
+                        >
+                          {(client?.name || "?").slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold text-foreground truncate">
+                          {client?.name || t("details.clientProfile")}
+                        </div>
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {stats.map((stat) => (
+                            <span
+                              key={stat.label}
+                              className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none"
+                              style={{
+                                background: `color-mix(in srgb, ${stat.color} 10%, transparent)`,
+                                border: `1px solid color-mix(in srgb, ${stat.color} 18%, transparent)`,
+                                color: `color-mix(in srgb, ${stat.color}, var(--foreground) 28%)`,
+                              }}
+                            >
+                              <span className="font-mono">{stat.value}</span>
+                              <span className="opacity-75 font-medium">{stat.label}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      {primaryNumber && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-foreground">
+                          <Phone size={11} className="text-muted-foreground shrink-0" />
+                          <span className="font-mono truncate">{primaryNumber}</span>
+                        </div>
+                      )}
+                      {client?.email && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-foreground">
+                          <Mail size={11} className="text-muted-foreground shrink-0" />
+                          <span className="truncate">{client.email}</span>
+                        </div>
+                      )}
+                      {joinDate && joinDate !== "—" && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-foreground">
+                          <Calendar size={11} className="text-muted-foreground shrink-0" />
+                          <span className="truncate">{t("details.joinDate", { date: joinDate })}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </SideCard>
+          )}
 
           {/* Internal notes */}
           {hasPermission("orders.internalNotes") && (

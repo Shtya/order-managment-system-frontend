@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import { Tags } from "lucide-react";
+import { Loader2, Pencil, Tags } from "lucide-react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -11,12 +11,18 @@ import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import { PrimaryBtn, GhostBtn } from "@/components/atoms/Button";
-import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import MultiSelect from "@/components/atoms/MultiSelect";
+import { Button } from "@/components/ui/button";
 
 const HEX = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
 
@@ -166,17 +172,18 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
     [isEdit, tag, onClose, onSaved, t],
   );
 
-  if (!open) return null;
-
   return (
-    <ModalShell onClose={onClose} maxWidth="max-w-2xl">
-      <ModalHeader
-        icon={Tags}
-        title={isEdit ? t("dialog.editTagTitle") : t("dialog.addTagTitle")}
-        subtitle={t("dialog.tagSubtitle")}
-        onClose={onClose}
-      />
-      <form className="p-6 space-y-5 max-h-[80vh] overflow-y-auto" onSubmit={handleSubmit(onSubmit)}>
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose?.(); }}>
+      <DialogContent className="max-w-4xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+        <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+          <DialogTitle className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+              {isEdit ? <Pencil size={20} /> : <Tags size={20} />}
+            </div>
+            {isEdit ? t("dialog.editTagTitle") : t("dialog.addTagTitle")}
+          </DialogTitle>
+        </DialogHeader>
+      <form className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-5" onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">{t("dialog.name")}</Label>
           <Controller
@@ -333,13 +340,14 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
           <p className="text-xs text-muted-foreground">{t("dialog.employeesHint")}</p>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <GhostBtn onClick={onClose}>{t("dialog.cancel")}</GhostBtn>
-          <PrimaryBtn type="submit" loading={isSubmitting}>
-            {t("dialog.save")}
-          </PrimaryBtn>
+        <div className="flex items-center justify-end gap-3 pt-4 border-t mt-4">
+          <Button type="button" variant="outline" onClick={onClose}>{t("dialog.cancel")}</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 size={14} className="animate-spin mr-2" /> : t("dialog.save")}
+          </Button>
         </div>
       </form>
-    </ModalShell>
+      </DialogContent>
+    </Dialog>
   );
 }

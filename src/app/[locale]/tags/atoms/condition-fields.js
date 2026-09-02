@@ -15,9 +15,13 @@ export const CONDITION_FIELDS = [
   "order.cityId",
   "order.productsTotal",
   "order.finalTotal",
+  "order.discount",
   "order.itemsQuantity",
   "order.productsCount",
   "order.paymentStatus",
+  "order.paymentMethod",
+  "order.allowOpenPackage",
+  "order.duplicateCount",
   "order.phone.valid",
   "assignment.contactTries",
   "assignment.hasActive",
@@ -41,12 +45,15 @@ export const NUMBER_FIELDS = new Set([
   "order.itemsQuantity",
   "order.productsCount",
   "order.finalTotal",
+  "order.discount",
+  "order.duplicateCount",
   "assignment.contactTries",
 ]);
 
 export const BOOLEAN_FIELDS = new Set([
   "order.isConfirmed",
   "order.phone.valid",
+  "order.allowOpenPackage",
   "upsell.accepted",
   "assignment.hasActive",
 ]);
@@ -56,12 +63,23 @@ export const LIST_FIELDS = new Set([
   "order.storeId",
   "order.cityId",
   "order.paymentStatus",
+  "order.paymentMethod",
   "order.shippingCompanyId",
   "order.confirmationSource",
   "shipment.status",
 ]);
 
 export const CONFIRMATION_SOURCES = ["whatsapp", "manual"];
+
+export const PAYMENT_METHODS = [
+  "cash",
+  "card",
+  "bank_transfer",
+  "cod",
+  "wallet",
+  "other",
+  "unknown",
+];
 
 export const PAYMENT_STATUSES = [
   "pending",

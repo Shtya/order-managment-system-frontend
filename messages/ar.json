@@ -1430,6 +1430,7 @@
       "operator": "العامل",
       "value": "القيمة",
       "valuePlaceholder": "القيمة",
+      "selectField": "اختر الحقل",
       "valuesLoading": "جاري تحميل القيم...",
       "selectValues": "اختر القيم",
       "inHint": "قيم مفصولة بفواصل",
@@ -1451,19 +1452,55 @@
         "finalTotal": "الإجمالي النهائي",
         "isConfirmed": "الطلب تم تأكيده من قبل",
         "confirmationSource": "مصدر التأكيد",
+        "discount": "الخصم",
+        "paymentMethod": "طريقة الدفع",
+        "allowOpenPackage": "السماح بفتح الطرد",
+        "duplicateCount": "رقم التكرار",
         "phone": {
           "valid": "رقم الهاتف"
         }
       },
       "assignment": {
         "contactTries": "محاولات تواصل الموظف",
-        "hasActive": "يوجد تعيين نشط"
+        "hasActive": "الطلب مُعيّن لموظف"
       },
       "shipment": {
         "status": "حالة الشحنة"
       },
       "upsell": {
         "accepted": "تم قبول العرض الإضافي"
+      }
+    },
+    "examples": {
+      "order": {
+        "statusId": "قيد التنفيذ",
+        "storeId": "Shopify",
+        "cityId": "الرياض",
+        "paymentStatus": "تم الدفع",
+        "paymentMethod": "الدفع بالكارت",
+        "productsTotal": "500",
+        "itemsQuantity": "2",
+        "productsCount": "3",
+        "shippingCompanyId": "Turbo",
+        "finalTotal": "480",
+        "discount": "50",
+        "isConfirmed": "نعم",
+        "confirmationSource": "واتساب",
+        "allowOpenPackage": "نعم",
+        "duplicateCount": "2",
+        "phone": {
+          "valid": "مصري"
+        }
+      },
+      "assignment": {
+        "contactTries": "2",
+        "hasActive": "نعم"
+      },
+      "shipment": {
+        "status": "خرج للتوصيل"
+      },
+      "upsell": {
+        "accepted": "نعم"
       }
     },
     "operators": {

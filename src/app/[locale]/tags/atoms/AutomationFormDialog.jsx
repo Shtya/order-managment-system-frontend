@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import { Check, ChevronDown, Loader2, Plus, Trash2, Workflow } from "lucide-react";
+import { Check, ChevronDown, Eye, Loader2, Pencil, Plus, Trash2, Workflow } from "lucide-react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -11,7 +11,12 @@ import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import { PrimaryBtn, GhostBtn } from "@/components/atoms/Button";
-import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -25,12 +30,12 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   BOOLEAN_FIELDS,
-  CONDITION_FIELDS,
   DEFAULT_RULE,
   LIST_FIELDS,
   MAX_RULES,
   NUMBER_FIELDS,
   CONFIRMATION_SOURCES,
+  PAYMENT_METHODS,
   PAYMENT_STATUSES,
   SHIPMENT_STATUSES,
   displayRuleValue,
@@ -39,6 +44,8 @@ import {
   parseRuleValue,
   unwrapList,
 } from "./condition-fields";
+import { ConditionFieldPicker } from "./ConditionFieldPicker";
+import { Button } from "@/components/ui/button";
 
 const LOOKUP_FIELDS = new Set([
   "order.statusId",
@@ -344,6 +351,12 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
         value: v,
         label: t(`paymentStatus.${v}`),
       })),
+      "order.paymentMethod": PAYMENT_METHODS.map((v) => ({
+        value: v,
+        label: tOrders(
+          v === "bank_transfer" ? "paymentMethods.bankTransfer" : `paymentMethods.${v}`,
+        ),
+      })),
       "order.shippingCompanyId": shippingOptions,
       "order.confirmationSource": CONFIRMATION_SOURCES.map((v) => ({
         value: v,
@@ -400,23 +413,24 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
     return currentValue ?? "";
   };
 
-  if (!open) return null;
+  const automationTitle = readOnly
+    ? t("dialog.viewAutomationTitle")
+    : isEdit
+      ? t("dialog.editAutomationTitle")
+      : t("dialog.addAutomationTitle");
 
   return (
-    <ModalShell onClose={onClose} maxWidth="max-w-3xl">
-      <ModalHeader
-        icon={Workflow}
-        title={
-          readOnly
-            ? t("dialog.viewAutomationTitle")
-            : isEdit
-              ? t("dialog.editAutomationTitle")
-              : t("dialog.addAutomationTitle")
-        }
-        subtitle={t("dialog.automationSubtitle")}
-        onClose={onClose}
-      />
-      <form className="p-6 space-y-5 max-h-[75vh] overflow-y-auto" onSubmit={handleSubmit(onSubmit)}>
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose?.(); }}>
+      <DialogContent className="max-w-4xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+        <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+          <DialogTitle className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+              {readOnly ? <Eye size={20} /> : isEdit ? <Pencil size={20} /> : <Workflow size={20} />}
+            </div>
+            {automationTitle}
+          </DialogTitle>
+        </DialogHeader>
+      <form className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-5" onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-1.5">
           <Label className="text-sm font-medium" >
             {t("dialog.name")}
@@ -532,7 +546,7 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
             return (
               <div
                 key={item.id}
-                className="grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1.3fr_auto] gap-2 p-3 rounded-xl border border-border"
+                className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr_1.2fr_auto] gap-2 p-3 rounded-xl border border-border"
               >
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium" description={t("dialog.fieldDescription")}>
@@ -542,10 +556,10 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
                     name={`rules.${index}.field`}
                     control={control}
                     render={({ field }) => (
-                      <Select
+                      <ConditionFieldPicker
                         value={field.value}
                         disabled={readOnly}
-                        onValueChange={(v) => {
+                        onChange={(v) => {
                           field.onChange(v);
                           const nextOps = operatorsFor(v);
                           const nextOperator = nextOps.includes(watchedRules?.[index]?.operator)
@@ -563,18 +577,7 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
                                 : "",
                           );
                         }}
-                      >
-                        <SelectTrigger className="h-10 rounded-xl">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {CONDITION_FIELDS.map((f) => (
-                            <SelectItem key={f} value={f}>
-                              {t(`fields.${f}`)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      />
                     )}
                   />
                 </div>
@@ -651,19 +654,20 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
           })}
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t mt-4">
           {readOnly ? (
             <GhostBtn onClick={onClose}>{t("dialog.close")}</GhostBtn>
           ) : (
             <>
-              <GhostBtn onClick={onClose}>{t("dialog.cancel")}</GhostBtn>
-              <PrimaryBtn type="submit" loading={isSubmitting}>
-                {t("dialog.save")}
-              </PrimaryBtn>
+              <Button type="button" variant="outline" onClick={onClose}>{t("dialog.cancel")}</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 size={14} className="animate-spin mr-2" /> : t("dialog.save")}
+              </Button>
             </>
           )}
         </div>
       </form>
-    </ModalShell>
+      </DialogContent>
+    </Dialog>
   );
 }

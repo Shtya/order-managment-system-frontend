@@ -1428,6 +1428,7 @@
       "operator": "Operator",
       "value": "Value",
       "valuePlaceholder": "Value",
+      "selectField": "Select field",
       "valuesLoading": "Loading values...",
       "selectValues": "Select values",
       "inHint": "Comma-separated values",
@@ -1449,19 +1450,55 @@
         "finalTotal": "Final total",
         "isConfirmed": "Order confirmed",
         "confirmationSource": "Confirmation source",
+        "discount": "Discount",
+        "paymentMethod": "Payment method",
+        "allowOpenPackage": "Allow open package",
+        "duplicateCount": "Duplicate count",
         "phone": {
           "valid": "Phone number"
         }
       },
       "assignment": {
         "contactTries": "Employee contact attempts",
-        "hasActive": "Has active assignment"
+        "hasActive": "Order assigned to an employee"
       },
       "shipment": {
         "status": "Shipment status"
       },
       "upsell": {
         "accepted": "Upsell accepted"
+      }
+    },
+    "examples": {
+      "order": {
+        "statusId": "Processing",
+        "storeId": "Shopify",
+        "cityId": "London",
+        "paymentStatus": "Paid",
+        "paymentMethod": "Credit Card",
+        "productsTotal": "500",
+        "itemsQuantity": "2",
+        "productsCount": "3",
+        "shippingCompanyId": "FedEx",
+        "finalTotal": "480",
+        "discount": "50",
+        "isConfirmed": "Yes",
+        "confirmationSource": "WhatsApp",
+        "allowOpenPackage": "Yes",
+        "duplicateCount": "2",
+        "phone": {
+          "valid": "Egyptian"
+        }
+      },
+      "assignment": {
+        "contactTries": "2",
+        "hasActive": "Yes"
+      },
+      "shipment": {
+        "status": "Out for delivery"
+      },
+      "upsell": {
+        "accepted": "Yes"
       }
     },
     "operators": {

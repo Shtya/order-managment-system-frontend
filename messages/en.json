@@ -550,6 +550,7 @@
     "collectedOrders": "Collected Orders",
     "uncollectedOrders": "Uncollected Orders",
     "warehouseDistribution": "Order Distribution",
+    "customersTags": "Customer tags",
     "warehousePrint": "Print Waybills",
     "warehousePreparation": "Preparation",
     "warehouseOutgoing": "Outgoing Orders",
@@ -573,7 +574,7 @@
     "manageCauses": "Manage Issue Types",
     "cancelCauses": "Cancel Causes",
     "customers": "Customers",
-    "tags": "Tags",
+    "tags": "Order tags",
     "cancelCausesStatistics": "Cancel Causes Statistics",
     "gettingStartedStatistics": "Getting Started Statistics",
     "ai": "AI",
@@ -1304,14 +1305,14 @@
     }
   },
   "tags": {
-    "title": "Tags",
+    "title": "Order tags",
     "breadcrumb": {
       "home": "Home",
       "orders": "Orders"
     },
     "tabs": {
       "tags": "Tags",
-      "automations": "Tag Automations"
+      "automations": "Order tag automations"
     },
     "table": {
       "searchTags": "Search tags...",
@@ -1361,7 +1362,7 @@
       "disableAutomation": "Disable"
     },
     "settings": {
-      "title": "Tag Settings",
+      "title": "Order tag settings",
       "modeTitle": "Order tag mode",
       "many": "Allow multiple tags",
       "manyDesc": "Every matching automation can add its tag.",
@@ -1391,7 +1392,7 @@
       "addAutomationTitle": "Add Tag Automation",
       "editAutomationTitle": "Edit Tag Automation",
       "viewAutomationTitle": "Automation details",
-      "automationSubtitle": "When the conditions match, this tag is added to the order.",
+      "automationSubtitle": "When the conditions match, this tag is added to the order. Automations are evaluated whenever order data changes.",
       "detailsTitle": "Details",
       "name": "Name",
       "namePlaceholder": "Example: Adding Order Processing",
@@ -1578,11 +1579,235 @@
       "cancel": "Cancel"
     },
     "stats": {
-      "tags": "Tags",
+      "tags": "Order tags",
       "automations": "Automations",
       "activeTags": "Active tags",
       "manualTags": "Tags employees can use",
       "activeAutomations": "Active automations"
+    }
+  },
+  "clientTags": {
+    "title": "Customer tags",
+    "breadcrumb": {
+      "home": "Home",
+      "customers": "Customers"
+    },
+    "tabs": {
+      "tags": "Tags",
+      "automations": "Customer tag automations"
+    },
+    "table": {
+      "searchTags": "Search tags...",
+      "searchAutomations": "Search automations...",
+      "emptyTagsTitle": "No customer tags yet",
+      "emptyTagsSubtitle": "Create a tag to label customers manually or with automations.",
+      "emptyAutomationsTitle": "No customer tag automations yet",
+      "emptyAutomationsSubtitle": "Create a rule that uses this order and customer statistics to tag the customer."
+    },
+    "columns": {
+      "name": "Name",
+      "color": "Color",
+      "description": "Description",
+      "active": "Active",
+      "manual": "Allow employees to use",
+      "priority": "Priority",
+      "ordersCount": "Orders",
+      "clientsCount": "Customers",
+      "tag": "Tag",
+      "enabled": "Enabled",
+      "logic": "Logic",
+      "rules": "Rules"
+    },
+    "filters": {
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "tag": "Tag",
+      "manual": "Allow employees to use",
+      "allowed": "Allowed",
+      "notAllowed": "Not allowed"
+    },
+    "actions": {
+      "addTag": "Add Tag",
+      "addAutomation": "Add Automation",
+      "settings": "Settings",
+      "export": "Export Excel",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "allowEmployeeUse": "Allow employees to use",
+      "disallowEmployeeUse": "Disallow employees from using",
+      "enableAutomation": "Enable",
+      "disableAutomation": "Disable"
+    },
+    "settings": {
+      "title": "Customer tag settings",
+      "modeTitle": "Customer tag mode",
+      "many": "Allow multiple tags",
+      "manyDescription": "Use this when a customer can carry several labels at once.",
+      "one": "One tag only",
+      "oneDescription": "Use this when each customer should have a single tag. Higher priority wins.",
+      "automationsTitle": "Customer tag automations",
+      "automationsOn": "Enabled",
+      "automationsOnDescription": "When enabled, customer automations run after order, assignment, shipment, and upsell changes.",
+      "automationsOff": "Disabled",
+      "automationsOffDescription": "Existing tags stay on customers. You can still assign tags by hand.",
+      "removeUnmatchedTitle": "Remove unmatched automatic tags",
+      "removeUnmatchedOn": "Remove when rules stop matching",
+      "removeUnmatchedOnDescription": "Only tags added by automations are removed. Tags assigned by hand stay on the customer.",
+      "removeUnmatchedOff": "Keep unmatched tags",
+      "removeUnmatchedOffDescription": "Use this if a tag should stay even after the customer no longer matches the rule."
+    },
+    "dialog": {
+      "addTagTitle": "Add Tag",
+      "editTagTitle": "Edit Tag",
+      "tagSubtitle": "Tags can be assigned to customers manually or by automations.",
+      "addAutomationTitle": "Add Customer Tag Automation",
+      "editAutomationTitle": "Edit Customer Tag Automation",
+      "viewAutomationTitle": "Automation details",
+      "automationSubtitle": "When the conditions match, this tag is added to the customer. Automations are evaluated whenever order data changes.",
+      "name": "Name",
+      "namePlaceholder": "Example: Repeat buyer",
+      "color": "Color",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional note for the team...",
+      "isActive": "Active",
+      "allowEmployee": "Allow employees to use",
+      "allowEmployeeDescription": "Disable this to hide the tag from employees. Managers can always use all tags.",
+      "employees": "Show tag to employees",
+      "employeesDescription": "Leave empty to show this tag to all employees. Select specific employees to limit who can use it.",
+      "employeesPlaceholder": "All employees",
+      "employeesHint": "Empty means all employees can use this tag.",
+      "priority": "Priority",
+      "priorityHint": "Higher priority wins when only one tag is allowed.",
+      "tag": "Tag",
+      "tagPlaceholder": "Select a tag",
+      "isEnabled": "Enabled",
+      "logic": "Match logic",
+      "logicAnd": "All rules",
+      "logicOr": "Any rule",
+      "logicDescription": "Choose whether every rule must match, or whether one matching rule is enough to add the tag.",
+      "tagDescription": "The tag that will be added to the customer when the rules match.",
+      "isEnabledDescription": "Turn this off to pause the automation without deleting it.",
+      "rulesDescription": "Each rule checks one order field or a customer statistic. You can add up to 5 rules.",
+      "fieldDescription": "The order field or customer statistic to compare.",
+      "operatorDescription": "How to compare the field, for example equals, in a list, or greater than.",
+      "valueDescription": "The value to match against the selected field.",
+      "rulesCount": "{count}/{max}",
+      "rules": "Rules",
+      "addRule": "Add rule",
+      "field": "Field",
+      "operator": "Operator",
+      "value": "Value",
+      "valuePlaceholder": "Value",
+      "selectField": "Select field",
+      "valuesLoading": "Loading values...",
+      "selectValues": "Select values",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close",
+      "nameTagPlaceholder": "Example: VIP customer"
+    },
+    "fieldGroups": {
+      "customerStats": "Customer statistics"
+    },
+    "from": {
+      "totalOrders": "of total orders",
+      "shippedOrders": "of shipped orders"
+    },
+    "fields": {
+      "client": {
+        "totalOrders": "Total orders",
+        "confirmedCount": "Confirmed orders",
+        "confirmedPercent": "Confirmed percent",
+        "confirmedRate": "Order confirmation rate",
+        "shippedCount": "Shipped orders",
+        "shippedPercent": "Shipped percent",
+        "deliveredCount": "Delivered orders",
+        "deliveredPercent": "Delivered percent",
+        "returnedCount": "Returned orders",
+        "returnedPercent": "Returned percent",
+        "cancelledCount": "Cancelled orders",
+        "cancelRate": "Cancel percent",
+        "cancelledBeforeShippingCount": "Cancelled before shipping",
+        "beforeShippingCancelRate": "Cancelled before shipping percent",
+        "cancelledAfterShippingCount": "Cancelled after shipping",
+        "afterShippingCancelRate": "Cancelled after shipping percent",
+        "afterShippingCancelRateOfShipped": "After-shipping cancel rate of shipped",
+        "totalSales": "Total sales",
+        "deliveredRevenue": "Delivered revenue"
+      }
+    },
+    "examples": {
+      "client": {
+        "totalOrders": "12",
+        "confirmedCount": "8",
+        "confirmedPercent": "20",
+        "confirmedRate": "65",
+        "shippedCount": "7",
+        "shippedPercent": "40",
+        "deliveredCount": "6",
+        "deliveredPercent": "50",
+        "returnedCount": "1",
+        "returnedPercent": "8",
+        "cancelledCount": "2",
+        "cancelRate": "15",
+        "cancelledBeforeShippingCount": "1",
+        "beforeShippingCancelRate": "5",
+        "cancelledAfterShippingCount": "1",
+        "afterShippingCancelRate": "10",
+        "afterShippingCancelRateOfShipped": "10",
+        "totalSales": "4500",
+        "deliveredRevenue": "3800"
+      }
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMin": "Name must be at least 1 character",
+      "nameMax": "Name is too long",
+      "colorInvalid": "Use a hex color like #6C5CE7",
+      "descriptionMax": "Description cannot exceed 1000 characters",
+      "priorityMin": "Priority cannot be negative",
+      "tagRequired": "Select a tag",
+      "rulesMin": "Add at least one rule",
+      "rulesMax": "You can add up to 5 rules",
+      "fieldRequired": "Select a field",
+      "operatorRequired": "Select an operator",
+      "valueRequired": "Value is required"
+    },
+    "toast": {
+      "saved": "Saved successfully",
+      "deleted": "Deleted successfully"
+    },
+    "delete": {
+      "tagTitle": "Delete Tag",
+      "tagDesc": "This tag will be removed from all customers.",
+      "automationTitle": "Delete Automation",
+      "automationDesc": "This rule will stop tagging customers automatically.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "stats": {
+      "tags": "Customer tags",
+      "automations": "Automations",
+      "activeTags": "Active tags",
+      "manualTags": "Tags employees can use",
+      "activeAutomations": "Active automations"
+    },
+    "editor": {
+      "title": "Customer tags",
+      "empty": "No tags",
+      "noneAssignable": "No tags available to assign.",
+      "oneModeHint": "This workspace allows one tag per customer. Choose another tag to replace it, or click the selected tag again to remove it.",
+      "manyModeHint": "Select one or more tags for this customer.",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "tags": "Tags"
     }
   },
   "cancelCausesReports": {
@@ -7721,7 +7946,8 @@
         "shipping": "Shipping",
         "notifications": "Notifications",
         "warehouse": "Warehouse",
-        "sync": "Store sync"
+        "sync": "Store sync",
+        "tags": "Tags"
       },
       "sync": {
         "skuFallbackTitle": "Match products by SKU when not linked",
@@ -13241,8 +13467,8 @@
           "selectFromOrderData": "Select from order data",
           "enterValue": "Enter value",
           "enterValueFor": "Enter value for {example}",
-          "orderCheckTitle": "Check Order Data",
-          "orderCheckDesc": "Configure new step settings",
+          "orderCheckTitle": "Check order or customer data",
+          "orderCheckDesc": "Route the flow based on order fields or customer statistics",
           "conditionsCount": "{count} / 20 conditions",
           "addNewCondition": "Add new condition",
           "preview": "Preview:",
@@ -13253,7 +13479,7 @@
           "no": "No",
           "field": "Field",
           "condition": "Condition",
-          "chooseField": "Choose field from order data",
+          "chooseField": "Choose a field",
           "chooseOperator": "Choose operator (condition)",
           "enterValuePlaceholder": "Enter required value...",
           "selectValue": "Select value...",
@@ -15956,6 +16182,10 @@
         "sync": {
           "description": "The Store Sync tab manages integration with connected e-commerce stores (Shopify, WooCommerce, EasyOrder). It controls automatic product synchronization per store and a SKU fallback option for matching incoming order items to local products when no direct sync link exists.",
           "example": "Example: Enable 'Sync New Products' for your Shopify store so new products are automatically imported, and enable SKU fallback so orders from WooCommerce match local variants by SKU even without a sync mapping."
+        },
+        "tags": {
+          "description": "The Tags tab controls how order tags and customer tags are assigned: one tag or many, whether automations run, and whether unmatched automatic tags are removed.",
+          "example": "Example: Allow multiple order tags, enable automations so tags update when an order changes, and keep customer tags in one-tag mode so only the highest-priority match stays."
         }
       },
       "fields": {

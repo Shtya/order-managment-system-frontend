@@ -6,6 +6,42 @@ export const DEFAULT_RULE = {
   value: "",
 };
 
+export const CLIENT_CONDITION_FIELDS = [
+  "client.totalOrders",
+  "client.confirmedCount",
+  "client.confirmedPercent",
+  "client.confirmedRate",
+  "client.shippedCount",
+  "client.shippedPercent",
+  "client.deliveredCount",
+  "client.deliveredPercent",
+  "client.returnedCount",
+  "client.returnedPercent",
+  "client.cancelledCount",
+  "client.cancelRate",
+  "client.cancelledBeforeShippingCount",
+  "client.beforeShippingCancelRate",
+  "client.cancelledAfterShippingCount",
+  "client.afterShippingCancelRate",
+  "client.afterShippingCancelRateOfShipped",
+  "client.totalSales",
+  "client.deliveredRevenue",
+];
+
+export const CLIENT_PERCENT_FROM = {
+  "client.confirmedPercent": "totalOrders",
+  "client.confirmedRate": "totalOrders",
+  "client.shippedPercent": "totalOrders",
+  "client.deliveredPercent": "totalOrders",
+  "client.returnedPercent": "totalOrders",
+  "client.cancelRate": "totalOrders",
+  "client.beforeShippingCancelRate": "totalOrders",
+  "client.afterShippingCancelRate": "totalOrders",
+  "client.afterShippingCancelRateOfShipped": "shippedOrders",
+};
+
+export const PERCENT_FIELDS = new Set(Object.keys(CLIENT_PERCENT_FROM));
+
 export const CONDITION_FIELDS = [
   "order.statusId",
   "order.isConfirmed",
@@ -48,6 +84,25 @@ export const NUMBER_FIELDS = new Set([
   "order.discount",
   "order.duplicateCount",
   "assignment.contactTries",
+  "client.totalOrders",
+  "client.confirmedCount",
+  "client.confirmedPercent",
+  "client.confirmedRate",
+  "client.shippedCount",
+  "client.shippedPercent",
+  "client.deliveredCount",
+  "client.deliveredPercent",
+  "client.returnedCount",
+  "client.returnedPercent",
+  "client.cancelledCount",
+  "client.cancelRate",
+  "client.cancelledBeforeShippingCount",
+  "client.beforeShippingCancelRate",
+  "client.cancelledAfterShippingCount",
+  "client.afterShippingCancelRate",
+  "client.totalSales",
+  "client.deliveredRevenue",
+  "client.afterShippingCancelRateOfShipped",
 ]);
 
 export const BOOLEAN_FIELDS = new Set([
@@ -149,7 +204,9 @@ function coerceScalar(field, raw) {
   }
   if (NUMBER_FIELDS.has(field)) {
     const n = Number(raw);
-    return Number.isFinite(n) ? n : 0;
+    if (!Number.isFinite(n)) return 0;
+    if (PERCENT_FIELDS.has(field)) return Math.min(100, Math.max(1, n));
+    return n;
   }
   return raw;
 }

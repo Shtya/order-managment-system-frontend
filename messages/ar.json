@@ -550,6 +550,7 @@
     "collectedOrders": "الطلبات المحصلة",
     "uncollectedOrders": "الطلبات غير المحصلة",
     "warehouseDistribution": "توزيع الطلبات",
+    "customersTags": "وسوم العملاء",
     "warehousePrint": "طباعة البوالص",
     "warehousePreparation": "التحضير",
     "warehouseOutgoing": "خروج الطلبات",
@@ -573,7 +574,7 @@
     "manageCauses": "إدارة أنواع المشكلات",
     "cancelCauses": "أسباب الإلغاء",
     "customers": "العملاء",
-    "tags": "الوسوم",
+    "tags": "وسوم الطلبات",
     "cancelCausesStatistics": "إحصائيات أسباب الإلغاء",
     "gettingStartedStatistics": "إحصائيات الاعداد",
     "ai": "الذكاء الاصطناعي",
@@ -1306,14 +1307,14 @@
     }
   },
   "tags": {
-    "title": "الوسوم",
+    "title": "وسوم الطلبات",
     "breadcrumb": {
       "home": "الرئيسية",
       "orders": "الطلبات"
     },
     "tabs": {
       "tags": "الوسوم",
-      "automations": "أتمتة الوسوم"
+      "automations": "أتمتة وسوم الطلبات"
     },
     "table": {
       "searchTags": "ابحث في الوسوم...",
@@ -1363,7 +1364,7 @@
       "disableAutomation": "إيقاف"
     },
     "settings": {
-      "title": "إعدادات الوسوم",
+      "title": "إعدادات وسوم الطلبات",
       "modeTitle": "وضع وسوم الطلب",
       "many": "السماح بعدة وسوم",
       "manyDesc": "كل أتمتة مطابقة تضيف وسمها.",
@@ -1393,7 +1394,7 @@
       "addAutomationTitle": "إضافة أتمتة وسم",
       "editAutomationTitle": "تعديل أتمتة وسم",
       "viewAutomationTitle": "تفاصيل الأتمتة",
-      "automationSubtitle": "عند تحقق الشروط يُضاف هذا الوسم إلى الطلب.",
+      "automationSubtitle": "عند تحقق الشروط يُضاف هذا الوسم إلى الطلب. تُقيَّم الأتمتة عند تغيّر بيانات الطلب.",
       "detailsTitle": "التفاصيل",
       "name": "الاسم",
       "namePlaceholder": "مثال: إضافة  جاري معالجة الطلب",
@@ -1580,11 +1581,235 @@
       "cancel": "إلغاء"
     },
     "stats": {
-      "tags": "الوسوم",
+      "tags": "وسوم الطلبات",
       "automations": "الأتمتة",
       "activeTags": "وسوم نشطة",
       "manualTags": "وسوم يُسمح للموظفين باستخدامها",
       "activeAutomations": "أتمتة نشطة"
+    }
+  },
+  "clientTags": {
+    "title": "وسوم العملاء",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "customers": "العملاء"
+    },
+    "tabs": {
+      "tags": "الوسوم",
+      "automations": "أتمتة وسوم العملاء"
+    },
+    "table": {
+      "searchTags": "ابحث في الوسوم...",
+      "searchAutomations": "ابحث في الأتمتة...",
+      "emptyTagsTitle": "لا توجد وسوم عملاء بعد",
+      "emptyTagsSubtitle": "أنشئ وسمًا لتصنيف العملاء يدويًا أو عبر الأتمتة.",
+      "emptyAutomationsTitle": "لا توجد أتمتة وسوم عملاء بعد",
+      "emptyAutomationsSubtitle": "أنشئ قاعدة تستخدم بيانات هذا الطلب وإحصائيات العميل لوسم العميل."
+    },
+    "columns": {
+      "name": "الاسم",
+      "color": "اللون",
+      "description": "الوصف",
+      "active": "نشط",
+      "manual": "السماح للموظفين بالاستخدام",
+      "priority": "الأولوية",
+      "ordersCount": "الطلبات",
+      "clientsCount": "العملاء",
+      "tag": "الوسم",
+      "enabled": "مفعّل",
+      "logic": "المنطق",
+      "rules": "القواعد"
+    },
+    "filters": {
+      "status": "الحالة",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "enabled": "مفعّل",
+      "disabled": "معطّل",
+      "tag": "الوسم",
+      "manual": "السماح للموظفين بالاستخدام",
+      "allowed": "مسموح",
+      "notAllowed": "غير مسموح"
+    },
+    "actions": {
+      "addTag": "إضافة وسم",
+      "addAutomation": "إضافة أتمتة",
+      "settings": "الإعدادات",
+      "export": "تصدير إكسل",
+      "view": "عرض",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "activate": "تفعيل",
+      "deactivate": "إلغاء التفعيل",
+      "allowEmployeeUse": "السماح للموظفين بالاستخدام",
+      "disallowEmployeeUse": "منع الموظفين من الاستخدام",
+      "enableAutomation": "تفعيل",
+      "disableAutomation": "إيقاف"
+    },
+    "settings": {
+      "title": "إعدادات وسوم العملاء",
+      "modeTitle": "وضع وسوم العميل",
+      "many": "السماح بعدة وسوم",
+      "manyDescription": "استخدم هذا عندما يمكن أن يحمل العميل عدة وسوم في نفس الوقت.",
+      "one": "وسم واحد فقط",
+      "oneDescription": "استخدم هذا عندما يجب أن يكون لكل عميل وسم واحد. الأولوية الأعلى تفوز.",
+      "automationsTitle": "أتمتة وسوم العملاء",
+      "automationsOn": "مفعّلة",
+      "automationsOnDescription": "عند التفعيل تُشغَّل أتمتة العملاء بعد تغيير الطلب أو التعيين أو الشحنة أو العرض الإضافي.",
+      "automationsOff": "معطّلة",
+      "automationsOffDescription": "الوسوم الحالية تبقى على العملاء ويمكن تعيينها يدويًا.",
+      "removeUnmatchedTitle": "إزالة الوسوم التلقائية غير المطابقة",
+      "removeUnmatchedOn": "إزالة عند توقف تحقق القواعد",
+      "removeUnmatchedOnDescription": "تُزال فقط الوسوم التي أضافتها الأتمتة. الوسوم المعيَّنة يدويًا تبقى على العميل.",
+      "removeUnmatchedOff": "الإبقاء على الوسوم غير المطابقة",
+      "removeUnmatchedOffDescription": "استخدم هذا إذا كان يجب أن يبقى الوسم حتى بعد توقف تحقق القاعدة."
+    },
+    "dialog": {
+      "addTagTitle": "إضافة وسم",
+      "editTagTitle": "تعديل وسم",
+      "tagSubtitle": "يمكن تعيين الوسوم للعملاء يدويًا أو عبر الأتمتة.",
+      "addAutomationTitle": "إضافة أتمتة وسم عميل",
+      "editAutomationTitle": "تعديل أتمتة وسم عميل",
+      "viewAutomationTitle": "تفاصيل الأتمتة",
+      "automationSubtitle": "عند تحقق الشروط يُضاف هذا الوسم إلى العميل. تُقيَّم الأتمتة عند تغيّر بيانات الطلب.",
+      "name": "الاسم",
+      "namePlaceholder": "مثال: عميل متكرر",
+      "color": "اللون",
+      "description": "الوصف",
+      "descriptionPlaceholder": "ملاحظة اختيارية للفريق...",
+      "isActive": "نشط",
+      "allowEmployee": "السماح للموظفين بالاستخدام",
+      "allowEmployeeDescription": "عطّل هذا لإخفاء الوسم عن الموظفين. المديرون يمكنهم استخدام كل الوسوم دائمًا.",
+      "employees": "إظهار الوسم للموظفين",
+      "employeesDescription": "اتركه فارغًا لإظهار الوسم لكل الموظفين. حدد موظفين معيّنين لتقييد من يمكنه استخدامه.",
+      "employeesPlaceholder": "كل الموظفين",
+      "employeesHint": "الفراغ يعني أن كل الموظفين يمكنهم استخدام هذا الوسم.",
+      "priority": "الأولوية",
+      "priorityHint": "الأولوية الأعلى تفوز عند السماح بوسم واحد فقط.",
+      "tag": "الوسم",
+      "tagPlaceholder": "اختر وسمًا",
+      "isEnabled": "مفعّل",
+      "logic": "منطق المطابقة",
+      "logicAnd": "كل القواعد",
+      "logicOr": "أي قاعدة",
+      "logicDescription": "اختر ما إذا كان يجب تحقق كل القواعد، أو تكفي قاعدة واحدة لإضافة الوسم.",
+      "tagDescription": "الوسم الذي يُضاف إلى العميل عند تحقق القواعد.",
+      "isEnabledDescription": "أوقف هذا لإيقاف الأتمتة مؤقتًا دون حذفها.",
+      "rulesDescription": "كل قاعدة تفحص حقل طلب أو إحصائية عميل. يمكنك إضافة حتى 5 قواعد.",
+      "fieldDescription": "حقل الطلب أو إحصائية العميل التي ستُقارن.",
+      "operatorDescription": "طريقة المقارنة، مثل يساوي أو ضمن قائمة أو أكبر من.",
+      "valueDescription": "القيمة التي تُطابق الحقل المحدد.",
+      "rulesCount": "{count}/{max}",
+      "rules": "القواعد",
+      "addRule": "إضافة قاعدة",
+      "field": "الحقل",
+      "operator": "العامل",
+      "value": "القيمة",
+      "valuePlaceholder": "القيمة",
+      "selectField": "اختر الحقل",
+      "valuesLoading": "جاري تحميل القيم...",
+      "selectValues": "اختر القيم",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "nameTagPlaceholder": "مثال: عميل VIP"
+    },
+    "fieldGroups": {
+      "customerStats": "إحصائيات العميل"
+    },
+    "from": {
+      "totalOrders": "من إجمالي الطلبات",
+      "shippedOrders": "من الطلبات المشحونة"
+    },
+    "fields": {
+      "client": {
+        "totalOrders": "إجمالي الطلبات",
+        "confirmedCount": "الطلبات المؤكدة",
+        "confirmedPercent": "نسبة الطلبات المؤكدة",
+        "confirmedRate": "نسبة تأكيده للطلبات",
+        "shippedCount": "الطلبات المشحونة",
+        "shippedPercent": "نسبة الشحن",
+        "deliveredCount": "الطلبات المسلّمة",
+        "deliveredPercent": "نسبة التسليم",
+        "returnedCount": "الطلبات المرتجعة",
+        "returnedPercent": "نسبة المرتجع",
+        "cancelledCount": "الطلبات الملغاة",
+        "cancelRate": "نسبة الإلغاء",
+        "cancelledBeforeShippingCount": "الملغى قبل الشحن",
+        "beforeShippingCancelRate": "نسبة الإلغاء قبل الشحن",
+        "cancelledAfterShippingCount": "الملغى بعد الشحن",
+        "afterShippingCancelRate": "نسبة الإلغاء بعد الشحن",
+        "afterShippingCancelRateOfShipped": "معدل الإلغاء بعد الشحن من المشحون",
+        "totalSales": "إجمالي المبيعات",
+        "deliveredRevenue": "إيراد المسلّم"
+      }
+    },
+    "examples": {
+      "client": {
+        "totalOrders": "12",
+        "confirmedCount": "8",
+        "confirmedPercent": "20",
+        "confirmedRate": "65",
+        "shippedCount": "7",
+        "shippedPercent": "40",
+        "deliveredCount": "6",
+        "deliveredPercent": "50",
+        "returnedCount": "1",
+        "returnedPercent": "8",
+        "cancelledCount": "2",
+        "cancelRate": "15",
+        "cancelledBeforeShippingCount": "1",
+        "beforeShippingCancelRate": "5",
+        "cancelledAfterShippingCount": "1",
+        "afterShippingCancelRate": "10",
+        "afterShippingCancelRateOfShipped": "10",
+        "totalSales": "4500",
+        "deliveredRevenue": "3800"
+      }
+    },
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "nameMin": "يجب ألا يقل الاسم عن حرف",
+      "nameMax": "الاسم طويل جدًا",
+      "colorInvalid": "استخدم لونًا سداسيًا مثل #6C5CE7",
+      "descriptionMax": "يجب ألا يتجاوز الوصف 1000 حرف",
+      "priorityMin": "لا يمكن أن تكون الأولوية سالبة",
+      "tagRequired": "اختر وسمًا",
+      "rulesMin": "أضف قاعدة واحدة على الأقل",
+      "rulesMax": "يمكن إضافة 5 قواعد كحد أقصى",
+      "fieldRequired": "اختر حقلًا",
+      "operatorRequired": "اختر عاملًا",
+      "valueRequired": "القيمة مطلوبة"
+    },
+    "toast": {
+      "saved": "تم الحفظ بنجاح",
+      "deleted": "تم الحذف بنجاح"
+    },
+    "delete": {
+      "tagTitle": "حذف الوسم",
+      "tagDesc": "سيتم إزالة هذا الوسم من كل العملاء.",
+      "automationTitle": "حذف الأتمتة",
+      "automationDesc": "ستتوقف هذه القاعدة عن وسم العملاء تلقائيًا.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "stats": {
+      "tags": "وسوم العملاء",
+      "automations": "الأتمتة",
+      "activeTags": "وسوم نشطة",
+      "manualTags": "وسوم يُسمح للموظفين باستخدامها",
+      "activeAutomations": "أتمتة نشطة"
+    },
+    "editor": {
+      "title": "وسوم العملاء",
+      "empty": "لا توجد وسوم",
+      "noneAssignable": "لا توجد وسوم متاحة للتعيين.",
+      "oneModeHint": "يسمح هذا الإعداد بوسم واحد لكل عميل. اختر وسمًا آخر لاستبداله، أو اضغط الوسم المحدد لإزالته.",
+      "manyModeHint": "اختر وسمًا واحدًا أو أكثر لهذا العميل.",
+      "confirm": "تأكيد",
+      "cancel": "إلغاء",
+      "saving": "جاري الحفظ...",
+      "tags": "الوسوم"
     }
   },
   "cancelCausesReports": {
@@ -7709,7 +7934,8 @@
         "shipping": "الشحن",
         "notifications": "الإشعارات",
         "warehouse": "المستودع",
-        "sync": "مزامنة المتاجر"
+        "sync": "مزامنة المتاجر",
+        "tags": "الوسوم"
       },
       "sync": {
         "skuFallbackTitle": "مطابقة المنتجات برمز SKU عند عدم الربط",
@@ -13265,8 +13491,8 @@
           "selectFromOrderData": "اختيار من بيانات الطلب",
           "enterValue": "أدخل القيمة",
           "enterValueFor": "أدخل قيمة لـ {example}",
-          "orderCheckTitle": "فحص بيانات الطلب",
-          "orderCheckDesc": "قم بتهيئة إعدادات الخطوة الجديدة",
+          "orderCheckTitle": "فحص بيانات الطلب أو العميل",
+          "orderCheckDesc": "وجّه التدفق حسب حقول الطلب أو إحصائيات العميل",
           "conditionsCount": "{count} / 20 شروط",
           "addNewCondition": "إضافة شرط جديد",
           "preview": "معاينة:",
@@ -13277,7 +13503,7 @@
           "no": "لا",
           "field": "الحقل",
           "condition": "الشرط",
-          "chooseField": "اختر الحقل من بيانات الطلب",
+          "chooseField": "اختر الحقل",
           "chooseOperator": "اختر المعامل (الشرط)",
           "enterValuePlaceholder": "أدخل القيمة المطلوبة...",
           "selectValue": "اختر القيمة...",
@@ -15982,6 +16208,10 @@
         "sync": {
           "description": "يتحكم تبويب «مزامنة المتجر» في التكامل مع المتاجر الإلكترونية المرتبطة مثل Shopify وWooCommerce وEasyOrder، بما في ذلك مزامنة المنتجات تلقائيًا لكل متجر، واستخدام رقم SKU لمطابقة المنتجات عند عدم وجود ربط مباشر.",
           "example": "مثال: فعّل «مزامنة المنتجات الجديدة» لمتجر Shopify ليتم استيراد المنتجات الجديدة تلقائيًا، وفعّل مطابقة SKU لربط منتجات WooCommerce بالمنتجات المحلية حتى في حال عدم وجود مزامنة مباشرة."
+        },
+        "tags": {
+          "description": "يتحكم تبويب «الوسوم» في طريقة تعيين وسوم الطلبات ووسوم العملاء: وسم واحد أو عدة وسوم، وتفعيل الأتمتة، وإزالة الوسوم التلقائية غير المطابقة.",
+          "example": "مثال: اسمح بعدة وسوم للطلب، وفعّل الأتمتة لتحديث الوسوم عند تغيّر بيانات الطلب، واستخدم وضع الوسم الواحد للعملاء ليبقى فقط الوسم الأعلى أولوية."
         }
       },
       "fields": {

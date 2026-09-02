@@ -33,8 +33,8 @@ function unwrapUsers(data) {
   return [];
 }
 
-export function TagFormDialog({ tag, open, onClose, onSaved }) {
-  const t = useTranslations("tags");
+export function TagFormDialog({ tag, open, onClose, onSaved, target = "order", ns = "tags" }) {
+  const t = useTranslations(ns);
   const isEdit = !!tag;
   const [initialEmployees, setInitialEmployees] = useState([]);
 
@@ -157,6 +157,7 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
             : [],
           priority: values.priority ?? 0,
         };
+        if (target === "client") payload.target = "client";
         if (isEdit) {
           await api.patch(`/tags/${tag.id}`, payload);
         } else {
@@ -169,7 +170,7 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
         toast.error(normalizeAxiosError(e));
       }
     },
-    [isEdit, tag, onClose, onSaved, t],
+    [isEdit, tag, onClose, onSaved, t, target],
   );
 
   return (
@@ -182,6 +183,9 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
             </div>
             {isEdit ? t("dialog.editTagTitle") : t("dialog.addTagTitle")}
           </DialogTitle>
+          <p className="text-sm text-muted-foreground font-normal">
+            {t("dialog.tagSubtitle")}
+          </p>
         </DialogHeader>
       <form className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-5" onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-1.5">

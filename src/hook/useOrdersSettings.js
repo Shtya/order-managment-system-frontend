@@ -63,6 +63,9 @@ const defaultSettings =  {
     orderTagMode: "many",
     tagAutomationsEnabled: true,
     tagAutomationsRemoveUnmatched: true,
+    clientTagMode: "many",
+    clientTagAutomationsEnabled: true,
+    clientTagAutomationsRemoveUnmatched: true,
   };
 
 const buildSettingsObject = (data, prevSettings) => ({
@@ -112,6 +115,15 @@ const buildSettingsObject = (data, prevSettings) => ({
   tagAutomationsRemoveUnmatched:
     data.tagAutomationsRemoveUnmatched ??
     prevSettings.tagAutomationsRemoveUnmatched ??
+    true,
+  clientTagMode: data.clientTagMode ?? prevSettings.clientTagMode ?? "many",
+  clientTagAutomationsEnabled:
+    data.clientTagAutomationsEnabled ??
+    prevSettings.clientTagAutomationsEnabled ??
+    true,
+  clientTagAutomationsRemoveUnmatched:
+    data.clientTagAutomationsRemoveUnmatched ??
+    prevSettings.clientTagAutomationsRemoveUnmatched ??
     true,
 
   // تحديث الكائنات المتداخلة (Nested Objects)

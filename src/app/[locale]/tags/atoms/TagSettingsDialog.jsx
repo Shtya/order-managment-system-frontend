@@ -20,8 +20,82 @@ import {
 } from "@/components/ui/select";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
-export function TagSettingsDialog({ open, onOpenChange }) {
-  const t = useTranslations("tags");
+export function TagSettingsFields({ settings, patch, target = "order", ns = "tags" }) {
+  const t = useTranslations(ns);
+  const isClient = target === "client";
+  const modeKey = isClient ? "clientTagMode" : "orderTagMode";
+  const enabledKey = isClient ? "clientTagAutomationsEnabled" : "tagAutomationsEnabled";
+  const removeKey = isClient
+    ? "clientTagAutomationsRemoveUnmatched"
+    : "tagAutomationsRemoveUnmatched";
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">{t("settings.modeTitle")}</Label>
+        <Select
+          value={settings?.[modeKey] || "many"}
+          onValueChange={(value) => patch({ [modeKey]: value })}
+        >
+          <SelectTrigger className="h-10 rounded-xl">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="many" description={t("settings.manyDescription")}>
+              {t("settings.many")}
+            </SelectItem>
+            <SelectItem value="one" description={t("settings.oneDescription")}>
+              {t("settings.one")}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">{t("settings.automationsTitle")}</Label>
+        <Select
+          value={settings?.[enabledKey] === false ? "false" : "true"}
+          onValueChange={(value) => patch({ [enabledKey]: value === "true" })}
+        >
+          <SelectTrigger className="h-10 rounded-xl">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="true" description={t("settings.automationsOnDescription")}>
+              {t("settings.automationsOn")}
+            </SelectItem>
+            <SelectItem value="false" description={t("settings.automationsOffDescription")}>
+              {t("settings.automationsOff")}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">{t("settings.removeUnmatchedTitle")}</Label>
+        <Select
+          value={settings?.[removeKey] === false ? "false" : "true"}
+          onValueChange={(value) => patch({ [removeKey]: value === "true" })}
+        >
+          <SelectTrigger className="h-10 rounded-xl">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="true" description={t("settings.removeUnmatchedOnDescription")}>
+              {t("settings.removeUnmatchedOn")}
+            </SelectItem>
+            <SelectItem value="false" description={t("settings.removeUnmatchedOffDescription")}>
+              {t("settings.removeUnmatchedOff")}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
+
+export function TagSettingsDialog({ open, onOpenChange, target = "order", ns = "tags" }) {
+  const t = useTranslations(ns);
   const tCommon = useTranslations("common");
   const { tempSettings, patch, saving, handleSave } = useOrdersSettings();
 
@@ -36,67 +110,12 @@ export function TagSettingsDialog({ open, onOpenChange }) {
         </DialogHeader>
 
         <div className="p-6 space-y-5">
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">{t("settings.modeTitle")}</Label>
-            <Select
-              value={tempSettings.orderTagMode || "many"}
-              onValueChange={(value) => patch({ orderTagMode: value })}
-            >
-              <SelectTrigger className="h-10 rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="many" description={t("settings.manyDescription")}>
-                  {t("settings.many")}
-                </SelectItem>
-                <SelectItem value="one" description={t("settings.oneDescription")}>
-                  {t("settings.one")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">{t("settings.automationsTitle")}</Label>
-            <Select
-              value={tempSettings.tagAutomationsEnabled === false ? "false" : "true"}
-              onValueChange={(value) => patch({ tagAutomationsEnabled: value === "true" })}
-            >
-              <SelectTrigger className="h-10 rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="true" description={t("settings.automationsOnDescription")}>
-                  {t("settings.automationsOn")}
-                </SelectItem>
-                <SelectItem value="false" description={t("settings.automationsOffDescription")}>
-                  {t("settings.automationsOff")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">{t("settings.removeUnmatchedTitle")}</Label>
-            <Select
-              value={tempSettings.tagAutomationsRemoveUnmatched === false ? "false" : "true"}
-              onValueChange={(value) =>
-                patch({ tagAutomationsRemoveUnmatched: value === "true" })
-              }
-            >
-              <SelectTrigger className="h-10 rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="true" description={t("settings.removeUnmatchedOnDescription")}>
-                  {t("settings.removeUnmatchedOn")}
-                </SelectItem>
-                <SelectItem value="false" description={t("settings.removeUnmatchedOffDescription")}>
-                  {t("settings.removeUnmatchedOff")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <TagSettingsFields
+            settings={tempSettings}
+            patch={patch}
+            target={target}
+            ns={ns}
+          />
 
           <div className="flex justify-end gap-3 pt-4 border-t dark:border-slate-800">
             <Button

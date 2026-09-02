@@ -51,6 +51,7 @@ import { FieldTooltip } from "@/components/ui/field-tooltip";
 import { P_08, P_04, P_12, P_20, P_25 } from "../../settings/page";
 import { MdNotificationAdd } from "react-icons/md";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { TagSettingsFields } from "@/app/[locale]/tags/atoms/TagSettingsDialog";
 import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 
 /* ══════════════════════════════════════════════════════════════
@@ -68,6 +69,7 @@ function rgba(hex, a = 0.12) {
 const TABS = [
   { key: "general", icon: Settings, labelKey: "retrySettings.tabs.general" },
   { key: "automation", icon: Zap, labelKey: "retrySettings.tabs.automation" },
+  { key: "tags", icon: Tags, labelKey: "retrySettings.tabs.tags" },
   { key: "shipping", icon: Truck, labelKey: "retrySettings.tabs.shipping" },
   // {
   //   key: "warehouse",
@@ -246,6 +248,10 @@ export default function GlobalRetrySettingsModal({
                     t={t}
                     tTutorial={tTutorial}
                   />
+                )}
+
+                {activeTab === "tags" && (
+                  <TagsSettingsTab settings={tempSettings} patch={patch} />
                 )}
 
                 {activeTab === "shipping" && (
@@ -715,8 +721,6 @@ function FieldSubLabel({ children }) {
 }
 
 export function GeneralTab({ settings, patch, t, tTutorial }) {
-  const tTags = useTranslations("tags");
-
   return (
     <div className="space-y-5">
       {/* ── Master on/off — prominent top-level switch ── */}
@@ -968,84 +972,6 @@ export function GeneralTab({ settings, patch, t, tTutorial }) {
         </div>
       </SectionCard>
 
-      {/* ── Order tags ── */}
-      <SectionCard
-        icon={Tags}
-        iconColor="#6C5CE7"
-        title={tTags("settings.title")}
-        subtitle={tTags("settings.modeTitle")}
-      >
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">{tTags("settings.modeTitle")}</Label>
-            <Select
-              value={settings.orderTagMode || "many"}
-              onValueChange={(value) => patch({ orderTagMode: value })}
-            >
-              <SelectTrigger className="h-10 rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="many" description={tTags("settings.manyDescription")}>
-                  {tTags("settings.many")}
-                </SelectItem>
-                <SelectItem value="one" description={tTags("settings.oneDescription")}>
-                  {tTags("settings.one")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">{tTags("settings.automationsTitle")}</Label>
-            <Select
-              value={settings.tagAutomationsEnabled === false ? "false" : "true"}
-              onValueChange={(value) => patch({ tagAutomationsEnabled: value === "true" })}
-            >
-              <SelectTrigger className="h-10 rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="true" description={tTags("settings.automationsOnDescription")}>
-                  {tTags("settings.automationsOn")}
-                </SelectItem>
-                <SelectItem value="false" description={tTags("settings.automationsOffDescription")}>
-                  {tTags("settings.automationsOff")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">{tTags("settings.removeUnmatchedTitle")}</Label>
-            <Select
-              value={settings.tagAutomationsRemoveUnmatched === false ? "false" : "true"}
-              onValueChange={(value) =>
-                patch({ tagAutomationsRemoveUnmatched: value === "true" })
-              }
-            >
-              <SelectTrigger className="h-10 rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  value="true"
-                  description={tTags("settings.removeUnmatchedOnDescription")}
-                >
-                  {tTags("settings.removeUnmatchedOn")}
-                </SelectItem>
-                <SelectItem
-                  value="false"
-                  description={tTags("settings.removeUnmatchedOffDescription")}
-                >
-                  {tTags("settings.removeUnmatchedOff")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </SectionCard>
-
       {/* ── Retry Limits ── */}
       <SectionCard
         icon={RotateCcw}
@@ -1139,6 +1065,42 @@ export function GeneralTab({ settings, patch, t, tTutorial }) {
         </AnimatePresence>
       </div> */}
     </div >
+  );
+}
+
+export function TagsSettingsTab({ settings, patch }) {
+  const tOrderTags = useTranslations("tags");
+  const tClientTags = useTranslations("clientTags");
+
+  return (
+    <div className="space-y-5">
+      <SectionCard
+        icon={Tags}
+        iconColor="#6C5CE7"
+        title={tOrderTags("settings.title")}
+        subtitle={tOrderTags("settings.modeTitle")}
+      >
+        <TagSettingsFields
+          settings={settings}
+          patch={patch}
+          target="order"
+          ns="tags"
+        />
+      </SectionCard>
+      <SectionCard
+        icon={Users}
+        iconColor="#0EA5E9"
+        title={tClientTags("settings.title")}
+        subtitle={tClientTags("settings.modeTitle")}
+      >
+        <TagSettingsFields
+          settings={settings}
+          patch={patch}
+          target="client"
+          ns="clientTags"
+        />
+      </SectionCard>
+    </div>
   );
 }
 

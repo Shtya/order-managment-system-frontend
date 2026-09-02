@@ -50,6 +50,7 @@ import {
   CheckCircle2,
   AlertCircle,
   FileDown,
+  Tags,
 } from "lucide-react";
 
 import { useForm } from "react-hook-form";
@@ -103,6 +104,7 @@ import {
   WarehouseTab,
   NotificationsSettingsTab,
   SyncSettingsTab,
+  TagsSettingsTab,
 } from "../orders/atoms/SettingsModal";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useTheme } from "next-themes";
@@ -424,6 +426,7 @@ const createCompanySchema = (t) =>
 const SETTINGS_TABS = [
   { key: "general", icon: Settings2, labelKey: "retrySettings.tabs.general" },
   { key: "automation", icon: Zap, labelKey: "retrySettings.tabs.automation" },
+  { key: "tags", icon: Tags, labelKey: "retrySettings.tabs.tags" },
   { key: "shipping", icon: Truck, labelKey: "retrySettings.tabs.shipping" },
   // {
   //   key: "warehouse",
@@ -1550,6 +1553,9 @@ function SettingsTab() {
                 t={tOrders}
               tTutorial={tTutorial}
               />
+            )}
+            {activeTab === "tags" && (
+              <TagsSettingsTab settings={tempSettings} patch={patch} />
             )}
             {activeTab === "shipping" && (
               <ShippingTab

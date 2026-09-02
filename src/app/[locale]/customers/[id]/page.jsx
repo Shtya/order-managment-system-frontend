@@ -68,6 +68,7 @@ import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import OrderTab from "../../orders/tabs/OrderTab";
 import ClientModal from "../atoms/ClientModal";
+import { ClientTagsEditor } from "../atoms/ClientTagsEditor";
 import { Card } from "../../reports/order-analysis/page";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -764,8 +765,8 @@ export default function CustomerPage() {
 
       <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row gap-7">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 items-start justify-between">
+            <div className="flex items-center gap-4 ">
               <div className="relative shrink-0">
                 <Avatar className="h-20 w-20 border-4 border-background shadow-md">
                   <AvatarImage src={avatarSrc(customer.profilePicture)} alt={customer.name || "Customer"} />
@@ -789,6 +790,9 @@ export default function CustomerPage() {
                   {td("joinedAt", { date: formatDate(customer.createdAt) })}
                 </p>
               </div>
+            </div>
+            <div className="w-full flex-1">
+            <ClientTagsEditor clientId={customerId} />
             </div>
           </div>
 

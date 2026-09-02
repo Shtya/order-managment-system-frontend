@@ -165,20 +165,14 @@ export function OrderTagsDialog({ order, open, onClose, onUpdated }) {
       return;
     }
     const toRemove = [...baselineIds].filter((id) => !selectedIds.has(id));
-    const toAdd = selected.filter((tag) => !baselineIds.has(tag.id));
+    const toAdd = selected.filter((tag) => !baselineIds.has(tag.id)).map((tag) => tag.id);
     setSaving(true);
     try {
-      if (single && toAdd[0]) {
-        await api.post(`/orders/${order.id}/tags`, { tagId: toAdd[0].id });
-      } else if (single && toRemove[0]) {
-        await api.delete(`/orders/${order.id}/tags/${toRemove[0]}`);
-      } else {
-        await Promise.all([
-          ...toRemove.map((tagId) => api.delete(`/orders/${order.id}/tags/${tagId}`)),
-          ...toAdd.map((tag) => api.post(`/orders/${order.id}/tags`, { tagId: tag.id })),
-        ]);
-      }
-      applyRows(selected.map((tag) => ({ tag, tagId: tag.id })));
+      const res = await api.patch(`/orders/${order.id}/tags`, {
+        addTagIds: toAdd,
+        removeTagIds: toRemove,
+      });
+      applyRows(res.data);
       onClose?.();
     } catch (e) {
       toast.error(normalizeAxiosError(e));

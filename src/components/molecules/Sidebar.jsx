@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 
 import {
@@ -483,10 +483,15 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
   const userRole = user?.role?.name?.toUpperCase();
 
 
+  const locale = useLocale();
   const isActive = useCallback(
     (href) => {
       const [hrefPath, hrefQuery] = href.split("?");
-      const pathMatch = pathname === hrefPath || pathname.endsWith(hrefPath);
+      //remove locale from hrefPath
+      const hrefPathWithoutLocale = hrefPath.replace(`/${locale}`, "");
+      const pathnameWithoutLocale = pathname.replace(`/${locale}`, "");
+
+      const pathMatch = pathnameWithoutLocale === hrefPathWithoutLocale;
       if (!hrefQuery) return pathMatch;
       const currentParams = new URLSearchParams(currentSearch);
       const hrefParams = new URLSearchParams(hrefQuery);
@@ -596,6 +601,21 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
       labelKey: "customers",
       href: "/customers",
       permission: "customers.read",
+      children: [
+        {
+          icon: Users,
+          labelKey: "customers",
+          href: "/customers",
+          permission: "customers.read",
+        },
+        //customers tags
+        {
+          icon: Tags,
+          labelKey: "customersTags",
+          href: "/customers/tags",
+          permission: "tags.read",
+        }
+      ],
     },
 
     //show to /warehouse?tab=distribution if isDirectShippingEnabled enable

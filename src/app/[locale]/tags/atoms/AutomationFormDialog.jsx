@@ -34,6 +34,7 @@ import {
   LIST_FIELDS,
   MAX_RULES,
   NUMBER_FIELDS,
+  PERCENT_FIELDS,
   CONFIRMATION_SOURCES,
   PAYMENT_METHODS,
   PAYMENT_STATUSES,
@@ -120,7 +121,7 @@ function OptionsMultiSelect({ options, value, onChange, placeholder, disabled, l
   );
 }
 
-function RuleValueInput({ field, operator, value, onChange, t, options, disabled, lookupsLoading }) {
+function RuleValueInput({ field, operator, value, onChange, t, tCatalog, options, disabled, lookupsLoading }) {
   if (!operatorNeedsValue(operator)) return null;
 
   const isList = operator === "in" || operator === "not_in";
@@ -128,9 +129,9 @@ function RuleValueInput({ field, operator, value, onChange, t, options, disabled
   const isLookup = LOOKUP_FIELDS.has(field);
   const waitingForLabels = isLookup && lookupsLoading;
   const booleanTrueLabel =
-    field === "order.phone.valid" ? t("phone.egyptian") : t("boolean.true");
+    field === "order.phone.valid" ? tCatalog("phone.egyptian") : tCatalog("boolean.true");
   const booleanFalseLabel =
-    field === "order.phone.valid" ? t("phone.notEgyptian") : t("boolean.false");
+    field === "order.phone.valid" ? tCatalog("phone.notEgyptian") : tCatalog("boolean.false");
 
   if (waitingForLabels) {
     return <ValuesLoadingField label={t("dialog.valuesLoading")} />;
@@ -187,20 +188,48 @@ function RuleValueInput({ field, operator, value, onChange, t, options, disabled
     );
   }
 
+  const isPercent = PERCENT_FIELDS.has(field);
+  const isNumber = NUMBER_FIELDS.has(field);
+
   return (
     <Input
-      type={NUMBER_FIELDS.has(field) ? "number" : "text"}
+      type={isNumber ? "number" : "text"}
+      min={isPercent ? 1 : undefined}
+      max={isPercent ? 100 : undefined}
+      step={isPercent ? 1 : undefined}
       value={value ?? ""}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        const next = e.target.value;
+        if (!isPercent || next === "") {
+          onChange(next);
+          return;
+        }
+        const n = Number(next);
+        if (!Number.isFinite(n)) {
+          onChange("");
+          return;
+        }
+        onChange(String(Math.min(100, Math.max(1, n))));
+      }}
       placeholder={t("dialog.valuePlaceholder")}
       disabled={disabled}
     />
   );
 }
 
-export function AutomationFormDialog({ automation, open, onClose, onSaved, tags, readOnly = false }) {
+export function AutomationFormDialog({
+  automation,
+  open,
+  onClose,
+  onSaved,
+  tags,
+  readOnly = false,
+  ns = "tags",
+  includeClientFields = false,
+}) {
   const tOrders = useTranslations("orders");
-  const t = useTranslations("tags");
+  const t = useTranslations(ns);
+  const tCatalog = useTranslations("tags");
   const locale = useLocale();
   const isEdit = !!automation;
   const [lookupsLoading, setLookupsLoading] = useState(false);
@@ -349,7 +378,7 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
       "order.cityId": cityOptions,
       "order.paymentStatus": PAYMENT_STATUSES.map((v) => ({
         value: v,
-        label: t(`paymentStatus.${v}`),
+        label: tCatalog(`paymentStatus.${v}`),
       })),
       "order.paymentMethod": PAYMENT_METHODS.map((v) => ({
         value: v,
@@ -360,14 +389,14 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
       "order.shippingCompanyId": shippingOptions,
       "order.confirmationSource": CONFIRMATION_SOURCES.map((v) => ({
         value: v,
-        label: t(`confirmationSource.${v}`),
+        label: tCatalog(`confirmationSource.${v}`),
       })),
       "shipment.status": lookups.shipmentStatuses.map((v) => ({
         value: v,
         label: tOrders(`trackingStatus.${v}`),
       })),
     };
-  }, [lookups, locale, t, tOrders]);
+  }, [lookups, locale, tCatalog, tOrders]);
 
   const onSubmit = useCallback(
     async (values) => {
@@ -429,6 +458,9 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
             </div>
             {automationTitle}
           </DialogTitle>
+          <p className="text-sm text-muted-foreground font-normal">
+            {t("dialog.automationSubtitle")}
+          </p>
         </DialogHeader>
       <form className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-5" onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-1.5">
@@ -559,6 +591,8 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
                       <ConditionFieldPicker
                         value={field.value}
                         disabled={readOnly}
+                        ns={ns}
+                        includeClientFields={includeClientFields}
                         onChange={(v) => {
                           field.onChange(v);
                           const nextOps = operatorsFor(v);
@@ -610,7 +644,7 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
                         <SelectContent>
                           {ops.map((op) => (
                             <SelectItem key={op} value={op}>
-                              {t(`operators.${op}`)}
+                              {tCatalog(`operators.${op}`)}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -632,6 +666,7 @@ export function AutomationFormDialog({ automation, open, onClose, onSaved, tags,
                         value={field.value}
                         onChange={field.onChange}
                         t={t}
+                        tCatalog={tCatalog}
                         options={fieldOptions}
                         disabled={readOnly}
                         lookupsLoading={lookupsLoading}

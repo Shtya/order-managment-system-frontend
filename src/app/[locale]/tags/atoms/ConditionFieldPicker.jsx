@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Activity,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
   DollarSign,
@@ -20,7 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CONDITION_FIELDS } from "./condition-fields";
+import { CONDITION_FIELDS, CLIENT_CONDITION_FIELDS, CLIENT_PERCENT_FROM } from "./condition-fields";
 
 const FIELD_ICONS = {
   "order.statusId": Activity,
@@ -42,7 +43,25 @@ const FIELD_ICONS = {
   "assignment.contactTries": User,
   "assignment.hasActive": User,
   "shipment.status": Truck,
-  "upsell.accepted": Tag,
+  "client.totalOrders": Hash,
+  "client.confirmedCount": CheckCircle2,
+  "client.confirmedPercent": Percent,
+  "client.confirmedRate": Percent,
+  "client.shippedCount": Truck,
+  "client.shippedPercent": Percent,
+  "client.deliveredCount": Package,
+  "client.deliveredPercent": Percent,
+  "client.returnedCount": Repeat,
+  "client.returnedPercent": Percent,
+  "client.cancelledCount": Activity,
+  "client.cancelRate": Percent,
+  "client.cancelledBeforeShippingCount": Activity,
+  "client.beforeShippingCancelRate": Percent,
+  "client.cancelledAfterShippingCount": Activity,
+  "client.afterShippingCancelRate": Percent,
+  "client.totalSales": DollarSign,
+  "client.deliveredRevenue": DollarSign,
+  "client.afterShippingCancelRateOfShipped": Percent,
 };
 
 function PlusIcon({ size, className }) {
@@ -65,14 +84,47 @@ function PlusIcon({ size, className }) {
   );
 }
 
-export function ConditionFieldPicker({ value, onChange, disabled }) {
-  const t = useTranslations("tags");
+export function ConditionFieldPicker({
+  value,
+  onChange,
+  disabled,
+  ns = "tags",
+  includeClientFields = false,
+}) {
+  const tPage = useTranslations(ns);
+  const tOrder = useTranslations("tags");
   const tProps = useTranslations("whatsApp.automations.builder.orderProperties");
   const [open, setOpen] = useState(false);
-  const [expanded, setExpanded] = useState({ orderData: true });
+  const [expanded, setExpanded] = useState({
+    orderData: !includeClientFields,
+    customerStats: !!includeClientFields,
+  });
 
-  const tree = useMemo(
-    () => [
+  const fieldLabel = useCallback(
+    (field) =>
+      String(field).startsWith("client.")
+        ? tPage(`fields.${field}`)
+        : tOrder(`fields.${field}`),
+    [tOrder, tPage],
+  );
+  const fieldFrom = useCallback(
+    (field) => {
+      const fromKey = CLIENT_PERCENT_FROM[field];
+      if (!fromKey) return "";
+      return tPage(`from.${fromKey}`);
+    },
+    [tPage],
+  );
+  const fieldExample = useCallback(
+    (field) =>
+      String(field).startsWith("client.")
+        ? tPage(`examples.${field}`)
+        : tOrder(`examples.${field}`),
+    [tOrder, tPage],
+  );
+
+  const tree = useMemo(() => {
+    const groups = [
       {
         id: "orderData",
         label: tProps("orderData"),
@@ -80,20 +132,41 @@ export function ConditionFieldPicker({ value, onChange, disabled }) {
         children: CONDITION_FIELDS.map((field) => ({
           id: field,
           path: field,
-          label: t(`fields.${field}`),
-          example: t(`examples.${field}`),
+          label: fieldLabel(field),
+          example: fieldExample(field),
           icon: FIELD_ICONS[field] || Tag,
         })),
       },
-    ],
-    [t, tProps],
-  );
+    ];
+    if (includeClientFields) {
+      groups.push({
+        id: "customerStats",
+        label: tPage("fieldGroups.customerStats"),
+        icon: User,
+        children: CLIENT_CONDITION_FIELDS.map((field) => ({
+          id: field,
+          path: field,
+          label: fieldLabel(field),
+          example: fieldExample(field),
+          from: fieldFrom(field),
+          icon: FIELD_ICONS[field] || Tag,
+        })),
+      });
+    }
+    return groups;
+  }, [fieldExample, fieldFrom, fieldLabel, includeClientFields, tPage, tProps]);
 
   const selectedPath = useMemo(() => {
     if (!value) return [];
-    const leaf = tree[0]?.children?.find((child) => child.id === value);
-    if (!leaf) return [];
-    return [tree[0].label, leaf.label];
+    for (const group of tree) {
+      const leaf = group.children?.find((child) => child.id === value);
+      if (leaf) {
+        return leaf.from
+          ? [group.label, leaf.label, leaf.from]
+          : [group.label, leaf.label];
+      }
+    }
+    return [];
   }, [tree, value]);
 
   const toggleExpand = useCallback((id) => {
@@ -149,6 +222,11 @@ export function ConditionFieldPicker({ value, onChange, disabled }) {
                 />
               ) : null}
               <span className="text-sm font-bold truncate">{node.label}</span>
+              {!hasChildren && node.from && (
+                <span className="text-[10px] text-slate-400 font-medium truncate">
+                  ({node.from})
+                </span>
+              )}
               {!hasChildren && node.example && (
                 <span className="text-[10px] text-slate-400 font-medium truncate">
                   ({node.example})
@@ -204,7 +282,7 @@ export function ConditionFieldPicker({ value, onChange, disabled }) {
               ))}
             </span>
           ) : (
-            <span className="text-muted-foreground">{t("dialog.selectField")}</span>
+            <span className="text-muted-foreground">{tPage("dialog.selectField")}</span>
           )}
           <ChevronDown
             size={14}
@@ -214,7 +292,7 @@ export function ConditionFieldPicker({ value, onChange, disabled }) {
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="p-0 w-96 overflow-hidden z-[80]"
+        className="p-0 w-[550px] overflow-hidden z-[80]"
         onWheel={(event) => event.stopPropagation()}
         onTouchMove={(event) => event.stopPropagation()}
       >

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot, Ban, UserPlus } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot, Ban, UserPlus, Percent, Repeat } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
@@ -35,6 +35,29 @@ import Button_ from "@/components/atoms/Button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SendSmsModal } from "../../sms/atoms/SendSmsModal";
 import IssueFormDialog from "../../issues/atoms/IssueFormDialog";
+import { CLIENT_CONDITION_FIELDS, CLIENT_PERCENT_FROM, PERCENT_FIELDS } from "../../tags/atoms/condition-fields";
+
+const CLIENT_CHECK_FIELD_ICONS = {
+    "client.totalOrders": Hash,
+    "client.confirmedCount": CheckCircle,
+    "client.confirmedPercent": Percent,
+    "client.confirmedRate": Percent,
+    "client.shippedCount": Truck,
+    "client.shippedPercent": Percent,
+    "client.deliveredCount": Package,
+    "client.deliveredPercent": Percent,
+    "client.returnedCount": Repeat,
+    "client.returnedPercent": Percent,
+    "client.cancelledCount": Activity,
+    "client.cancelRate": Percent,
+    "client.cancelledBeforeShippingCount": Activity,
+    "client.beforeShippingCancelRate": Percent,
+    "client.cancelledAfterShippingCount": Activity,
+    "client.afterShippingCancelRate": Percent,
+    "client.totalSales": DollarSign,
+    "client.deliveredRevenue": DollarSign,
+    "client.afterShippingCancelRateOfShipped": Percent,
+};
 
 
 function normalizeAxiosError(err) {
@@ -2619,6 +2642,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     const tOrders = useTranslations("orders");
     const tConfig = useTranslations("whatsApp.automations.builder.config");
     const tBuilder = useTranslations("whatsApp.automations.builder");
+    const tClientTags = useTranslations("clientTags");
     const [checks, setChecks] = useState(Array.isArray(value?.checks) ? value.checks : []);
     const { mode } = context || {};
 
@@ -2714,6 +2738,19 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
         { id: "deposit", label: tBuilder('orderProperties.deposit'), type: "number", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },
     ];
 
+    const clientFields = CLIENT_CONDITION_FIELDS.map((id) => ({
+        id,
+        label: tClientTags(`fields.${id}`),
+        from: CLIENT_PERCENT_FROM[id] ? tClientTags(`from.${CLIENT_PERCENT_FROM[id]}`) : "",
+        type: "number",
+        icon: CLIENT_CHECK_FIELD_ICONS[id] || Hash,
+        color: PERCENT_FIELDS.has(id) ? "text-violet-500" : "text-sky-500",
+        bg: PERCENT_FIELDS.has(id) ? "bg-violet-50" : "bg-sky-50",
+        isPercent: PERCENT_FIELDS.has(id),
+    }));
+
+    const allFields = [...fields, ...clientFields];
+
     const operatorsByType = {
         number: [
             { id: "==", label: tBuilder("operators.equal") },
@@ -2743,7 +2780,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     const handleAddCheck = () => {
         if (checks.length < 20) {
             const initialField = "orderNumber";
-            const fieldDef = fields.find(f => f.id === initialField);
+            const fieldDef = allFields.find(f => f.id === initialField);
             const newChecks = [...checks, {
                 field: initialField,
                 fieldLabel: fieldDef?.label || initialField,
@@ -2774,7 +2811,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
         const currentCheck = { ...newChecks[index], ...updates };
 
         if (updates.field) {
-            const fieldDef = fields.find(f => f.id === updates.field);
+            const fieldDef = allFields.find(f => f.id === updates.field);
             currentCheck.fieldLabel = fieldDef?.label;
             currentCheck.operator = operatorsByType[fieldDef?.type][0].id;
             currentCheck.targetLabel = fieldDef?.type === "boolean" ? tConfig("yes") : "";
@@ -2797,8 +2834,8 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     const currentCheck = activeIndex !== null ? checks[activeIndex] : null;
     const fieldDef = useMemo(() => {
         if (!currentCheck) return null;
-        return fields.find(f => f?.id === currentCheck?.field) || fields[0];
-    }, [currentCheck, fields]);
+        return allFields.find(f => f?.id === currentCheck?.field) || allFields[0];
+    }, [currentCheck, allFields]);
 
     const operators = fieldDef ? operatorsByType[fieldDef?.type] : [];
 
@@ -2816,7 +2853,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                 <div className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
                     <div className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0 md:pe-[60px]">
-                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 me-10">
                             {activeIndex !== null ? (
                                 <div className="flex flex-col sm:flex-row justify-between flex-1 gap-4 w-full">
                                     <div className="md:px-6 overflow-x-auto custom-scrollbar pb-2 md:pb-0">
@@ -2883,7 +2920,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                         {checks.length > 0 ? (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                                                 {checks.map((check, i) => {
-                                                    const f = fields.find(fd => fd.id === check.field) || fields[0];
+                                                    const f = allFields.find(fd => fd.id === check.field) || allFields[0];
                                                     return (
                                                         <div
                                                             key={i}
@@ -2943,28 +2980,36 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                             </div>
                                             <div className="flex-1 pb-6 md:pb-8">
                                                 <h4 className="text-sm md:text-[15px] font-black text-slate-800 dark:text-slate-100 mb-3 md:mb-4">{tConfig("chooseField")}</h4>
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
-                                                    {fields.map(f => {
-                                                        const isSelected = currentCheck?.field === f?.id;
-                                                        return (
-                                                            <button
-                                                                key={f.id}
-                                                                onClick={() => handleUpdateCheck(activeIndex, { field: f.id })}
-                                                                className={cn(
-                                                                    "flex flex-col items-center justify-center gap-2 md:gap-3 p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all relative group h-20 md:h-24",
-                                                                    isSelected
-                                                                        ? "bg-white dark:bg-slate-900 border-primary ring-4 ring-primary/5 shadow-md"
-                                                                        : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-200"
-                                                                )}
-                                                            >
-                                                                <div className={cn("w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm", f.bg, f.color)}>
-                                                                    <f.icon size={16} className="md:size-5" />
-                                                                </div>
-                                                                <p className="text-[10px] md:text-[11px] font-black text-slate-700 dark:text-slate-200 text-center leading-tight truncate w-full px-1">{f.label}</p>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
+                                                {[{ title: tBuilder("orderProperties.orderData"), items: fields }, { title: tClientTags("fieldGroups.customerStats"), items: clientFields }].map((group) => (
+                                                    <div key={group.title} className="mb-4 md:mb-6 last:mb-0">
+                                                        <h5 className="text-[11px] md:text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 md:mb-3">{group.title}</h5>
+                                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
+                                                            {group.items.map(f => {
+                                                                const isSelected = currentCheck?.field === f?.id;
+                                                                return (
+                                                                    <button
+                                                                        key={f.id}
+                                                                        onClick={() => handleUpdateCheck(activeIndex, { field: f.id })}
+                                                                        className={cn(
+                                                                            "flex flex-col items-center justify-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all relative group min-h-20 md:min-h-24",
+                                                                            isSelected
+                                                                                ? "bg-white dark:bg-slate-900 border-primary ring-4 ring-primary/5 shadow-md"
+                                                                                : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-200"
+                                                                        )}
+                                                                    >
+                                                                        <div className={cn("w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm", f.bg, f.color)}>
+                                                                            <f.icon size={16} className="md:size-5" />
+                                                                        </div>
+                                                                        <p className="text-[10px] md:text-[11px] font-black text-slate-700 dark:text-slate-200 text-center leading-tight line-clamp-2 w-full px-1">{f.label}</p>
+                                                                        {f.from ? (
+                                                                            <p className="text-[8px] md:text-[9px] font-bold text-slate-400 text-center leading-tight px-1">{f.from}</p>
+                                                                        ) : null}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
 
@@ -3036,7 +3081,17 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                             className="h-12 md:h-14 rounded-xl md:rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs md:text-sm px-4 md:px-6 shadow-sm rtl"
                                                             value={currentCheck?.targetValue || ""}
                                                             maxLength={300}
-                                                            onChange={(e) => handleUpdateCheck(activeIndex, { targetValue: e.target.value, targetLabel: e.target.value })}
+                                                            min={fieldDef?.isPercent ? 1 : undefined}
+                                                            max={fieldDef?.isPercent ? 100 : undefined}
+                                                            step={fieldDef?.isPercent ? 1 : undefined}
+                                                            onChange={(e) => {
+                                                                let next = e.target.value;
+                                                                if (fieldDef?.isPercent && next !== "") {
+                                                                    const n = Number(next);
+                                                                    if (Number.isFinite(n)) next = String(Math.min(100, Math.max(1, n)));
+                                                                }
+                                                                handleUpdateCheck(activeIndex, { targetValue: next, targetLabel: next });
+                                                            }}
                                                             placeholder={tConfig("enterValuePlaceholder")}
                                                         />
                                                     )}

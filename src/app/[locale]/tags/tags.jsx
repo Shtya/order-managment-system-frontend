@@ -42,18 +42,23 @@ import { TagFormDialog } from "./atoms/TagFormDialog";
 import { AutomationFormDialog } from "./atoms/AutomationFormDialog";
 import { TagSettingsDialog } from "./atoms/TagSettingsDialog";
 import { unwrapList } from "./atoms/condition-fields";
+import { useDebounce } from "@/hook/useDebounce";
 
 const DEFAULT_TAG_FILTERS = { isActive: "all", allowManualAssignment: "all" };
 const DEFAULT_AUTOMATION_FILTERS = { isEnabled: "all", tagId: "all" };
 
-export default function TagsPage() {
+function withTarget(target, params = {}) {
+  if (target === "client") return { ...params, target: "client" };
+  return { ...params };
+}
+
+export default function TagsPage({ target = "order", i18nNamespace = "tags" }) {
   const tc = useTranslations("common");
-  const t = useTranslations("tags");
+  const t = useTranslations(i18nNamespace);
   const { handleExport, exportLoading } = useExport();
 
   const [viewMode, setViewMode] = useState("tags");
   const [search, setSearch] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -97,17 +102,19 @@ export default function TagsPage() {
 
   const fetchTagOptions = useCallback(async () => {
     try {
-      const res = await api.get("/tags", { params: { page: 1, limit: 100 } });
+      const res = await api.get("/tags", {
+        params: withTarget(target, { page: 1, limit: 100 }),
+      });
       setTagOptions(unwrapList(res.data));
     } catch (_) {
       setTagOptions([]);
     }
-  }, []);
+  }, [target]);
 
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
     try {
-      const res = await api.get("/tags/stats");
+      const res = await api.get("/tags/stats", { params: withTarget(target) });
       setStats({
         tags: res.data?.tags ?? 0,
         activeTags: res.data?.activeTags ?? 0,
@@ -120,11 +127,11 @@ export default function TagsPage() {
     } finally {
       setStatsLoading(false);
     }
-  }, []);
+  }, [target]);
 
   const buildParams = useCallback(
     (page, per_page, mode, searchValue, filterState) => {
-      const params = { page, limit: per_page };
+      const params = withTarget(target, { page, limit: per_page });
       if (searchValue?.trim()) params.search = searchValue.trim();
       if (mode === "tags") {
         if (filterState.isActive !== "all") params.isActive = filterState.isActive;
@@ -137,8 +144,10 @@ export default function TagsPage() {
       }
       return params;
     },
-    [],
+    [target],
   );
+
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search });
 
   const fetchData = useCallback(
     async (
@@ -146,7 +155,7 @@ export default function TagsPage() {
       per_page = 12,
       {
         mode = viewMode,
-        searchValue = appliedSearch,
+        searchValue = debouncedSearch,
         filterState = appliedFilters,
       } = {},
     ) => {
@@ -168,13 +177,12 @@ export default function TagsPage() {
         setLoading(false);
       }
     },
-    [appliedFilters, appliedSearch, buildParams, viewMode],
+    [appliedFilters, buildParams, debouncedSearch, viewMode],
   );
 
   const handleViewModeChange = (mode) => {
     setViewMode(mode);
     setSearch("");
-    setAppliedSearch("");
     const nextFilters = mode === "tags" ? DEFAULT_TAG_FILTERS : DEFAULT_AUTOMATION_FILTERS;
     setFilters(nextFilters);
     setAppliedFilters(nextFilters);
@@ -187,22 +195,19 @@ export default function TagsPage() {
     const url = new URL(window.location.href);
     url.searchParams.set("tab", mode);
     window.history.replaceState(null, "", url.toString());
-    fetchData(1, 12, { mode, searchValue: "", filterState: nextFilters });
   };
 
   const applyFilters = () => {
     setAppliedFilters(filters);
-    setAppliedSearch(search);
-    fetchData(1, pager.per_page, { searchValue: search, filterState: filters });
   };
 
   const onExport = useCallback(async () => {
     await handleExport({
       endpoint: viewMode === "tags" ? "/tags/export" : "/tag-automations/export",
-      params: buildParams(1, 100000, viewMode, appliedSearch, appliedFilters),
+      params: buildParams(1, 100000, viewMode, debouncedSearch, appliedFilters),
       filename: `${viewMode === "tags" ? "tags" : "tag_automations"}_${Date.now()}.xlsx`,
     });
-  }, [appliedFilters, appliedSearch, buildParams, handleExport, viewMode]);
+  }, [appliedFilters, buildParams, debouncedSearch, handleExport, viewMode]);
 
   const hasActiveFilters = useMemo(() => {
     if (viewMode === "tags") {
@@ -215,15 +220,16 @@ export default function TagsPage() {
   }, [appliedFilters, viewMode]);
 
   useEffect(() => {
-    fetchData(1, 12, {
-      mode: "tags",
-      searchValue: "",
-      filterState: DEFAULT_TAG_FILTERS,
-    });
     fetchStats();
     fetchTagOptions();
+  }, [fetchStats, fetchTagOptions]);
+
+  useEffect(() => {
+    fetchData(1, pager.per_page, {
+      searchValue: search.trim() === "" ? "" : debouncedSearch,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [debouncedSearch, appliedFilters, viewMode, target]);
 
   const afterMutate = useCallback(() => {
     fetchData(pager.current_page, pager.per_page);
@@ -378,10 +384,13 @@ export default function TagsPage() {
           cell: (row) => <span className="tabular-nums">{row.priority ?? 0}</span>,
         },
         {
-          key: "ordersCount",
-          header: t("columns.ordersCount"),
+          key: target === "client" ? "clientsCount" : "ordersCount",
+          header:
+            target === "client" ? t("columns.clientsCount") : t("columns.ordersCount"),
           cell: (row) => (
-            <span className="tabular-nums">{row.ordersCount ?? 0}</span>
+            <span className="tabular-nums">
+              {target === "client" ? row.clientsCount ?? 0 : row.ordersCount ?? 0}
+            </span>
           ),
         },
         {
@@ -442,7 +451,7 @@ export default function TagsPage() {
                   variant: "red",
                   permission: "tags.delete",
                 },
-              ]}  
+              ]}
             />
           ),
         },
@@ -553,6 +562,7 @@ export default function TagsPage() {
     toggleTagActive,
     toggleTagEmployeeUse,
     togglingKey,
+    target,
     viewMode,
   ]);
 
@@ -592,7 +602,9 @@ export default function TagsPage() {
       <PageHeader
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
-          { name: t("breadcrumb.orders"), href: "/orders" },
+          target === "client"
+            ? { name: t("breadcrumb.customers"), href: "/customers" }
+            : { name: t("breadcrumb.orders"), href: "/orders" },
           { name: t("title") },
         ]}
         stats={headerStats}
@@ -627,7 +639,7 @@ export default function TagsPage() {
       />
 
       <Table
-        tableKey={viewMode === "tags" ? "tags" : "tag-automations"}
+        tableKey={viewMode === "tags" ? `tags-${target}` : `tag-automations-${target}`}
         searchValue={search}
         onSearchChange={setSearch}
         onSearch={applyFilters}
@@ -753,6 +765,8 @@ export default function TagsPage() {
         <TagFormDialog
           tag={selected}
           open={formOpen}
+          target={target}
+          ns={i18nNamespace}
           onClose={() => setFormOpen(false)}
           onSaved={afterMutate}
         />
@@ -763,6 +777,8 @@ export default function TagsPage() {
           automation={selected}
           open={formOpen}
           readOnly={formReadOnly}
+          ns={i18nNamespace}
+          includeClientFields={target === "client"}
           onClose={() => {
             setFormOpen(false);
             setFormReadOnly(false);
@@ -772,7 +788,12 @@ export default function TagsPage() {
         />
       )}
 
-      <TagSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <TagSettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        target={target}
+        ns={i18nNamespace}
+      />
 
       <ConfirmDialog
         open={deleteOpen}

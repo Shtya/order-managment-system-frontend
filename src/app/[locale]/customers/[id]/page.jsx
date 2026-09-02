@@ -31,6 +31,7 @@ import {
   UserRound,
   Truck,
   RotateCcw,
+  Ban,
 } from "lucide-react";
 
 import ActionButtons from "@/components/atoms/Actions";
@@ -492,6 +493,11 @@ export default function CustomerPage() {
     const raw = stats?.stats || stats?.data || stats || {};
     const formatNumber = (value) => Number(value || 0).toLocaleString(locale);
     const formatPercent = (value) => `${Number(value || 0).toLocaleString(locale)}%`;
+    const percentOfTotal = (count) => {
+      const total = Number(raw.totalOrders) || 0;
+      if (total <= 0) return "0%";
+      return `${((Number(count) || 0) / total * 100).toFixed(2)}%`;
+    };
 
     return [
       {
@@ -509,7 +515,7 @@ export default function CustomerPage() {
         sortOrder: 1,
         trend: {
           label: t("stats.percentOfTotalOrders"),
-          value: `${(Number(raw.confirmedCount) / Number(raw.totalOrders) * 100).toFixed(2)}%`,
+          value: percentOfTotal(raw.confirmedCount),
           showArrow: false,
         },
       },
@@ -521,7 +527,7 @@ export default function CustomerPage() {
         sortOrder: 3,
         trend: {
           label: t("stats.percentOfTotalOrders"),
-          value: `${(Number(raw.shippedCount) / Number(raw.totalOrders) * 100).toFixed(2)}%`,
+          value: percentOfTotal(raw.shippedCount),
           showArrow: false,
         },
       },
@@ -533,7 +539,7 @@ export default function CustomerPage() {
         sortOrder: 4,
         trend: {
           label: t("stats.percentOfTotalOrders"),
-          value: `${(Number(raw.deliveredCount) / Number(raw.totalOrders) * 100).toFixed(2)}%`,
+          value: percentOfTotal(raw.deliveredCount),
           showArrow: false,
         },
       },
@@ -545,7 +551,43 @@ export default function CustomerPage() {
         sortOrder: 5,
         trend: {
           label: t("stats.percentOfTotalOrders"),
-          value: `${(Number(raw.returnedCount) / Number(raw.totalOrders) * 100).toFixed(2)}%`,
+          value: percentOfTotal(raw.returnedCount),
+          showArrow: false,
+        },
+      },
+      {
+        id: "cancelledCount",
+        name: td("stats.cancelledCount"),
+        value: formatNumber(raw.cancelledCount),
+        icon: Ban,
+        sortOrder: 6,
+        trend: {
+          label: t("stats.percentOfTotalOrders"),
+          value: formatPercent(raw.cancelRate),
+          showArrow: false,
+        },
+      },
+      {
+        id: "cancelledBeforeShippingCount",
+        name: td("stats.cancelledBeforeShipping"),
+        value: formatNumber(raw.cancelledBeforeShippingCount),
+        icon: Ban,
+        sortOrder: 7,
+        trend: {
+          label: t("stats.percentOfTotalOrders"),
+          value: formatPercent(raw.beforeShippingCancelRate),
+          showArrow: false,
+        },
+      },
+      {
+        id: "cancelledAfterShippingCount",
+        name: td("stats.cancelledAfterShipping"),
+        value: formatNumber(raw.cancelledAfterShippingCount),
+        icon: Ban,
+        sortOrder: 8,
+        trend: {
+          label: t("stats.percentOfShippedOrders"),
+          value: formatPercent(raw.afterShippingCancelRateOfShipped),
           showArrow: false,
         },
       },
@@ -554,17 +596,17 @@ export default function CustomerPage() {
         name: td("stats.totalSales"),
         value: formatCurrency(raw.totalSales || 0),
         icon: BarChart3,
-        sortOrder: 5,
+        sortOrder: 9,
       },
       {
         id: "deliveredRevenue",
         name: td("stats.deliveredRevenue"),
         value: formatCurrency(raw.deliveredRevenue || 0),
         icon: CheckCircle2,
-        sortOrder: 6,
+        sortOrder: 10,
       },
     ];
-  }, [formatCurrency, locale, stats, td]);
+  }, [formatCurrency, locale, stats, t, td]);
 
   const tagStats = useMemo(() => {
     const raw = stats?.stats || stats?.data || stats || {};

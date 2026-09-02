@@ -13951,7 +13951,8 @@
       "clientsWithOrders": "لديهم طلبات",
       "clientsWithDeliveredOrders": "لديهم طلبات مسلمة",
       "clientsWithOrdersLast30Days": "طلبوا آخر 30 يوم",
-      "percentOfTotalOrders": "من إجمالي الطلبات"
+      "percentOfTotalOrders": "من إجمالي الطلبات",
+      "percentOfShippedOrders": "من الطلبات المشحونة"
     },
     "actions": {
       "new": "إضافة عميل",
@@ -14087,6 +14088,9 @@
         "deliveredRevenue": "إيراد الطلبات المسلمة",
         "deliveredOrders": "الطلبات المسلمة",
         "cancelledOrders": "الطلبات الملغاة",
+        "cancelledCount": "الطلبات الملغاة",
+        "cancelledBeforeShipping": "ملغى قبل الشحن",
+        "cancelledAfterShipping": "ملغى بعد الشحن",
         "totalSpent": "إجمالي المبيعات",
         "averageOrderValue": "متوسط قيمة الطلب",
         "lastOrderDate": "تاريخ آخر طلب"

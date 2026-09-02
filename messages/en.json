@@ -13926,7 +13926,8 @@
       "clientsWithOrders": "With Orders",
       "clientsWithDeliveredOrders": "With Delivered Orders",
       "clientsWithOrdersLast30Days": "Ordered Last 30 Days",
-      "percentOfTotalOrders": "of all orders"
+      "percentOfTotalOrders": "of all orders",
+      "percentOfShippedOrders": "of shipped orders"
     },
     "actions": {
       "new": "Add Customer",
@@ -14062,6 +14063,9 @@
         "deliveredRevenue": "Delivered Revenue",
         "deliveredOrders": "Delivered Orders",
         "cancelledOrders": "Cancelled Orders",
+        "cancelledCount": "Cancelled Orders",
+        "cancelledBeforeShipping": "Cancelled Before Shipping",
+        "cancelledAfterShipping": "Cancelled After Shipping",
         "totalSpent": "Total Spent",
         "averageOrderValue": "Average Order Value",
         "lastOrderDate": "Last Order Date"

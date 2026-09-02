@@ -185,7 +185,7 @@ export function TagFormDialog({ tag, open, onClose, onSaved }) {
             render={({ field }) => (
               <Input
                 {...field}
-                placeholder={t("dialog.namePlaceholder")}
+                placeholder={t("dialog.nameTagPlaceholder")}
                 maxLength={120}
                 error={Boolean(errors.name)}
               />

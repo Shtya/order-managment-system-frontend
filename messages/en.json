@@ -1394,7 +1394,7 @@
       "automationSubtitle": "When the conditions match, this tag is added to the order.",
       "detailsTitle": "Details",
       "name": "Name",
-      "namePlaceholder": "e.g. VIP",
+      "namePlaceholder": "Example: Adding Order Processing",
       "color": "Color",
       "description": "Description",
       "descriptionPlaceholder": "Optional note for the team...",
@@ -1433,7 +1433,8 @@
       "inHint": "Comma-separated values",
       "save": "Save",
       "cancel": "Cancel",
-      "close": "Close"
+      "close": "Close",
+      "nameTagPlaceholder": "Example: Order Processing"
     },
     "fields": {
       "order": {
@@ -14056,7 +14057,7 @@
         "totalOrders": "Total Orders",
         "returnedCount": "Returned Orders",
         "confirmedCount": "Confirmed Orders",
-        "confirmedRate": "Confirmation Rate",
+        "confirmedRate": "Order Confirmation Rate",
         "totalSales": "Total Sales",
         "deliveredCount": "Delivered Orders",
         "shippedCount": "Shipped Orders",
@@ -14064,6 +14065,7 @@
         "deliveredOrders": "Delivered Orders",
         "cancelledOrders": "Cancelled Orders",
         "cancelledCount": "Cancelled Orders",
+        "postponedCount": "Postponed Orders",
         "cancelledBeforeShipping": "Cancelled Before Shipping",
         "cancelledAfterShipping": "Cancelled After Shipping",
         "totalSpent": "Total Spent",

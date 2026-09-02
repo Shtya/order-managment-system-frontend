@@ -1396,7 +1396,7 @@
       "automationSubtitle": "عند تحقق الشروط يُضاف هذا الوسم إلى الطلب.",
       "detailsTitle": "التفاصيل",
       "name": "الاسم",
-      "namePlaceholder": "مثال: VIP",
+      "namePlaceholder": "مثال: إضافة  جاري معالجة الطلب",
       "color": "اللون",
       "description": "الوصف",
       "descriptionPlaceholder": "ملاحظة اختيارية للفريق...",
@@ -1435,7 +1435,8 @@
       "inHint": "قيم مفصولة بفواصل",
       "save": "حفظ",
       "cancel": "إلغاء",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "nameTagPlaceholder": "مثال: جاري معالجة الطلب\t"
     },
     "fields": {
       "order": {
@@ -14081,7 +14082,7 @@
         "totalOrders": "إجمالي الطلبات",
         "returnedCount": "الطلبات المرتجعة",
         "confirmedCount": "الطلبات المؤكدة",
-        "confirmedRate": "نسبة التأكيد",
+        "confirmedRate": "نسبة تأكيده للطلبات",
         "totalSales": "إجمالي المبيعات",
         "deliveredCount": "الطلبات المسلمة",
         "shippedCount": "الطلبات المشحونة",
@@ -14089,6 +14090,7 @@
         "deliveredOrders": "الطلبات المسلمة",
         "cancelledOrders": "الطلبات الملغاة",
         "cancelledCount": "الطلبات الملغاة",
+        "postponedCount": "الطلبات المؤجلة",
         "cancelledBeforeShipping": "ملغى قبل الشحن",
         "cancelledAfterShipping": "ملغى بعد الشحن",
         "totalSpent": "إجمالي المبيعات",

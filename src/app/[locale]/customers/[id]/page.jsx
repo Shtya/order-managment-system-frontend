@@ -32,6 +32,8 @@ import {
   Truck,
   RotateCcw,
   Ban,
+  Clock,
+  Percent,
 } from "lucide-react";
 
 import ActionButtons from "@/components/atoms/Actions";
@@ -508,11 +510,18 @@ export default function CustomerPage() {
         sortOrder: 0,
       },
       {
+        id: "confirmedRate",
+        name: td("stats.confirmedRate"),
+        value: formatPercent(raw.confirmedRate),
+        icon: Percent,
+        sortOrder: 1,
+      },
+      {
         id: "confirmedCount",
         name: td("stats.confirmedCount"),
         value: formatNumber(raw.confirmedCount),
         icon: CheckCircle2,
-        sortOrder: 1,
+        sortOrder: 2,
         trend: {
           label: t("stats.percentOfTotalOrders"),
           value: percentOfTotal(raw.confirmedCount),
@@ -552,6 +561,18 @@ export default function CustomerPage() {
         trend: {
           label: t("stats.percentOfTotalOrders"),
           value: percentOfTotal(raw.returnedCount),
+          showArrow: false,
+        },
+      },
+      {
+        id: "postponedCount",
+        name: td("stats.postponedCount"),
+        value: formatNumber(raw.postponedCount),
+        icon: Clock,
+        sortOrder: 6,
+        trend: {
+          label: t("stats.percentOfTotalOrders"),
+          value: percentOfTotal(raw.postponedCount),
           showArrow: false,
         },
       },

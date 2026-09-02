@@ -192,8 +192,8 @@ function RuleValueInput({ field, operator, value, onChange, t, options, disabled
 }
 
 export function AutomationFormDialog({ automation, open, onClose, onSaved, tags, readOnly = false }) {
-  const t = useTranslations("tags");
   const tOrders = useTranslations("orders");
+  const t = useTranslations("tags");
   const locale = useLocale();
   const isEdit = !!automation;
   const [lookupsLoading, setLookupsLoading] = useState(false);

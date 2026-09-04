@@ -710,6 +710,25 @@
   }
 }
 
+@keyframes ge-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.ge-action-circle {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ge-action:hover .ge-action-circle {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
 @keyframes gradient-shift {
   0% {
     background-position: 0% 50%;

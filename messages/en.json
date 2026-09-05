@@ -550,7 +550,9 @@
     "collectedOrders": "Collected Orders",
     "uncollectedOrders": "Uncollected Orders",
     "warehouseDistribution": "Order Distribution",
-    "customersTags": "Customer tags",
+    "customersTags": "Tags",
+    "customersSegments": "Segments",
+    "customersSegmentsTemplate": "Segment Templates",
     "warehousePrint": "Print Waybills",
     "warehousePreparation": "Preparation",
     "warehouseOutgoing": "Outgoing Orders",
@@ -14381,6 +14383,427 @@
       "orders": {
         "title": "Customer Orders"
       }
+    }
+  },
+  "customerSegments": {
+    "title": "Customer Segments",
+    "comingSoon": "Segment editor is coming next.",
+    "breadcrumb": {
+      "home": "Dashboard",
+      "customers": "Customers",
+      "segments": "Segments",
+      "new": "New Segment",
+      "edit": "Edit Segment"
+    },
+    "stats": {
+      "total": "All Segments",
+      "active": "Active",
+      "dynamic": "Dynamic",
+      "frozen": "Frozen",
+      "freezing": "Freezing",
+      "freeze_failed": "Freeze Failed"
+    },
+    "filters": {
+      "status": "Status",
+      "type": "Type"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "types": {
+      "dynamic": "Dynamic",
+      "frozen": "Frozen",
+      "freezing": "Freezing",
+      "freeze_failed": "Freeze Failed"
+    },
+    "columns": {
+      "name": "Name",
+      "type": "Type",
+      "status": "Status",
+      "estimatedRecipientsCount": "Estimated Recipients",
+      "frozenRecipientsCount": "Frozen Recipients",
+      "frozenAt": "Frozen At",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "table": {
+      "searchPlaceholder": "Search segments...",
+      "emptyTitle": "No segments found",
+      "emptySubtitle": "Create a segment or adjust your filters."
+    },
+    "actions": {
+      "new": "Add Segment",
+      "edit": "Edit",
+      "delete": "Delete",
+      "freeze": "Freeze",
+      "unfreeze": "Unfreeze",
+      "enable": "Activate",
+      "disable": "Deactivate",
+      "export": "Export",
+      "back": "Back to segments",
+      "useTemplate": "Use template"
+    },
+    "toolbar": {
+      "export": "Export"
+    },
+    "delete": {
+      "title": "Delete segment",
+      "desc": "“{name}” will be permanently deleted.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "toggle": {
+      "disableTitle": "Deactivate segment",
+      "enableTitle": "Activate segment",
+      "disableDescription": "“{name}” will no longer be used as an active audience.",
+      "enableDescription": "“{name}” will become an active audience again.",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "deleted": "Segment deleted",
+      "frozen": "Freeze started",
+      "frozenDone": "Segment frozen",
+      "unfrozen": "Segment unfrozen",
+      "statusUpdated": "Segment status updated",
+      "fetchFailed": "Failed to load segments",
+      "deleteFailed": "Failed to delete segment",
+      "freezeFailed": "Failed to freeze segment",
+      "unfreezeFailed": "Failed to unfreeze segment",
+      "created": "Segment created",
+      "createdFrozen": "Segment created. The snapshot is building.",
+      "updated": "Segment updated",
+      "loadFailed": "Failed to load segment",
+      "previewFailed": "Failed to preview audience",
+      "templateApplied": "Template applied",
+      "templatesFailed": "Failed to load templates"
+    },
+    "validation": {
+      "nameRequired": "Enter a segment name",
+      "nameMax": "Name cannot exceed 160 characters",
+      "descriptionMax": "Description cannot exceed 1000 characters",
+      "rulesMin": "Add at least one condition",
+      "valueRequired": "Enter a value for this condition"
+    },
+    "templates": {
+      "title": "Ready-made templates",
+      "subtitle": "Choose a template to fill the name, description, and filters. You can still edit them before saving.",
+      "use": "Use",
+      "empty": "No active templates yet.",
+      "noDescription": "No description",
+      "loadMore": "Load more",
+      "close": "Close"
+    },
+    "form": {
+      "createTitle": "Create a new customer segment",
+      "editTitle": "Edit customer segment",
+      "subtitle": "Complete the steps in order: details, then filters, then preview before saving.",
+      "loading": "Loading segment…",
+      "name": "Segment name",
+      "namePlaceholder": "Example: Customers from ads",
+      "description": "Description",
+      "optional": "(optional)",
+      "descriptionPlaceholder": "Write a short description of this audience…",
+      "type": "Segment type",
+      "typeLocked": "Type cannot be changed here. Use freeze or unfreeze from the list.",
+      "typeCards": {
+        "dynamic": {
+          "title": "Dynamic (live)",
+          "desc": "Customers matching these filters now and in the future are included automatically."
+        },
+        "frozen": {
+          "title": "Frozen (snapshot)",
+          "desc": "A fixed list of customers who match right now. Building the snapshot can take a while."
+        }
+      },
+      "dynamicNote": "Saved as a live audience. You can freeze it later from the segments list.",
+      "frozenNote": "After save, a freeze job starts. The list will show Freezing until the snapshot is ready.",
+      "filterLocked": "This snapshot’s filters cannot be edited. Unfreeze it first if you need a live audience.",
+      "reviewTitle": "Review and preview",
+      "reviewSubtitle": "Check the details, then refresh the estimate before you save. Preview is only on this step.",
+      "conditions": "Conditions",
+      "estimatedResults": "Estimated results",
+      "possibleCustomers": "Possible customers",
+      "frozenCount": "Frozen snapshot: {count} customers",
+      "refreshPreview": "Refresh preview",
+      "clients": "Clients",
+      "noClients": "No matching clients.",
+      "loadMore": "Load more",
+      "cancel": "Cancel",
+      "back": "Back",
+      "nextFilter": "Next: Filter builder",
+      "nextReview": "Next: Review and preview",
+      "save": "Save changes",
+      "create": "Create segment",
+      "steps": {
+        "identity": "Segment details",
+        "filter": "Filter builder",
+        "review": "Review and preview"
+      }
+    }
+  },
+  "customerSegmentTemplates": {
+    "title": "Segment Templates",
+    "breadcrumb": {
+      "home": "Dashboard",
+      "segments": "Segment Templates",
+      "new": "New Template",
+      "edit": "Edit Template"
+    },
+    "stats": {
+      "total": "All Templates",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "filters": {
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "table": {
+      "searchPlaceholder": "Search templates...",
+      "emptyTitle": "No templates found",
+      "emptySubtitle": "Create a template or adjust your filters."
+    },
+    "actions": {
+      "new": "Add Template",
+      "edit": "Edit",
+      "delete": "Delete",
+      "enable": "Activate",
+      "disable": "Deactivate",
+      "export": "Export"
+    },
+    "toolbar": {
+      "export": "Export"
+    },
+    "delete": {
+      "title": "Delete template",
+      "desc": "“{name}” will be deleted permanently.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "toggle": {
+      "disableTitle": "Deactivate template",
+      "enableTitle": "Activate template",
+      "disableDescription": "“{name}” will no longer be available for tenants to use.",
+      "enableDescription": "“{name}” will be available for tenants again.",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "deleted": "Template deleted",
+      "statusUpdated": "Template status updated",
+      "fetchFailed": "Failed to load templates",
+      "deleteFailed": "Failed to delete template",
+      "created": "Template created",
+      "updated": "Template updated",
+      "loadFailed": "Failed to load template"
+    },
+    "validation": {
+      "nameRequired": "Enter a template name",
+      "nameMax": "Name cannot exceed 160 characters",
+      "descriptionMax": "Description cannot exceed 1000 characters",
+      "rulesMin": "Add at least one condition",
+      "valueRequired": "Enter a value for this condition"
+    },
+    "form": {
+      "createTitle": "Create a segment template",
+      "editTitle": "Edit segment template",
+      "subtitle": "Complete the steps in order: details, then filters, then review before saving.",
+      "name": "Template name",
+      "namePlaceholder": "Example: High-value repeat customers",
+      "description": "Description",
+      "optional": "(optional)",
+      "descriptionPlaceholder": "Write a short description of this ready-made audience…",
+      "reviewTitle": "Review",
+      "reviewSubtitle": "Check the details before you save. Tenants will pick type when they create a segment from this template.",
+      "conditions": "Conditions",
+      "cancel": "Cancel",
+      "back": "Back",
+      "nextFilter": "Next: Filter builder",
+      "nextReview": "Next: Review",
+      "save": "Save changes",
+      "create": "Create template",
+      "steps": {
+        "identity": "Template details",
+        "filter": "Filter builder",
+        "review": "Review"
+      }
+    }
+  },
+  "audienceFilter": {
+    "title": "Filter builder",
+    "subtitle": "Click Add condition and pick a field. Related groups (order, product, shipment…) are created automatically.",
+    "addCondition": "Add condition",
+    "selectField": "Select field",
+    "searchFields": "Search fields…",
+    "removeCondition": "Remove condition",
+    "removeGroup": "Remove group",
+    "emptyRules": "No conditions yet. Add a condition and choose a field.",
+    "loadingMetadata": "Loading fields…",
+    "rulesMin": "Add at least one condition",
+    "valueRequired": "Value is required",
+    "logicAnd": "Match all",
+    "logicOr": "Match any",
+    "noValueNeeded": "No value needed",
+    "valuesLoading": "Loading values…",
+    "selectValues": "Select values",
+    "addListValue": "Type a value and press Enter",
+    "searchProducts": "Search products…",
+    "searchVariants": "Search SKUs…",
+    "loadMoreValues": "Load more",
+    "noLookupResults": "No matches",
+    "valuePlaceholder": "Value",
+    "operators": {
+      "eq": "Equals",
+      "neq": "Not equals",
+      "in": "In list",
+      "not_in": "Not in list",
+      "is_null": "Is empty",
+      "is_not_null": "Is not empty",
+      "gte": "Greater or equal",
+      "lte": "Less or equal"
+    },
+    "from": {
+      "totalOrders": "of total orders",
+      "shippedOrders": "of shipped orders"
+    },
+    "entities": {
+      "client": "Customer",
+      "order": "Orders",
+      "order_item": "Order items",
+      "variant": "Variant",
+      "product": "Product",
+      "assignment": "Assignment",
+      "shipment": "Shipment",
+      "upsell": "Upsell"
+    },
+    "entityShort": {
+      "client": "C",
+      "order": "O",
+      "order_item": "I",
+      "variant": "V",
+      "product": "P",
+      "assignment": "A",
+      "shipment": "S",
+      "upsell": "U"
+    },
+    "entityHints": {
+      "client": "The customer themselves",
+      "order": "Has an order matching these conditions",
+      "order_item": "Has a line on that order matching these conditions",
+      "variant": "That line is this variant",
+      "product": "That variant belongs to this product",
+      "assignment": "Has an assignment on the order matching these conditions",
+      "shipment": "Has a shipment on the order matching these conditions",
+      "upsell": "Has an upsell on the order matching these conditions"
+    },
+    "fields": {
+      "client": {
+        "createdAt": "Created at",
+        "tagId": "Customer tag",
+        "totalOrders": "Total orders",
+        "confirmedCount": "Confirmed orders",
+        "confirmedPercent": "Confirmed percent",
+        "confirmedRate": "Order confirmation rate",
+        "shippedCount": "Shipped orders",
+        "shippedPercent": "Shipped percent",
+        "deliveredCount": "Delivered orders",
+        "deliveredPercent": "Delivered percent",
+        "returnedCount": "Returned orders",
+        "returnedPercent": "Returned percent",
+        "cancelledCount": "Cancelled orders",
+        "cancelRate": "Cancel percent",
+        "cancelledBeforeShippingCount": "Cancelled before shipping",
+        "beforeShippingCancelRate": "Cancelled before shipping percent",
+        "cancelledAfterShippingCount": "Cancelled after shipping",
+        "afterShippingCancelRate": "Cancelled after shipping percent",
+        "afterShippingCancelRateOfShipped": "After-shipping cancel rate of shipped",
+        "totalSales": "Total sales",
+        "deliveredRevenue": "Delivered revenue"
+      },
+      "order": {
+        "statusId": "Order status",
+        "storeId": "Store",
+        "cityId": "City",
+        "tagId": "Order tag",
+        "paymentStatus": "Payment status",
+        "paymentMethod": "Payment method",
+        "productsTotal": "Products total",
+        "itemsQuantity": "Items quantity",
+        "productsCount": "Products count",
+        "shippingCompanyId": "Shipping company",
+        "finalTotal": "Final total",
+        "discount": "Discount",
+        "isConfirmed": "Order confirmed",
+        "confirmationSource": "Confirmation source",
+        "allowOpenPackage": "Allow open package",
+        "duplicateCount": "Duplicate count",
+        "phone": { "valid": "Valid phone number" }
+      },
+      "order_item": {
+        "quantity": "Quantity",
+        "unitPrice": "Unit price",
+        "lineTotal": "Line total"
+      },
+      "variant": {
+        "id": "Variant",
+        "sku": "SKU",
+        "price": "Price",
+        "stockOnHand": "Stock on hand"
+      },
+      "product": {
+        "id": "Product",
+        "categoryId": "Product category",
+        "name": "Product name",
+        "sku": "Product SKU"
+      },
+      "assignment": {
+        "contactTries": "Employee contact attempts",
+        "hasActive": "Order assigned to an employee"
+      },
+      "shipment": {
+        "status": "Shipment status",
+        "shippingCompanyId": "Shipping company",
+        "shippedAt": "Shipped at"
+      },
+      "upsell": {
+        "accepted": "Upsell accepted",
+        "status": "Upsell status"
+      }
+    },
+    "examples": {
+      "client": {
+        "createdAt": "Last 30 days",
+        "tagId": "VIP",
+        "totalOrders": "3",
+        "confirmedPercent": "20",
+        "cancelRate": "15"
+      },
+      "order": {
+        "statusId": "Completed",
+        "cityId": "Cairo"
+      },
+      "product": {
+        "categoryId": "Accessories"
+      }
+    },
+    "upsellStatus": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "expired": "Expired",
+      "accepted_non_eligible": "Accepted (not eligible)",
+      "failed_to_add": "Failed to add"
     }
   },
   "chats": {

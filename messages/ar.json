@@ -550,7 +550,9 @@
     "collectedOrders": "الطلبات المحصلة",
     "uncollectedOrders": "الطلبات غير المحصلة",
     "warehouseDistribution": "توزيع الطلبات",
-    "customersTags": "وسوم العملاء",
+    "customersTags": "الوسوم",
+    "customersSegments": "المجموعات",
+    "customersSegmentsTemplate": "قوالب المجموعات",
     "warehousePrint": "طباعة البوالص",
     "warehousePreparation": "التحضير",
     "warehouseOutgoing": "خروج الطلبات",
@@ -1156,7 +1158,7 @@
     },
     "actions": {
       "addCause": "إضافة نوع مشكلة",
-      "export": "تصدير إكسل",
+      "export": "تصدير",
       "view": "عرض",
       "edit": "تعديل",
       "delete": "حذف"
@@ -1249,7 +1251,7 @@
     },
     "actions": {
       "addCause": "إضافة سبب",
-      "export": "تصدير إكسل",
+      "export": "تصدير",
       "view": "عرض",
       "edit": "تعديل",
       "delete": "حذف",
@@ -1352,7 +1354,7 @@
       "addTag": "إضافة وسم",
       "addAutomation": "إضافة أتمتة",
       "settings": "الإعدادات",
-      "export": "تصدير إكسل",
+      "export": "تصدير",
       "view": "عرض",
       "edit": "تعديل",
       "delete": "حذف",
@@ -1635,7 +1637,7 @@
       "addTag": "إضافة وسم",
       "addAutomation": "إضافة أتمتة",
       "settings": "الإعدادات",
-      "export": "تصدير إكسل",
+      "export": "تصدير",
       "view": "عرض",
       "edit": "تعديل",
       "delete": "حذف",
@@ -12116,7 +12118,7 @@
       },
       "none": "لا يوجد",
       "withoutSupplier": "بدون مورد",
-      "export": "تصدير إكسل"
+      "export": "تصدير"
     },
     "monthlyExpenses": {
       "title": "المصروفات الشهرية",
@@ -14408,6 +14410,427 @@
       }
     }
   },
+  "customerSegments": {
+    "title": "مجموعات العملاء",
+    "comingSoon": "محرر المجموعة قادم في الخطوة التالية.",
+    "breadcrumb": {
+      "home": "لوحة التحكم",
+      "customers": "العملاء",
+      "segments": "المجموعات",
+      "new": "مجموعة جديدة",
+      "edit": "تعديل المجموعة"
+    },
+    "stats": {
+      "total": "كل المجموعات",
+      "active": "نشطة",
+      "dynamic": "ديناميكية",
+      "frozen": "مجمّدة",
+      "freezing": "جاري التجميد",
+      "freeze_failed": "فشل التجميد"
+    },
+    "filters": {
+      "status": "الحالة",
+      "type": "النوع"
+    },
+    "status": {
+      "active": "نشطة",
+      "inactive": "غير نشطة"
+    },
+    "types": {
+      "dynamic": "ديناميكية",
+      "frozen": "مجمّدة",
+      "freezing": "جاري التجميد",
+      "freeze_failed": "فشل التجميد"
+    },
+    "columns": {
+      "name": "الاسم",
+      "type": "النوع",
+      "status": "الحالة",
+      "estimatedRecipientsCount": "المستلمون التقديري",
+      "frozenRecipientsCount": "المستلمون المجمّدون",
+      "frozenAt": "تاريخ التجميد",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "إجراءات"
+    },
+    "table": {
+      "searchPlaceholder": "البحث في المجموعات...",
+      "emptyTitle": "لا توجد مجموعات",
+      "emptySubtitle": "أنشئ مجموعة أو عدّل عوامل التصفية."
+    },
+    "actions": {
+      "new": "إضافة مجموعة",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "freeze": "تجميد",
+      "unfreeze": "إلغاء التجميد",
+      "enable": "تفعيل",
+      "disable": "تعطيل",
+      "export": "تصدير",
+      "back": "العودة إلى المجموعات",
+      "useTemplate": "استخدام قالب"
+    },
+    "toolbar": {
+      "export": "تصدير"
+    },
+    "delete": {
+      "title": "حذف المجموعة",
+      "desc": "سيتم حذف «{name}» نهائيًا.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "toggle": {
+      "disableTitle": "تعطيل المجموعة",
+      "enableTitle": "تفعيل المجموعة",
+      "disableDescription": "سيتم تعطيل «{name}» كمجموعة نشطة.",
+      "enableDescription": "ستصبح «{name}» مجموعة نشطة مرة أخرى.",
+      "confirm": "تأكيد",
+      "cancel": "إلغاء"
+    },
+    "toast": {
+      "deleted": "تم حذف المجموعة",
+      "frozen": "بدأ التجميد",
+      "frozenDone": "تم تجميد المجموعة",
+      "unfrozen": "تم إلغاء تجميد المجموعة",
+      "statusUpdated": "تم تحديث حالة المجموعة",
+      "fetchFailed": "فشل تحميل المجموعات",
+      "deleteFailed": "فشل حذف المجموعة",
+      "freezeFailed": "فشل تجميد المجموعة",
+      "unfreezeFailed": "فشل إلغاء تجميد المجموعة",
+      "created": "تم إنشاء المجموعة",
+      "createdFrozen": "تم إنشاء المجموعة. جاري بناء اللقطة.",
+      "updated": "تم تحديث المجموعة",
+      "loadFailed": "فشل تحميل المجموعة",
+      "previewFailed": "فشل معاينة الجمهور",
+      "templateApplied": "تم تطبيق القالب",
+      "templatesFailed": "فشل تحميل القوالب"
+    },
+    "validation": {
+      "nameRequired": "أدخل اسم المجموعة",
+      "nameMax": "الاسم لا يتجاوز 160 حرفًا",
+      "descriptionMax": "الوصف لا يتجاوز 1000 حرف",
+      "rulesMin": "أضف شرطًا واحدًا على الأقل",
+      "valueRequired": "أدخل قيمة لهذا الشرط"
+    },
+    "templates": {
+      "title": "قوالب جاهزة",
+      "subtitle": "اختر قالبًا لملء الاسم والوصف والفلاتر. يمكنك تعديلها قبل الحفظ.",
+      "use": "استخدام",
+      "empty": "لا توجد قوالب نشطة بعد.",
+      "noDescription": "لا يوجد وصف",
+      "loadMore": "تحميل المزيد",
+      "close": "إغلاق"
+    },
+    "form": {
+      "createTitle": "إنشاء مجموعة عملاء جديدة",
+      "editTitle": "تعديل مجموعة العملاء",
+      "subtitle": "أكمل الخطوات بالترتيب: المعلومات، ثم الفلتر، ثم المعاينة قبل الحفظ.",
+      "loading": "جاري تحميل المجموعة…",
+      "name": "اسم المجموعة",
+      "namePlaceholder": "مثال: العملاء القادمون من الإعلانات",
+      "description": "وصف المجموعة",
+      "optional": "(اختياري)",
+      "descriptionPlaceholder": "اكتب وصفًا مختصرًا عن هذه المجموعة...",
+      "type": "نوع المجموعة",
+      "typeLocked": "لا يمكن تغيير النوع من هنا. استخدم التجميد أو إلغاءه من القائمة.",
+      "typeCards": {
+        "dynamic": {
+          "title": "ديناميكية (حية)",
+          "desc": "العملاء المطابقون للفلاتر الآن وفي المستقبل يُضافون تلقائيًا."
+        },
+        "frozen": {
+          "title": "مجمّدة (لقطة)",
+          "desc": "قائمة ثابتة للعملاء المطابقين الآن. قد يستغرق بناء اللقطة وقتًا."
+        }
+      },
+      "dynamicNote": "ستُحفظ المجموعة كجمهور حيّ. يمكنك تجميدها لاحقًا من قائمة المجموعات.",
+      "frozenNote": "بعد الحفظ ستبدأ مهمة بناء اللقطة. القائمة ستعرض حالة التجميد حتى تكتمل.",
+      "filterLocked": "لا يمكن تعديل فلاتر هذه اللقطة. ألغِ التجميد أولًا إذا احتجت جمهورًا حيًا.",
+      "reviewTitle": "مراجعة ومعاينة",
+      "reviewSubtitle": "راجع البيانات ثم حدّث التقدير قبل الحفظ. المعاينة في هذه الخطوة فقط.",
+      "conditions": "الشروط",
+      "estimatedResults": "تقدير النتائج",
+      "possibleCustomers": "عميل محتمل",
+      "frozenCount": "لقطة مجمّدة: {count} عميل",
+      "refreshPreview": "تحديث المعاينة",
+      "clients": "العملاء",
+      "noClients": "لا يوجد عملاء مطابقون.",
+      "loadMore": "تحميل المزيد",
+      "cancel": "إلغاء",
+      "back": "رجوع",
+      "nextFilter": "التالي: بناء الفلتر",
+      "nextReview": "التالي: مراجعة ومعاينة",
+      "save": "حفظ التغييرات",
+      "create": "إنشاء المجموعة",
+      "steps": {
+        "identity": "معلومات المجموعة",
+        "filter": "بناء الفلتر",
+        "review": "مراجعة ومعاينة"
+      }
+    }
+  },
+  "customerSegmentTemplates": {
+    "title": "قوالب مجموعات العملاء",
+    "breadcrumb": {
+      "home": "لوحة التحكم",
+      "segments": "قوالب المجموعات",
+      "new": "قالب جديد",
+      "edit": "تعديل القالب"
+    },
+    "stats": {
+      "total": "كل القوالب",
+      "active": "نشطة",
+      "inactive": "غير نشطة"
+    },
+    "filters": {
+      "status": "الحالة"
+    },
+    "status": {
+      "active": "نشطة",
+      "inactive": "غير نشطة"
+    },
+    "columns": {
+      "name": "الاسم",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "إجراءات"
+    },
+    "table": {
+      "searchPlaceholder": "البحث في القوالب...",
+      "emptyTitle": "لا توجد قوالب",
+      "emptySubtitle": "أنشئ قالبًا أو عدّل عوامل التصفية."
+    },
+    "actions": {
+      "new": "إضافة قالب",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "enable": "تفعيل",
+      "disable": "تعطيل",
+      "export": "تصدير"
+    },
+    "toolbar": {
+      "export": "تصدير"
+    },
+    "delete": {
+      "title": "حذف القالب",
+      "desc": "سيتم حذف «{name}» نهائيًا.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "toggle": {
+      "disableTitle": "تعطيل القالب",
+      "enableTitle": "تفعيل القالب",
+      "disableDescription": "لن يكون «{name}» متاحًا للمستخدمين.",
+      "enableDescription": "سيصبح «{name}» متاحًا للمستخدمين مرة أخرى.",
+      "confirm": "تأكيد",
+      "cancel": "إلغاء"
+    },
+    "toast": {
+      "deleted": "تم حذف القالب",
+      "statusUpdated": "تم تحديث حالة القالب",
+      "fetchFailed": "فشل تحميل القوالب",
+      "deleteFailed": "فشل حذف القالب",
+      "created": "تم إنشاء القالب",
+      "updated": "تم تحديث القالب",
+      "loadFailed": "فشل تحميل القالب"
+    },
+    "validation": {
+      "nameRequired": "أدخل اسم القالب",
+      "nameMax": "الاسم لا يتجاوز 160 حرفًا",
+      "descriptionMax": "الوصف لا يتجاوز 1000 حرف",
+      "rulesMin": "أضف شرطًا واحدًا على الأقل",
+      "valueRequired": "أدخل قيمة لهذا الشرط"
+    },
+    "form": {
+      "createTitle": "إنشاء قالب مجموعة",
+      "editTitle": "تعديل قالب المجموعة",
+      "subtitle": "أكمل الخطوات بالترتيب: المعلومات، ثم الفلتر، ثم المراجعة قبل الحفظ.",
+      "name": "اسم القالب",
+      "namePlaceholder": "مثال: العملاء المتكررون ذوو القيمة العالية",
+      "description": "الوصف",
+      "optional": "(اختياري)",
+      "descriptionPlaceholder": "اكتب وصفًا مختصرًا لهذا الجمهور الجاهز...",
+      "reviewTitle": "مراجعة",
+      "reviewSubtitle": "راجع البيانات قبل الحفظ. المستخدمون يختارون نوع المجموعة عند الإنشاء من القالب.",
+      "conditions": "الشروط",
+      "cancel": "إلغاء",
+      "back": "رجوع",
+      "nextFilter": "التالي: بناء الفلتر",
+      "nextReview": "التالي: مراجعة",
+      "save": "حفظ التغييرات",
+      "create": "إنشاء القالب",
+      "steps": {
+        "identity": "معلومات القالب",
+        "filter": "بناء الفلتر",
+        "review": "مراجعة"
+      }
+    }
+  },
+  "audienceFilter": {
+    "title": "بناء الفلتر",
+    "subtitle": "اضغط «إضافة شرط» واختر الحقل. العلاقات (طلب، منتج، شحنة…) تُنشأ تلقائيًا.",
+    "addCondition": "إضافة شرط",
+    "selectField": "اختر حقلًا",
+    "searchFields": "ابحث عن حقل...",
+    "removeCondition": "حذف الشرط",
+    "removeGroup": "حذف المجموعة",
+    "emptyRules": "لا توجد شروط بعد. أضف شرطًا واختر الحقل.",
+    "loadingMetadata": "جاري تحميل الحقول…",
+    "rulesMin": "أضف شرطًا واحدًا على الأقل",
+    "valueRequired": "القيمة مطلوبة",
+    "logicAnd": "كلها مطابقة",
+    "logicOr": "أي منها",
+    "noValueNeeded": "لا توجد قيمة مطلوبة",
+    "valuesLoading": "جاري تحميل القيم…",
+    "selectValues": "اختر قيمًا",
+    "addListValue": "اكتب قيمة ثم اضغط Enter",
+    "searchProducts": "ابحث عن منتج…",
+    "searchVariants": "ابحث عن SKU…",
+    "loadMoreValues": "تحميل المزيد",
+    "noLookupResults": "لا توجد نتائج",
+    "valuePlaceholder": "القيمة",
+    "operators": {
+      "eq": "يساوي",
+      "neq": "لا يساوي",
+      "in": "ضمن أي من",
+      "not_in": "ليس ضمن",
+      "is_null": "فارغ",
+      "is_not_null": "غير فارغ",
+      "gte": "أكبر من أو يساوي",
+      "lte": "أقل من أو يساوي"
+    },
+    "from": {
+      "totalOrders": "من إجمالي الطلبات",
+      "shippedOrders": "من الطلبات المشحونة"
+    },
+    "entities": {
+      "client": "العميل",
+      "order": "الطلبات",
+      "order_item": "عناصر الطلب",
+      "variant": "المتغير",
+      "product": "المنتج",
+      "assignment": "التعيين",
+      "shipment": "الشحنة",
+      "upsell": "العرض الإضافي"
+    },
+    "entityShort": {
+      "client": "ع",
+      "order": "ط",
+      "order_item": "س",
+      "variant": "م",
+      "product": "ن",
+      "assignment": "ت",
+      "shipment": "ش",
+      "upsell": "ض"
+    },
+    "entityHints": {
+      "client": "بيانات العميل نفسه",
+      "order": "يوجد طلب مطابق لهذه الشروط",
+      "order_item": "يوجد سطر في الطلب يطابق هذه الشروط",
+      "variant": "سطر الطلب لهذا المتغير",
+      "product": "المتغير تابع لهذا المنتج",
+      "assignment": "يوجد تعيين مطابق على الطلب",
+      "shipment": "توجد شحنة مطابقة على الطلب",
+      "upsell": "يوجد عرض إضافي مطابق على الطلب"
+    },
+    "fields": {
+      "client": {
+        "createdAt": "تاريخ الإنشاء",
+        "tagId": "وسم العميل",
+        "totalOrders": "إجمالي الطلبات",
+        "confirmedCount": "عدد المؤكد",
+        "confirmedPercent": "نسبة التأكيد",
+        "confirmedRate": "معدل تأكيد الطلبات",
+        "shippedCount": "عدد المشحون",
+        "shippedPercent": "نسبة الشحن",
+        "deliveredCount": "عدد المسلَّم",
+        "deliveredPercent": "نسبة التسليم",
+        "returnedCount": "عدد المرتجع",
+        "returnedPercent": "نسبة الإرجاع",
+        "cancelledCount": "عدد الملغى",
+        "cancelRate": "معدل الإلغاء",
+        "cancelledBeforeShippingCount": "ملغى قبل الشحن",
+        "beforeShippingCancelRate": "نسبة الإلغاء قبل الشحن",
+        "cancelledAfterShippingCount": "ملغى بعد الشحن",
+        "afterShippingCancelRate": "نسبة الإلغاء بعد الشحن",
+        "afterShippingCancelRateOfShipped": "معدل الإلغاء بعد الشحن من المشحون",
+        "totalSales": "إجمالي المبيعات",
+        "deliveredRevenue": "إيراد المسلَّم"
+      },
+      "order": {
+        "statusId": "حالة الطلب",
+        "storeId": "المتجر",
+        "cityId": "المدينة",
+        "tagId": "وسم الطلب",
+        "paymentStatus": "حالة الدفع",
+        "paymentMethod": "طريقة الدفع",
+        "productsTotal": "إجمالي المنتجات",
+        "itemsQuantity": "كمية المنتجات",
+        "productsCount": "عدد المنتجات",
+        "shippingCompanyId": "شركة الشحن",
+        "finalTotal": "الإجمالي النهائي",
+        "discount": "الخصم",
+        "isConfirmed": "تم التأكيد",
+        "confirmationSource": "مصدر التأكيد",
+        "allowOpenPackage": "السماح بفتح الطرد",
+        "duplicateCount": "عدد التكرار",
+        "phone": { "valid": "رقم هاتف صالح" }
+      },
+      "order_item": {
+        "quantity": "الكمية",
+        "unitPrice": "سعر الوحدة",
+        "lineTotal": "إجمالي السطر"
+      },
+      "variant": {
+        "id": "المتغير",
+        "sku": "SKU",
+        "price": "السعر",
+        "stockOnHand": "المخزون"
+      },
+      "product": {
+        "id": "المنتج",
+        "categoryId": "فئة المنتج",
+        "name": "اسم المنتج",
+        "sku": "SKU المنتج"
+      },
+      "assignment": {
+        "contactTries": "محاولات التواصل",
+        "hasActive": "تعيين نشط"
+      },
+      "shipment": {
+        "status": "حالة الشحن",
+        "shippingCompanyId": "شركة الشحن",
+        "shippedAt": "تاريخ الشحن"
+      },
+      "upsell": {
+        "accepted": "تم قبول العرض",
+        "status": "حالة العرض"
+      }
+    },
+    "examples": {
+      "client": {
+        "createdAt": "آخر 30 يوم",
+        "tagId": "VIP",
+        "totalOrders": "3",
+        "confirmedPercent": "20",
+        "cancelRate": "15"
+      },
+      "order": {
+        "statusId": "مكتمل",
+        "cityId": "القاهرة"
+      },
+      "product": {
+        "categoryId": "إكسسوارات"
+      }
+    },
+    "upsellStatus": {
+      "pending": "قيد الانتظار",
+      "accepted": "مقبول",
+      "rejected": "مرفوض",
+      "expired": "منتهي",
+      "accepted_non_eligible": "مقبول (غير مؤهل)",
+      "failed_to_add": "فشل الإضافة"
+    }
+  },
   "chats": {
     "title": "المحادثات",
     "search": "البحث في المحادثات...",
@@ -14776,7 +15199,7 @@
       "topProducts": {
         "title": "مخطط المنتجات الأكثر مبيعًا",
         "description": "يعرض هذا المخطط الدائري منتجاتك الأكثر مبيعًا، مما يساعدك في التركيز على ما يدفع الإيرادات.",
-        "example": "إذا كان لديك إجمالي 1000 منتج تم بيعه من الطلبات المسلمة، والمنتج أ بيع 300 منه، والمنتج ب بيع 200، فسيكون للمنتج أ 30% من المخطط الدائري (300/1000 * 100) ويكون الشريحة الأكبر."
+        "example": "إذا كان لديك إجمالي 1000 منتج تم بيعه من الطلبات المسلمة، والمنتج أ بيع 300 منه، والمنتج ب بيع 200، فسيكون للمنتج أ 30% من المخطط الدائري (300/1000 * 100) ويكون المجموعة الأكبر."
       },
       "profitTable": {
         "title": "جدول تقرير الربح",

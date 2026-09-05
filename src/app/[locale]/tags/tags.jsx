@@ -199,6 +199,7 @@ export default function TagsPage({ target = "order", i18nNamespace = "tags" }) {
 
   const applyFilters = () => {
     setAppliedFilters(filters);
+    fetchData(1, pager.per_page, { filterState: filters });
   };
 
   const onExport = useCallback(async () => {
@@ -229,7 +230,7 @@ export default function TagsPage({ target = "order", i18nNamespace = "tags" }) {
       searchValue: search.trim() === "" ? "" : debouncedSearch,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, appliedFilters, viewMode, target]);
+  }, [debouncedSearch, viewMode, target]);
 
   const afterMutate = useCallback(() => {
     fetchData(pager.current_page, pager.per_page);

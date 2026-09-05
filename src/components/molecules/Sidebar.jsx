@@ -75,6 +75,7 @@ import {
   GraduationCap,
   Bot,
   Tags,
+  UserRoundSearch,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -614,6 +615,13 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           labelKey: "customersTags",
           href: "/customers/tags",
           permission: "tags.read",
+        },
+        {
+          icon: UserRoundSearch,
+          labelKey: "customersSegments",
+          href: "/customers/segments",
+          permission: "client-segments.read",
+          allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
         }
       ],
     },
@@ -1033,6 +1041,20 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           icon: FaPlus,
           roles: ["SUPER_ADMIN"],
         }]
+    },
+    {
+      icon: Users,
+      labelKey: "customers",
+      href: "/dashboard/customers",
+      roles: ["SUPER_ADMIN"],
+      children: [
+        {
+          icon: UserRoundSearch,
+          labelKey: "customersSegmentsTemplate",
+          href: "/dashboard/customers/segments",
+          roles: ["SUPER_ADMIN"],
+        }
+      ],
     },
     // {
     //   icon: FaBolt,

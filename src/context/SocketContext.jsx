@@ -261,6 +261,10 @@ export const SocketProvider = ({ children }) => {
       publish({ type: "CLIENT_SEGMENT_FREEZE_STATUS", payload });
     });
 
+    socket.on("campaign:updated", (payload) => {
+      publish({ type: "CAMPAIGN_UPDATED", payload });
+    });
+
     // ------------------ ISSUES ------------------
 
     socket.on("issue:created", (payload) => {
@@ -315,6 +319,7 @@ export const SocketProvider = ({ children }) => {
       socket.off("support_ticket:message-updated");
       socket.off("support_ticket:read");
       socket.off("client_segment:freeze-status");
+      socket.off("campaign:updated");
       socket.off("issue:created");
       socket.off("issue:updated");
       socket.off("issue:message-created");

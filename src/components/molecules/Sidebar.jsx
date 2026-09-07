@@ -76,6 +76,7 @@ import {
   Bot,
   Tags,
   UserRoundSearch,
+  Megaphone,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -763,6 +764,13 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
         },
 
       ]
+    },
+    {
+      icon: Megaphone,
+      labelKey: "campaigns",
+      href: "/campaigns",
+      permission: "campaigns.read",
+      allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
     },
     {
       icon: MessageSquare,

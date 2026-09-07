@@ -236,7 +236,7 @@ export function InternalTemplateDialog({ title, open, onOpenChange, defaultAccou
                                             </div>
                                             <Button
                                                 onClick={() => {
-                                                    onSelectTemplate(template);
+                                                    onSelectTemplate({...template, selectedAccountId});
                                                     onOpenChange(false);
                                                 }}
                                                 className="rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 shrink-0"

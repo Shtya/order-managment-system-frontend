@@ -581,7 +581,8 @@
     "gettingStartedStatistics": "إحصائيات الاعداد",
     "ai": "الذكاء الاصطناعي",
     "platformNumbers": "أرقام واتساب المنصة",
-    "revenueStats": "إيرادات واتساب"
+    "revenueStats": "إيرادات واتساب",
+    "campaigns": "الحملات"
   },
   "gettingStarted": {
     "allComplete": {
@@ -14410,6 +14411,313 @@
       }
     }
   },
+  "campaigns": {
+    "title": "الحملات",
+    "breadcrumb": {
+      "home": "لوحة التحكم",
+      "campaigns": "الحملات"
+    },
+    "stats": {
+      "total": "كل الحملات",
+      "draft": "مسودة",
+      "scheduled": "مجدولة",
+      "running": "جارية",
+      "paused": "متوقفة",
+      "completed": "مكتملة",
+      "failed": "فاشلة"
+    },
+    "filters": {
+      "status": "الحالة",
+      "channel": "القناة"
+    },
+    "status": {
+      "draft": "مسودة",
+      "scheduled": "مجدولة",
+      "running": "جارية",
+      "paused": "متوقفة",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة",
+      "failed": "فاشلة"
+    },
+    "channels": {
+      "whatsapp": "واتساب",
+      "sms": "رسالة نصية",
+      "email": "بريد إلكتروني"
+    },
+    "scheduleMode": {
+      "now": "إرسال الآن",
+      "scheduled": "مجدولة"
+    },
+    "columns": {
+      "name": "الاسم",
+      "channel": "القناة",
+      "status": "الحالة",
+      "scheduleMode": "الجدولة",
+      "scheduledAt": "موعد الجدولة",
+      "sent": "مرسل",
+      "delivered": "تم التسليم",
+      "read": "مقروء",
+      "replied": "ردود",
+      "orders": "طلبات",
+      "sales": "مبيعات",
+      "cost": "التكلفة",
+      "actions": "إجراءات"
+    },
+    "table": {
+      "searchPlaceholder": "ابحث في الحملات...",
+      "emptyTitle": "لا توجد حملات",
+      "emptySubtitle": "أنشئ حملة أو غيّر عوامل التصفية."
+    },
+    "actions": {
+      "new": "حملة جديدة",
+      "edit": "تعديل",
+      "duplicate": "نسخ",
+      "startNow": "ابدأ الآن",
+      "pause": "إيقاف مؤقت",
+      "resume": "استئناف",
+      "cancel": "إلغاء",
+      "retryFailed": "إعادة المحاولة",
+      "delete": "حذف",
+      "view": "عرض"
+    },
+    "toolbar": {
+      "export": "تصدير"
+    },
+    "confirm": {
+      "startTitle": "بدء الحملة الآن",
+      "startDesc": "ستبدأ «{name}» الإرسال فوراً حتى لو كانت مجدولة لوقت لاحق.",
+      "cancelTitle": "إلغاء الحملة",
+      "cancelDesc": "سيتم إيقاف «{name}» ولا يمكن استئنافها.",
+      "retryTitle": "إعادة المحاولة",
+      "retryDesc": "ستتم إعادة محاولة إرسال الرسائل الفاشلة في «{name}».",
+      "deleteTitle": "حذف الحملة",
+      "deleteDesc": "سيتم حذف «{name}» نهائياً."
+    },
+    "toast": {
+      "fetchFailed": "تعذر تحميل الحملات",
+      "actionFailed": "فشل الإجراء",
+      "started": "تم بدء الحملة",
+      "paused": "تم إيقاف الحملة مؤقتاً",
+      "resumed": "تم استئناف الحملة",
+      "cancelled": "تم إلغاء الحملة",
+      "retried": "تمت إعادة {count} مستلم للطابور",
+      "deleted": "تم حذف الحملة"
+    },
+    "details": {
+      "title": "تفاصيل الحملة",
+      "notFound": "الحملة غير موجودة.",
+      "stats": {
+        "recipients": "المستلمون",
+        "sent": "تم الإرسال",
+        "delivered": "تم التسليم",
+        "read": "تمت القراءة",
+        "replied": "ردود",
+        "failed": "فشل الإرسال",
+        "pending": "قيد الانتظار",
+        "orders": "الطلبات",
+        "successRate": "معدل النجاح"
+      },
+      "sections": {
+        "general": "معلومات عامة",
+        "audience": "مصادر المستلمين",
+        "channel": "القناة"
+      },
+      "fields": {
+        "schedule": "الجدولة",
+        "off": "مغلقة",
+        "createdAt": "أُنشئت في",
+        "startedAt": "بدأت في",
+        "completedAt": "اكتملت في",
+        "cost": "التكلفة",
+        "sales": "المبيعات",
+        "estimated": "المتوقع",
+        "template": "القالب",
+        "account": "حساب واتساب",
+        "variable": "المتغير",
+        "value": "القيمة",
+        "headerVars": "الترويسة",
+        "bodyVars": "النص",
+        "buttonVars": "الأزرار"
+      },
+      "filters": {
+        "status": "الحالة"
+      },
+      "recipientStatus": {
+        "pending": "قيد الانتظار",
+        "sending": "جارٍ الإرسال",
+        "accepted": "تم قبول الإرسال",
+        "sent": "تم الإرسال",
+        "delivered": "تم التسليم",
+        "read": "تمت القراءة",
+        "failed": "فشل الإرسال"
+      },
+      "columns": {
+        "name": "المستلم",
+        "status": "الحالة",
+        "sentAt": "تم الإرسال في",
+        "deliveredAt": "تم التسليم في",
+        "read": "تمت القراءة",
+        "replied": "رد",
+        "order": "الطلب",
+        "cost": "التكلفة",
+        "failureReason": "سبب الفشل",
+        "actions": "إجراءات"
+      },
+      "actions": {
+        "viewOrder": "عرض الطلب"
+      },
+      "table": {
+        "searchPlaceholder": "ابحث في المستلمين…",
+        "emptyTitle": "لا يوجد مستلمون",
+        "emptySubtitle": "ستظهر المستلمون المعالجون هنا."
+      }
+    },
+    "wizard": {
+      "title": "حملة جديدة",
+      "editTitle": "تعديل الحملة",
+      "loadFailed": "تعذر تحميل الحملة",
+      "notEditable": "لا يمكن تعديل إلا الحملات المسودة أو المجدولة.",
+      "backToList": "رجوع للحملات",
+      "steps": {
+        "general": "عام",
+        "recipients": "المستلمون",
+        "message": "الرسالة",
+        "review": "المراجعة"
+      },
+      "next": "التالي",
+      "back": "رجوع",
+      "save": "حفظ الحملة",
+      "saved": "تم حفظ الحملة",
+      "saveFailed": "تعذر حفظ الحملة",
+      "fixStepErrors": "يرجى تصحيح الأخطاء قبل المتابعة.",
+      "name": "اسم الحملة",
+      "namePlaceholder": "مثال: تخفيضات رمضان",
+      "category": "الفئة",
+      "description": "الوصف",
+      "descriptionPlaceholder": "هدف وملاحظات الحملة…",
+      "workingHours": "ساعات العمل",
+      "workingHoursHint": "عند التفعيل يتوقف الإرسال خارج هذا النطاق.",
+      "workingHoursStart": "البداية",
+      "workingHoursEnd": "النهاية",
+      "timezone": "المنطقة الزمنية",
+      "delayMin": "أقل تأخير (ثانية)",
+      "delayMax": "أقصى تأخير (ثانية)",
+      "maxPerHour": "أقصى رسائل / ساعة",
+      "channel": "القناة",
+      "channels": {
+        "whatsapp": "واتساب للأعمال",
+        "whatsappHint": "إرسال رسائل باستخدام قوالب واتساب المعتمدة.",
+        "sms": "رسائل نصية (SMS)",
+        "smsHint": "لاحقاً.",
+        "email": "البريد الإلكتروني",
+        "emailHint": "لاحقاً."
+      },
+      "scheduleMode": "طريقة الإرسال",
+      "scheduleNow": "إرسال الآن",
+      "scheduleScheduled": "جدولة",
+      "scheduledAt": "موعد الإرسال",
+      "scheduledDate": "التاريخ",
+      "scheduledTime": "الوقت",
+      "categories": {
+        "general_marketing": "تسويق عام",
+        "promotional": "ترويجي",
+        "announcement": "إعلان",
+        "follow_up": "متابعة",
+        "reminder": "تذكير",
+        "welcome": "ترحيب",
+        "win_back": "استعادة",
+        "back_in_stock": "عودة للمخزون",
+        "vip_exclusive": "حصري VIP",
+        "event_invitation": "دعوة فعالية",
+        "reorder_replenishment": "إعادة طلب",
+        "educational_nurture": "تثقيفي",
+        "upsell": "بيع إضافي",
+        "customer_reactivation": "تنشيط"
+      },
+      "validation": {
+        "nameRequired": "الاسم مطلوب.",
+        "workingHoursRequired": "وقت البداية والنهاية مطلوب.",
+        "delayMin": "أقل تأخير ≥ 4.",
+        "delayMax": "الأقصى يجب أن يكون ≥ الأدنى.",
+        "scheduledAtRequired": "موعد الجدولة مطلوب.",
+        "scheduledAtFuture": "يجب أن يكون الموعد في المستقبل.",
+        "segmentRequired": "اختر مجموعة.",
+        "fileRequired": "ارفع ملف المستلمين.",
+        "fileHasErrors": "صحح الصفوف غير الصالحة في الملف قبل المتابعة.",
+        "manualRequired": "أضف مستلماً واحداً على الأقل.",
+        "filterRequired": "أضف قاعدة واحدة على الأقل.",
+        "templateRequired": "اختر قالب واتساب.",
+        "variablesRequired": "املأ كل متغيرات القالب."
+      },
+      "recipients": {
+        "segment": "مجموعة",
+        "segmentHint": "جمهور محفوظ",
+        "file": "ملف",
+        "fileHint": "رفع xlsx / csv",
+        "manual": "يدوي",
+        "manualHint": "أي رقم هاتف صالح، مثال: 2010xxxxxxxx.",
+        "customers": "فلتر",
+        "customersHint": "نفس صفحة المجموعات",
+        "searchSegments": "ابحث في المجموعات",
+        "searchSegmentsPlaceholder": "ابحث بالاسم…",
+        "loading": "جارٍ التحميل…",
+        "noSegments": "لا توجد مجموعات.",
+        "selectedSegment": "المحدد",
+        "fileTitle": "ارفع ملف المستلمين",
+        "template": "القالب",
+        "templateFailed": "تعذر تنزيل القالب.",
+        "dropHint": "أسقط ملف xlsx / xls / csv هنا أو تصفح",
+        "browse": "تصفح",
+        "fileLimits": "الحد الأقصى لحجم الملف 5 ميجابايت",
+        "fileTypeError": "صيغة غير مدعومة — استخدم xlsx/xls/csv.",
+        "fileSizeError": "الملف كبير — الحد 5MB.",
+        "fileError_empty": "ملف فارغ.",
+        "fileError_missing_phone": "عمود الهاتف مفقود.",
+        "fileError_empty_valid": "لا أرقام صالحة.",
+        "fileError_too_many": "صفوف كثيرة (الحد 50000).",
+        "fileError_invalid": "تعذر قراءة الملف.",
+        "parsing": "جارٍ قراءة الملف…",
+        "numbersFound": "{count} رقم صالح",
+        "invalidRows": "{count} صف غير صالح",
+        "numbersPreview": "أول الأرقام",
+        "xlsxPending": "سيتحقق الباكند",
+        "replace": "استبدال",
+        "phone": "رقم الهاتف",
+        "nameOptional": "الاسم (اختياري)",
+        "namePlaceholder": "الاسم",
+        "add": "إضافة",
+        "remove": "حذف",
+        "noManual": "لا أرقام بعد.",
+        "invalidPhone": "رقم هاتف غير صالح.",
+        "duplicatePhone": "مضاف مسبقاً.",
+        "manualLimit": "تم بلوغ الحد 5000.",
+        "estimated": "المتوقع",
+        "refreshPreview": "تحديث المعاينة"
+      },
+      "message": {
+        "chooseTemplate": "اختر القالب",
+        "changeTemplate": "تغيير القالب",
+        "noTemplate": "لم يتم اختيار قالب",
+        "account": "حساب واتساب",
+        "fillVariables": "املأ المتغيرات",
+        "header": "رأس الرسالة",
+        "body": "النص",
+        "buttons": "الأزرار",
+        "mediaHeader": "وسائط",
+        "locationHeader": "موقع",
+        "preview": "معاينة"
+      },
+      "review": {
+        "title": "مراجعة الحملة",
+        "subtitle": "تحقق قبل الحفظ.",
+        "general": "عام",
+        "audience": "الجمهور",
+        "template": "القالب",
+        "offHours": "غير مفعّلة",
+        "empty": "—"
+      }
+    }
+  },
   "customerSegments": {
     "title": "مجموعات العملاء",
     "comingSoon": "محرر المجموعة قادم في الخطوة التالية.",
@@ -14773,7 +15081,9 @@
         "confirmationSource": "مصدر التأكيد",
         "allowOpenPackage": "السماح بفتح الطرد",
         "duplicateCount": "عدد التكرار",
-        "phone": { "valid": "رقم هاتف صالح" }
+        "phone": {
+          "valid": "رقم هاتف صالح"
+        }
       },
       "order_item": {
         "quantity": "الكمية",

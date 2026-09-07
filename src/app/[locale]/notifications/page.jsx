@@ -65,7 +65,9 @@ export const NotificationType = Object.freeze({
   AUTOMATION_RUN_STARTED: 'automation_run_started',
   AUTOMATION_RUN_FAILED: 'automation_run_failed',
   AUTOMATION_RUN_COMPLETED: 'automation_run_completed',
-  AUTOMATION_RUN_RESUMED: 'automation_run_resumed'
+  AUTOMATION_RUN_RESUMED: 'automation_run_resumed',
+  CAMPAIGN_COMPLETED: 'campaign_completed',
+  CAMPAIGN_FAILED: 'campaign_failed',
 });
 
 // ─────────────────────────────────────────────
@@ -121,6 +123,14 @@ export function getNotificationLink(entity, id, type) {
     return id ? `/automations/running?id=${id}` : "/automations/running";
   }
 
+  if (
+    entity === "campaign" ||
+    type === NotificationType.CAMPAIGN_COMPLETED ||
+    type === NotificationType.CAMPAIGN_FAILED
+  ) {
+    return id ? `/campaigns/${id}` : "/campaigns";
+  }
+
   return null;
 }
 
@@ -134,6 +144,7 @@ function getNotificationIcon(type) {
     alert: "⚠️",
     subscription: "🔔",
     automation_run: "🤖",
+    campaign: "📣",
   };
   return icons[type?.toLowerCase()] ?? "🔔";
 }

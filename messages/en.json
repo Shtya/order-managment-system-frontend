@@ -581,7 +581,8 @@
     "gettingStartedStatistics": "Getting Started Statistics",
     "ai": "AI",
     "platformNumbers": "WhatsApp Numbers",
-    "revenueStats": "WhatsApp Revenue"
+    "revenueStats": "WhatsApp Revenue",
+    "campaigns": "Campaigns"
   },
   "gettingStarted": {
     "allComplete": {
@@ -14385,6 +14386,313 @@
       }
     }
   },
+  "campaigns": {
+    "title": "Campaigns",
+    "breadcrumb": {
+      "home": "Dashboard",
+      "campaigns": "Campaigns"
+    },
+    "stats": {
+      "total": "All Campaigns",
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "running": "Running",
+      "paused": "Paused",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "filters": {
+      "status": "Status",
+      "channel": "Channel"
+    },
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "running": "Running",
+      "paused": "Paused",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "failed": "Failed"
+    },
+    "channels": {
+      "whatsapp": "WhatsApp",
+      "sms": "SMS",
+      "email": "Email"
+    },
+    "scheduleMode": {
+      "now": "Send now",
+      "scheduled": "Scheduled"
+    },
+    "columns": {
+      "name": "Name",
+      "channel": "Channel",
+      "status": "Status",
+      "scheduleMode": "Schedule",
+      "scheduledAt": "Scheduled at",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read",
+      "replied": "Replied",
+      "orders": "Orders",
+      "sales": "Sales",
+      "cost": "Cost",
+      "actions": "Actions"
+    },
+    "table": {
+      "searchPlaceholder": "Search campaigns...",
+      "emptyTitle": "No campaigns found",
+      "emptySubtitle": "Create a campaign or adjust your filters."
+    },
+    "actions": {
+      "new": "New campaign",
+      "edit": "Edit",
+      "duplicate": "Duplicate",
+      "startNow": "Start now",
+      "pause": "Pause",
+      "resume": "Resume",
+      "cancel": "Cancel",
+      "retryFailed": "Retry failed",
+      "delete": "Delete",
+      "view": "View"
+    },
+    "toolbar": {
+      "export": "Export"
+    },
+    "confirm": {
+      "startTitle": "Start campaign now",
+      "startDesc": "“{name}” will start sending immediately, even if it was scheduled for later.",
+      "cancelTitle": "Cancel campaign",
+      "cancelDesc": "“{name}” will stop and cannot be resumed.",
+      "retryTitle": "Retry failed recipients",
+      "retryDesc": "Failed messages in “{name}” will be retried.",
+      "deleteTitle": "Delete campaign",
+      "deleteDesc": "“{name}” will be permanently deleted."
+    },
+    "toast": {
+      "fetchFailed": "Failed to load campaigns",
+      "actionFailed": "Action failed",
+      "started": "Campaign started",
+      "paused": "Campaign paused",
+      "resumed": "Campaign resumed",
+      "cancelled": "Campaign cancelled",
+      "retried": "{count} recipients queued again",
+      "deleted": "Campaign deleted"
+    },
+    "details": {
+      "title": "Campaign details",
+      "notFound": "Campaign not found.",
+      "stats": {
+        "recipients": "Recipients",
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "read": "Read",
+        "replied": "Replied",
+        "failed": "Sending failed",
+        "pending": "Pending",
+        "orders": "Orders",
+        "successRate": "Success rate"
+      },
+      "sections": {
+        "general": "General information",
+        "audience": "Recipient sources",
+        "channel": "Channel"
+      },
+      "fields": {
+        "schedule": "Schedule",
+        "off": "Off",
+        "createdAt": "Created at",
+        "startedAt": "Started at",
+        "completedAt": "Completed at",
+        "cost": "Cost",
+        "sales": "Sales",
+        "estimated": "Estimated",
+        "template": "Template",
+        "account": "WhatsApp account",
+        "variable": "Variable",
+        "value": "Value",
+        "headerVars": "Header",
+        "bodyVars": "Body",
+        "buttonVars": "Buttons"
+      },
+      "filters": {
+        "status": "Status"
+      },
+      "recipientStatus": {
+        "pending": "Pending",
+        "sending": "Sending",
+        "accepted": "Send accepted",
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "read": "Read",
+        "failed": "Sending failed"
+      },
+      "columns": {
+        "name": "Recipient",
+        "status": "Status",
+        "sentAt": "Sent at",
+        "deliveredAt": "Delivered at",
+        "read": "Read",
+        "replied": "Replied",
+        "order": "Order",
+        "cost": "Cost",
+        "failureReason": "Failure reason",
+        "actions": "Actions"
+      },
+      "actions": {
+        "viewOrder": "View order"
+      },
+      "table": {
+        "searchPlaceholder": "Search recipients…",
+        "emptyTitle": "No recipients found",
+        "emptySubtitle": "Processed recipients will appear here."
+      }
+    },
+    "wizard": {
+      "title": "New campaign",
+      "editTitle": "Edit campaign",
+      "loadFailed": "Failed to load campaign",
+      "notEditable": "Only draft or scheduled campaigns can be edited.",
+      "backToList": "Back to campaigns",
+      "steps": {
+        "general": "General",
+        "recipients": "Recipients",
+        "message": "Message",
+        "review": "Review"
+      },
+      "next": "Next",
+      "back": "Back",
+      "save": "Save campaign",
+      "saved": "Campaign saved",
+      "saveFailed": "Failed to save campaign",
+      "fixStepErrors": "Please fix the highlighted errors before continuing.",
+      "name": "Campaign name",
+      "namePlaceholder": "e.g. Ramadan Flash Sale",
+      "category": "Category",
+      "description": "Description",
+      "descriptionPlaceholder": "Goal and notes for this campaign…",
+      "workingHours": "Working hours",
+      "workingHoursHint": "When on, sending pauses outside this window.",
+      "workingHoursStart": "Start",
+      "workingHoursEnd": "End",
+      "timezone": "Time zone",
+      "delayMin": "Min delay (sec)",
+      "delayMax": "Max delay (sec)",
+      "maxPerHour": "Max messages / hour",
+      "channel": "Channel",
+      "channels": {
+        "whatsapp": "WhatsApp Business",
+        "whatsappHint": "Send messages using approved WhatsApp templates.",
+        "sms": "SMS",
+        "smsHint": "Reserved for later.",
+        "email": "Email",
+        "emailHint": "Reserved for later."
+      },
+      "scheduleMode": "Schedule",
+      "scheduleNow": "Send now",
+      "scheduleScheduled": "Scheduled",
+      "scheduledAt": "Scheduled at",
+      "scheduledDate": "Date",
+      "scheduledTime": "Time",
+      "categories": {
+        "general_marketing": "General marketing",
+        "promotional": "Promotional",
+        "announcement": "Announcement",
+        "follow_up": "Follow-up",
+        "reminder": "Reminder",
+        "welcome": "Welcome",
+        "win_back": "Win-back",
+        "back_in_stock": "Back in stock",
+        "vip_exclusive": "VIP exclusive",
+        "event_invitation": "Event invitation",
+        "reorder_replenishment": "Reorder / replenishment",
+        "educational_nurture": "Educational nurture",
+        "upsell": "Upsell",
+        "customer_reactivation": "Reactivation"
+      },
+      "validation": {
+        "nameRequired": "Name is required.",
+        "workingHoursRequired": "Start and end time are required.",
+        "delayMin": "Min delay must be ≥ 4.",
+        "delayMax": "Max delay must be ≥ min delay.",
+        "scheduledAtRequired": "Scheduled date is required.",
+        "scheduledAtFuture": "Scheduled date must be in the future.",
+        "segmentRequired": "Select a segment.",
+        "fileRequired": "Upload a recipient file.",
+        "fileHasErrors": "Fix invalid rows in the file before continuing.",
+        "manualRequired": "Add at least one recipient.",
+        "filterRequired": "Configure at least one filter rule.",
+        "templateRequired": "Select a WhatsApp template.",
+        "variablesRequired": "Fill all template variables."
+      },
+      "recipients": {
+        "segment": "Segment",
+        "segmentHint": "Saved audience",
+        "file": "File",
+        "fileHint": "xlsx / csv upload",
+        "manual": "Manual",
+        "manualHint": "Any valid phone number, e.g. 2010xxxxxxxx.",
+        "customers": "Filter",
+        "customersHint": "Same as Segment page",
+        "searchSegments": "Search segments",
+        "searchSegmentsPlaceholder": "Search by name…",
+        "loading": "Loading…",
+        "noSegments": "No segments found.",
+        "selectedSegment": "Selected",
+        "fileTitle": "Upload recipient file",
+        "template": "Template",
+        "templateFailed": "Failed to download template.",
+        "dropHint": "Drop .xlsx / .xls / .csv here or browse",
+        "browse": "Browse",
+        "fileLimits": "Maximum file size: 5 MB",
+        "fileTypeError": "Unsupported format — use xlsx/xls/csv.",
+        "fileSizeError": "File too large — max 5MB.",
+        "fileError_empty": "Empty file.",
+        "fileError_missing_phone": "Missing phone column.",
+        "fileError_empty_valid": "No valid phone numbers.",
+        "fileError_too_many": "Too many rows (max 50000).",
+        "fileError_invalid": "Could not read this file.",
+        "parsing": "Parsing file…",
+        "numbersFound": "{count} valid numbers",
+        "invalidRows": "{count} invalid rows",
+        "numbersPreview": "First numbers",
+        "xlsxPending": "Will be validated by backend",
+        "replace": "Replace",
+        "phone": "Phone number",
+        "nameOptional": "Name (optional)",
+        "namePlaceholder": "Name",
+        "add": "Add",
+        "remove": "Remove",
+        "noManual": "No numbers yet.",
+        "invalidPhone": "Invalid phone number.",
+        "duplicatePhone": "Already added.",
+        "manualLimit": "Limit 5000 reached.",
+        "estimated": "Estimated",
+        "refreshPreview": "Refresh preview"
+      },
+      "message": {
+        "chooseTemplate": "Choose template",
+        "changeTemplate": "Change template",
+        "noTemplate": "No template selected",
+        "account": "WhatsApp account",
+        "fillVariables": "Fill variables",
+        "header": "Header",
+        "body": "Body",
+        "buttons": "Buttons",
+        "mediaHeader": "Media header",
+        "locationHeader": "Location header",
+        "preview": "Preview"
+      },
+      "review": {
+        "title": "Review campaign",
+        "subtitle": "Verify everything before saving.",
+        "general": "General",
+        "audience": "Audience",
+        "template": "Template",
+        "offHours": "Off",
+        "empty": "—"
+      }
+    }
+  },
   "customerSegments": {
     "title": "Customer Segments",
     "comingSoon": "Segment editor is coming next.",
@@ -14748,7 +15056,9 @@
         "confirmationSource": "Confirmation source",
         "allowOpenPackage": "Allow open package",
         "duplicateCount": "Duplicate count",
-        "phone": { "valid": "Valid phone number" }
+        "phone": {
+          "valid": "Valid phone number"
+        }
       },
       "order_item": {
         "quantity": "Quantity",

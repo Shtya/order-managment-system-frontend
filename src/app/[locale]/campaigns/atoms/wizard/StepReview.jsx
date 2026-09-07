@@ -16,6 +16,7 @@ import {
 } from "@/components/audience-filter/lookups";
 import { collectRuleFields } from "@/components/audience-filter/audience-filter.utils";
 import { combineScheduledAt } from "./wizardSchema";
+import { campaignTemplatePreviewOverlay } from "../campaignPlaceholders";
 
 export default function StepReview({ getValues }) {
   const t = useTranslations("campaigns.wizard");
@@ -174,7 +175,15 @@ export default function StepReview({ getValues }) {
         <p className="mb-2 text-xs font-black uppercase tracking-widest text-muted-foreground">{t("review.template")}</p>
         {v.whatsapp?.templateData ? (
           <div className="max-w-[360px]">
-            <TemplatePreview template={{...v.whatsapp.templateData, ...(v.whatsapp.headerUrl ? { headerUrl: v.whatsapp.headerUrl } : {})}} flat forceShowExamples />
+            <TemplatePreview
+              template={{
+                ...v.whatsapp.templateData,
+                ...(v.whatsapp.headerUrl ? { headerUrl: v.whatsapp.headerUrl } : {}),
+                ...campaignTemplatePreviewOverlay(v.whatsapp),
+              }}
+              flat
+              forceShowExamples
+            />
           </div>
         ) : (
           <p className="text-sm">{empty}</p>

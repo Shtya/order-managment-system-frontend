@@ -14680,7 +14680,12 @@
         "buttons": "Buttons",
         "mediaHeader": "Media header",
         "locationHeader": "Location header",
-        "preview": "Preview"
+        "preview": "Preview",
+        "placeholders": {
+          "title": "Customer fields",
+          "name": "Customer name",
+          "number": "Customer number"
+        }
       },
       "review": {
         "title": "Review campaign",

@@ -2,16 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Check, Phone, User } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import VariableInput from "@/components/ui/VariableInput";
 import Button_ from "@/components/atoms/Button";
-import WhatsAppAccountSelect from "@/app/[locale]/whatsapp/atoms/WhatsAppAccountSelect";
 import { InternalTemplateDialog } from "@/app/[locale]/whatsapp/atoms/InternalTemplateDialog";
 import TemplatePreview from "@/app/[locale]/whatsapp/atoms/TemplatePreview";
 import MediaUpload from "@/app/[locale]/whatsapp/atoms/MediaUpload";
 import LocationFields from "@/app/[locale]/whatsapp/atoms/chats/LocationFields";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
+import { campaignTemplatePreviewOverlay } from "../campaignPlaceholders";
 
 function buildInitialWhatsapp(template, accountId) {
   const config = template.templateConfig || {};
@@ -57,6 +57,22 @@ export default function StepMessage({ watch, setValue }) {
   const accountId = watch("whatsappAccountId");
   const whatsapp = watch("whatsapp");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const customerVariables = useMemo(
+    () => [
+      { id: "customer.name", label: t("message.placeholders.name"), preview: "Ahmed", icon: User },
+      { id: "customer.number", label: t("message.placeholders.number"), preview: "01012345678", icon: Phone },
+    ],
+    [t],
+  );
+  const variableProps = useMemo(
+    () => ({
+      disableHydrate: false,
+      variables: customerVariables,
+      popupTitle: t("message.placeholders.title"),
+    }),
+    [customerVariables, t],
+  );
+  const previewOverlay = useMemo(() => campaignTemplatePreviewOverlay(whatsapp), [whatsapp]);
 
   const vars = useMemo(() => {
     if (!whatsapp?.templateData) return { header: [], body: [], buttons: [] };
@@ -82,8 +98,7 @@ export default function StepMessage({ watch, setValue }) {
   };
 
   const handleSelectTemplate = (template) => {
-    // if (!accountId) return;
-    const selectedAccountId = !!template?.selectedAccountId && !["all", null].includes(template?.selectedAccountId) ? template?.selectedAccountId : template?.accountId;
+    const selectedAccountId = !!template?.selectedAccountId && !["all", null].includes(template?.selectedAccountId) ? template.selectedAccountId : template?.accountId;
     setValue("whatsappAccountId", selectedAccountId, { shouldDirty: true });
     updateWhatsapp(buildInitialWhatsapp({ ...template, accountId: selectedAccountId }, selectedAccountId));
     setDialogOpen(false);
@@ -92,7 +107,6 @@ export default function StepMessage({ watch, setValue }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border p-4 space-y-3">
-        {/* <WhatsAppAccountSelect value={accountId} onChange={(v) => setValue("whatsappAccountId", v, { shouldDirty: true })} /> */}
         {!whatsapp?.templateId ? (
           <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border p-6 text-center">
             <p className="text-sm font-semibold">{t("message.noTemplate")}</p>
@@ -153,10 +167,11 @@ export default function StepMessage({ watch, setValue }) {
                 {vars.header.map((num) => (
                   <div key={`h-${num}`} className="space-y-2">
                     <Label>{`{{${num}}}`}</Label>
-                    <Input
+                    <VariableInput
                       value={whatsapp.headerVariables?.[num]?.value || ""}
-                      onChange={(e) => updateVar("headerVariables", num, e.target.value)}
+                      onChange={(value) => updateVar("headerVariables", num, value)}
                       placeholder={whatsapp.headerVariables?.[num]?.example || ""}
+                      {...variableProps}
                     />
                   </div>
                 ))}
@@ -170,10 +185,11 @@ export default function StepMessage({ watch, setValue }) {
                 {vars.body.map((num) => (
                   <div key={`b-${num}`} className="space-y-2">
                     <Label>{`{{${num}}}`}</Label>
-                    <Input
+                    <VariableInput
                       value={whatsapp.bodyVariables?.[num]?.value || ""}
-                      onChange={(e) => updateVar("bodyVariables", num, e.target.value)}
+                      onChange={(value) => updateVar("bodyVariables", num, value)}
                       placeholder={whatsapp.bodyVariables?.[num]?.example || ""}
+                      {...variableProps}
                     />
                   </div>
                 ))}
@@ -192,10 +208,11 @@ export default function StepMessage({ watch, setValue }) {
                   return (
                     <div key={`btn-${idx}`} className="space-y-2">
                       <Label>{btnName}</Label>
-                      <Input
+                      <VariableInput
                         value={whatsapp.buttonVariables?.[idx]?.value || ""}
-                        onChange={(e) => updateVar("buttonVariables", idx, e.target.value.replace(/\s/g, "_"))}
+                        onChange={(value) => updateVar("buttonVariables", idx, String(value || "").replace(/\s/g, "_"))}
                         placeholder={whatsapp.buttonVariables?.[idx]?.example || ""}
+                        {...variableProps}
                       />
                     </div>
                   );
@@ -213,16 +230,11 @@ export default function StepMessage({ watch, setValue }) {
             <TemplatePreview
               template={{
                 ...whatsapp.templateData,
-                headerExample:
-                  whatsapp.headerVariables?.["1"]?.value || Object.values(whatsapp.headerVariables || {})?.[0]?.value,
-                examples: {
-                  ...Object.keys(whatsapp.bodyVariables || {}).reduce(
-                    (acc, k) => ({ ...acc, [k]: whatsapp.bodyVariables[k].value }),
-                    {},
-                  ),
-                },
+                headerExample: previewOverlay.headerExample,
+                examples: previewOverlay.examples,
               }}
               flat
+              
               forceShowExamples
             />
           </div>

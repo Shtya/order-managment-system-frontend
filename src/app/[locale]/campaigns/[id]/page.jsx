@@ -56,6 +56,7 @@ import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import { cn } from "@/utils/cn";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import { campaignTemplatePreviewOverlay, campaignVarDisplayValue } from "@/app/[locale]/campaigns/atoms/campaignPlaceholders";
 
 const STATUS_BADGE_CLASS = {
   draft: "bg-slate-500/10 text-slate-600 border-slate-500/20",
@@ -342,10 +343,10 @@ export default function CampaignDetailsPage() {
   const status = campaign?.status;
   const headerButtons = (
     <div className="flex flex-wrap items-center gap-2">
-      {(status === "draft" || status === "scheduled") && (
+      {status === "scheduled" && (
         <Button_ size="sm" variant="solid" label={t("actions.edit")} icon={<Edit size={16} />} permission="campaigns.update" onClick={() => router.push(`/campaigns/${id}/edit`)} />
       )}
-      {(status === "draft" || status === "scheduled") && (
+      {status === "scheduled" && (
         <Button_ size="sm" variant="outline" label={t("actions.startNow")} icon={<Play size={16} />} permission="campaigns.start" onClick={() => setConfirm({ open: true, type: "start" })} />
       )}
       {status === "running" && (
@@ -354,11 +355,11 @@ export default function CampaignDetailsPage() {
       {status === "paused" && (
         <Button_ size="sm" variant="solid" label={t("actions.resume")} icon={<Play size={16} />} permission="campaigns.update" onClick={() => runAction("resume")} />
       )}
-      {["running", "paused", "completed"].includes(status) && (
-        <Button_ size="sm" variant="outline" label={t("actions.retryFailed")} icon={<RotateCcw size={16} />} permission="campaigns.start" onClick={() => setConfirm({ open: true, type: "retry" })} />
-      )}
-      {["draft", "scheduled", "running", "paused"].includes(status) && (
+      {["scheduled", "running", "paused"].includes(status) && (
         <Button_ size="sm" variant="outline" label={t("actions.cancel")} icon={<Ban size={16} />} permission="campaigns.update" onClick={() => setConfirm({ open: true, type: "cancel" })} />
+      )}
+      {status === "failed" && (
+        <Button_ size="sm" variant="outline" label={t("actions.retryFailed")} icon={<RotateCcw size={16} />} permission="campaigns.start" onClick={() => setConfirm({ open: true, type: "retry" })} />
       )}
       <Button_ size="sm" variant="outline" label={t("actions.duplicate")} icon={<Copy size={16} />} permission="campaigns.create" onClick={() => router.push(`/campaigns/new?fromId=${id}`)} />
       {status !== "running" && status !== "paused" && (
@@ -653,8 +654,7 @@ export default function CampaignDetailsPage() {
                   template={{
                     ...snap.templateData,
                     ...(snap?.headerUrl ? { headerUrl: avatarSrc(snap?.headerUrl) } : {}),
-                    headerExample: snap.headerVariables?.["1"]?.value || Object.values(snap.headerVariables || {})?.[0]?.value,
-                    examples: { ...Object.keys(snap.bodyVariables || {}).reduce((acc, k) => ({ ...acc, [k]: snap.bodyVariables[k].value }), {}) },
+                    ...campaignTemplatePreviewOverlay(snap),
                   }}
                   flat
                   forceShowExamples
@@ -751,7 +751,7 @@ function VariableGroup({ title, rows, labelFor }) {
               {labelFor ? labelFor(key, item) : `{{${key}}}`}
             </code>
             <span className="text-sm font-medium break-words leading-5">
-              {item?.value || "—"}
+              {campaignVarDisplayValue(item) || "—"}
             </span>
           </li>
         ))}

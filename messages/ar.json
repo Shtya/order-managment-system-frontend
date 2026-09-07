@@ -14705,7 +14705,12 @@
         "buttons": "الأزرار",
         "mediaHeader": "وسائط",
         "locationHeader": "موقع",
-        "preview": "معاينة"
+        "preview": "معاينة",
+        "placeholders": {
+          "title": "حقول العميل",
+          "name": "اسم العميل",
+          "number": "رقم العميل"
+        }
       },
       "review": {
         "title": "مراجعة الحملة",

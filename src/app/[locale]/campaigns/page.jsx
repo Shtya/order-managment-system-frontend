@@ -42,7 +42,7 @@ const DEFAULT_FILTERS = { status: "all", channel: "all" };
 
 const STAT_CARDS = [
   { key: "total", icon: Send, sortOrder: 0 },
-  { key: "draft", icon: Edit, sortOrder: 1 },
+  // { key: "draft", icon: Edit, sortOrder: 1 },
   { key: "scheduled", icon: Play, sortOrder: 2 },
   { key: "running", icon: Send, sortOrder: 3 },
   { key: "paused", icon: Pause, sortOrder: 4 },

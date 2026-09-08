@@ -872,5 +872,5 @@ const VariableInput = React.forwardRef(function VariableInput(
 
 VariableInput.displayName = "VariableInput"
 
-export { VariableInput, VariableChip, VariableTextPreview, flattenVariables, findVariableForToken, splitVariableTokens }
+export { VariableInput, VariableChip, VariableTextPreview, flattenVariables, findVariableForToken }
 export default VariableInput

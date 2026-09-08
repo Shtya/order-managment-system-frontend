@@ -13647,6 +13647,7 @@
           "created_at": "تاريخ إنشاء الطلب",
           "allowOpenPackage": "السماح بفتح الطلب",
           "isReplacement": "طلب استبدال",
+          "fromCampaign": "من حملة",
           "hasEnoughStock": "المخزون كافٍ",
           "items": "كل المنتجات",
           "productName": "اسم المنتج",
@@ -14515,7 +14516,7 @@
         "failed": "فشل الإرسال",
         "pending": "قيد الانتظار",
         "orders": "الطلبات",
-        "successRate": "معدل النجاح",
+        "successRate": "معدل نجاح الارسال ",
         "conversion": "التحويل"
       },
       "sections": {
@@ -15064,7 +15065,7 @@
   },
   "audienceFilter": {
     "title": "بناء الفلتر",
-    "subtitle": "اضغط «إضافة شرط» واختر الحقل. العلاقات (طلب، منتج، شحنة…) تُنشأ تلقائيًا.",
+    "subtitle": "اضغط «إضافة شرط» واختر الحقل. العلاقات (طلب، منتج…) تُنشأ تلقائيًا.",
     "addCondition": "إضافة شرط",
     "selectField": "اختر حقلًا",
     "searchFields": "ابحث عن حقل...",
@@ -15096,38 +15097,22 @@
       "lte": "أقل من أو يساوي"
     },
     "from": {
-      "totalOrders": "من إجمالي الطلبات",
-      "shippedOrders": "من الطلبات المشحونة"
+      "totalOrders": "من إجمالي الطلبات"
     },
     "entities": {
       "client": "العميل",
       "order": "الطلبات",
-      "order_item": "عناصر الطلب",
-      "variant": "المتغير",
-      "product": "المنتج",
-      "assignment": "التعيين",
-      "shipment": "الشحنة",
-      "upsell": "العرض الإضافي"
+      "order_item": "عناصر الطلب"
     },
     "entityShort": {
       "client": "ع",
       "order": "ط",
-      "order_item": "س",
-      "variant": "م",
-      "product": "ن",
-      "assignment": "ت",
-      "shipment": "ش",
-      "upsell": "ض"
+      "order_item": "س"
     },
     "entityHints": {
       "client": "بيانات العميل نفسه",
       "order": "يوجد طلب مطابق لهذه الشروط",
-      "order_item": "يوجد سطر في الطلب يطابق هذه الشروط",
-      "variant": "سطر الطلب لهذا المتغير",
-      "product": "المتغير تابع لهذا المنتج",
-      "assignment": "يوجد تعيين مطابق على الطلب",
-      "shipment": "توجد شحنة مطابقة على الطلب",
-      "upsell": "يوجد عرض إضافي مطابق على الطلب"
+      "order_item": "يوجد سطر في الطلب يطابق هذه الشروط"
     },
     "fields": {
       "client": {
@@ -15135,22 +15120,11 @@
         "tagId": "وسم العميل",
         "totalOrders": "إجمالي الطلبات",
         "confirmedCount": "عدد المؤكد",
-        "confirmedPercent": "نسبة التأكيد",
         "confirmedRate": "معدل تأكيد الطلبات",
-        "shippedCount": "عدد المشحون",
-        "shippedPercent": "نسبة الشحن",
         "deliveredCount": "عدد المسلَّم",
-        "deliveredPercent": "نسبة التسليم",
         "returnedCount": "عدد المرتجع",
-        "returnedPercent": "نسبة الإرجاع",
         "cancelledCount": "عدد الملغى",
         "cancelRate": "معدل الإلغاء",
-        "cancelledBeforeShippingCount": "ملغى قبل الشحن",
-        "beforeShippingCancelRate": "نسبة الإلغاء قبل الشحن",
-        "cancelledAfterShippingCount": "ملغى بعد الشحن",
-        "afterShippingCancelRate": "نسبة الإلغاء بعد الشحن",
-        "afterShippingCancelRateOfShipped": "معدل الإلغاء بعد الشحن من المشحون",
-        "totalSales": "إجمالي المبيعات",
         "deliveredRevenue": "إيراد المسلَّم"
       },
       "order": {
@@ -15161,48 +15135,19 @@
         "paymentStatus": "حالة الدفع",
         "paymentMethod": "طريقة الدفع",
         "productsTotal": "إجمالي المنتجات",
-        "itemsQuantity": "كمية المنتجات",
-        "productsCount": "عدد المنتجات",
         "shippingCompanyId": "شركة الشحن",
         "finalTotal": "الإجمالي النهائي",
-        "discount": "الخصم",
-        "isConfirmed": "تم التأكيد",
-        "confirmationSource": "مصدر التأكيد",
-        "allowOpenPackage": "السماح بفتح الطرد",
-        "duplicateCount": "عدد التكرار",
-        "phone": {
-          "valid": "رقم هاتف صالح"
-        }
+        "confirmationSource": "مصدر التأكيد"
       },
       "order_item": {
-        "quantity": "الكمية",
-        "unitPrice": "سعر الوحدة",
-        "lineTotal": "إجمالي السطر"
+        "quantity": "الكمية"
       },
       "variant": {
-        "id": "المتغير",
-        "sku": "SKU",
-        "price": "السعر",
-        "stockOnHand": "المخزون"
+        "id": "المتغير"
       },
       "product": {
         "id": "المنتج",
-        "categoryId": "فئة المنتج",
-        "name": "اسم المنتج",
-        "sku": "SKU المنتج"
-      },
-      "assignment": {
-        "contactTries": "محاولات التواصل",
-        "hasActive": "تعيين نشط"
-      },
-      "shipment": {
-        "status": "حالة الشحن",
-        "shippingCompanyId": "شركة الشحن",
-        "shippedAt": "تاريخ الشحن"
-      },
-      "upsell": {
-        "accepted": "تم قبول العرض",
-        "status": "حالة العرض"
+        "categoryId": "فئة المنتج"
       }
     },
     "examples": {
@@ -15210,7 +15155,7 @@
         "createdAt": "آخر 30 يوم",
         "tagId": "VIP",
         "totalOrders": "3",
-        "confirmedPercent": "20",
+        "confirmedRate": "20",
         "cancelRate": "15"
       },
       "order": {
@@ -15220,14 +15165,6 @@
       "product": {
         "categoryId": "إكسسوارات"
       }
-    },
-    "upsellStatus": {
-      "pending": "قيد الانتظار",
-      "accepted": "مقبول",
-      "rejected": "مرفوض",
-      "expired": "منتهي",
-      "accepted_non_eligible": "مقبول (غير مؤهل)",
-      "failed_to_add": "فشل الإضافة"
     }
   },
   "chats": {

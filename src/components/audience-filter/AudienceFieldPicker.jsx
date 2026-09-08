@@ -13,9 +13,7 @@ import {
   MapPin,
   Package,
   Percent,
-  Phone,
   Plus,
-  Repeat,
   Store,
   Tag,
   Truck,
@@ -33,34 +31,27 @@ import {
 
 const FIELD_ICONS = {
   "order.statusId": Activity,
-  "order.isConfirmed": Activity,
   "order.confirmationSource": Activity,
   "order.storeId": Store,
   "order.shippingCompanyId": Truck,
   "order.cityId": MapPin,
   "order.finalTotal": DollarSign,
   "order.productsTotal": DollarSign,
-  "order.discount": Percent,
-  "order.itemsQuantity": Package,
-  "order.phone.valid": Phone,
-  "assignment.contactTries": User,
-  "assignment.hasActive": User,
-  "shipment.status": Truck,
+  "order.tagId": Tag,
   "client.totalOrders": Hash,
   "client.tagId": Tag,
   "client.confirmedCount": CheckCircle2,
+  "client.confirmedRate": Percent,
+  "client.cancelRate": Percent,
   "product.categoryId": Box,
+  "product.id": Package,
+  "variant.id": Tag,
 };
 
 const ENTITY_ICONS = {
   client: User,
   order: Package,
   order_item: Box,
-  variant: Tag,
-  product: Package,
-  assignment: User,
-  shipment: Truck,
-  upsell: Repeat,
 };
 
 function safeT(t, key, fallback = "") {

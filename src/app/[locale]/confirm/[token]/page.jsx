@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -210,6 +210,7 @@ export default function PublicCampaignOrderPage() {
     areaId: "",
     customerNotes: "",
   });
+  const savedAreaRef = useRef({ areaId: "", area: "" });
 
   useEffect(() => {
     if (!token) return;
@@ -232,9 +233,13 @@ export default function PublicCampaignOrderPage() {
           address: json.address || "",
           landmark: json.landmark || "",
           cityId: json.cityId || "",
-          areaId: json.areaId || "",
+          areaId: "",
           customerNotes: json.customerNotes || "",
         });
+        savedAreaRef.current = {
+          areaId: json.areaId || "",
+          area: json.area || "",
+        };
       } catch {
         if (!cancelled) setError("unavailable");
       } finally {
@@ -261,12 +266,19 @@ export default function PublicCampaignOrderPage() {
         const nextAreas = Array.isArray(list) ? list : [];
         setAreas(nextAreas);
         setForm((f) => {
-          if (f.areaId && nextAreas.some((a) => a.id === f.areaId)) return f;
-          const fromSaved =
-            f.cityId === data?.cityId
-              ? nextAreas.find((a) => a.nameAr === data?.area || a.nameEn === data?.area)
-              : null;
-          return { ...f, areaId: fromSaved?.id || "" };
+          const saved = savedAreaRef.current;
+          const byId = nextAreas.find((a) => a.id === saved.areaId || a.id === f.areaId);
+          const areaName = String(saved.area || data?.area || "")
+            .trim()
+            .toLowerCase();
+          const byName = areaName
+            ? nextAreas.find(
+                (a) =>
+                  String(a.nameAr || "").trim().toLowerCase() === areaName ||
+                  String(a.nameEn || "").trim().toLowerCase() === areaName,
+              )
+            : null;
+          return { ...f, areaId: byId?.id || byName?.id || "" };
         });
       } catch {
         if (!cancelled) setAreas([]);
@@ -304,6 +316,7 @@ export default function PublicCampaignOrderPage() {
           city: locName(selectedCity, locale) || data?.city,
           cityId: form.cityId,
           area: locName(selectedArea, locale) || undefined,
+          areaId: form.areaId || undefined,
           customerNotes: form.customerNotes || undefined,
         }),
       });
@@ -446,7 +459,10 @@ export default function PublicCampaignOrderPage() {
                   <Field label={t("city")}>
                     <Select
                       value={form.cityId || undefined}
-                      onValueChange={(cityId) => setForm((f) => ({ ...f, cityId, areaId: "" }))}
+                      onValueChange={(cityId) => {
+                        savedAreaRef.current = { areaId: "", area: "" };
+                        setForm((f) => ({ ...f, cityId, areaId: "" }));
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t("selectCity")} />
@@ -463,8 +479,12 @@ export default function PublicCampaignOrderPage() {
                   </Field>
                   <Field label={t("area")}>
                     <Select
-                      value={form.areaId || undefined}
-                      onValueChange={(areaId) => setForm((f) => ({ ...f, areaId }))}
+                      key={`${form.cityId}-${areas.map((a) => a.id).join(",")}`}
+                      value={areas.some((a) => a.id === form.areaId) ? form.areaId : undefined}
+                      onValueChange={(areaId) => {
+                        savedAreaRef.current = { ...savedAreaRef.current, areaId };
+                        setForm((f) => ({ ...f, areaId }));
+                      }}
                       disabled={!form.cityId || areasLoading}
                     >
                       <SelectTrigger>

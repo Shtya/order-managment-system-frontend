@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot, Ban, UserPlus, Percent, Repeat } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot, Ban, UserPlus, Percent, Repeat, Megaphone } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
@@ -2734,6 +2734,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
         { id: "status", label: tBuilder('orderProperties.status'), type: "select", icon: Activity, color: "text-cyan-500", bg: "bg-cyan-50", options: statuses.map(s => ({ id: s.id, label: s.system ? tOrders(`statuses.${s.code}`) : s.name })) },
         { id: "allowOpenPackage", label: tBuilder('orderProperties.allowOpenPackage'), type: "boolean", icon: PackageOpen, color: "text-slate-500", bg: "bg-slate-50" },
         { id: "isReplacement", label: tBuilder('orderProperties.isReplacement'), type: "boolean", icon: RefreshCw, color: "text-teal-500", bg: "bg-teal-50" },
+        { id: "campaignId", label: tBuilder('orderProperties.fromCampaign'), type: "boolean", icon: Megaphone, color: "text-fuchsia-500", bg: "bg-fuchsia-50" },
         { id: "hasEnoughStock", label: tBuilder('orderProperties.hasEnoughStock'), type: "boolean", icon: Package, color: "text-emerald-500", bg: "bg-emerald-50" },
         { id: "deposit", label: tBuilder('orderProperties.deposit'), type: "number", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },
     ];

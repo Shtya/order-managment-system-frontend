@@ -134,7 +134,7 @@ const VariableChip = React.memo(function VariableChip({ variable, example, showE
     
     return (
         <span className={cn(
-            "inline-flex items-center gap-1.5 align-middle whitespace-nowrap select-none",
+            "inline-flex max-w-full min-w-0 items-center gap-1.5 align-middle select-none flex-wrap",
             "rounded-sm border border-border bg-foreground/5 mx-0.5",
             chipSizeClasses[size] ?? chipSizeClasses.normal,
             className
@@ -149,9 +149,12 @@ const VariableChip = React.memo(function VariableChip({ variable, example, showE
                     label?.[0]?.toUpperCase() ?? "•"
                 )}
             </span>
-            <span className="font-medium text-foreground">{label}</span>
+            <span className="min-w-0 font-medium text-foreground break-all">{label}</span>
             {preview != null && preview !== "" && (
-                <span className={showExample ? "font-medium text-foreground" : "text-muted-foreground/80"}>
+                <span className={cn(
+                    "min-w-0 break-all",
+                    showExample ? "font-medium text-foreground" : "text-muted-foreground/80",
+                )}>
                     {preview}
                 </span>
             )}

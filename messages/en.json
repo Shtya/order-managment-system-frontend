@@ -13623,6 +13623,7 @@
           "created_at": "Order Created At",
           "allowOpenPackage": "Allow Open Package",
           "isReplacement": "Is Replacement Order",
+          "fromCampaign": "From Campaign",
           "hasEnoughStock": "Has Enough Stock",
           "items": "All products",
           "productName": "Product Name",
@@ -14490,7 +14491,7 @@
         "failed": "Sending failed",
         "pending": "Pending",
         "orders": "Orders",
-        "successRate": "Success rate",
+        "successRate": "Sending Success Rate",
         "conversion": "Conversion"
       },
       "sections": {
@@ -15039,7 +15040,7 @@
   },
   "audienceFilter": {
     "title": "Filter builder",
-    "subtitle": "Click Add condition and pick a field. Related groups (order, product, shipment…) are created automatically.",
+    "subtitle": "Click Add condition and pick a field. Related groups (order, product…) are created automatically.",
     "addCondition": "Add condition",
     "selectField": "Select field",
     "searchFields": "Search fields…",
@@ -15071,38 +15072,22 @@
       "lte": "Less or equal"
     },
     "from": {
-      "totalOrders": "of total orders",
-      "shippedOrders": "of shipped orders"
+      "totalOrders": "of total orders"
     },
     "entities": {
       "client": "Customer",
       "order": "Orders",
-      "order_item": "Order items",
-      "variant": "Variant",
-      "product": "Product",
-      "assignment": "Assignment",
-      "shipment": "Shipment",
-      "upsell": "Upsell"
+      "order_item": "Order items"
     },
     "entityShort": {
       "client": "C",
       "order": "O",
-      "order_item": "I",
-      "variant": "V",
-      "product": "P",
-      "assignment": "A",
-      "shipment": "S",
-      "upsell": "U"
+      "order_item": "I"
     },
     "entityHints": {
       "client": "The customer themselves",
       "order": "Has an order matching these conditions",
-      "order_item": "Has a line on that order matching these conditions",
-      "variant": "That line is this variant",
-      "product": "That variant belongs to this product",
-      "assignment": "Has an assignment on the order matching these conditions",
-      "shipment": "Has a shipment on the order matching these conditions",
-      "upsell": "Has an upsell on the order matching these conditions"
+      "order_item": "Has a line on that order matching these conditions"
     },
     "fields": {
       "client": {
@@ -15110,22 +15095,11 @@
         "tagId": "Customer tag",
         "totalOrders": "Total orders",
         "confirmedCount": "Confirmed orders",
-        "confirmedPercent": "Confirmed percent",
         "confirmedRate": "Order confirmation rate",
-        "shippedCount": "Shipped orders",
-        "shippedPercent": "Shipped percent",
         "deliveredCount": "Delivered orders",
-        "deliveredPercent": "Delivered percent",
         "returnedCount": "Returned orders",
-        "returnedPercent": "Returned percent",
         "cancelledCount": "Cancelled orders",
         "cancelRate": "Cancel percent",
-        "cancelledBeforeShippingCount": "Cancelled before shipping",
-        "beforeShippingCancelRate": "Cancelled before shipping percent",
-        "cancelledAfterShippingCount": "Cancelled after shipping",
-        "afterShippingCancelRate": "Cancelled after shipping percent",
-        "afterShippingCancelRateOfShipped": "After-shipping cancel rate of shipped",
-        "totalSales": "Total sales",
         "deliveredRevenue": "Delivered revenue"
       },
       "order": {
@@ -15136,48 +15110,19 @@
         "paymentStatus": "Payment status",
         "paymentMethod": "Payment method",
         "productsTotal": "Products total",
-        "itemsQuantity": "Items quantity",
-        "productsCount": "Products count",
         "shippingCompanyId": "Shipping company",
         "finalTotal": "Final total",
-        "discount": "Discount",
-        "isConfirmed": "Order confirmed",
-        "confirmationSource": "Confirmation source",
-        "allowOpenPackage": "Allow open package",
-        "duplicateCount": "Duplicate count",
-        "phone": {
-          "valid": "Valid phone number"
-        }
+        "confirmationSource": "Confirmation source"
       },
       "order_item": {
-        "quantity": "Quantity",
-        "unitPrice": "Unit price",
-        "lineTotal": "Line total"
+        "quantity": "Quantity"
       },
       "variant": {
-        "id": "Variant",
-        "sku": "SKU",
-        "price": "Price",
-        "stockOnHand": "Stock on hand"
+        "id": "Variant"
       },
       "product": {
         "id": "Product",
-        "categoryId": "Product category",
-        "name": "Product name",
-        "sku": "Product SKU"
-      },
-      "assignment": {
-        "contactTries": "Employee contact attempts",
-        "hasActive": "Order assigned to an employee"
-      },
-      "shipment": {
-        "status": "Shipment status",
-        "shippingCompanyId": "Shipping company",
-        "shippedAt": "Shipped at"
-      },
-      "upsell": {
-        "accepted": "Upsell accepted",
-        "status": "Upsell status"
+        "categoryId": "Product category"
       }
     },
     "examples": {
@@ -15185,7 +15130,7 @@
         "createdAt": "Last 30 days",
         "tagId": "VIP",
         "totalOrders": "3",
-        "confirmedPercent": "20",
+        "confirmedRate": "20",
         "cancelRate": "15"
       },
       "order": {
@@ -15195,14 +15140,6 @@
       "product": {
         "categoryId": "Accessories"
       }
-    },
-    "upsellStatus": {
-      "pending": "Pending",
-      "accepted": "Accepted",
-      "rejected": "Rejected",
-      "expired": "Expired",
-      "accepted_non_eligible": "Accepted (not eligible)",
-      "failed_to_add": "Failed to add"
     }
   },
   "chats": {

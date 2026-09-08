@@ -57,7 +57,7 @@ import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import { cn } from "@/utils/cn";
 import { avatarSrc } from "@/components/atoms/UserSelect";
-import { campaignTemplatePreviewOverlay, campaignVarDisplayValue, getCampaignPlaceholderChips } from "@/app/[locale]/campaigns/atoms/campaignPlaceholders";
+import { campaignTemplateChipPreview, getCampaignPlaceholderChips } from "@/app/[locale]/campaigns/atoms/campaignPlaceholders";
 import { inspectTemplateOrderLink } from "@/app/[locale]/campaigns/atoms/campaignOrderUrl";
 import { VariableTextPreview } from "@/components/ui/VariableInput";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
@@ -732,11 +732,13 @@ export default function CampaignDetailsPage() {
                     <span>{td("fields.variable")}</span>
                     <span>{td("fields.value")}</span>
                   </div>
-                  <VariableGroup title={td("fields.headerVars")} rows={headerVars} />
-                  <VariableGroup title={td("fields.bodyVars")} rows={bodyVars} />
+                  <VariableGroup title={td("fields.headerVars")} rows={headerVars} variables={placeholderChips} locale={locale} />
+                  <VariableGroup title={td("fields.bodyVars")} rows={bodyVars} variables={placeholderChips} locale={locale} />
                   <VariableGroup
                     title={td("fields.buttonVars")}
                     rows={buttonVars}
+                    variables={placeholderChips}
+                    locale={locale}
                     labelFor={(k, v) => v?.label || snap.templateData?.buttons?.[Number(k)]?.text || `{{${k}}}`}
                   />
                 </div>
@@ -745,13 +747,11 @@ export default function CampaignDetailsPage() {
             {snap.templateData && (
               <div className="rounded-xl border border-border bg-muted/30 p-4 h-fit">
                 <TemplatePreview
-                  template={{
-                    ...snap.templateData,
-                    ...(snap?.headerUrl ? { headerUrl: avatarSrc(snap?.headerUrl) } : {}),
-                    ...campaignTemplatePreviewOverlay(snap),
-                  }}
+                  {...campaignTemplateChipPreview(snap, {
+                    chipVariables: placeholderChips,
+                    headerUrl: snap?.headerUrl ? avatarSrc(snap.headerUrl) : undefined,
+                  })}
                   flat
-                  forceShowExamples
                 />
               </div>
             )}
@@ -828,7 +828,7 @@ export default function CampaignDetailsPage() {
   );
 }
 
-function VariableGroup({ title, rows, labelFor }) {
+function VariableGroup({ title, rows, labelFor, variables = [], locale }) {
   if (!rows?.length) return null;
   return (
     <div className="border-b border-border/50 last:border-b-0">
@@ -844,9 +844,13 @@ function VariableGroup({ title, rows, labelFor }) {
             <code className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">
               {labelFor ? labelFor(key, item) : `{{${key}}}`}
             </code>
-            <span className="text-sm font-medium break-words leading-5">
-              {campaignVarDisplayValue(item) || "—"}
-            </span>
+            <VariableTextPreview
+              text={item?.value}
+              variables={variables}
+              locale={locale}
+              empty="—"
+              className="text-sm font-medium leading-5"
+            />
           </li>
         ))}
       </ul>

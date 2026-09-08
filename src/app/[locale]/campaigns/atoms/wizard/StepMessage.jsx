@@ -11,7 +11,7 @@ import TemplatePreview from "@/app/[locale]/whatsapp/atoms/TemplatePreview";
 import MediaUpload from "@/app/[locale]/whatsapp/atoms/MediaUpload";
 import LocationFields from "@/app/[locale]/whatsapp/atoms/chats/LocationFields";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
-import { campaignTemplatePreviewOverlay, getCampaignPlaceholderChips } from "../campaignPlaceholders";
+import { campaignTemplateChipPreview, getCampaignPlaceholderChips } from "../campaignPlaceholders";
 
 function buildInitialWhatsapp(template, accountId) {
   const config = template.templateConfig || {};
@@ -66,7 +66,6 @@ export default function StepMessage({ watch, setValue }) {
     }),
     [customerVariables, t],
   );
-  const previewOverlay = useMemo(() => campaignTemplatePreviewOverlay(whatsapp), [whatsapp]);
 
   const vars = useMemo(() => {
     if (!whatsapp?.templateData) return { header: [], body: [], buttons: [] };
@@ -229,13 +228,8 @@ export default function StepMessage({ watch, setValue }) {
               {t("message.preview")}
             </p>
             <TemplatePreview
-              template={{
-                ...whatsapp.templateData,
-                headerExample: previewOverlay.headerExample,
-                examples: previewOverlay.examples,
-              }}
+              {...campaignTemplateChipPreview(whatsapp, { chipVariables: customerVariables })}
               flat
-              forceShowExamples
             />
           </div>
         </div>

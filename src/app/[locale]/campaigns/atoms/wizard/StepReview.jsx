@@ -16,7 +16,7 @@ import {
 } from "@/components/audience-filter/lookups";
 import { collectRuleFields } from "@/components/audience-filter/audience-filter.utils";
 import { combineScheduledAt } from "./wizardSchema";
-import { campaignTemplatePreviewOverlay, getCampaignPlaceholderChips } from "../campaignPlaceholders";
+import { campaignTemplateChipPreview, getCampaignPlaceholderChips } from "../campaignPlaceholders";
 import { inspectTemplateOrderLink } from "../campaignOrderUrl";
 import { VariableTextPreview } from "@/components/ui/VariableInput";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
@@ -192,13 +192,8 @@ export default function StepReview({ getValues }) {
         {v.whatsapp?.templateData ? (
           <div className="max-w-[360px]">
             <TemplatePreview
-              template={{
-                ...v.whatsapp.templateData,
-                ...(v.whatsapp.headerUrl ? { headerUrl: v.whatsapp.headerUrl } : {}),
-                ...campaignTemplatePreviewOverlay(v.whatsapp),
-              }}
+              {...campaignTemplateChipPreview(v.whatsapp, { chipVariables: placeholderChips })}
               flat
-              forceShowExamples
             />
           </div>
         ) : (

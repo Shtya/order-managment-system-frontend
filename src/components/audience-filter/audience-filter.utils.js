@@ -61,8 +61,22 @@ export function withNodeIds(node) {
   return { ...node, _id: node._id || newNodeId() };
 }
 
+export function flattenItemValueGroups(node) {
+  if (!isGroupNode(node)) return node;
+  const rules = [];
+  for (const child of node.rules || []) {
+    if (isGroupNode(child) && (child.entity === "variant" || child.entity === "product")) {
+      const lifted = flattenItemValueGroups(child);
+      rules.push(...(lifted.rules || []));
+      continue;
+    }
+    rules.push(flattenItemValueGroups(child));
+  }
+  return { ...node, rules };
+}
+
 export function fromApiFilter(filter) {
-  const next = withNodeIds(filter || emptyAudienceFilter());
+  const next = flattenItemValueGroups(withNodeIds(filter || emptyAudienceFilter()));
   next.entity = "client";
   next.rootEntity = "client";
   return next;

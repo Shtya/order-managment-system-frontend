@@ -34,7 +34,7 @@ import {
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { FaLocationDot } from "react-icons/fa6";
 import { useClipboard } from "@/hook/useClipboard";
-import { VariableChip, flattenVariables, findVariableForToken } from "@/components/ui/VariableInput";
+import { VariableChip, flattenVariables, findVariableForToken, splitVariableTokens } from "@/components/ui/VariableInput";
 import { useDateLang } from "@/components/ui/dateConfig";
 import { useOrderProperties } from "@/app/[locale]/automations/atoms/OrderPropertySelector";
 
@@ -80,15 +80,14 @@ function makeChipProps(part, flatList, examples, showExamples, lang = "en", enab
     return { variable, example, showExample };
 }
 
-function InlineVariables({ text, examples = {}, showExamples = false, enableChipReplacer = true }) {
+function InlineVariables({ text, examples = {}, showExamples = false, enableChipReplacer = true, extraFlat = [] }) {
     const orderPropertiesFlat = useFlattenedOrderProperties();
     const appLang = useLocale();
     const dateLang = useDateLang(appLang);
-
-
-    if (!enableChipReplacer) {
-        return <>{text}</>;
-    }
+    const flatList = useMemo(
+        () => [...(extraFlat || []), ...orderPropertiesFlat],
+        [extraFlat, orderPropertiesFlat],
+    );
 
     const parts = useMemo(() => {
         if (text == null || text === "") return [];
@@ -106,13 +105,17 @@ function InlineVariables({ text, examples = {}, showExamples = false, enableChip
         });
     }, [text]);
 
+    if (!enableChipReplacer) {
+        return <>{text}</>;
+    }
+
     return (
         <>
             {parts.map((part, index) => {
                 if (part.type === "text") {
                     return <React.Fragment key={index}>{part.value}</React.Fragment>;
                 }
-                const chipProps = makeChipProps(part, orderPropertiesFlat, examples, showExamples, dateLang, enableChipReplacer);
+                const chipProps = makeChipProps(part, flatList, examples, showExamples, dateLang, enableChipReplacer);
                 if (!chipProps) {
                     return (
                         <span
@@ -523,6 +526,7 @@ export default function TemplatePreview({
     onMediaLoad = () => { },
     headerVariables = {},
     enableChipReplacer = false,
+    chipVariables = [],
 }) {
     const showToggleAction = (!isInteractive && !hideToggleAction);
     const t = useTranslations("whatsApp.templates");
@@ -541,28 +545,58 @@ export default function TemplatePreview({
     const chipRoleActive = !showToggleAction || (showToggleAction && showExamples);
     const orderPropertiesFlat = useFlattenedOrderProperties();
     const dateLang = useDateLang(locale);
+    const chipFlat = useMemo(
+        () => [...flattenVariables(chipVariables || []), ...orderPropertiesFlat],
+        [chipVariables, orderPropertiesFlat],
+    );
 
-    // Automation step editor mode (showToggleAction && showExamples) for
-    // header/body text only. `examples[name]` there is the full variable
-    // config object ({ type, value, label, example, variablePath }):
-    //  - direct + value  -> render the literal value as plain text (no chip)
-    //  - variable + path -> render a chip resolved via variablePath
-    //  - nothing set     -> render the raw {{token}} as-is
-    // Returns null when not applicable so the caller falls through to the
-    // generic chip/example rendering.
-    
-     const renderSpecialVariable = (enableChipReplacer, part, index, source) => {
-         if (!enableChipReplacer) return null;
-         
+    const renderValueChips = (value, key) => {
+        const parts = splitVariableTokens(value);
+        if (!parts.some((part) => part.type === "token")) {
+            return <React.Fragment key={key}>{value}</React.Fragment>;
+        }
+        return (
+            <React.Fragment key={key}>
+                {parts.map((part, i) => {
+                    if (part.type === "text") {
+                        return <React.Fragment key={i}>{part.value}</React.Fragment>;
+                    }
+                    const prop = findVariableForToken(chipFlat, part.id, dateLang);
+                    if (prop) {
+                        return (
+                            <VariableChip
+                                key={i}
+                                size="small"
+                                variable={{ label: prop.label, icon: prop.icon, example: prop.example, preview: prop.preview }}
+                                example={prop.preview || prop.example}
+                                showExample
+                            />
+                        );
+                    }
+                    return (
+                        <span
+                            key={i}
+                            className="inline-block px-1 rounded mx-0.5 align-baseline bg-slate-100 dark:bg-slate-800 text-[#282828] dark:text-slate-200 font-mono text-[10px]"
+                        >
+                            {part.raw}
+                        </span>
+                    );
+                })}
+            </React.Fragment>
+        );
+    };
+
+    // Mapping objects ({ type, value, variablePath }):
+    //  - variable + path -> one chip
+    //  - direct + value  -> chips for every {{token}} in the value, else plain text
+    const renderSpecialVariable = (replacerOn, part, index, source) => {
+        if (!replacerOn) return null;
         if (!(showToggleAction && showExamples)) return null;
         const name = part.variableName || extractTokenName(part.raw);
         const cfg = (source ?? examples)?.[name];
         if (!cfg || typeof cfg !== "object") return null;
-        if (cfg.type === "direct" && cfg.value) {
-            return <React.Fragment key={index}>{cfg.value}</React.Fragment>;
-        }
         if (cfg.type === "variable" && cfg.variablePath) {
-            const prop = findVariableForToken(orderPropertiesFlat, cfg.variablePath, dateLang);
+            const prop = findVariableForToken(chipFlat, cfg.variablePath, dateLang);
             if (prop) {
                 return (
                     <VariableChip
@@ -574,6 +608,9 @@ export default function TemplatePreview({
                     />
                 );
             }
+        }
+        if ((cfg.type === "direct" || !cfg.type) && cfg.value) {
+            return renderValueChips(cfg.value, index);
         }
         return (
             <span
@@ -957,7 +994,7 @@ export default function TemplatePreview({
                             // Variable Rendering
                             if (chipRoleActive && enableChipReplacer) {
 
-                                const chipProps = makeChipProps(part, orderPropertiesFlat, examples, showExamples, dateLang, enableChipReplacer);
+                                const chipProps = makeChipProps(part, chipFlat, examples, showExamples, dateLang, enableChipReplacer);
                                 if (chipProps) {
                                     return (
                                         <VariableChip
@@ -1033,7 +1070,7 @@ export default function TemplatePreview({
                 )}>
                     {/* Bubble Container */}
                     <div className={cn(
-                        "relative min-w-[200px] max-w-[95%]",
+                        "relative min-w-[200px] max-w-[95%] overflow-hidden",
                         !isChatBubble && "bg-whatsapp-message rounded-sm shadow-sm p-1.5 pe-2",
                         !isChatBubble && (locale === "ar" ? "rounded-tr-none" : "rounded-tl-none")
                     )}
@@ -1047,12 +1084,12 @@ export default function TemplatePreview({
 
                         {/* Body Section */}
                         <div className={cn(
-                            "text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap",
+                            "text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap min-w-0",
                             isChatBubble ? "" : "text-[#111b21] dark:text-[#d1d7db]"
                         )}>
                             <div
                                 className={cn(
-                                    "text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap",
+                                    "text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap min-w-0",
                                     isChatBubble ? "" : "text-[#111b21] dark:text-[#d1d7db]"
                                 )}
                                 style={{
@@ -1074,7 +1111,7 @@ export default function TemplatePreview({
                                   
                                     // Variable Rendering
                                     if (chipRoleActive && enableChipReplacer) {
-                                        const chipProps = makeChipProps(part, orderPropertiesFlat, examples, showExamples, dateLang, enableChipReplacer);
+                                        const chipProps = makeChipProps(part, chipFlat, examples, showExamples, dateLang, enableChipReplacer);
                                         if (chipProps) {
                                             return (
                                                 <VariableChip
@@ -1115,7 +1152,7 @@ export default function TemplatePreview({
 
                         {footerText && (
                             <div className="text-[11.5px] font-light text-[#00000073] dark:text-[#8696a0] mt-2.5 leading-tight">
-                                <InlineVariables text={footerText} examples={examples} showExamples={showExamples} enableChipReplacer={enableChipReplacer} />
+                                <InlineVariables text={footerText} examples={examples} showExamples={showExamples} enableChipReplacer={enableChipReplacer} extraFlat={chipFlat} />
                             </div>
                         )}
 
@@ -1178,7 +1215,7 @@ export default function TemplatePreview({
                                                     {btn.type === "COPY_CODE" && <Copy size={14} />}
 
                                                     {btnText ? (
-                                                        <InlineVariables text={btnText} examples={examples} showExamples={showExamples} enableChipReplacer={enableChipReplacer} />
+                                                        <InlineVariables text={btnText} examples={examples} showExamples={showExamples} enableChipReplacer={enableChipReplacer} extraFlat={chipFlat} />
                                                     ) : (
                                                         <span className="opacity-40 italic">{t("preview.actionButtonPlaceholder")}</span>
                                                     )}

@@ -3,9 +3,7 @@ import {
   CONFIRMATION_SOURCES,
   PAYMENT_METHODS,
   PAYMENT_STATUSES,
-  SHIPMENT_STATUSES,
   unwrapList,
-  UPSELL_STATUSES,
 } from "@/app/[locale]/tags/atoms/condition-fields";
 
 export const TENANT_AUDIENCE_FIELDS = [
@@ -13,7 +11,6 @@ export const TENANT_AUDIENCE_FIELDS = [
   "order.tagId",
   "order.storeId",
   "order.shippingCompanyId",
-  "shipment.shippingCompanyId",
   "product.categoryId",
   "order.statusId",
   "product.id",
@@ -30,7 +27,6 @@ export const FIELD_TO_LOOKUP_KEY = {
   "order.storeId": "stores",
   "order.cityId": "cities",
   "order.shippingCompanyId": "shipping",
-  "shipment.shippingCompanyId": "shipping",
   "client.tagId": "clientTags",
   "order.tagId": "orderTags",
   "product.categoryId": "categories",
@@ -50,7 +46,6 @@ export const EMPTY_AUDIENCE_LOOKUPS = {
   stores: [],
   cities: [],
   shipping: [],
-  shipmentStatuses: [],
   clientTags: [],
   orderTags: [],
   categories: [],
@@ -161,17 +156,7 @@ function tagOption(tag) {
   return { value: tag.id, label: tag.name || tag.label || tag.id };
 }
 
-function labelOrKey(t, key, fallback) {
-  try {
-    if (typeof t.has === "function" && !t.has(key)) return fallback;
-    const value = t(key);
-    return !value || value === key ? fallback : value;
-  } catch {
-    return fallback;
-  }
-}
-
-export function buildAudienceFieldOptions({ lookups, locale, tOrders, tTags, tAudience }) {
+export function buildAudienceFieldOptions({ lookups, locale, tOrders, tTags }) {
   const statusOptions = (lookups.statuses || []).map((status) => ({
     value: status.id,
     label: status.system ? tOrders(`statuses.${status.code}`) : status.name || status.code || status.id,
@@ -192,43 +177,17 @@ export function buildAudienceFieldOptions({ lookups, locale, tOrders, tTags, tAu
     value: category.id,
     label: category.name || category.title || category.id,
   }));
-  const shipmentStatuses = (lookups.shipmentStatuses?.length
-    ? lookups.shipmentStatuses
-    : SHIPMENT_STATUSES
-  )
-    .map((value) => (typeof value === "string" ? value : value?.code || value?.status))
-    .filter(Boolean);
 
   return {
     "order.statusId": statusOptions,
     "order.storeId": storeOptions,
-    "order.cityId": cityOptions,
     "order.shippingCompanyId": shippingOptions,
-    "shipment.shippingCompanyId": shippingOptions,
     "client.tagId": (lookups.clientTags || []).map(tagOption),
     "order.tagId": (lookups.orderTags || []).map(tagOption),
     "product.categoryId": categoryOptions,
-    "order.paymentStatus": PAYMENT_STATUSES.map((value) => ({
-      value,
-      label: tTags(`paymentStatus.${value}`),
-    })),
-    "order.paymentMethod": PAYMENT_METHODS.map((value) => ({
-      value,
-      label: tOrders(
-        value === "bank_transfer" ? "paymentMethods.bankTransfer" : `paymentMethods.${value}`,
-      ),
-    })),
     "order.confirmationSource": CONFIRMATION_SOURCES.map((value) => ({
       value,
       label: tTags(`confirmationSource.${value}`),
-    })),
-    "shipment.status": shipmentStatuses.map((value) => ({
-      value,
-      label: labelOrKey(tOrders, `trackingStatus.${value}`, value),
-    })),
-    "upsell.status": UPSELL_STATUSES.map((value) => ({
-      value,
-      label: labelOrKey(tAudience || tTags, `upsellStatus.${value}`, value),
     })),
   };
 }

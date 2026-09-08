@@ -452,6 +452,7 @@ function buildMockOrder({
         updated_at: createdAt,
 
         isReplacement: false,
+        campaignId: null,
         allowOpenPackage: faker.datatype.boolean(),
 
         lastReturnId: null,

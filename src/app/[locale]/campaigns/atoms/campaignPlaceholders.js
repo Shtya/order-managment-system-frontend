@@ -39,6 +39,21 @@ export function campaignTemplatePreviewOverlay(source, values = CAMPAIGN_PREVIEW
   };
 }
 
+export function campaignTemplateChipPreview(source, { chipVariables = [], headerUrl } = {}) {
+  const url = headerUrl ?? source?.headerUrl;
+  return {
+    template: {
+      ...(source?.templateData || {}),
+      ...(url ? { headerUrl: url } : {}),
+      examples: source?.bodyVariables || {},
+    },
+    headerVariables: source?.headerVariables || {},
+    chipVariables,
+    enableChipReplacer: true,
+    forceShowExamples: true,
+  };
+}
+
 export function getCampaignPlaceholderChips(t) {
   return [
     { id: "customer.name", label: t("message.placeholders.name"), preview: "Ahmed", icon: User },

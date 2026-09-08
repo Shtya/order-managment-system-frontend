@@ -186,8 +186,8 @@ export function AudienceRuleValue({
   }
 
   if (meta?.valueType === "boolean") {
-    const trueLabel = field === "order.phone.valid" ? tTags("phone.egyptian") : tTags("boolean.true");
-    const falseLabel = field === "order.phone.valid" ? tTags("phone.notEgyptian") : tTags("boolean.false");
+    const trueLabel = tTags("boolean.true");
+    const falseLabel = tTags("boolean.false");
     return (
       <Select value={String(value ?? "true")} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger className={cn("h-10 rounded-md", error && "border-destructive")}>

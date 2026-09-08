@@ -16,17 +16,20 @@ import { setDocumentTitle } from "@/utils/documentTitle";
 import StepGeneral from "./StepGeneral";
 import StepRecipients from "./StepRecipients";
 import StepMessage from "./StepMessage";
+import StepOffer from "./StepOffer";
 import StepReview from "./StepReview";
 import {
   initialWizardData,
   validateStepGeneral,
   validateStepRecipients,
   validateStepMessage,
+  validateStepOffer,
   buildCampaignPayload,
+  WIZARD_STEPS,
 } from "./wizardSchema";
 import { fromApiFilter } from "@/components/audience-filter";
 
-const STEPS = ["general", "recipients", "message", "review"];
+const STEPS = WIZARD_STEPS;
 const EDITABLE_STATUSES = ["draft", "scheduled"];
 
 function mapCampaignToForm(campaign) {
@@ -87,6 +90,23 @@ function mapCampaignToForm(campaign) {
           accountId: snap.accountId || null,
         }
       : null,
+    enablePurchasePage: !!campaign.enablePurchasePage,
+    products: (campaign.products || []).map((p) => ({
+      variantId: p.variantId,
+      productId: p.productId,
+      name: p.name,
+      sku: p.sku,
+      image: p.image,
+      quantity: Number(p.quantity || 1),
+      price: Number(p.price || 0),
+    })),
+    shippingPrice: Number(campaign.shippingPrice || 0),
+    orderReplyFollowupEnabled: !!campaign.orderReplyFollowupEnabled,
+    orderReplyFollowupText: campaign.orderReplyFollowupText || "",
+    orderReplyFollowupButtonIndex:
+      campaign.orderReplyFollowupButtonIndex == null
+        ? null
+        : Number(campaign.orderReplyFollowupButtonIndex),
   };
 }
 
@@ -175,6 +195,13 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
         return;
       }
     }
+    if (step === 3) {
+      const errs = validateStepOffer(values);
+      if (Object.keys(errs).length) {
+        setStepError(t(errs[Object.keys(errs)[0]] || "fixStepErrors"));
+        return;
+      }
+    }
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
   };
 
@@ -183,7 +210,8 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
     const g = validateStepGeneral(values);
     const r = validateStepRecipients(values);
     const m = validateStepMessage(values);
-    if (Object.keys(g).length || Object.keys(r).length || Object.keys(m).length) {
+    const o = validateStepOffer(values);
+    if (Object.keys(g).length || Object.keys(r).length || Object.keys(m).length || Object.keys(o).length) {
       setStepError(t("fixStepErrors"));
       return;
     }
@@ -308,7 +336,8 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
           {step === 0 && <StepGeneral control={control} errors={errors} watch={watch} setValue={setValue} />}
           {step === 1 && <StepRecipients control={control} watch={watch} setValue={setValue} getValues={getValues} />}
           {step === 2 && <StepMessage watch={watch} setValue={setValue} getValues={getValues} />}
-          {step === 3 && <StepReview watch={watch} getValues={getValues} />}
+          {step === 3 && <StepOffer watch={watch} setValue={setValue} />}
+          {step === 4 && <StepReview watch={watch} getValues={getValues} />}
         </CardContent>
         <CardFooter className="justify-between gap-3 border-t mt-5!">
           <p className="text-xs text-red-500">{stepError}</p>

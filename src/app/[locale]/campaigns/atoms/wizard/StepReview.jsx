@@ -16,17 +16,33 @@ import {
 } from "@/components/audience-filter/lookups";
 import { collectRuleFields } from "@/components/audience-filter/audience-filter.utils";
 import { combineScheduledAt } from "./wizardSchema";
-import { campaignTemplatePreviewOverlay } from "../campaignPlaceholders";
+import { campaignTemplatePreviewOverlay, getCampaignPlaceholderChips } from "../campaignPlaceholders";
+import { inspectTemplateOrderLink } from "../campaignOrderUrl";
+import { VariableTextPreview } from "@/components/ui/VariableInput";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 export default function StepReview({ getValues }) {
-  const t = useTranslations("campaigns.wizard");
   const tSeg = useTranslations("customerSegments");
   const ta = useTranslations("audienceFilter");
   const tOrders = useTranslations("orders");
   const tTags = useTranslations("tags");
+  const t = useTranslations("campaigns.wizard");
   const locale = useLocale();
+  const { formatCurrency } = usePlatformSettings();
   const v = getValues();
   const empty = t("review.empty");
+  const placeholderChips = useMemo(() => getCampaignPlaceholderChips(t), [t]);
+  const inspect = useMemo(() => inspectTemplateOrderLink(v.whatsapp), [v.whatsapp]);
+  const chosenReply = inspect.quickReplies.find(
+    (btn) => btn.index === Number(v.orderReplyFollowupButtonIndex),
+  );
+  const products = v.products || [];
+  const productsTotal = products.reduce(
+    (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 1),
+    0,
+  );
+  const shippingPrice = Number(v.shippingPrice || 0);
+  const basketTotal = productsTotal + shippingPrice;
 
   const [segment, setSegment] = useState(null);
   const [metadata, setMetadata] = useState(null);
@@ -187,6 +203,86 @@ export default function StepReview({ getValues }) {
           </div>
         ) : (
           <p className="text-sm">{empty}</p>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-border p-4 space-y-3">
+        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t("review.offer")}</p>
+        {!v.enablePurchasePage ? (
+          <p className="text-sm text-muted-foreground">{t("review.offerOff")}</p>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* <Badge variant="outline">{t("offer.enable")}</Badge> */}
+              {v.orderReplyFollowupEnabled ? (
+                <Badge variant="outline">{t("offer.followup")}: {t("review.on")}</Badge>
+              ) : (
+                <Badge variant="outline">{t("offer.followup")}: {t("review.offHours")}</Badge>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{t("offer.products")}</p>
+              {!products.length ? (
+                <p className="text-sm text-muted-foreground">{t("review.productsEmpty")}</p>
+              ) : (
+                products.map((p, index) => (
+                  <div
+                    key={`${p.variantId || p.sku || p.name}-${index}`}
+                    className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3"
+                  >
+                    {p.image ? (
+                      <img src={p.image} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover border border-border" />
+                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold">{p.name || empty}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {p.sku || empty}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-end text-sm">
+                      <p className="font-medium tabular-nums">{t("offer.quantity")}: {Number(p.quantity || 1)}</p>
+                      <p className="text-xs text-muted-foreground tabular-nums">
+                        {t("offer.salePrice")}: {formatCurrency(Number(p.price || 0))}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm space-y-1">
+              <div className="flex justify-between gap-3">
+                <span className="text-muted-foreground">{t("offer.shipping")}</span>
+                <span className="font-medium tabular-nums">{formatCurrency(shippingPrice)}</span>
+              </div>
+              <div className="flex justify-between gap-3 font-semibold">
+                <span>{t("review.basketTotal")}</span>
+                <span className="tabular-nums">{formatCurrency(basketTotal)}</span>
+              </div>
+            </div>
+
+            {v.orderReplyFollowupEnabled && (
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{t("offer.followup")}</p>
+                <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t("review.followupButton")}</p>
+                    <p className="mt-1 text-sm font-medium">{chosenReply?.text || empty}</p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs text-muted-foreground">{t("review.followupMessage")}</p>
+                    <VariableTextPreview
+                      text={v.orderReplyFollowupText}
+                      variables={placeholderChips}
+                      locale={locale}
+                      empty={empty}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -141,7 +141,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
     [notifications],
   );
   const switchLocale = (next) => router.replace(pathname, { locale: next });
-
+  
   return (
     <motion.header
       initial={{ y: -60, opacity: 0 }}

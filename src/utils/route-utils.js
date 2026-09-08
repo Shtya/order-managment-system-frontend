@@ -10,6 +10,7 @@ const PUBLIC_ROUTES = [
   { path: "/forgot-password", strict: false },
   { path: "/terms", strict: false },
   { path: "/privacy", strict: false },
+  { path: "/confirm", strict: false },
 ];
 
 

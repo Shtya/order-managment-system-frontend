@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Phone, User } from "lucide-react";
+import { Check } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import VariableInput from "@/components/ui/VariableInput";
 import Button_ from "@/components/atoms/Button";
@@ -11,7 +11,7 @@ import TemplatePreview from "@/app/[locale]/whatsapp/atoms/TemplatePreview";
 import MediaUpload from "@/app/[locale]/whatsapp/atoms/MediaUpload";
 import LocationFields from "@/app/[locale]/whatsapp/atoms/chats/LocationFields";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
-import { campaignTemplatePreviewOverlay } from "../campaignPlaceholders";
+import { campaignTemplatePreviewOverlay, getCampaignPlaceholderChips } from "../campaignPlaceholders";
 
 function buildInitialWhatsapp(template, accountId) {
   const config = template.templateConfig || {};
@@ -57,13 +57,7 @@ export default function StepMessage({ watch, setValue }) {
   const accountId = watch("whatsappAccountId");
   const whatsapp = watch("whatsapp");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const customerVariables = useMemo(
-    () => [
-      { id: "customer.name", label: t("message.placeholders.name"), preview: "Ahmed", icon: User },
-      { id: "customer.number", label: t("message.placeholders.number"), preview: "01012345678", icon: Phone },
-    ],
-    [t],
-  );
+  const customerVariables = useMemo(() => getCampaignPlaceholderChips(t), [t]);
   const variableProps = useMemo(
     () => ({
       disableHydrate: false,
@@ -210,7 +204,14 @@ export default function StepMessage({ watch, setValue }) {
                       <Label>{btnName}</Label>
                       <VariableInput
                         value={whatsapp.buttonVariables?.[idx]?.value || ""}
-                        onChange={(value) => updateVar("buttonVariables", idx, String(value || "").replace(/\s/g, "_"))}
+                        onChange={(value) => {
+                          const next = String(value || "");
+                          updateVar(
+                            "buttonVariables",
+                            idx,
+                            /\{\{/.test(next) ? next : next.replace(/\s/g, "_"),
+                          );
+                        }}
                         placeholder={whatsapp.buttonVariables?.[idx]?.example || ""}
                         {...variableProps}
                       />
@@ -234,7 +235,6 @@ export default function StepMessage({ watch, setValue }) {
                 examples: previewOverlay.examples,
               }}
               flat
-              
               forceShowExamples
             />
           </div>

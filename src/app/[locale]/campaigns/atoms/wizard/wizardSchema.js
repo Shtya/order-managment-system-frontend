@@ -1,6 +1,10 @@
 "use client";
 
 import * as yup from "yup";
+import {
+  inspectTemplateOrderLink,
+  textHasOrderLinkVariable,
+} from "../campaignOrderUrl";
 
 export const CAMPAIGN_CATEGORIES = [
   "general_marketing",
@@ -19,7 +23,7 @@ export const CAMPAIGN_CATEGORIES = [
   "customer_reactivation",
 ];
 
-export const WIZARD_STEPS = ["general", "recipients", "message", "review"];
+export const WIZARD_STEPS = ["general", "recipients", "message", "offer", "review"];
 
 const detectedTimeZone =
   typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : null;
@@ -50,6 +54,12 @@ export const initialWizardData = {
   // Step 3 (whatsapp snapshot parts)
   whatsappAccountId: null,
   whatsapp: null,
+  enablePurchasePage: false,
+  products: [],
+  shippingPrice: 0,
+  orderReplyFollowupEnabled: false,
+  orderReplyFollowupText: "",
+  orderReplyFollowupButtonIndex: null,
 };
 
 const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -209,6 +219,34 @@ export function validateStepMessage(data) {
   return errors;
 }
 
+export function validateStepOffer(data) {
+  const inspect = inspectTemplateOrderLink(data.whatsapp);
+  const errors = {};
+  if (!data.enablePurchasePage) return errors;
+  if (!inspect.orderLinkAvailable) {
+    errors.enablePurchasePage = "validation.orderLinkUnavailable";
+    return errors;
+  }
+  const products = data.products || [];
+  if (!products.length || products.some((p) => !p.variantId)) {
+    errors.products = "validation.productsRequired";
+  }
+  const followupOn = inspect.qrOnly ? true : !!data.orderReplyFollowupEnabled;
+  if (inspect.hasQuickReply && followupOn) {
+    if (
+      data.orderReplyFollowupButtonIndex === null ||
+      data.orderReplyFollowupButtonIndex === undefined ||
+      data.orderReplyFollowupButtonIndex === ""
+    ) {
+      errors.orderReplyFollowupButtonIndex = "validation.followupButtonRequired";
+    }
+    if (!textHasOrderLinkVariable(data.orderReplyFollowupText)) {
+      errors.orderReplyFollowupText = "validation.followupUrlRequired";
+    }
+  }
+  return errors;
+}
+
 export function buildCampaignPayload(data, opts = {}) {
   const payload = {
     name: data.name.trim(),
@@ -219,8 +257,29 @@ export function buildCampaignPayload(data, opts = {}) {
     scheduleMode: data.scheduleMode,
     delayMinSeconds: Number(data.delayMinSeconds),
     delayMaxSeconds: Number(data.delayMaxSeconds),
-    enablePurchasePage: false,
+    enablePurchasePage: !!data.enablePurchasePage,
   };
+  if (data.enablePurchasePage) {
+    payload.shippingPrice = Number(data.shippingPrice || 0);
+    payload.products = (data.products || []).map((p, index) => ({
+      productId: p.productId || undefined,
+      variantId: p.variantId,
+      name: p.name,
+      sku: p.sku || undefined,
+      image: p.image || undefined,
+      quantity: Number(p.quantity || 1),
+      price: Number(p.price || 0),
+      sortOrder: index,
+    }));
+    payload.orderReplyFollowupEnabled = inspectTemplateOrderLink(data.whatsapp).qrOnly
+      ? true
+      : !!data.orderReplyFollowupEnabled;
+    payload.orderReplyFollowupText = data.orderReplyFollowupText || undefined;
+    payload.orderReplyFollowupButtonIndex =
+      data.orderReplyFollowupButtonIndex === "" || data.orderReplyFollowupButtonIndex == null
+        ? undefined
+        : Number(data.orderReplyFollowupButtonIndex);
+  }
   if (data.maxMessagesPerHour) payload.maxMessagesPerHour = Number(data.maxMessagesPerHour);
   if (data.workingHoursEnabled) {
     payload.workingHoursStart = data.workingHoursStart;

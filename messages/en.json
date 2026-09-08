@@ -14490,12 +14490,14 @@
         "failed": "Sending failed",
         "pending": "Pending",
         "orders": "Orders",
-        "successRate": "Success rate"
+        "successRate": "Success rate",
+        "conversion": "Conversion"
       },
       "sections": {
         "general": "General information",
         "audience": "Recipient sources",
-        "channel": "Channel"
+        "channel": "Channel",
+        "offer": "Offer"
       },
       "fields": {
         "schedule": "Schedule",
@@ -14557,6 +14559,7 @@
         "general": "General",
         "recipients": "Recipients",
         "message": "Message",
+        "offer": "Offer",
         "review": "Review"
       },
       "next": "Next",
@@ -14622,7 +14625,11 @@
         "manualRequired": "Add at least one recipient.",
         "filterRequired": "Configure at least one filter rule.",
         "templateRequired": "Select a WhatsApp template.",
-        "variablesRequired": "Fill all template variables."
+        "variablesRequired": "Fill all template variables.",
+        "orderLinkUnavailable": "This template cannot use order links.",
+        "productsRequired": "Add at least one product.",
+        "followupButtonRequired": "Choose one quick-reply button.",
+        "followupUrlRequired": "Insert the order link field into the follow-up message."
       },
       "recipients": {
         "segment": "Segment",
@@ -14682,10 +14689,33 @@
         "locationHeader": "Location header",
         "preview": "Preview",
         "placeholders": {
-          "title": "Customer fields",
+          "title": "Insert fields",
           "name": "Customer name",
-          "number": "Customer number"
+          "number": "Customer number",
+          "link": "Order link"
         }
+      },
+      "offer": {
+        "title": "Offer",
+        "subtitle": "Optional order page sent with a unique customer link.",
+        "unavailable": "Order links need an order-link field in the message, or a custom button on the template.",
+        "needOrderLinkVariable": "Insert the Order link field into a template variable on the Message step (you can add it more than once).",
+        "needCustomButton": "This template has no custom / quick-reply button to send a follow-up with the link.",
+        "enable": "Enable order link",
+        "enableHint": "Customers can submit a confirmed order from a private page.",
+        "products": "Products",
+        "noProducts": "No products yet.",
+        "quantity": "Quantity",
+        "salePrice": "Sale price",
+        "shipping": "Shipping Price",
+        "followup": "Reply follow-up",
+        "followupHint": "Send the order link after the chosen custom button.",
+        "followupForced": "Required because the message has no order-link field — the link is sent after the customer taps the button.",
+        "quickReply": "Custom button",
+        "chooseQuickReply": "Choose a button",
+        "followupText": "Follow-up message",
+        "followupTextHint": "Prepare the reply message that will be sent to the customer.",
+        "followupDefault": "Hi '{{customer.name}}' 👋\n\nOrder now from here 👇\n'{{campaign.orderUrl}}'"
       },
       "review": {
         "title": "Review campaign",
@@ -14693,9 +14723,63 @@
         "general": "General",
         "audience": "Audience",
         "template": "Template",
+        "offer": "Offer",
+        "offerOff": "Order link is off",
+        "on": "On",
         "offHours": "Off",
-        "empty": "—"
+        "empty": "—",
+        "sku": "SKU",
+        "productsEmpty": "No products added.",
+        "followupButton": "Reply button",
+        "followupMessage": "Reply message",
+        "basketTotal": "Basket total"
       }
+    },
+    "orderPage": {
+      "title": "Complete your order",
+      "subtitle": "Review your details and fill in what we need to confirm the order.",
+      "loading": "Loading…",
+      "unavailable": "Ordering is currently unavailable..",
+      "thanksTitle": "Your order has been received!",
+      "thanksBody": "Thank you. We received your order and will process it soon.",
+      "orderNumber": "Order number",
+      "copied": "Copied",
+      "customerSection": "Customer details",
+      "addressSection": "Address",
+      "notesSection": "Additional notes",
+      "notesOptional": "(optional)",
+      "notesPlaceholder": "Any notes about your order…",
+      "summaryTitle": "Order summary",
+      "summarySubtitle": "Review your items before confirming.",
+      "productsTitle": "Requested products",
+      "products": "Products",
+      "quantity": "Qty",
+      "shipping": "Delivery fees",
+      "discount": "Discount",
+      "subtotal": "Items total",
+      "total": "Grand total",
+      "name": "Full name",
+      "phone": "Phone number",
+      "phoneHint": "This is the mobile number we contacted you on. It cannot be changed.",
+      "address": "Detailed address",
+      "landmark": "Landmark",
+      "landmarkPlaceholder": "Nearby landmark (optional)",
+      "city": "City",
+      "area": "Area",
+      "selectCity": "Select a city",
+      "selectArea": "Select an area",
+      "submit": "Confirm order",
+      "submitFailed": "Could not submit the order. Try again.",
+      "secure": "Your data is safe",
+      "cod": "Cash on delivery",
+      "reliable": "Reliable delivery",
+      "receiptTitle": "Order details",
+      "receiptSubtitle": "You can review your order information here.",
+      "customerInfo": "Customer information",
+      "shippingAddress": "Delivery address",
+      "smsHintTitle": "Important",
+      "smsHint": "You will receive a confirmation message on your mobile number with the order details.",
+      "currency": "EGP"
     }
   },
   "customerSegments": {

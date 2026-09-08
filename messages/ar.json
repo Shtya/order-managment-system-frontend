@@ -14515,12 +14515,14 @@
         "failed": "فشل الإرسال",
         "pending": "قيد الانتظار",
         "orders": "الطلبات",
-        "successRate": "معدل النجاح"
+        "successRate": "معدل النجاح",
+        "conversion": "التحويل"
       },
       "sections": {
         "general": "معلومات عامة",
         "audience": "مصادر المستلمين",
-        "channel": "القناة"
+        "channel": "القناة",
+        "offer": "العرض"
       },
       "fields": {
         "schedule": "الجدولة",
@@ -14582,6 +14584,7 @@
         "general": "عام",
         "recipients": "المستلمون",
         "message": "الرسالة",
+        "offer": "العرض",
         "review": "المراجعة"
       },
       "next": "التالي",
@@ -14647,7 +14650,11 @@
         "manualRequired": "أضف مستلماً واحداً على الأقل.",
         "filterRequired": "أضف قاعدة واحدة على الأقل.",
         "templateRequired": "اختر قالب واتساب.",
-        "variablesRequired": "املأ كل متغيرات القالب."
+        "variablesRequired": "املأ كل متغيرات القالب.",
+        "orderLinkUnavailable": "هذا القالب لا يدعم روابط الطلب.",
+        "productsRequired": "أضف منتجاً واحداً على الأقل.",
+        "followupButtonRequired": "اختر زر رد سريع واحد.",
+        "followupUrlRequired": "أدرج حقل رابط الطلب في رسالة المتابعة."
       },
       "recipients": {
         "segment": "مجموعة",
@@ -14707,10 +14714,33 @@
         "locationHeader": "موقع",
         "preview": "معاينة",
         "placeholders": {
-          "title": "حقول العميل",
+          "title": "إدراج حقول",
           "name": "اسم العميل",
-          "number": "رقم العميل"
+          "number": "رقم العميل",
+          "link": "رابط الطلب"
         }
+      },
+      "offer": {
+        "title": "العرض",
+        "subtitle": "صفحة طلب اختيارية تُرسل برابط خاص لكل عميل.",
+        "unavailable": "روابط الطلب تحتاج حقل رابط الطلب في الرسالة، أو زر مخصص على القالب.",
+        "needOrderLinkVariable": "أدرج حقل رابط الطلب في أحد متغيرات القالب من خطوة الرسالة (يمكن تكراره أكثر من مرة).",
+        "needCustomButton": "هذا القالب لا يحتوي على زر مخصص / رد سريع لإرسال المتابعة بالرابط.",
+        "enable": "تفعيل رابط الطلب",
+        "enableHint": "يمكن للعميل إرسال طلب مؤكد من صفحة خاصة.",
+        "products": "المنتجات",
+        "noProducts": "لا منتجات بعد.",
+        "quantity": "الكمية",
+        "salePrice": "سعر البيع",
+        "shipping": "سعر الشحن",
+        "followup": "متابعة الرد",
+        "followupHint": "أرسل رابط الطلب بعد الضغط على الزر المخصص المختار.",
+        "followupForced": "مطلوبة لأن الرسالة لا تحتوي على حقل رابط الطلب — يُرسل الرابط بعد أن يضغط العميل على الزر.",
+        "quickReply": "الزر المخصص",
+        "chooseQuickReply": "اختر زراً",
+        "followupText": "رسالة المتابعة",
+        "followupTextHint": "جهّز رسالة الرد التي سيتم إرسالها للعميل.",
+        "followupDefault": "مرحباً '{{customer.name}}' 👋\n\nاطلب الآن من هنا 👇\n'{{campaign.orderUrl}}'"
       },
       "review": {
         "title": "مراجعة الحملة",
@@ -14718,9 +14748,63 @@
         "general": "عام",
         "audience": "الجمهور",
         "template": "القالب",
+        "offer": "العرض",
+        "offerOff": "رابط الطلب غير مفعّل",
+        "on": "مفعّل",
         "offHours": "غير مفعّلة",
-        "empty": "—"
+        "empty": "—",
+        "sku": "رمز المنتج",
+        "productsEmpty": "لا توجد منتجات.",
+        "followupButton": "زر الرد",
+        "followupMessage": "رسالة الرد",
+        "basketTotal": "إجمالي السلة"
       }
+    },
+    "orderPage": {
+      "title": "أكمل طلبك",
+      "subtitle": "راجع بياناتك وأكمل المعلومات المطلوبة لتأكيد الطلب.",
+      "loading": "جارٍ التحميل…",
+      "unavailable": "لا يمكن الطلب حاليا.",
+      "thanksTitle": "تم استلام طلبك بنجاح!",
+      "thanksBody": "شكراً لك على طلبك، تم استلام طلبك وسيتم معالجته قريباً.",
+      "orderNumber": "رقم الطلب",
+      "copied": "تم النسخ",
+      "customerSection": "بيانات العميل",
+      "addressSection": "العنوان",
+      "notesSection": "ملاحظات إضافية",
+      "notesOptional": "(اختياري)",
+      "notesPlaceholder": "أي ملاحظات إضافية على طلبك...",
+      "summaryTitle": "ملخص الطلب",
+      "summarySubtitle": "راجع تفاصيل طلبك قبل إكماله.",
+      "productsTitle": "المنتجات المطلوبة",
+      "products": "منتجات",
+      "quantity": "الكمية",
+      "shipping": "رسوم التوصيل",
+      "discount": "خصم",
+      "subtotal": "إجمالي المنتجات",
+      "total": "الإجمالي الكلي",
+      "name": "الاسم الكامل",
+      "phone": "رقم الهاتف",
+      "phoneHint": "هذا هو رقم الجوال الذي تواصلنا معك عليه، ولا يمكن تغييره.",
+      "address": "العنوان بالتفصيل",
+      "landmark": "علامة مميزة",
+      "landmarkPlaceholder": "علامة مميزة قريبة (اختياري)",
+      "city": "المدينة",
+      "area": "المنطقة",
+      "selectCity": "اختر المدينة",
+      "selectArea": "اختر المنطقة",
+      "submit": "تأكيد الطلب",
+      "submitFailed": "تعذر إرسال الطلب. حاول مرة أخرى.",
+      "secure": "بياناتك آمنة",
+      "cod": "الدفع عند الاستلام",
+      "reliable": "توصيل موثوق",
+      "receiptTitle": "تفاصيل الطلب",
+      "receiptSubtitle": "يمكنك مراجعة بيانات طلبك من هنا.",
+      "customerInfo": "معلومات العميل",
+      "shippingAddress": "عنوان التوصيل",
+      "smsHintTitle": "مهم",
+      "smsHint": "ستصلك رسالة تأكيد على رقم الجوال الخاص بك تحتوي على تفاصيل الطلب.",
+      "currency": "ج.م"
     }
   },
   "customerSegments": {

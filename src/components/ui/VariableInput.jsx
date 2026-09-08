@@ -40,7 +40,28 @@ const sizeClasses = {
 // and dynamic tokens such as global.date.0.DD-MM-YYYY. Named date formats
 // (e.g. "global.date.0.Weekday D Month YYYY") contain spaces, so the token
 // is allowed to be made of several space-separated word groups.
-const TOKEN_RE = /\{\{\s*([\w.\[\]\-\/]+(?:\s+[\w.\[\]\-\/]+)*)\s*\}\}/g
+export const VARIABLE_TOKEN_RE = /\{\{\s*([\w.\[\]\-\/]+(?:\s+[\w.\[\]\-\/]+)*)\s*\}\}/g
+
+/** Split a string into plain text and {{token}} parts for hydrate / read-only previews. */
+export function splitVariableTokens(text) {
+    const value = String(text ?? "")
+    if (!value) return []
+    const out = []
+    let lastIndex = 0
+    const re = new RegExp(VARIABLE_TOKEN_RE.source, "g")
+    let match
+    while ((match = re.exec(value))) {
+        if (match.index > lastIndex) {
+            out.push({ type: "text", value: value.slice(lastIndex, match.index) })
+        }
+        out.push({ type: "token", id: match[1], raw: match[0] })
+        lastIndex = match.index + match[0].length
+    }
+    if (lastIndex < value.length) {
+        out.push({ type: "text", value: value.slice(lastIndex) })
+    }
+    return out
+}
 
 function buildChip(variable) {
     const chip = document.createElement("span")
@@ -139,7 +160,52 @@ const VariableChip = React.memo(function VariableChip({ variable, example, showE
 })
 VariableChip.displayName = "VariableChip"
 
-export { VariableChip, flattenVariables, findVariableForToken }
+function VariableTextPreview({
+    text,
+    variables = [],
+    locale,
+    empty,
+    showExample = true,
+    size = "small",
+    className,
+}) {
+    const localeFromHook = useLocale()
+    const lang = locale ?? localeFromHook
+    const flattened = React.useMemo(() => flattenVariables(variables || []), [variables])
+    const parts = React.useMemo(() => splitVariableTokens(text), [text])
+
+    if (!String(text || "").trim()) {
+        return empty ? <p className="text-sm text-muted-foreground">{empty}</p> : null
+    }
+
+    return (
+        <p className={cn("whitespace-pre-wrap break-words text-sm leading-relaxed", className)}>
+            {parts.map((part, index) => {
+                if (part.type === "text") {
+                    return <span key={index}>{part.value}</span>
+                }
+                const variable = findVariableForToken(flattened, part.id, lang)
+                if (!variable) {
+                    return (
+                        <span key={index} className="font-mono text-[11px] text-muted-foreground">
+                            {part.raw}
+                        </span>
+                    )
+                }
+                return (
+                    <VariableChip
+                        key={index}
+                        size={size}
+                        variable={variable}
+                        example={variable.preview}
+                        showExample={showExample}
+                    />
+                )
+            })}
+        </p>
+    )
+}
+VariableTextPreview.displayName = "VariableTextPreview"
 
 // Appends text to a container, turning any \n into a real <br> element so
 // that pressing Enter (which we also normalize to <br>, see handleKeyDown)
@@ -228,8 +294,8 @@ function hydrate(container, value, flattened, lang = "en") {
 
     let lastIndex = 0
     let match
-    TOKEN_RE.lastIndex = 0
-    while ((match = TOKEN_RE.exec(value))) {
+    VARIABLE_TOKEN_RE.lastIndex = 0
+    while ((match = VARIABLE_TOKEN_RE.exec(value))) {
         const [full, id] = match
         if (match.index > lastIndex) {
             appendTextWithBreaks(container, value.slice(lastIndex, match.index))
@@ -806,5 +872,5 @@ const VariableInput = React.forwardRef(function VariableInput(
 
 VariableInput.displayName = "VariableInput"
 
-export { VariableInput }
+export { VariableInput, VariableChip, VariableTextPreview, flattenVariables, findVariableForToken, splitVariableTokens }
 export default VariableInput

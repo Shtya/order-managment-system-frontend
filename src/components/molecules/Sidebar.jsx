@@ -1212,7 +1212,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
       closed: { width: collapsedWidth, opacity: 1, x: 0 },
     },
   };
-
+  
 
   return (
     <TooltipProvider>

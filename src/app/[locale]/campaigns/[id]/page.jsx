@@ -22,6 +22,7 @@ import {
   XCircle,
   Clock,
   BadgeCheck,
+  Percent,
 } from "lucide-react";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
@@ -56,7 +57,10 @@ import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import { cn } from "@/utils/cn";
 import { avatarSrc } from "@/components/atoms/UserSelect";
-import { campaignTemplatePreviewOverlay, campaignVarDisplayValue } from "@/app/[locale]/campaigns/atoms/campaignPlaceholders";
+import { campaignTemplatePreviewOverlay, campaignVarDisplayValue, getCampaignPlaceholderChips } from "@/app/[locale]/campaigns/atoms/campaignPlaceholders";
+import { inspectTemplateOrderLink } from "@/app/[locale]/campaigns/atoms/campaignOrderUrl";
+import { VariableTextPreview } from "@/components/ui/VariableInput";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 const STATUS_BADGE_CLASS = {
   draft: "bg-slate-500/10 text-slate-600 border-slate-500/20",
@@ -101,6 +105,8 @@ export default function CampaignDetailsPage() {
   const format = useFormatter();
   const router = useRouter();
   const { subscribe } = useSocket() || {};
+  const { formatCurrency } = usePlatformSettings();
+  const placeholderChips = useMemo(() => getCampaignPlaceholderChips(tw), [tw]);
 
   const [campaign, setCampaign] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -276,6 +282,7 @@ export default function CampaignDetailsPage() {
   const sent = Number(campaign?.sentCount || 0);
   const delivered = Number(campaign?.deliveredCount || 0);
   const successRate = sent ? Math.round((delivered / sent) * 100) : 0;
+  const conversionRate = sent ? Math.round((Number(campaign?.ordersCount || 0) / sent) * 100) : 0;
 
   const statsCards = useMemo(
     () => [
@@ -288,8 +295,9 @@ export default function CampaignDetailsPage() {
       { key: "pending", name: td("stats.pending"), value: pending, icon: Clock, sortOrder: 6 },
       { key: "orders", name: td("stats.orders"), value: campaign?.ordersCount ?? 0, icon: ShoppingCart, sortOrder: 7 },
       { key: "successRate", name: td("stats.successRate"), value: `${successRate}%`, icon: BadgeCheck, sortOrder: 8 },
+      { key: "conversion", name: td("stats.conversion"), value: `${conversionRate}%`, icon: Percent, sortOrder: 9 },
     ],
-    [td, campaign, sent, delivered, failed, pending, successRate],
+    [td, campaign, sent, delivered, failed, pending, successRate, conversionRate],
   );
 
   const formatDate = (value) => {
@@ -558,6 +566,92 @@ export default function CampaignDetailsPage() {
           <DetailTile label={td("fields.sales")} value={Number(campaign.salesAmount || 0).toLocaleString()} />
         </div>
       </section>
+
+      {campaign.enablePurchasePage && (
+        <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-sm space-y-3">
+          <SectionTitle title={td("sections.offer")} />
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline">
+              {tw("offer.followup")}: {campaign.orderReplyFollowupEnabled ? tw("review.on") : tw("review.offHours")}
+            </Badge>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{tw("offer.products")}</p>
+            {!(campaign.products || []).length ? (
+              <p className="text-sm text-muted-foreground">{tw("review.productsEmpty")}</p>
+            ) : (
+              (campaign.products || []).map((p, index) => (
+                <div
+                  key={`${p.variantId || p.sku || p.name}-${index}`}
+                  className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3"
+                >
+                  {p.image ? (
+                    <img
+                      src={avatarSrc(p.image)}
+                      alt=""
+                      className="h-12 w-12 shrink-0 rounded-lg object-cover border border-border"
+                    />
+                  ) : null}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold">{p.name || "—"}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{p.sku || "—"}</p>
+                  </div>
+                  <div className="shrink-0 text-end text-sm">
+                    <p className="font-medium tabular-nums">{tw("offer.quantity")}: {Number(p.quantity || 1)}</p>
+                    <p className="text-xs text-muted-foreground tabular-nums">
+                      {tw("offer.salePrice")}: {formatCurrency(Number(p.price || 0))}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm space-y-1">
+            <div className="flex justify-between gap-3">
+              <span className="text-muted-foreground">{tw("offer.shipping")}</span>
+              <span className="font-medium tabular-nums">{formatCurrency(Number(campaign.shippingPrice || 0))}</span>
+            </div>
+            <div className="flex justify-between gap-3 font-semibold">
+              <span>{tw("review.basketTotal")}</span>
+              <span className="tabular-nums">
+                {formatCurrency(
+                  (campaign.products || []).reduce(
+                    (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 1),
+                    0,
+                  ) + Number(campaign.shippingPrice || 0),
+                )}
+              </span>
+            </div>
+          </div>
+
+          {campaign.orderReplyFollowupEnabled && (
+            <div className="space-y-2">
+              <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{tw("offer.followup")}</p>
+              <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">{tw("review.followupButton")}</p>
+                  <p className="mt-1 text-sm font-medium">
+                    {inspectTemplateOrderLink(snap).quickReplies.find(
+                      (btn) => btn.index === Number(campaign.orderReplyFollowupButtonIndex),
+                    )?.text || campaign.orderReplyFollowupButtonText || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="mb-1 text-xs text-muted-foreground">{tw("review.followupMessage")}</p>
+                  <VariableTextPreview
+                    text={campaign.orderReplyFollowupText}
+                    variables={placeholderChips}
+                    locale={locale}
+                    empty="—"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-sm">
         <SectionTitle title={td("sections.audience")} />

@@ -14226,7 +14226,32 @@
     },
     "toolbar": {
       "exportCustomers": "Export",
-      "exportAddresses": "Export Addresses"
+      "exportAddresses": "Export Addresses",
+      "templateActions": "Bulk Upload"
+    },
+    "bulkUpload": {
+      "clickToChangeFile": "Click to change file",
+      "title": "Import Clients",
+      "description": "Download the Excel template, fill client data, then upload it for background processing.",
+      "step1Title": "Download Template",
+      "step1Description": "Download the Excel template with name, email, phone numbers, notes, and historical stats columns.",
+      "step2Title": "Fill Template",
+      "step2Description": "Enter one client per row. Phone numbers can be comma-separated; the first number is used as the primary contact. Historical stats are added to live order stats later.",
+      "step3Title": "Upload File",
+      "step3Description": "Upload the completed file. Clients are created in the background.",
+      "downloadTemplate": "Download Template",
+      "dragDrop": "Drag the file here or click to choose",
+      "supportedFormats": "Supported format: XLSX (Excel)",
+      "upload": "Upload",
+      "uploading": "Uploading...",
+      "templateDownloaded": "Template downloaded successfully",
+      "templateDownloadFailed": "Failed to download template",
+      "invalidFileType": "Unsupported file format (use XLSX)",
+      "noFileSelected": "Please select a file first",
+      "uploadSuccess": "Client import queued. You will be notified when it finishes.",
+      "uploadFailed": "Failed to upload clients",
+      "uploadNoCreated": "No clients were created. Check the file and errors.",
+      "errorReportGenerated": "Errors found! Error report downloaded. Fix and reupload."
     },
     "table": {
       "searchPlaceholder": "Search customers...",

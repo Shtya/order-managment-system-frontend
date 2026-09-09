@@ -14251,7 +14251,32 @@
     },
     "toolbar": {
       "exportCustomers": "تصدير",
-      "exportAddresses": "تصدير العناوين"
+      "exportAddresses": "تصدير العناوين",
+      "templateActions": "رفع جماعي"
+    },
+    "bulkUpload": {
+      "clickToChangeFile": "اضغط لتغيير الملف",
+      "title": "استيراد العملاء",
+      "description": "حمّل قالب Excel، املأ بيانات العملاء، ثم ارفعه ليُعالج في الخلفية.",
+      "step1Title": "تحميل القالب",
+      "step1Description": "حمّل قالب Excel الذي يتضمن الاسم والبريد وأرقام الهاتف والملاحظات والإحصائيات التاريخية.",
+      "step2Title": "تعبئة القالب",
+      "step2Description": "أدخل عميلاً واحداً في كل صف. يمكن فصل أرقام الهاتف بفاصلة، ويُستخدم الرقم الأول كرقم أساسي. تُضاف الإحصائيات التاريخية إلى إحصائيات الطلبات الحالية لاحقاً.",
+      "step3Title": "رفع الملف",
+      "step3Description": "ارفع الملف بعد تعبئته. سيتم إنشاء العملاء في الخلفية.",
+      "downloadTemplate": "تحميل القالب",
+      "dragDrop": "اسحب الملف هنا أو اضغط للاختيار",
+      "supportedFormats": "الصيغة المدعومة: XLSX (Excel)",
+      "upload": "رفع",
+      "uploading": "جارٍ الرفع...",
+      "templateDownloaded": "تم تحميل القالب بنجاح",
+      "templateDownloadFailed": "فشل تحميل القالب",
+      "invalidFileType": "صيغة الملف غير مدعومة (استخدم XLSX)",
+      "noFileSelected": "يرجى اختيار ملف أولاً",
+      "uploadSuccess": "تمت جدولة استيراد العملاء. سيتم إشعارك عند الانتهاء.",
+      "uploadFailed": "فشل رفع العملاء",
+      "uploadNoCreated": "لم يتم إنشاء أي عملاء. تحقق من الملف والأخطاء.",
+      "errorReportGenerated": "تم العثور على أخطاء! تم تحميل تقرير الأخطاء. أصلح الملف وأعد الرفع."
     },
     "table": {
       "searchPlaceholder": "البحث في العملاء...",

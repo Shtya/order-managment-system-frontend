@@ -16,6 +16,7 @@ import {
   Truck,
   UserCheck,
   Users,
+  FileSpreadsheet,
 } from "lucide-react";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
@@ -34,6 +35,7 @@ import { formatMessagePreview } from "@/utils/whatsapp-healper";
 import api from "@/utils/api";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import ClientModal from "./atoms/ClientModal";
+import BulkUploadModal from "../orders/atoms/BulkUploadModal";
 
 const STAT_CARDS = [
   { key: "totalClients", icon: Users, sortOrder: 0 },
@@ -80,6 +82,7 @@ export default function CustomersPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingCustomer, setDeletingCustomer] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const searchTimer = useRef(null);
 
   useEffect(() => {
@@ -433,6 +436,13 @@ export default function CustomersPage() {
                 filename: "Clients.xlsx",
               }),
           },
+          {
+            key: "templateActions",
+            label: t("toolbar.templateActions"),
+            icon: <FileSpreadsheet size={14} />,
+            color: "primary",
+            onClick: () => setBulkUploadOpen(true),
+          },
         ]}
         // filters={<CustomerFilters filters={filters} onChange={setFilters} />}
         hasActiveFilters={hasActiveFilters}
@@ -462,6 +472,41 @@ export default function CustomersPage() {
         onOpenChange={setModalOpen}
         client={editingCustomer}
         onSave={() => refresh({ page: editingCustomer ? page : 1, limit })}
+      />
+
+      <BulkUploadModal
+        isOpen={bulkUploadOpen}
+        onClose={() => setBulkUploadOpen(false)}
+        onSuccess={() => refresh({ page: 1, limit })}
+        templateEndpoint="/clients/bulk/template"
+        uploadEndpoint="/clients/bulk"
+        templateFilename="clients_bulk_template.xlsx"
+        errorFilenamePrefix="client_errors"
+        texts={{
+          title: t("bulkUpload.title"),
+          description: t("bulkUpload.description"),
+          step1Title: t("bulkUpload.step1Title"),
+          step1Description: t("bulkUpload.step1Description"),
+          step2Title: t("bulkUpload.step2Title"),
+          step2Description: t("bulkUpload.step2Description"),
+          step3Title: t("bulkUpload.step3Title"),
+          step3Description: t("bulkUpload.step3Description"),
+          downloadTemplate: t("bulkUpload.downloadTemplate"),
+          dragDrop: t("bulkUpload.dragDrop"),
+          supportedFormats: t("bulkUpload.supportedFormats"),
+          upload: t("bulkUpload.upload"),
+          uploading: t("bulkUpload.uploading"),
+          templateDownloaded: t("bulkUpload.templateDownloaded"),
+          templateDownloadFailed: t("bulkUpload.templateDownloadFailed"),
+          invalidFileType: t("bulkUpload.invalidFileType"),
+          noFileSelected: t("bulkUpload.noFileSelected"),
+          uploadSuccess: t("bulkUpload.uploadSuccess"),
+          uploadFailed: t("bulkUpload.uploadFailed"),
+          uploadNoCreated: t("bulkUpload.uploadNoCreated"),
+          errorReportGenerated: t("bulkUpload.errorReportGenerated"),
+          clickToChangeFile: t("bulkUpload.clickToChangeFile"),
+          cancel: t("actions.cancel"),
+        }}
       />
 
       <Dialog

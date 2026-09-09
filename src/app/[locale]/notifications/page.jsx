@@ -45,6 +45,8 @@ export const NotificationType = Object.freeze({
   ORDER_STATUS_CREATED: 'order_status_created',
   ORDER_STATUS_SETTINGS_UPDATED: 'order_status_settings_updated',
   BULK_ORDERS_CREATED: 'bulk_orders_created',
+  BULK_CLIENTS_CREATED: 'bulk_clients_created',
+  BULK_CLIENTS_FAILED: 'bulk_clients_failed',
   COLLECTION_CREATED: 'collection_created',
   REPLACEMENT_CREATED: 'replacement_created',
   RETURN_REQUEST_CREATED: 'return_request_created',
@@ -79,6 +81,9 @@ export function getNotificationLink(entity, id, type) {
     type === NotificationType.EXTRA_FEATURE_ASSIGNED
   ) {
     return "/plans?tab=features";
+  }
+  if (type === NotificationType.BULK_CLIENTS_CREATED || type === NotificationType.BULK_CLIENTS_FAILED) {
+    return "/customers";
   }
   if (type === NotificationType.PRODUCT_SYNC_FAILED) {
     return "/store-integration/sync-failures";

@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileSpreadsheet, RefreshCw, CheckCircle2, FileCheck2 } from "lucide-react";
 import {
-	Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+	Dialog, DialogContent, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -38,8 +38,20 @@ function StepBadge({ number, active, done }) {
 	);
 }
 
-export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
+export default function BulkUploadModal({
+	isOpen,
+	onClose,
+	onSuccess,
+	templateEndpoint = "/orders/bulk/template",
+	uploadEndpoint = "/orders/bulk",
+	templateFilename = "orders_bulk_template.xlsx",
+	errorFilenamePrefix = "order_errors",
+	texts,
+}) {
 	const t = useTranslations("orders");
+	const tx = (key) => texts?.[key] ?? t(`bulkUpload.${key}`);
+	const cancelLabel = texts?.cancel ?? t("common.cancel");
+	const inputId = `file-upload-${templateFilename.replace(/[^a-z0-9]/gi, "-")}`;
 	const [file, setFile] = useState(null);
 	const [uploading, setUploading] = useState(false);
 	const [downloadLoading, setDownloadLoading] = useState(false);
@@ -48,19 +60,19 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 	const handleDownloadTemplate = async () => {
 		setDownloadLoading(true);
 		try {
-			const res = await api.get("/orders/bulk/template", { responseType: "blob" });
+			const res = await api.get(templateEndpoint, { responseType: "blob" });
 			const blob = new Blob([res.data], {
 				type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 			});
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement("a");
 			link.href = url;
-			link.download = "orders_bulk_template.xlsx";
+			link.download = templateFilename;
 			link.click();
 			URL.revokeObjectURL(url);
-			toast.success(t("bulkUpload.templateDownloaded"));
+			toast.success(tx("templateDownloaded"));
 		} catch (err) {
-			toast.error(err.response?.data?.message || t("bulkUpload.templateDownloadFailed"));
+			toast.error(err.response?.data?.message || tx("templateDownloadFailed"));
 		} finally {
 			setDownloadLoading(false);
 		}
@@ -72,7 +84,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 			f.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
 			f.name.endsWith(".xlsx");
 		if (isXlsx) setFile(f);
-		else toast.error(t("bulkUpload.invalidFileType"));
+		else toast.error(tx("invalidFileType"));
 	};
 
 	const handleFileChange = (e) => validateAndSetFile(e.target.files[0]);
@@ -84,57 +96,59 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 	};
 
 	const handleUpload = async () => {
-		if (!file) { toast.error(t("bulkUpload.noFileSelected")); return; }
+		if (!file) { toast.error(tx("noFileSelected")); return; }
 		setUploading(true);
 		try {
 			const formData = new FormData();
 			formData.append("file", file);
-			const res = await api.post("/orders/bulk", formData, {
+			const res = await api.post(uploadEndpoint, formData, {
 				headers: { "Content-Type": "multipart/form-data" },
 				responseType: "blob",
 			});
 
-			// Check content-type header to determine response type
 			const contentType = res.headers["content-type"] || "";
 			const isExcelFile = contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
 			if (isExcelFile) {
-				// Download error report Excel file
 				const blob = new Blob([res.data], {
 					type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 				});
 				const url = URL.createObjectURL(blob);
 				const link = document.createElement("a");
 				link.href = url;
-				link.download = `order_errors_${Date.now()}.xlsx`;
+				link.download = `${errorFilenamePrefix}_${Date.now()}.xlsx`;
 				link.click();
 				URL.revokeObjectURL(url);
 
-				toast.error(t("bulkUpload.errorReportGenerated"));
+				toast.error(tx("errorReportGenerated"));
 				setFile(null);
 				onClose();
 			} else if (contentType.includes("application/json")) {
-				// Parse JSON response from Blob
 				const jsonText = await res.data.text();
 				const data = JSON.parse(jsonText);
 				const message = data.message ?? 0;
 				const failed = data.failed ?? 0;
 
-				if (failed === 0) {
-					toast.success(message || t("bulkUpload.uploadSuccess"));
+				if (failed === 0 || data.queued) {
+					toast.success(message || tx("uploadSuccess"));
 					onSuccess?.();
 					setFile(null);
 					onClose();
 				} else {
-					toast.error(message || t("bulkUpload.uploadNoCreated"));
+					toast.error(message || tx("uploadNoCreated"));
 				}
 			}
 		} catch (err) {
-			const jsonText = await err.response.data.text();
-			const data = JSON.parse(jsonText)
-			console.error("Upload error:", err);
-			console.error("Error response:", jsonText);
-			toast.error(data?.message || t("bulkUpload.uploadFailed"));
+			let errorMessage = tx("uploadFailed");
+			try {
+				const payload = err.response?.data;
+				const jsonText = typeof payload?.text === "function" ? await payload.text() : payload;
+				const data = typeof jsonText === "string" ? JSON.parse(jsonText) : payload;
+				errorMessage = data?.message || errorMessage;
+			} catch {
+				/* keep fallback */
+			}
+			toast.error(errorMessage);
 		} finally {
 			setUploading(false);
 		}
@@ -142,9 +156,9 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 
 	const steps = [
 		{
-			title: t("bulkUpload.step1Title"),
-			desc: t("bulkUpload.step1Description"),
-			done: true, /* always done once modal opens */
+			title: tx("step1Title"),
+			desc: tx("step1Description"),
+			done: true,
 			action: (
 				<Button
 					onClick={handleDownloadTemplate}
@@ -158,20 +172,20 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 					{downloadLoading
 						? <RefreshCw size={14} className="animate-spin" />
 						: <FileSpreadsheet size={14} />}
-					{t("bulkUpload.downloadTemplate")}
+					{tx("downloadTemplate")}
 				</Button>
 			),
 		},
 		{
-			title: t("bulkUpload.step2Title"),
-			desc: t("bulkUpload.step2Description"),
+			title: tx("step2Title"),
+			desc: tx("step2Description"),
 			done: false,
 		},
 		{
-			title: t("bulkUpload.step3Title"),
-			desc: t("bulkUpload.step3Description"),
+			title: tx("step3Title"),
+			desc: tx("step3Description"),
 			done: !!file,
-			action: null, /* dropzone rendered separately below */
+			action: null,
 		},
 	];
 
@@ -179,7 +193,6 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="max-w-lg p-0 gap-0 rounded-xl border border-border overflow-hidden flex flex-col max-h-[92vh]">
 
-				{/* ── Header ─────────────────────────────────────────────── */}
 				<div className="relative overflow-hidden flex-shrink-0">
 					<div className="absolute inset-0  " />
 					<div className="relative flex items-center gap-4 px-6 py-5 border-b border-border">
@@ -191,19 +204,16 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 						</div>
 						<div>
 							<DialogTitle className="text-lg font-black tracking-tight text-foreground leading-none">
-								{t("bulkUpload.title")}
+								{tx("title")}
 							</DialogTitle>
 							<DialogDescription className="text-xs !max-w-sm w-full text-muted-foreground mt-0.5">
-								{t("bulkUpload.description")}
+								{tx("description")}
 							</DialogDescription>
 						</div>
 					</div>
 				</div>
 
-				{/* ── Body ───────────────────────────────────────────────── */}
 				<div className="flex-1 overflow-y-auto px-6 py-5 space-y-3">
-
-					{/* Steps 1 & 2 */}
 					{steps.slice(0, 2).map((step, i) => (
 						<div
 							key={i}
@@ -218,7 +228,6 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 						</div>
 					))}
 
-					{/* Step 3: Upload — expanded with dropzone */}
 					<div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
 						<div className="flex items-start gap-3.5 p-4">
 							<StepBadge number={3} done={!!file} active={!file} />
@@ -228,17 +237,16 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 							</div>
 						</div>
 
-						{/* Dropzone */}
 						<div className="px-4 pb-4">
 							<input
 								type="file"
-								id="file-upload"
+								id={inputId}
 								accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 								onChange={handleFileChange}
 								className="hidden"
 							/>
 							<label
-								htmlFor="file-upload"
+								htmlFor={inputId}
 								onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
 								onDragLeave={() => setDragOver(false)}
 								onDrop={handleDrop}
@@ -251,7 +259,6 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 										: "border-border hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 dark:hover:bg-[#5b4bff]/8"
 								)}
 							>
-								{/* bg glow on drag */}
 								<AnimatePresence>
 									{(dragOver) && (
 										<motion.div
@@ -267,7 +274,6 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 								</AnimatePresence>
 
 								{file ? (
-									/* File chosen state */
 									<motion.div
 										initial={{ opacity: 0, scale: 0.9 }}
 										animate={{ opacity: 1, scale: 1 }}
@@ -284,11 +290,10 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 											{(file.size / 1024).toFixed(1)} KB
 										</p>
 										<span className="text-[10px] font-bold uppercase tracking-wider text-[var(--primary)] ">
-											{t("bulkUpload.clickToChangeFile")}
+											{tx("clickToChangeFile")}
 										</span>
 									</motion.div>
 								) : (
-									/* Empty state */
 									<div className="flex flex-col items-center gap-2 relative">
 										<div className="w-12 h-12 rounded-xl flex items-center justify-center
 											bg-muted border border-border
@@ -299,10 +304,10 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 										</div>
 										<div className="text-center">
 											<p className="text-sm font-bold text-foreground">
-												{t("bulkUpload.dragDrop")}
+												{tx("dragDrop")}
 											</p>
 											<p className="text-xs text-muted-foreground mt-0.5">
-												{t("bulkUpload.supportedFormats")}
+												{tx("supportedFormats")}
 											</p>
 										</div>
 									</div>
@@ -312,14 +317,13 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 					</div>
 				</div>
 
-				{/* ── Footer ─────────────────────────────────────────────── */}
 				<div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted/20">
 					<Button
 						variant="outline"
 						onClick={onClose}
 						className="h-10 px-5 rounded-xl text-sm font-bold"
 					>
-						{t("common.cancel")}
+						{cancelLabel}
 					</Button>
 					<Button
 						onClick={handleUpload}
@@ -334,9 +338,9 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 							transition-all duration-200"
 					>
 						{uploading ? (
-							<><RefreshCw size={14} className="animate-spin" />{t("bulkUpload.uploading")}</>
+							<><RefreshCw size={14} className="animate-spin" />{tx("uploading")}</>
 						) : (
-							<><Upload size={14} />{t("bulkUpload.upload")}</>
+							<><Upload size={14} />{tx("upload")}</>
 						)}
 					</Button>
 				</div>

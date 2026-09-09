@@ -586,13 +586,11 @@ const getConnectedAiProviders = (providers) => {
     });
 };
 
-const getProviderModels = (provider) => {
-    return (provider?.models || []).filter((model) => model.isActive !== false && model.isAvailable !== false);
-};
-
 /**
  * Action: AI Address Correction
  */
+const AI_PROVIDER_AUTO = "__auto__";
+
 export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
     const tConfig = useTranslations("whatsApp.automations.builder.config");
     const tNodes = useTranslations("whatsApp.automations.builder.nodes");
@@ -604,9 +602,6 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
         providerId: value?.providerId || "",
         providerName: value?.providerName || "",
         providerCode: value?.providerCode || "",
-        modelId: value?.modelId || "",
-        modelName: value?.modelName || "",
-        modelCode: value?.modelCode || "",
         shippingCompanyId: value?.shippingCompanyId || "",
         shippingCompany: value?.shippingCompany || "",
         provider: value?.provider || "",
@@ -621,42 +616,18 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
         const fetchAiOptions = async () => {
             try {
                 setLoading(true);
-                const [providersRes, defaultModelRes, shippingRes] = await Promise.all([
-                    api.get("/ai/providers", { params: { scope: "all", isActive:"true" } }),
-                    api.get("/ai/default-model"),
+                const [providersRes, shippingRes] = await Promise.all([
+                    api.get("/ai/providers", { params: { scope: "all", isActive: "true" } }),
                     api.get("/shipping/integrations/active"),
                 ]);
 
                 const providerRecords = Array.isArray(providersRes.data)
                     ? providersRes.data
                     : providersRes.data?.records || [];
-                const connectedProviders = getConnectedAiProviders(providerRecords);
-                setProviders(connectedProviders);
+                setProviders(getConnectedAiProviders(providerRecords));
 
                 const shippingIntegrations = Array.isArray(shippingRes.data?.integrations) ? shippingRes.data.integrations : Array.isArray(shippingRes.data) ? shippingRes.data : [];
                 setShippingCompanies(shippingIntegrations);
-
-                if (value?.providerId && value?.modelId) return;
-
-                const defaultModelId = defaultModelRes.data?.modelId || defaultModelRes.data?.model?.id;
-                const defaultProvider = connectedProviders.find((provider) =>
-                    getProviderModels(provider).some((model) => model.id === defaultModelId)
-                );
-                const defaultModel = getProviderModels(defaultProvider).find((model) => model.id === defaultModelId);
-                const fallbackProvider = defaultProvider || connectedProviders[0];
-                const fallbackModel = defaultModel || getProviderModels(fallbackProvider)[0];
-
-                if (fallbackProvider && fallbackModel) {
-                    setTempValue((prev) => ({
-                        ...prev,
-                        providerId: fallbackProvider.id,
-                        providerName: fallbackProvider.name,
-                        providerCode: fallbackProvider.code || "",
-                        modelId: fallbackModel.id,
-                        modelName: fallbackModel.displayName || fallbackModel.name || fallbackModel.modelCode,
-                        modelCode: fallbackModel.modelCode,
-                    }));
-                }
             } catch (e) {
                 toast.error(normalizeAxiosError(e));
             } finally {
@@ -665,36 +636,28 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
         };
 
         if (isOpen) fetchAiOptions();
-    }, [isOpen, value?.providerId, value?.modelId]);
+    }, [isOpen]);
 
     useEffect(() => {
-        setDisabled(loading || !tempValue.providerId || !tempValue.modelId || !tempValue.shippingCompanyId);
-    }, [loading, tempValue.providerId, tempValue.modelId, tempValue.shippingCompanyId, setDisabled]);
-
-    const selectedProvider = providers.find((provider) => provider.id === tempValue.providerId);
-    const selectedModels = getProviderModels(selectedProvider);
+        setDisabled(loading || !tempValue.shippingCompanyId);
+    }, [loading, tempValue.shippingCompanyId, setDisabled]);
 
     const handleProviderChange = (providerId) => {
+        if (providerId === AI_PROVIDER_AUTO) {
+            setTempValue((prev) => ({
+                ...prev,
+                providerId: "",
+                providerName: "",
+                providerCode: "",
+            }));
+            return;
+        }
         const provider = providers.find((item) => item.id === providerId);
-        const firstModel = getProviderModels(provider)[0];
         setTempValue((prev) => ({
             ...prev,
             providerId,
             providerName: provider?.name || "",
             providerCode: provider?.code || "",
-            modelId: firstModel?.id || "",
-            modelName: firstModel?.displayName || firstModel?.name || firstModel?.modelCode || "",
-            modelCode: firstModel?.modelCode || "",
-        }));
-    };
-
-    const handleModelChange = (modelId) => {
-        const model = selectedModels.find((item) => item.id === modelId);
-        setTempValue((prev) => ({
-            ...prev,
-            modelId,
-            modelName: model?.displayName || model?.name || model?.modelCode || "",
-            modelCode: model?.modelCode || "",
         }));
     };
 
@@ -709,8 +672,14 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
     };
 
     const handleSave = () => {
-        onChange(tempValue);
-        onClose(tempValue);
+        const nextValue = {
+            ...tempValue,
+            modelId: undefined,
+            modelName: undefined,
+            modelCode: undefined,
+        };
+        onChange(nextValue);
+        onClose(nextValue);
     };
 
     return (
@@ -731,8 +700,8 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
-                    <FormGroup label={tConfig("aiProvider")} description={tConfig("aiProviderDesc")} error={errors.provider}>
-                        <Select value={tempValue.providerId || ""} onValueChange={handleProviderChange}>
+                    <FormGroup label={tConfig("aiProvider")} description={tConfig("aiProviderOptionalDesc")} error={errors.provider}>
+                        <Select value={tempValue.providerId || AI_PROVIDER_AUTO} onValueChange={handleProviderChange}>
                             <SelectTrigger className="">
                                 {loading ? (
                                     <div className="flex items-center gap-2">
@@ -744,23 +713,9 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                                 )}
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value={AI_PROVIDER_AUTO}>{tConfig("aiProviderAutomatic")}</SelectItem>
                                 {providers.map((provider) => (
                                     <SelectItem key={provider.id} value={provider.id}>{provider.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </FormGroup>
-
-                    <FormGroup label={tConfig("aiModel")} description={tConfig("aiModelDesc")} error={errors.model}>
-                        <Select value={tempValue.modelId || ""} onValueChange={handleModelChange} disabled={!tempValue.providerId}>
-                            <SelectTrigger className="">
-                                <SelectValue placeholder={tConfig("selectAiModel")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {selectedModels.map((model) => (
-                                    <SelectItem key={model.id} value={model.id}>
-                                        {model.displayName || model.name || model.modelCode}
-                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -813,7 +768,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                         <Button type="button" variant="outline" onClick={() => onClose(null)} className="rounded-xl px-6">
                             {tCommon("cancel")}
                         </Button>
-                        <Button type="button" disabled={loading || !tempValue.providerId || !tempValue.modelId || !tempValue.shippingCompanyId} onClick={handleSave} className="rounded-xl px-8">
+                        <Button type="button" disabled={loading || !tempValue.shippingCompanyId} onClick={handleSave} className="rounded-xl px-8">
                             {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
                         </Button>
                     </div>

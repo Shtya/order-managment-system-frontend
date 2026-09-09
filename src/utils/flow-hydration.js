@@ -9,10 +9,6 @@ function aiProviderConnected(provider) {
     );
 }
 
-function activeProviderModels(provider) {
-    return (provider?.models || []).filter((model) => model.isActive !== false && model.isAvailable !== false);
-}
-
 /**
  * Hydrates a node's configuration with fresh data from the backend.
  * Detects breaking changes (deleted entities) and non-breaking updates (name changes).
@@ -137,14 +133,17 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
             }
 
             case 'ai_address_correction': {
-                if (!config.providerId || !config.modelId) break;
+                if (!config.shippingCompanyId) break;
 
                 try {
                     const [aiRes, shippingRes] = await Promise.all([
-                        api.get("/ai/providers", { params: { scope: "all", isActive:"true" } }),
-                        config.shippingCompanyId ? api.get("/shipping/integrations/active") : Promise.resolve({ data: { integrations: [] } }),
+                        config.providerId || config.providerCode
+                            ? api.get("/ai/providers", { params: { scope: "all", isActive:"true" } })
+                            : Promise.resolve({ data: { records: [] } }),
+                        api.get("/shipping/integrations/active"),
                     ]);
 
+                    if (config.providerId || config.providerCode) {
                     const providers = Array.isArray(aiRes.data) ? aiRes.data : aiRes.data?.records || [];
                     const freshProvider = config.providerCode
                         ? providers.find(p => String(p.code) === String(config.providerCode))
@@ -162,19 +161,6 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                         result.changes.push(t("whatsApp.automations.builder.config.hydration.aiProviderUpdated", { oldName: config.providerName, newName: freshProvider.name }));
                         result.newConfig.providerName = freshProvider.name;
                     }
-
-                    const freshModel = activeProviderModels(freshProvider).find(m => String(m.id) === String(config.modelId));
-                    if (!freshModel) {
-                        result.isValid = false;
-                        result.error = t("whatsApp.automations.builder.config.hydration.aiModelNotFound", { model: config.modelName || config.modelCode || config.modelId });
-                        break;
-                    }
-
-                    const freshModelName = freshModel.displayName || freshModel.name || freshModel.modelCode;
-                    if (freshModelName !== config.modelName) {
-                        result.changes.push(t("whatsApp.automations.builder.config.hydration.aiModelUpdated", { oldName: config.modelName, newName: freshModelName }));
-                        result.newConfig.modelName = freshModelName;
-                        result.newConfig.modelCode = freshModel.modelCode;
                     }
 
                     if (config.shippingCompanyId) {
@@ -197,7 +183,9 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                     }
                 } catch (e) {
                     result.isValid = false;
-                    result.error = t("whatsApp.automations.builder.config.hydration.aiProviderNotFound", { provider: config.providerName || config.providerId });
+                    result.error = (config.providerId || config.providerCode)
+                        ? t("whatsApp.automations.builder.config.hydration.aiProviderNotFound", { provider: config.providerName || config.providerId })
+                        : t("whatsApp.automations.builder.config.hydration.shippingCompanyNotFound", { company: config.shippingCompany || config.shippingCompanyId });
                 }
                 break;
             }

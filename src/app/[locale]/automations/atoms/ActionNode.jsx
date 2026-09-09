@@ -108,11 +108,7 @@ export function ActionNode({ id, data, selected }) {
                             <div className="flex flex-col gap-1.5">
                                 <div className="flex items-center justify-between">
                                     <span className="opacity-50 font-bold">{t('nodes.provider')}</span>
-                                    <span className="font-black text-violet-700 dark:text-violet-400 truncate">{data.config?.providerName || '—'}</span>
-                                </div>
-                                <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
-                                    <span className="opacity-50 text-[9px]">{t('nodes.aiModel')}</span>
-                                    <span className="font-mono font-bold text-violet-600 dark:text-violet-400 truncate">{data.config?.modelName || data.config?.modelCode || '—'}</span>
+                                    <span className="font-black text-violet-700 dark:text-violet-400 truncate">{data.config?.providerName || t('nodes.aiProviderAutomatic')}</span>
                                 </div>
                                 {data.config?.shippingCompany && (
                                     <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">

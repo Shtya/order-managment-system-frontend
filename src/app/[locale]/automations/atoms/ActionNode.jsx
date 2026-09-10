@@ -110,19 +110,23 @@ export function ActionNode({ id, data, selected }) {
                                     <span className="opacity-50 font-bold">{t('nodes.provider')}</span>
                                     <span className="font-black text-violet-700 dark:text-violet-400 truncate">{data.config?.providerName || t('nodes.aiProviderAutomatic')}</span>
                                 </div>
-                                {data.config?.shippingCompany && (
-                                    <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
-                                        <span className="opacity-50 text-[9px]">{t('nodes.shippingCompany')}</span>
-                                        <span className="font-mono font-bold text-orange-600 dark:text-orange-400 truncate">{data.config.shippingCompany}</span>
-                                    </div>
-                                )}
+                                <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                    <span className="opacity-50 text-[9px]">{t('nodes.shippingCompany')}</span>
+                                    <span className="font-mono font-bold text-orange-600 dark:text-orange-400 truncate">
+                                        {data.config?.shippingCompany || t('nodes.autoAssign')}
+                                    </span>
+                                </div>
                             </div>
                         )}
                         {data.type === 'assign_shipping_provider' && (
                             <div className="flex flex-col gap-1.5">
                                     <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
                                         <span className="opacity-50 text-[9px]">{t('nodes.provider')}</span>
-                                        <span className="font-mono font-bold text-orange-600 dark:text-orange-400 truncate">{data.config?.shippingCompany || '—'}</span>
+                                        <span className="font-mono font-bold text-orange-600 dark:text-orange-400 truncate">
+                                            {data.config?.useSpecialShippingCompany || data.config?.shippingCompany
+                                                ? (data.config?.shippingCompany || '—')
+                                                : t('nodes.orderShippingCompany')}
+                                        </span>
                                     </div>
                             </div>
                         )}

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot, Ban, UserPlus, Percent, Repeat, Megaphone } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon, Users, Copy, Image as ImageIcon, Video, FileText, UserCircle, List, LayoutGrid, MapIcon, Send, Bot, Ban, UserPlus, Percent, Repeat, Megaphone, Scale } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
@@ -13,6 +13,7 @@ import { OrderPropertySelector, useOrderProperties } from "./OrderPropertySelect
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useTranslations, useLocale } from "next-intl";
+import { Link as LocaleLink } from "@/i18n/navigation";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useFlowStore } from "@/hook/useFlowStore";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
@@ -590,11 +591,13 @@ const getConnectedAiProviders = (providers) => {
  * Action: AI Address Correction
  */
 const AI_PROVIDER_AUTO = "__auto__";
+const SHIPPING_COMPANY_AUTO = "__auto__";
 
 export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
     const tConfig = useTranslations("whatsApp.automations.builder.config");
     const tNodes = useTranslations("whatsApp.automations.builder.nodes");
     const tCommon = useTranslations("common");
+    const tShipping = useTranslations("shipping");
     const [providers, setProviders] = useState([]);
     const [shippingCompanies, setShippingCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -639,8 +642,8 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
     }, [isOpen]);
 
     useEffect(() => {
-        setDisabled(loading || !tempValue.shippingCompanyId);
-    }, [loading, tempValue.shippingCompanyId, setDisabled]);
+        setDisabled(loading);
+    }, [loading, setDisabled]);
 
     const handleProviderChange = (providerId) => {
         if (providerId === AI_PROVIDER_AUTO) {
@@ -662,6 +665,15 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
     };
 
     const handleShippingCompanyChange = (companyId) => {
+        if (companyId === SHIPPING_COMPANY_AUTO) {
+            setTempValue((prev) => ({
+                ...prev,
+                shippingCompanyId: "",
+                shippingCompany: "",
+                provider: "",
+            }));
+            return;
+        }
         const company = shippingCompanies.find((item) => String(item.providerId) === String(companyId));
         setTempValue((prev) => ({
             ...prev,
@@ -722,7 +734,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                     </FormGroup>
 
                     <FormGroup label={tConfig("shippingCompany")} description={tConfig("aiAddressShippingCompanyDesc")} error={errors.shippingCompany}>
-                        <Select value={tempValue.shippingCompanyId || ""} onValueChange={handleShippingCompanyChange}>
+                        <Select value={tempValue.shippingCompanyId || SHIPPING_COMPANY_AUTO} onValueChange={handleShippingCompanyChange}>
                             <SelectTrigger className="">
                                 {loading ? (
                                     <div className="flex items-center gap-2">
@@ -734,11 +746,24 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                                 )}
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value={SHIPPING_COMPANY_AUTO}>{tConfig("shippingCompanyAutomatic")}</SelectItem>
                                 {shippingCompanies.map((company) => (
-                                    <SelectItem key={company.providerId} value={company.providerId}>{company.name}</SelectItem>
+                                    <SelectItem key={company.providerId} value={company.providerId}>
+                                        {tShipping(`providers.${company.provider?.toLowerCase()}`, { defaultValue: company.name })}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
+                        <LocaleLink
+                            href="/shipping-assigning"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-flex items-center gap-2 rounded-xl border border-border/70 bg-slate-50 dark:bg-slate-800/70 px-3 py-2 text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-colors"
+                        >
+                            <Scale size={14} className="shrink-0 text-primary" />
+                            <span>{tConfig("editAssigningRules")}</span>
+                            <ExternalLink size={12} className="opacity-60" />
+                        </LocaleLink>
                     </FormGroup>
 
                     <FormGroup label={tConfig("updateWrittenAddress")} description={tConfig("updateWrittenAddressDesc")}>
@@ -768,7 +793,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                         <Button type="button" variant="outline" onClick={() => onClose(null)} className="rounded-xl px-6">
                             {tCommon("cancel")}
                         </Button>
-                        <Button type="button" disabled={loading || !tempValue.shippingCompanyId} onClick={handleSave} className="rounded-xl px-8">
+                        <Button type="button" disabled={loading} onClick={handleSave} className="rounded-xl px-8">
                             {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
                         </Button>
                     </div>
@@ -873,6 +898,7 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
     const [shippingCompanies, setShippingCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [tempValue, setTempValue] = useState({
+        useSpecialShippingCompany: value?.useSpecialShippingCompany ?? !!value?.shippingCompanyId,
         shippingCompanyId: value?.shippingCompanyId || "",
         shippingCompany: value?.shippingCompany || "",
         provider: value?.provider || "",
@@ -899,7 +925,9 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
         if (isOpen) fetchShippingCompanies();
     }, [isOpen]);
 
-    const isValid = !loading && !!tempValue.shippingCompanyId;
+    const isValid = !loading && (
+        !tempValue.useSpecialShippingCompany || !!tempValue.shippingCompanyId
+    );
 
     useEffect(() => {
         setDisabled(!isValid);
@@ -916,10 +944,12 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
     };
 
     const handleSave = () => {
+        const useSpecial = tempValue.useSpecialShippingCompany === true;
         const payload = {
-            shippingCompanyId: tempValue.shippingCompanyId,
-            shippingCompany: tempValue.shippingCompany,
-            provider: tempValue.provider,
+            useSpecialShippingCompany: useSpecial,
+            shippingCompanyId: useSpecial ? tempValue.shippingCompanyId : "",
+            shippingCompany: useSpecial ? tempValue.shippingCompany : "",
+            provider: useSpecial ? tempValue.provider : "",
             branches: tempValue.branches,
         };
         onChange(payload);
@@ -944,6 +974,30 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
+                    <FormGroup label={tConfig("useShippingCompany")} description={tConfig("useSpecialShippingCompanyDesc")}>
+                        <div className="flex items-center gap-3 rounded-2xl bg-slate-50 dark:bg-slate-800 px-4 h-12">
+                            <Checkbox
+                                id="useSpecialShippingCompany"
+                                checked={tempValue.useSpecialShippingCompany === true}
+                                onCheckedChange={(checked) => {
+                                    const enabled = checked === true;
+                                    setTempValue((prev) => ({
+                                        ...prev,
+                                        useSpecialShippingCompany: enabled,
+                                        ...(!enabled ? { shippingCompanyId: "", shippingCompany: "", provider: "" } : {}),
+                                    }));
+                                }}
+                            />
+                            <label
+                                htmlFor="useSpecialShippingCompany"
+                                className="text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer"
+                            >
+                                {tConfig("useSpecialShippingCompany")}
+                            </label>
+                        </div>
+                    </FormGroup>
+
+                    {tempValue.useSpecialShippingCompany && (
                     <FormGroup label={tConfig("shippingCompany")} description={tConfig("shippingCompanyAssignDesc")} error={errors.shippingCompany}>
                         <Select value={tempValue.shippingCompanyId || ""} onValueChange={handleShippingCompanyChange}>
                             <SelectTrigger className="">
@@ -965,6 +1019,7 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
                             </SelectContent>
                         </Select>
                     </FormGroup>
+                    )}
                 </div>
 
                 <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">

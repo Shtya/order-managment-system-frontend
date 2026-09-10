@@ -174,6 +174,7 @@ export default function MultiSelect({
     const [triggerWidth, setTriggerWidth] = useState(0);
 
     const containerRef = useRef(null);
+    const hydratedIdsRef = useRef(new Set());
 
     const getLabel = useCallback(
         (option) => optionLabel(option, locale, labelKey),
@@ -213,6 +214,54 @@ export default function MultiSelect({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, search, endpoint]);
+
+    useEffect(() => {
+        if (!endpoint) return;
+        const known = new Set(
+            [
+                ...(optionsProp || []),
+                ...(initialValues || []),
+            ]
+                .map((item) => item?.[valueKey])
+                .filter(Boolean),
+        );
+        const missingIds = (value || [])
+            .map((v) => resolveId(v, valueKey))
+            .filter(
+                (id) =>
+                    id != null &&
+                    typeof id !== "object" &&
+                    !known.has(id) &&
+                    !hydratedIdsRef.current.has(id),
+            );
+        if (!missingIds.length) return;
+        missingIds.forEach((id) => hydratedIdsRef.current.add(id));
+
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await api.get(endpoint, {
+                    params: {
+                        ...params,
+                        ids: missingIds.join(","),
+                        limit: missingIds.length,
+                    },
+                });
+                let data = [];
+                if (Array.isArray(res.data)) data = res.data;
+                else if (res.data?.records) data = res.data.records;
+                else if (res.data?.data) data = res.data.data;
+                if (cancelled || !data.length) return;
+                setOptions((prev) => mergeUnique(prev, data, valueKey));
+            } catch (err) {
+                console.error("MultiSelect hydrate error:", err);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [endpoint, value, optionsProp, initialValues, valueKey]);
 
     const fetchOptions = async () => {
         if (!endpoint) return;
@@ -354,7 +403,7 @@ export default function MultiSelect({
     );
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={setOpen} modal>
             <PopoverTrigger asChild>
                 {isSelect ? (
                     <div
@@ -427,7 +476,10 @@ export default function MultiSelect({
                             if (typeof v === "object") {
                                 label = getLabel(v);
                             } else {
-                                const option = options.find((opt) => opt[valueKey] === id);
+                                const option =
+                                    options.find((opt) => opt[valueKey] === id) ||
+                                    (optionsProp || []).find((opt) => opt[valueKey] === id) ||
+                                    (initialValues || []).find((opt) => opt[valueKey] === id);
                                 label = option ? getLabel(option) : id;
                             }
 
@@ -475,6 +527,8 @@ export default function MultiSelect({
                     style={{ width: triggerWidth || "auto" }}
                     align="start"
                     sideOffset={6}
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
                 >
                     <SelectContentSheen />
                     {searchable && (
@@ -498,7 +552,8 @@ export default function MultiSelect({
                     />
                     <div
                         ref={viewportRef}
-                        className="w-full p-1.5 max-h-[240px] overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                        className="w-full p-1.5 max-h-[240px] overflow-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                        onWheel={(e) => e.stopPropagation()}
                     >
                         {loading && loadingState}
                         {!loading && displayedOptions.length === 0 && emptyState}
@@ -517,6 +572,8 @@ export default function MultiSelect({
                     style={{ width: triggerWidth || "auto" }}
                     align="start"
                     sideOffset={8}
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
                 >
                     <motion.div
                         initial={{ opacity: 0, y: -6, scale: 0.985 }}
@@ -550,7 +607,10 @@ export default function MultiSelect({
                             </div>
                         )}
 
-                        <div className="max-h-[300px] overflow-auto p-2 space-y-1">
+                        <div
+                            className="max-h-[300px] overflow-y-auto overscroll-contain p-2 space-y-1"
+                            onWheel={(e) => e.stopPropagation()}
+                        >
                             {loading && loadingState}
                             {!loading && displayedOptions.length === 0 && emptyState}
                             {!loading && displayedOptions.map(renderOptionRow)}

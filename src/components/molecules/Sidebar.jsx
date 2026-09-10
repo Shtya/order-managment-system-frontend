@@ -77,6 +77,7 @@ import {
   Tags,
   UserRoundSearch,
   Megaphone,
+  ArrowLeftRight,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -712,6 +713,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           href: "/shipping-companies",
           gettingStartedKey: "integrations.shipping_companies",
           gettingStartedType: "sidebar_item",
+        },
+        {
+          icon: ArrowLeftRight,
+          labelKey: "shippingAssigning",
+          permission: "shipping-assigning.read",
+          href: "/shipping-assigning",
         },
         {
           icon: Store,

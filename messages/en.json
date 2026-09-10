@@ -8359,7 +8359,7 @@
     },
     "note": {
       "title": "Used by automations",
-      "description": "These rules are mainly used when creating automations — especially the choose shipping company step, which updates the order shipping company based on these rules in priority order."
+      "description": "These rules are mainly used when creating automations — especially the AI Address Correction step, which updates the order's address based on these rules and their priority."
     },
     "toolbar": {
       "addRule": "Create Assigning Rule",

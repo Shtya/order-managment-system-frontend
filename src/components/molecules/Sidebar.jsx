@@ -719,6 +719,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, openSidebar, isMobile }) => {
           labelKey: "shippingAssigning",
           permission: "shipping-assigning.read",
           href: "/shipping-assigning",
+          allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
         },
         {
           icon: Store,

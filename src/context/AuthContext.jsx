@@ -8,6 +8,8 @@ import {
     writeAllTablePrefsToLS,
     writeAllStatisticsPrefsToLS,
 } from "@/utils/userPreferencesStorage";
+import { getDefaultAppRoute } from "@/utils/sidebarAccess";
+import { normalizeRole, userHasPermission } from "@/utils/userAccess";
 
 const AuthContext = createContext();
 
@@ -177,21 +179,7 @@ export function AuthProvider({ children }) {
 
 
     const getDashboardRoute = useCallback((userData) => {
-        const targetUser = userData || user;
-        if (!targetUser) return '/auth?mode=signin';
-
-        const role = String(targetUser?.role?.name || '');
-        const isOnboarded = targetUser?.onboardingStatus === 'completed' || role !== 'admin';
-
-        if (role === 'super_admin') {
-            return '/dashboard/users';
-        } else if (!isOnboarded) {
-            return '/onboarding';
-        } else if (role === 'admin') {
-            return '/orders';
-        } else {
-            return '/orders/employee-orders';
-        }
+        return getDefaultAppRoute(userData || user);
     }, [user]);
 
     const handleAuthSuccess = useCallback(async (data, route) => {
@@ -319,27 +307,16 @@ export function AuthProvider({ children }) {
     const permissionHelpers = useMemo(() => {
         const permsArray = user?.role?.permissionNames || [];
         const permsSet = new Set(permsArray);
-
-        const hasAllAccess = permsSet.has('*') || user?.role?.name === "super_admin";
-
-        const hasPermission = (permission) => {
-            if (hasAllAccess) return true;
-
-            if (Array.isArray(permission)) {
-                return permission.some(p => permsSet.has(p));
-            }
-
-            return permsSet.has(permission);
-        };
-
+        const hasAllAccess = permsSet.has("*") || normalizeRole(user?.role?.name) === "SUPER_ADMIN";
+        const hasPermission = (permission) => userHasPermission(user, permission);
         return { hasPermission, permsSet, hasAllAccess };
     }, [user]);
 
     const activeSubscription = user?.subscriptions?.[0]
     const helpers = {
         isAuthenticated: !!user,
-        isAdmin: user?.role?.name === "admin",
-        isSuperAdmin: user?.role?.name === "super_admin",
+        isAdmin: normalizeRole(user?.role?.name) === "ADMIN",
+        isSuperAdmin: normalizeRole(user?.role?.name) === "SUPER_ADMIN",
         activeSubscription,
         hasActiveSubscription: !!activeSubscription,
         hasPermission: permissionHelpers.hasPermission,

@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 
 export default function SuccessPage() {
     const t = useTranslations('auth');
-    const { setAuthToken } = useAuth();
+    const { setAuthToken, getDashboardRoute } = useAuth();
     const searchParams = useSearchParams();
     const router = useRouter();
     const redirectUrl = searchParams?.get('redirect') || '/';
@@ -33,9 +33,7 @@ export default function SuccessPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ accessToken: accessTokenFromUrl, user }),
                 });
-                const isOnboarded = user?.onboardingStatus === 'completed' || user?.role?.name !== 'admin';
-
-                const redirect = user?.role?.name === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : user?.role?.name === 'admin' ? '/orders' : '/orders/employee-orders';
+                const redirect = getDashboardRoute(user);
                 router.push(redirect);
             } catch (e) {
                 console.error('OAuth finalize failed', e);
@@ -43,7 +41,7 @@ export default function SuccessPage() {
             }
         };
         run();
-    }, [accessTokenFromUrl, router, redirectUrl]);
+    }, [accessTokenFromUrl, router, redirectUrl, getDashboardRoute, setAuthToken]);
 
     return (
         <div>

@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Zap,
 } from "lucide-react";
+import { getRoleDisplayName, normalizeRole } from "@/utils/userAccess";
 import { useAuth } from "@/context/AuthContext";
 import BrandLogo from "@/components/atoms/BrandLogo";
 
@@ -29,19 +30,18 @@ const stagger = (i) => ({
 });
 
 function getRoleLabel(role, t) {
-  if (role === "super_admin") return t("roles.super_admin");
-  if (role === "admin") return t("roles.admin");
-  return t("roles.user");
+  return getRoleDisplayName(role, t);
 }
 
 function getRoleBadgeStyle(role) {
-  if (role === "super_admin")
+  const normalized = normalizeRole(role);
+  if (normalized === "SUPER_ADMIN")
     return {
       background: "#fef3c7",
       color: "#d97706",
       border: "1px solid #fde68a",
     };
-  if (role === "admin")
+  if (normalized === "ADMIN")
     return {
       background: `${BRAND}14`,
       color: BRAND,

@@ -9571,7 +9571,7 @@
       "shippingCompaniesLimitLabel": "عدد شركات الشحن المسموح",
       "bulkUploadPerMonthLabel": "عدد الطلبات المسموح رفعها في الشهر",
       "users": "المستخدمين",
-    "shippingCompanies": "شركات الشحن",
+      "shippingCompanies": "شركات الشحن",
       "bulkUploadPerMonth": "عدد الطلبات المسموح رفعها في الشهر",
       "selectCount": "اختر العدد"
     },
@@ -17469,8 +17469,22 @@
     "capability": {
       "streaming": "بث مباشر للإجابة",
       "toolCalls": "استدعاء أدوات",
+      "unsupported": "استدعاء الأدوات غير مدعوم",
       "structured": "مخرجات منظمة",
       "vision": "رؤية"
+    },
+    "catalog": {
+      "inputModalities": "المدخلات",
+      "outputModalities": "المخرجات",
+      "maxInputTokens": "أقصى إدخال",
+      "maxOutputTokens": "أقصى إخراج",
+      "tokens": "{count} رمز",
+      "modality": {
+        "text": "نص",
+        "image": "صورة",
+        "audio": "صوت",
+        "video": "فيديو"
+      }
     },
     "empty": {
       "providersTitle": "لا يوجد مزودو ذكاء اصطناعي بعد",

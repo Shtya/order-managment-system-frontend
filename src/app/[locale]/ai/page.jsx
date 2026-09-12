@@ -106,6 +106,94 @@ function getProviderIconClasses(provider) {
     return PROVIDER_ICON_CLASSES[provider.code] || "bg-muted text-foreground";
 }
 
+function asModalityList(value) {
+    if (Array.isArray(value)) {
+        return value.map((item) => String(item).toLowerCase()).filter(Boolean);
+    }
+    if (value && typeof value === "object") {
+        return Object.keys(value)
+            .filter((key) => value[key])
+            .map((key) => String(key).toLowerCase());
+    }
+    if (typeof value === "string" && value.trim()) {
+        return [value.trim().toLowerCase()];
+    }
+    return [];
+}
+
+function getModelCatalogFacts(model) {
+    const metadata = model?.metadata || {};
+    const modalities = model?.modalities || {};
+    const input = asModalityList(
+        metadata.supported_modalities ?? modalities.input ?? modalities.supported_modalities
+    );
+    const output = asModalityList(
+        metadata.supported_output_modalities ?? modalities.output ?? modalities.supported_output_modalities
+    );
+    const maxInput = model?.contextWindow?.maxInputTokens;
+    const maxOutput = model?.contextWindow?.maxOutputTokens;
+    return {
+        input,
+        output,
+        maxInput: Number.isFinite(Number(maxInput)) ? Number(maxInput) : null,
+        maxOutput: Number.isFinite(Number(maxOutput)) ? Number(maxOutput) : null,
+    };
+}
+
+function formatTokenCount(count, locale) {
+    return Number(count).toLocaleString(locale === "ar" ? "ar" : "en");
+}
+
+function ModelCatalogFacts({ model, t, locale, compact = false }) {
+    const facts = getModelCatalogFacts(model);
+    if (!facts.input.length && !facts.output.length && facts.maxInput == null && facts.maxOutput == null) {
+        return null;
+    }
+
+    const modalityLabel = (value) => {
+        const key = `catalog.modality.${value}`;
+        const translated = t(key);
+        if (translated && translated !== key) return translated;
+        const typeKey = `modelType.${value}`;
+        const typeTranslated = t(typeKey);
+        if (typeTranslated && typeTranslated !== typeKey) return typeTranslated;
+        return value;
+    };
+
+    const rowClass = compact
+        ? "flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground mt-1"
+        : "grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-muted-foreground mt-2";
+
+    return (
+        <div className={rowClass}>
+            {facts.input.length > 0 && (
+                <div>
+                    <span className="font-semibold text-foreground/70">{t("catalog.inputModalities")}: </span>
+                    {facts.input.map(modalityLabel).join(" · ")}
+                </div>
+            )}
+            {facts.output.length > 0 && (
+                <div>
+                    <span className="font-semibold text-foreground/70">{t("catalog.outputModalities")}: </span>
+                    {facts.output.map(modalityLabel).join(" · ")}
+                </div>
+            )}
+            {facts.maxInput != null && (
+                <div>
+                    <span className="font-semibold text-foreground/70">{t("catalog.maxInputTokens")}: </span>
+                    {t("catalog.tokens", { count: formatTokenCount(facts.maxInput, locale) })}
+                </div>
+            )}
+            {facts.maxOutput != null && (
+                <div>
+                    <span className="font-semibold text-foreground/70">{t("catalog.maxOutputTokens")}: </span>
+                    {t("catalog.tokens", { count: formatTokenCount(facts.maxOutput, locale) })}
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ─────────────────────────────────────────────────────────────
 // SCHEMAS
 // ─────────────────────────────────────────────────────────────
@@ -777,7 +865,7 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                 m.modelCode?.toLowerCase().includes(q)
         );
     }, [models, search]);
-
+    
     if (loading) {
         return (
             <div className="space-y-2 py-4">
@@ -840,7 +928,8 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                     const isCustom = model.scope === "custom";
 
                     const capabilities = [];
-                    if (model.toolsCalling) capabilities.push(t("capability.toolCalls"));
+                    if (model.toolsCalling === false) capabilities.push(t("capability.unsupported"));
+                    else if (model.toolsCalling) capabilities.push(t("capability.toolCalls"));
                     if (model.reasoning) capabilities.push(t("capability.vision"));
                     if (model.jsonMode) capabilities.push(t("capability.structured"));
                     if (model.stream) capabilities.push(t("capability.streaming"));
@@ -901,14 +990,17 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
                                     <div className="text-xs font-bold text-foreground">{model.name}</div>
+                                    {/* {model.toolsCalling === false && (
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-destructive bg-destructive/10 shrink-0">{t("capability.unsupported")}</span>
+                                    )} */}
                                     {model.isAvailable === false && (
                                         <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-destructive bg-destructive/10 shrink-0">{t("scope.unavailable")}</span>
                                     )}
-                                    {isCustom ? (
+                                    {/* {isCustom ? (
                                         <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-muted-foreground bg-muted shrink-0">{t("scope.custom")}</span>
                                     ) : (
                                         <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-primary bg-primary/10 shrink-0">{t("scope.system")}</span>
-                                    )}
+                                    )} */}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground mt-0.5">{model.modelCode}</div>
                                 {(model.description || model.descriptionAr) && (
@@ -921,13 +1013,17 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                                 {(capabilities.length > 0 || model.modelType) && (
                                     <div className="flex flex-wrap gap-1 mt-1.5">
                                         {capabilities.map((cap) => (
-                                            <span key={cap} className="px-1.5 py-0.5 rounded bg-primary/5 text-primary/70 text-[9px]">
-                                                {cap}
-                                            </span>
+                                            <span
+                                            key={cap}
+                                            className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px] font-medium"
+                                          >
+                                            {cap}
+                                          </span>
                                         ))}
                                         {model.modelType && <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[9px] font-semibold">{t(`modelType.${model.modelType}`) || model.modelType}</span>}
                                     </div>
                                 )}
+                                <ModelCatalogFacts model={model} t={t} locale={locale} compact />
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
@@ -1293,7 +1389,8 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
 
     const getCapabilities = (model) => {
         const capabilities = [];
-        if (model.toolsCalling) capabilities.push(t("capability.toolCalls"));
+        if (model.toolsCalling === false) capabilities.push(t("capability.unsupported"));
+        else if (model.toolsCalling) capabilities.push(t("capability.toolCalls"));
         if (model.reasoning) capabilities.push(t("capability.vision"));
         if (model.jsonMode) capabilities.push(t("capability.structured"));
         if (model.stream) capabilities.push(t("capability.streaming"));
@@ -1433,16 +1530,19 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
                                                           {model.isAvailable === false && (
                                                               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-destructive bg-destructive/10 flex-none">{t("scope.unavailable")}</span>
                                                           )}
-                                                          {isCustom ? (
+                                                          {/* {isCustom ? (
                                                               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-muted-foreground bg-muted flex-none">{t("scope.custom")}</span>
                                                           ) : (
                                                               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-primary bg-primary/10 flex-none">{t("scope.system")}</span>
-                                                          )}
+                                                          )} */}
                                                       </div>
                                                      <span className="text-[11px] text-muted-foreground block mt-0.5">{providerName}</span>
                                                  </div>
                                             </div>
                                             <div className="flex items-center gap-1.5 flex-none">
+                                                {/* {model.toolsCalling === false && (
+                                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-destructive bg-destructive/10">{t("capability.unsupported")}</span>
+                                                )} */}
                                                 {connected ? (
                                                     <span className="flex items-center gap-1 text-[10px] text-success">
                                                         <span className="w-[7px] h-[7px] rounded-full bg-success" />
@@ -1471,6 +1571,7 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
                                             ))}
                                             {model.modelType && <span className="px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-[9px] font-semibold">{t(`modelType.${model.modelType}`) || model.modelType}</span>}
                                         </div>
+                                        <ModelCatalogFacts model={model} t={t} locale={locale} />
 
                                         <div className="flex items-center gap-1.5 pt-2 border-t border-border">
                                             {isCustom && hasPermission("ai.manage") && (
@@ -1608,6 +1709,18 @@ export default function AiPage() {
         try {
             const { data } = await api.get("/ai/models", { params: { providerId, limit: 200 } });
             const list = Array.isArray(data) ? data : data?.records || [];
+            //sort 
+            list.sort((a, b) => {
+                const providerCompare = (b.provider?.name ?? "").localeCompare(
+                    a.provider?.name ?? ""
+                );
+                if (providerCompare !== 0) return providerCompare;
+                return (b.name ?? "").localeCompare(a.name ?? "", undefined, {
+                    numeric: true,
+                    sensitivity: "base",
+                });
+            });
+
             setModels(list);
         } catch (e) {
             toast.error(t("error.loadModelsFailed") + ": " + normalizeAxiosError(e));
@@ -1643,14 +1756,14 @@ export default function AiPage() {
             setAllModelsLoading(true);
             if (!append) setAllModels([]);
             const params = { limit: 50 };
-            if (cursor) params.cursor = cursor;
+            if (cursor) params.cursor = typeof cursor === "string" ? cursor : JSON.stringify(cursor);
             if (providerId && providerId !== "all") {
                 params.providerId = providerId;
             }
             if (searchTerm && searchTerm.trim()) {
                 params.search = searchTerm.trim();
             }
-            const { data } = await api.get("/ai/models", { params });
+            const { data } = await api.get("/ai/models", { params,paramsSerializer: { indexes: null } });
 
             if (requestId !== allModelsRequestIdRef.current) return;
 

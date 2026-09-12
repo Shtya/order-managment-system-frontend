@@ -17443,8 +17443,22 @@
     "capability": {
       "streaming": "Streaming",
       "toolCalls": "Tool Calls",
+      "unsupported": "Tool Calls Unsupported",
       "structured": "Structured Output",
       "vision": "Vision"
+    },
+    "catalog": {
+      "inputModalities": "Input",
+      "outputModalities": "Output",
+      "maxInputTokens": "Max input",
+      "maxOutputTokens": "Max output",
+      "tokens": "{count} tokens",
+      "modality": {
+        "text": "Text",
+        "image": "Image",
+        "audio": "Audio",
+        "video": "Video"
+      }
     },
     "empty": {
       "providersTitle": "No AI providers yet",

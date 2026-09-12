@@ -49,6 +49,7 @@ import {
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { FaBolt, FaBug, FaChartPie, FaClock, FaListAlt, FaPlus, FaRegFileAlt, FaWhatsapp } from "react-icons/fa";
 
+export const testEmails = ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"];
 export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
   return [
     {

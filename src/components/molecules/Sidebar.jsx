@@ -76,7 +76,8 @@ function useRipple() {
 /* ══════════════════════════════════════════════════════════════
    ICON BOX — compact 32×32 collapsed / 30×30 expanded
 ══════════════════════════════════════════════════════════════ */
-function IconBox({ Icon, active, collapsed, isLocked }) {
+function IconBox({ Icon, active, collapsed, isLocked, isUnderTest, hasUnderTestChild }) {
+  const showTestDot = isUnderTest || hasUnderTestChild;
   return (
     <div
       data-iconbox
@@ -117,6 +118,12 @@ function IconBox({ Icon, active, collapsed, isLocked }) {
           <Lock size={8} className="text-white" />
         </div>
       )}
+      {showTestDot && (
+        <div
+          title={isUnderTest ? "Under test" : "Contains a page under test"}
+          className="absolute top-1 left-1 w-1.5 h-1.5 bg-amber-400 rounded-full z-20 opacity-80"
+        />
+      )}
     </div>
   );
 }
@@ -141,6 +148,11 @@ function MenuItem({
   const hasChildren = Boolean(item.children?.length);
   const active = isParentActive(item);
   const label = t(item.labelKey);
+  // Items gated by `allowedEmails` are still under test → highlight them.
+  const isUnderTest = Boolean(item.allowedEmails?.length);
+  const hasUnderTestChild = Boolean(
+    !isUnderTest && item.children?.some((c) => c.allowedEmails?.length),
+  );
 
   const sharedClass = `
     w-full group relative flex items-center overflow-hidden
@@ -179,7 +191,14 @@ function MenuItem({
         )}
       </AnimatePresence>
 
-      <IconBox Icon={Icon} active={active} collapsed={!isOpen} isLocked={item.isLocked} />
+      <IconBox
+        Icon={Icon}
+        active={active}
+        collapsed={!isOpen}
+        isLocked={item.isLocked}
+        isUnderTest={isUnderTest}
+        hasUnderTestChild={hasUnderTestChild}
+      />
 
       <AnimatePresence>
         {isOpen && (
@@ -190,8 +209,18 @@ function MenuItem({
             transition={{ duration: 0.16 }}
             className="flex items-center justify-between flex-1 min-w-0"
           >
-            <span className="text-[12.5px] font-[560] tracking-[-0.01em] whitespace-nowrap truncate leading-none">
-              {label}
+            <span className="flex items-center gap-1.5 min-w-0">
+              <span className="text-[12.5px] font-[560] tracking-[-0.01em] whitespace-nowrap truncate leading-none">
+                {label}
+              </span>
+              {isUnderTest && (
+                <span
+                  title="Under test"
+                  className="shrink-0 text-[8px] font-bold tracking-wide text-amber-500/90 leading-none"
+                >
+                  • TEST
+                </span>
+              )}
             </span>
             <div className="flex items-center gap-1 shrink-0 ml-1">
               {item.badge && (
@@ -265,7 +294,7 @@ function MenuItem({
               "0 4px 16px color-mix(in oklab, var(--primary) 30%, transparent)",
           } : {}}
         >
-          {item.isLocked ? t("subscription_required") : label}
+          {item.isLocked ? t("subscription_required") : labelToDisplay}
         </TooltipContent>
       </Tooltip>
     );
@@ -316,6 +345,8 @@ function SubItem({ child, isActive, isRTL, index }) {
   const t = useTranslations("sidebar");
   const Icon = child.icon;
   const active = isActive(child.href);
+  // Child gated by `allowedEmails` is still under test → highlight it.
+  const isUnderTest = Boolean(child.allowedEmails?.length);
 
   return (
     <motion.div
@@ -328,6 +359,7 @@ function SubItem({ child, isActive, isRTL, index }) {
         href={child.href}
         data-getting-started={child.gettingStartedKey}
         data-getting-started-type={child.gettingStartedType}
+        title={isUnderTest ? "Under test" : undefined}
         className={`
           relative flex items-center gap-2 py-[5.5px] rounded-xl
           transition-all duration-150 group overflow-hidden
@@ -372,8 +404,13 @@ function SubItem({ child, isActive, isRTL, index }) {
           />
         </span>
 
-        <span className="text-[12px] leading-none whitespace-nowrap flex-1 truncate font-[500]">
-          {t(child.labelKey)}
+        <span className="text-[12px] leading-none whitespace-nowrap flex-1 truncate font-[500] flex items-center gap-1.5 min-w-0">
+          <span className="truncate">{t(child.labelKey)}</span>
+          {isUnderTest && (
+            <span className="shrink-0 text-[8px] font-bold tracking-wide text-amber-500/90 leading-none">
+              • TEST
+            </span>
+          )}
         </span>
 
         {active && (

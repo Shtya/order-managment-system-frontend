@@ -116,9 +116,6 @@ export default async function RootLayout({ children, params }) {
       <head>
         <meta name="facebook-domain-verification" content="tv61v5592fgxbg7icblxrfhspnom86" />
         <meta name="google-site-verification" content="gFuuXG2Qnxsb3NMlS6sLEuUlm5s0S1VCX4cKmexELBw" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/favicon.ico" />
 
         <Script id="gtm" strategy="afterInteractive">
           {

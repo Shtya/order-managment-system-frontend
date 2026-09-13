@@ -37,25 +37,6 @@ import api from "@/utils/api";
 
 const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || "";
 
-function applyDocumentFavicon(href) {
-  document
-    .querySelectorAll("link[rel='icon'], link[rel='shortcut icon'], link[rel='apple-touch-icon']")
-    .forEach((el) => el.remove());
-
-  [
-    { rel: "icon", type: "image/x-icon", sizes: "any" },
-    { rel: "shortcut icon", type: "image/x-icon" },
-    { rel: "apple-touch-icon" },
-  ].forEach(({ rel, type, sizes }) => {
-    const link = document.createElement("link");
-    link.rel = rel;
-    if (type) link.type = type;
-    if (sizes) link.sizes = sizes;
-    link.href = href;
-    document.head.appendChild(link);
-  });
-}
-
 function locName(item, locale) {
   if (!item) return "";
   return locale === "ar" ? item.nameAr || item.nameEn : item.nameEn || item.nameAr;
@@ -297,29 +278,6 @@ export default function PublicCampaignOrderPage() {
       cancelled = true;
     };
   }, [isPreview, token]);
-
-  useEffect(() => {
-    const branding = data?.branding || {};
-    const pageTitle = String(branding.pageTitle || "").trim();
-    const faviconIcon = String(branding.favicon?.icon || "").trim();
-    const previousTitle = document.title;
-
-    if (pageTitle) {
-      document.title = pageTitle;
-    }
-
-    const href = faviconIcon
-      ? `${avatarSrc(faviconIcon)}?v=${encodeURIComponent(faviconIcon)}`
-      : "";
-    if (href) applyDocumentFavicon(href);
-
-    return () => {
-      if (pageTitle) {
-        document.title = previousTitle;
-      }
-      if (href) applyDocumentFavicon("/favicon.ico");
-    };
-  }, [data?.branding]);
 
   useEffect(() => {
     if (!form.cityId) {

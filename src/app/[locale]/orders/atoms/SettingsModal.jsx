@@ -1141,8 +1141,13 @@ export function CampaignOrderPageTab({ settings, patch, t }) {
     });
   };
 
-  const uploadImage = async (field, file) => {
+  const uploadImage = async (field, file, input) => {
     if (!file) return;
+    if (field === "favicon" && !String(file.name || "").toLowerCase().endsWith(".ico")) {
+      toast.error(t("retrySettings.campaignOrderPage.faviconMustBeIco"));
+      if (input) input.value = "";
+      return;
+    }
     setUploadingField(field);
     try {
       const formData = new FormData();
@@ -1164,6 +1169,7 @@ export function CampaignOrderPageTab({ settings, patch, t }) {
       toast.error(normalizeAxiosError(error));
     } finally {
       setUploadingField("");
+      if (input) input.value = "";
     }
   };
 
@@ -1239,7 +1245,7 @@ export function CampaignOrderPageTab({ settings, patch, t }) {
                   accept="image/*"
                   className="hidden"
                   disabled={uploadingField === "logo"}
-                  onChange={(e) => uploadImage("logo", e.target.files?.[0])}
+                  onChange={(e) => uploadImage("logo", e.target.files?.[0], e.target)}
                 />
 
                 {/* Info + actions */}
@@ -1321,10 +1327,10 @@ export function CampaignOrderPageTab({ settings, patch, t }) {
                 <Input
                   ref={faviconInputRef}
                   type="file"
-                  accept="image/*,.ico"
+                  accept=".ico"
                   className="hidden"
                   disabled={uploadingField === "favicon"}
-                  onChange={(e) => uploadImage("favicon", e.target.files?.[0])}
+                  onChange={(e) => uploadImage("favicon", e.target.files?.[0], e.target)}
                 />
 
                 <div className="min-w-0 flex-1">

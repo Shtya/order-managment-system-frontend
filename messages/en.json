@@ -7982,6 +7982,7 @@
         "logoHint": "Upload the logo customers see in the page header.",
         "favicon": "Favicon(.icon)",
         "faviconHint": "Upload the browser tab icon. ICO files are supported.",
+        "faviconMustBeIco": "Favicon must be an .ico file.",
         "upload": "Upload",
         "uploading": "Uploading...",
         "change": "Change",

@@ -24,8 +24,11 @@ import {
   Copy,
   Users,
   Tags,
+  Megaphone,
+  ExternalLink,
+  FileText,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { cn } from "@/utils/cn";
 import api from "@/utils/api";
@@ -53,6 +56,7 @@ import { MdNotificationAdd } from "react-icons/md";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { TagSettingsFields } from "@/app/[locale]/tags/atoms/TagSettingsDialog";
 import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
@@ -69,6 +73,7 @@ function rgba(hex, a = 0.12) {
 const TABS = [
   { key: "general", icon: Settings, labelKey: "retrySettings.tabs.general" },
   { key: "automation", icon: Zap, labelKey: "retrySettings.tabs.automation" },
+  { key: "campaigns", icon: Megaphone, labelKey: "retrySettings.tabs.campaigns" },
   { key: "tags", icon: Tags, labelKey: "retrySettings.tabs.tags" },
   { key: "shipping", icon: Truck, labelKey: "retrySettings.tabs.shipping" },
   // {
@@ -248,6 +253,10 @@ export default function GlobalRetrySettingsModal({
                     t={t}
                     tTutorial={tTutorial}
                   />
+                )}
+
+                {activeTab === "campaigns" && (
+                  <CampaignOrderPageTab settings={tempSettings} patch={patch} t={t} />
                 )}
 
                 {activeTab === "tags" && (
@@ -1099,6 +1108,294 @@ export function TagsSettingsTab({ settings, patch }) {
           target="client"
           ns="clientTags"
         />
+      </SectionCard>
+    </div>
+  );
+}
+
+export function CampaignOrderPageTab({ settings, patch, t }) {
+  const locale = useLocale();
+  const [uploadingField, setUploadingField] = useState("");
+  const branding = settings?.campaignOrderPage || {};
+  const logoPreview = branding.logoUrl ? avatarSrc(branding.logoUrl) : "";
+  const faviconPreview = branding.favicon?.icon ? avatarSrc(branding.favicon.icon) : "";
+  const logoInputRef = useRef(null);
+  const faviconInputRef = useRef(null);
+
+  const updateBranding = (nextBranding, orphanId) => {
+    patch({
+      campaignOrderPage: {
+        ...branding,
+        favicon: {
+          ...(branding.favicon || {}),
+        },
+        ...nextBranding,
+      },
+      ...(orphanId
+        ? {
+          orphanFileIds: [
+            ...new Set([...(settings?.orphanFileIds || []), orphanId]),
+          ],
+        }
+        : {}),
+    });
+  };
+
+  const uploadImage = async (field, file) => {
+    if (!file) return;
+    setUploadingField(field);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const { data } = await api.post("/orphan-files/any", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (!data?.url) throw new Error("Upload failed");
+
+      if (field === "logo") {
+        updateBranding({ logoUrl: data.url }, data.id);
+      } else {
+        updateBranding(
+          { favicon: { ...(branding.favicon || {}), icon: data.url } },
+          data.id,
+        );
+      }
+    } catch (error) {
+      toast.error(normalizeAxiosError(error));
+    } finally {
+      setUploadingField("");
+    }
+  };
+
+  const openPreview = () => {
+    window.open(`/${locale}/confirm/preview`, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <div className="space-y-5">
+      <SectionCard
+        icon={Megaphone}
+        iconColor="#f59e0b"
+        title={t("retrySettings.campaignOrderPage.title")}
+        subtitle={t("retrySettings.campaignOrderPage.subtitle")}
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label className="text-xs font-bold text-muted-foreground">
+              {t("retrySettings.campaignOrderPage.pageTitle")}
+            </Label>
+            <Input
+              value={branding.pageTitle || ""}
+              placeholder={t("retrySettings.campaignOrderPage.pageTitlePlaceholder")}
+              onChange={(e) => updateBranding({ pageTitle: e.target.value })}
+              className="rounded-lg h-10"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              {t("retrySettings.campaignOrderPage.pageTitleHint")}
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold text-muted-foreground">
+              {t("retrySettings.campaignOrderPage.logo")}
+            </Label>
+
+            <div className="rounded-xl border border-border/60 bg-background p-4">
+              <div className="flex items-center gap-4">
+                {/* Logo preview */}
+                <button
+                  type="button"
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={uploadingField === "logo"}
+                  className="group relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-muted/30 transition hover:border-primary/50 hover:bg-muted/50 disabled:opacity-60"
+                >
+                  {logoPreview ? (
+                    <>
+                      <img
+                        src={logoPreview}
+                        alt=""
+                        className="h-full w-full object-contain p-2"
+                      />
+
+                      <div className="absolute inset-0 grid place-items-center bg-black/40 opacity-0 transition group-hover:opacity-100">
+                        <span className="text-xs font-medium text-white">
+                          {t("retrySettings.campaignOrderPage.change")}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                      <Megaphone size={20} />
+                      <span className="text-[10px]">
+                        {t("retrySettings.campaignOrderPage.upload")}
+                      </span>
+                    </div>
+                  )}
+                </button>
+
+                <Input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadingField === "logo"}
+                  onChange={(e) => uploadImage("logo", e.target.files?.[0])}
+                />
+
+                {/* Info + actions */}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("retrySettings.campaignOrderPage.logo")}
+                  </p>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("retrySettings.campaignOrderPage.logoHint")}
+                  </p>
+
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={uploadingField === "logo"}
+                      onClick={() => logoInputRef.current?.click()}
+                    >
+                      {uploadingField === "logo"
+                        ? t("retrySettings.campaignOrderPage.uploading")
+                        : t("retrySettings.campaignOrderPage.change")}
+                    </Button>
+
+                    {logoPreview && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => updateBranding({ logoUrl: "" })}
+                      >
+                        {t("retrySettings.campaignOrderPage.remove")}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold text-muted-foreground">
+              {t("retrySettings.campaignOrderPage.favicon")}
+            </Label>
+
+            <div className="rounded-xl border border-border/60 bg-background p-4">
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => faviconInputRef.current?.click()}
+                  disabled={uploadingField === "favicon"}
+                  className="group relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-muted/30 transition hover:border-primary/50 hover:bg-muted/50 disabled:opacity-60"
+                >
+                  {faviconPreview ? (
+                    <>
+                      <img
+                        src={faviconPreview}
+                        alt=""
+                        className="h-full w-full object-contain p-3"
+                      />
+
+                      <div className="absolute inset-0 grid place-items-center bg-black/40 opacity-0 transition group-hover:opacity-100">
+                        <span className="text-xs font-medium text-white">
+                          {t("retrySettings.campaignOrderPage.change")}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                      <FileText size={20} />
+                      <span className="text-[10px]">
+                        {t("retrySettings.campaignOrderPage.upload")}
+                      </span>
+                    </div>
+                  )}
+                </button>
+
+                <Input
+                  ref={faviconInputRef}
+                  type="file"
+                  accept="image/*,.ico"
+                  className="hidden"
+                  disabled={uploadingField === "favicon"}
+                  onChange={(e) => uploadImage("favicon", e.target.files?.[0])}
+                />
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("retrySettings.campaignOrderPage.favicon")}
+                  </p>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("retrySettings.campaignOrderPage.faviconHint")}
+                  </p>
+
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={uploadingField === "favicon"}
+                      onClick={() => faviconInputRef.current?.click()}
+                    >
+                      {uploadingField === "favicon"
+                        ? t("retrySettings.campaignOrderPage.uploading")
+                        : t("retrySettings.campaignOrderPage.change")}
+                    </Button>
+
+                    {faviconPreview && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          updateBranding({
+                            favicon: {
+                              ...(branding.favicon || {}),
+                              icon: "",
+                            },
+                          })
+                        }
+                      >
+                        {t("retrySettings.campaignOrderPage.remove")}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-12 place-items-center overflow-hidden rounded-xl border border-border bg-background">
+              {logoPreview ? (
+                <img src={logoPreview} alt="" className="h-full w-full object-contain p-1.5" />
+              ) : (
+                <Megaphone size={18} className="text-muted-foreground" />
+              )}
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">
+                {branding.pageTitle || t("retrySettings.campaignOrderPage.defaultPreviewTitle")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t("retrySettings.campaignOrderPage.previewHint")}
+              </p>
+            </div>
+          </div>
+          <Button type="button" variant="outline" onClick={openPreview} className="gap-2">
+            <ExternalLink size={14} />
+            {t("retrySettings.campaignOrderPage.openPreview")}
+          </Button>
+        </div>
       </SectionCard>
     </div>
   );

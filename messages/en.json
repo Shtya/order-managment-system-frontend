@@ -7969,7 +7969,26 @@
         "notifications": "Notifications",
         "warehouse": "Warehouse",
         "sync": "Store sync",
-        "tags": "Tags"
+        "tags": "Tags",
+        "campaigns": "Campaigns"
+      },
+      "campaignOrderPage": {
+        "title": "Campaign Order Page",
+        "subtitle": "Customize the public confirmation page that campaign customers open.",
+        "pageTitle": "Browser tab title",
+        "pageTitlePlaceholder": "Example: Complete your order",
+        "pageTitleHint": "Leave empty to keep the current default title.",
+        "logo": "Page logo",
+        "logoHint": "Upload the logo customers see in the page header.",
+        "favicon": "Favicon(.icon)",
+        "faviconHint": "Upload the browser tab icon. ICO files are supported.",
+        "upload": "Upload",
+        "uploading": "Uploading...",
+        "change": "Change",
+        "remove": "Remove",
+        "defaultPreviewTitle": "Current default title",
+        "previewHint": "Open a mocked page to see what customers will see.",
+        "openPreview": "Preview page"
       },
       "sync": {
         "skuFallbackTitle": "Match products by SKU when not linked",
@@ -14630,6 +14649,7 @@
     },
     "actions": {
       "new": "New campaign",
+      "settings": "Settings",
       "edit": "Edit",
       "duplicate": "Duplicate",
       "startNow": "Start now",
@@ -14639,6 +14659,12 @@
       "retryFailed": "Retry failed",
       "delete": "Delete",
       "view": "View"
+    },
+    "settings": {
+      "title": "Campaign Settings",
+      "subtitle": "Customize the public campaign order page.",
+      "loading": "Loading settings...",
+      "save": "Save settings"
     },
     "toolbar": {
       "export": "Export"
@@ -14964,7 +14990,9 @@
       "shippingAddress": "Delivery address",
       "smsHintTitle": "Important",
       "smsHint": "You will receive a confirmation message on your mobile number with the order details.",
-      "currency": "EGP"
+      "currency": "EGP",
+      "previewTitle": "Order page preview",
+      "previewBody": "This is a preview only. You cannot place a real order here. Customers will see this page when they open the order link."
     }
   },
   "customerSegments": {
@@ -17113,6 +17141,10 @@
         "automation": {
           "description": "The Automation tab defines what happens when the retry system finishes contacting a customer. It controls which status the order moves to after exhausting retries, which order statuses trigger automatic retries, and which statuses count as successful outcomes that stop the retry cycle.",
           "example": "Example: Set retry statuses to 'Pending Confirmation' and 'New', set confirmation statuses to 'Confirmed' and 'Paid', and auto-move unresolved orders to 'No Response' after 3 attempts."
+        },
+        "campaigns": {
+          "description": "The Campaigns tab controls the public campaign order page branding, including the browser title, favicon, and logo customers see.",
+          "example": "Example: Use your store name as the browser title, add your favicon URL, and show your brand logo in the page header."
         },
         "shipping": {
           "description": "The Shipping tab controls the order flow path (whether confirmed orders go to Warehouse first or directly to Shipping) and stock management settings (when inventory is deducted and whether reserved stock is enabled).",

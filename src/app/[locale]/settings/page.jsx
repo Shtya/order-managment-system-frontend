@@ -51,6 +51,7 @@ import {
   AlertCircle,
   FileDown,
   Tags,
+  Megaphone,
 } from "lucide-react";
 
 import { useForm } from "react-hook-form";
@@ -105,6 +106,7 @@ import {
   NotificationsSettingsTab,
   SyncSettingsTab,
   TagsSettingsTab,
+  CampaignOrderPageTab,
 } from "../orders/atoms/SettingsModal";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useTheme } from "next-themes";
@@ -426,6 +428,7 @@ const createCompanySchema = (t) =>
 const SETTINGS_TABS = [
   { key: "general", icon: Settings2, labelKey: "retrySettings.tabs.general" },
   { key: "automation", icon: Zap, labelKey: "retrySettings.tabs.automation" },
+  { key: "campaigns", icon: Megaphone, labelKey: "retrySettings.tabs.campaigns" },
   { key: "tags", icon: Tags, labelKey: "retrySettings.tabs.tags" },
   { key: "shipping", icon: Truck, labelKey: "retrySettings.tabs.shipping" },
   // {
@@ -1553,6 +1556,9 @@ function SettingsTab() {
                 t={tOrders}
               tTutorial={tTutorial}
               />
+            )}
+            {activeTab === "campaigns" && (
+              <CampaignOrderPageTab settings={tempSettings} patch={patch} t={tOrders} />
             )}
             {activeTab === "tags" && (
               <TagsSettingsTab settings={tempSettings} patch={patch} />

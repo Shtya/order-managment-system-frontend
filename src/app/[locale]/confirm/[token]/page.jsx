@@ -15,6 +15,7 @@ import {
   Package,
   ShoppingBag,
   Truck,
+  Eye,
   User,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ import { Bone } from "@/components/atoms/BannerSkeleton";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { cn } from "@/utils/cn";
 import BrandLogo from "@/components/atoms/BrandLogo";
+import api from "@/utils/api";
 
 const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || "";
 
@@ -47,14 +49,19 @@ function money(amount, currency) {
   })} ${currency}`;
 }
 
-function PageHeader({ locale }) {
+function PageHeader({ locale, branding }) {
   const pathname = usePathname();
   const router = useRouter();
   const next = locale === "ar" ? "en" : "ar";
+  const logoUrl = branding?.logoUrl ? avatarSrc(branding.logoUrl) : "";
 
   return (
     <header className="sticky top-0 z-20 flex h-[56px] items-center justify-between border-b border-border bg-white px-[5%] max-sm:px-4">
-      <BrandLogo />
+      {logoUrl ? (
+        <img src={logoUrl} alt="" className="h-9 max-w-45 object-contain" />
+      ) : (
+        <BrandLogo />
+      )}
       <button
         type="button"
         onClick={() => router.replace(pathname, { locale: next })}
@@ -65,6 +72,24 @@ function PageHeader({ locale }) {
         {/* <ChevronDown className="h-3.5 w-3.5" /> */}
       </button>
     </header>
+  );
+}
+
+function PreviewBanner({ t }) {
+  return (
+    <div className="border-b border-indigo-100 bg-indigo-50/90">
+      <div className="mx-auto flex max-w-[1280px] items-start gap-3 px-5 py-3.5 max-sm:px-3">
+        <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-indigo-100 text-indigo-600">
+          <Eye className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-indigo-950">{t("previewTitle")}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-indigo-700/80">
+            {t("previewBody")}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -192,7 +217,7 @@ export default function PublicCampaignOrderPage() {
   const locale = useLocale();
   const params = useParams();
   const token = params?.token;
-  const currency = t("currency");
+  const isPreview = token === "preview";
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -218,12 +243,15 @@ export default function PublicCampaignOrderPage() {
     (async () => {
       setLoading(true);
       try {
-        const [orderRes, citiesRes] = await Promise.all([
-          fetch(`${API_BASE}/public/campaign-orders/${token}`),
+        const [json, citiesRes] = await Promise.all([
+          isPreview
+            ? api.get("/client-settings/campaign-order-preview").then((res) => res.data)
+            : fetch(`${API_BASE}/public/campaign-orders/${token}`).then((res) => {
+              if (!res.ok) throw new Error("unavailable");
+              return res.json();
+            }),
           fetch(`${API_BASE}/cities`),
         ]);
-        if (!orderRes.ok) throw new Error("unavailable");
-        const json = await orderRes.json();
         const cityList = citiesRes.ok ? await citiesRes.json() : [];
         if (cancelled) return;
         setData(json);
@@ -249,7 +277,43 @@ export default function PublicCampaignOrderPage() {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [isPreview, token]);
+
+  useEffect(() => {
+    const branding = data?.branding || {};
+    const pageTitle = String(branding.pageTitle || "").trim();
+    const faviconIcon = String(branding.favicon?.icon || "").trim();
+    const previousTitle = document.title;
+    const existingIcon = document.querySelector("link[rel~='icon']");
+    const previousIconHref = existingIcon?.getAttribute("href") || "";
+    let icon = existingIcon;
+
+    if (pageTitle) {
+      document.title = pageTitle;
+    }
+
+    if (faviconIcon) {
+      if (!icon) {
+        icon = document.createElement("link");
+        icon.setAttribute("rel", "icon");
+        document.head.appendChild(icon);
+      }
+      icon.setAttribute("href", avatarSrc(faviconIcon));
+    }
+
+    return () => {
+      if (pageTitle) {
+        document.title = previousTitle;
+      }
+      if (faviconIcon && icon) {
+        if (previousIconHref) {
+          icon.setAttribute("href", previousIconHref);
+        } else if (!existingIcon) {
+          icon.remove();
+        }
+      }
+    };
+  }, [data?.branding]);
 
   useEffect(() => {
     if (!form.cityId) {
@@ -273,10 +337,10 @@ export default function PublicCampaignOrderPage() {
             .toLowerCase();
           const byName = areaName
             ? nextAreas.find(
-                (a) =>
-                  String(a.nameAr || "").trim().toLowerCase() === areaName ||
-                  String(a.nameEn || "").trim().toLowerCase() === areaName,
-              )
+              (a) =>
+                String(a.nameAr || "").trim().toLowerCase() === areaName ||
+                String(a.nameEn || "").trim().toLowerCase() === areaName,
+            )
             : null;
           return { ...f, areaId: byId?.id || byName?.id || "" };
         });
@@ -302,6 +366,23 @@ export default function PublicCampaignOrderPage() {
 
   const submit = async (e) => {
     e.preventDefault();
+    if (isPreview) {
+      setData((prev) => ({
+        ...prev,
+        alreadyOrdered: true,
+        orderNumber: prev.orderNumber || "PREVIEW-1001",
+        customerName: form.customerName || prev.customerName,
+        address: form.address || prev.address,
+        landmark: form.landmark || prev.landmark,
+        city: locName(selectedCity, locale) || prev.city,
+        cityId: form.cityId || prev.cityId,
+        area: locName(selectedArea, locale) || prev.area,
+        areaId: form.areaId || prev.areaId,
+        customerNotes: form.customerNotes || prev.customerNotes,
+      }));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     if (!form.cityId) return;
     setSubmitting(true);
     setError("");
@@ -353,6 +434,7 @@ export default function PublicCampaignOrderPage() {
     return (
       <div className="min-h-screen bg-card">
         <PageHeader locale={locale} />
+        {isPreview && <PreviewBanner t={t} />}
         <div className="grid min-h-[60vh] place-items-center p-6">
           <p className="text-sm text-muted-foreground">{t("unavailable")}</p>
         </div>
@@ -361,10 +443,12 @@ export default function PublicCampaignOrderPage() {
   }
 
   const receipt = data.alreadyOrdered;
+  const currency = String(data.currency || t("currency")).trim();
 
   return (
     <div className="min-h-screen bg-card">
-      <PageHeader locale={locale} />
+      <PageHeader locale={locale} branding={data.branding} />
+      {isPreview && <PreviewBanner t={t} />}
       <main className="mx-auto max-w-[1280px] px-5 py-8 max-sm:px-3 max-sm:py-4">
         {receipt && (
           <div className="mb-8 text-center">
@@ -423,6 +507,7 @@ export default function PublicCampaignOrderPage() {
           ) : (
             <form
               onSubmit={submit}
+              noValidate={isPreview}
               className="rounded-[14px] border border-border bg-white p-7 shadow-[0_3px_16px_rgba(35,36,70,.035)] max-sm:p-4"
             >
               <div className="mb-1 flex items-center gap-3">
@@ -432,27 +517,6 @@ export default function PublicCampaignOrderPage() {
                 <h1 className="text-[23px] font-bold">{t("title")}</h1>
               </div>
               <p className="mb-5 ms-[52px] text-[13px] text-muted-foreground max-sm:ms-0">{t("subtitle")}</p>
-
-              <div className="border-t border-border pt-5">
-                <SectionTitle icon={User}>{t("customerSection")}</SectionTitle>
-                <div className="grid gap-3.5 sm:grid-cols-2">
-                  <Field label={t("name")}>
-                    <Input
-                      required
-                      value={form.customerName}
-                      onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
-                    />
-                  </Field>
-                  <Field label={t("phone")}>
-                    <Input value={data.phoneNumber || ""} readOnly dir="ltr" className="text-start" />
-                  </Field>
-                </div>
-                {/* <div className="mt-3 flex gap-2.5 rounded-[10px] border border-primary/20 bg-primary/[0.06] p-3.5">
-                  <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <p className="text-[13px] leading-relaxed text-muted-foreground">{t("phoneHint")}</p>
-                </div> */}
-              </div>
-
               <div className="mt-5 border-t border-border pt-5">
                 <SectionTitle icon={MapPin}>{t("addressSection")}</SectionTitle>
                 <div className="grid gap-3.5 sm:grid-cols-2">
@@ -475,7 +539,7 @@ export default function PublicCampaignOrderPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <input required tabIndex={-1} className="sr-only" value={form.cityId} onChange={() => {}} />
+                    <input required tabIndex={-1} className="sr-only" value={form.cityId} onChange={() => { }} />
                   </Field>
                   <Field label={t("area")}>
                     <Select
@@ -499,7 +563,7 @@ export default function PublicCampaignOrderPage() {
                       </SelectContent>
                     </Select>
                     {areas.length > 0 && (
-                      <input required tabIndex={-1} className="sr-only" value={form.areaId} onChange={() => {}} />
+                      <input required tabIndex={-1} className="sr-only" value={form.areaId} onChange={() => { }} />
                     )}
                   </Field>
                   <Field label={t("address")} className="sm:col-span-2">

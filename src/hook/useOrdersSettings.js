@@ -66,6 +66,13 @@ const defaultSettings =  {
     clientTagMode: "many",
     clientTagAutomationsEnabled: true,
     clientTagAutomationsRemoveUnmatched: true,
+    campaignOrderPage: {
+      pageTitle: "",
+      logoUrl: "",
+      favicon: {
+        icon: "",
+      },
+    },
   };
 
 const buildSettingsObject = (data, prevSettings) => ({
@@ -125,6 +132,22 @@ const buildSettingsObject = (data, prevSettings) => ({
     data.clientTagAutomationsRemoveUnmatched ??
     prevSettings.clientTagAutomationsRemoveUnmatched ??
     true,
+  campaignOrderPage: {
+    pageTitle:
+      data.campaignOrderPage?.pageTitle ??
+      prevSettings.campaignOrderPage?.pageTitle ??
+      "",
+    logoUrl:
+      data.campaignOrderPage?.logoUrl ??
+      prevSettings.campaignOrderPage?.logoUrl ??
+      "",
+    favicon: {
+      icon:
+        data.campaignOrderPage?.favicon?.icon ??
+        prevSettings.campaignOrderPage?.favicon?.icon ??
+        "",
+    },
+  },
 
   // تحديث الكائنات المتداخلة (Nested Objects)
   workingHours: {

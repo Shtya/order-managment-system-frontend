@@ -15,6 +15,7 @@ import {
   Plus,
   RotateCcw,
   Send,
+  Settings,
   Trash2,
 } from "lucide-react";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -37,6 +38,9 @@ import { setDocumentTitle } from "@/utils/documentTitle";
 import { cn } from "@/utils/cn";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import { useSocket } from "@/context/SocketContext";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { CampaignOrderPageTab } from "../orders/atoms/SettingsModal";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 const DEFAULT_FILTERS = { status: "all", channel: "all" };
 
@@ -94,6 +98,7 @@ export default function CampaignsPage() {
   const [mutatingId, setMutatingId] = useState(null);
   const [confirm, setConfirm] = useState({ open: false, type: null, row: null });
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const searchTimer = useRef(null);
 
   useEffect(() => {
@@ -558,14 +563,24 @@ export default function CampaignsPage() {
         stats={statsCards}
         statsLoading={statsLoading}
         buttons={
-          <Button_
-            size="sm"
-            label={t("actions.new")}
-            variant="solid"
-            icon={<Plus size={18} />}
-            permission="campaigns.create"
-            onClick={() => router.push("/campaigns/new")}
-          />
+          <div className="flex items-center gap-2">
+            <Button_
+              size="sm"
+              label={t("actions.settings")}
+              variant="outline"
+              icon={<Settings size={18} />}
+              permission="orders.updateSettings"
+              onClick={() => setSettingsOpen(true)}
+            />
+            <Button_
+              size="sm"
+              label={t("actions.new")}
+              variant="solid"
+              icon={<Plus size={18} />}
+              permission="campaigns.create"
+              onClick={() => router.push("/campaigns/new")}
+            />
+          </div>
         }
       />
 
@@ -668,6 +683,51 @@ export default function CampaignsPage() {
         loading={confirmLoading}
         onConfirm={() => runAction(confirm.type, confirm.row)}
       />
+
+      <CampaignSettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+      />
     </div>
+  );
+}
+
+function CampaignSettingsDialog({ open, onOpenChange }) {
+  const tCampaigns = useTranslations("campaigns");
+  const tOrders = useTranslations("orders");
+  const { tempSettings, loading, saving, patch, handleSave } = useOrdersSettings();
+
+  const close = () => onOpenChange(false);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl! p-6 rounded-2xl">
+        <div className="mb-4">
+          <h2 className="text-lg font-black">{tCampaigns("settings.title")}</h2>
+          <p className="text-sm text-muted-foreground">
+            {tCampaigns("settings.subtitle")}
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="py-10 text-center text-sm text-muted-foreground">
+            {tCampaigns("settings.loading")}
+          </div>
+        ) : (
+          <CampaignOrderPageTab settings={tempSettings} patch={patch} t={tOrders} />
+        )}
+
+        <div className="mt-5 flex justify-end">
+          <Button_
+            size="sm"
+            label={tCampaigns("settings.save")}
+            variant="solid"
+            loading={saving}
+            onClick={() => handleSave(close)}
+            permission="orders.updateSettings"
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

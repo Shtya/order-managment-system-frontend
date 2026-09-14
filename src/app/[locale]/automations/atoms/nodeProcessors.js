@@ -3,9 +3,9 @@
 import { checkIfAssetUploadNeeded, handleAssetUpload } from "@/utils/whatsapp-healper";
 
 export const nodeProcessors = {
-    send_whatsapp_message: async (node) => {
+    send_whatsapp_message: async (node, flowAccountId) => {
         const config = node.data?.config;
-        const accountId = config?.accountId;
+        const accountId = flowAccountId || config?.accountId;
         let newLinksIds = [];
 
         const message = config?.messageData;
@@ -37,9 +37,9 @@ export const nodeProcessors = {
         };
     },
 
-    send_whatsapp_template: async (node) => {
+    send_whatsapp_template: async (node, flowAccountId) => {
         const config = node.data?.config;
-        const accountId = config?.accountId;
+        const accountId = flowAccountId || config?.accountId;
         let newLinksIds = [];
 
         if (config?.headerMediaFile) {
@@ -74,7 +74,8 @@ export const nodeProcessors = {
  * Executes pre-save processors for all nodes using Promise.all
  * @returns {Promise<{ processedNodes: Array, allNewLinksIds: Array }>}
  */
-export async function processNodesBeforeSave(nodes) {
+export async function processNodesBeforeSave(nodes, options = {}) {
+    const flowAccountId = options.accountId;
     
     const processingResults = await Promise.all(
         nodes.map(async (node) => {
@@ -89,7 +90,7 @@ export async function processNodesBeforeSave(nodes) {
             }
 
             try {
-                const result = await processor(node);
+                const result = await processor(node, flowAccountId);
                 return {
                     node: {
                         ...node,

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Node, Edge, addEdge, applyNodeChanges, applyEdgeChanges, Connection } from '@xyflow/react';
+import { DEFAULT_WHATSAPP_SETTINGS, normalizeWhatsappSettings } from '@/app/[locale]/automations/atoms/whatsapp-flow-settings';
 
 const calculatePosition = (sourceNode, handleId) => {
   let offsetX = 0;
@@ -131,7 +132,8 @@ export const useFlowStore = create(
       pendingConnection: null, // { nodeId, type }
       deleteConfirm: null, // { type: 'node' | 'edge' | 'clear', id, downstreamCount }
       skipDeleteConfirmation: typeof window !== 'undefined' ? localStorage.getItem('skip_delete') === 'true' : false,
-      previewResumeLoading: false, // Loading state for resume preview API call
+      previewResumeLoading: false, // Loading state for preview resume API call
+      whatsappSettings: { ...DEFAULT_WHATSAPP_SETTINGS },
 
       setNodes: (nodes) => set({ nodes }),
       setEdges: (edges) => set({ edges }),
@@ -146,7 +148,7 @@ export const useFlowStore = create(
       }),
       setCurrentRun: (run) => set({ currentRun: run }),
       setAutomationId: (id) => set({ automationId: id }),
-      setFlowData: ({ nodes, edges, name, id }) => {
+      setFlowData: ({ nodes, edges, name, id, whatsapp }) => {
         // Prevent storage save when setting flow data for existing automation
         preventStorageSave = true;
         if (id && typeof window !== 'undefined') {
@@ -161,11 +163,15 @@ export const useFlowStore = create(
           nodeErrors: {},
           nodeHydration: {},
           nodeLoading: {},
-          previewResumeLoading: false
+          previewResumeLoading: false,
+          whatsappSettings: normalizeWhatsappSettings(whatsapp),
         });
         setTimeout(() => { preventStorageSave = false; }, 0);
         return result;
       },
+      setWhatsappSettings: (whatsappSettings) => set({
+        whatsappSettings: normalizeWhatsappSettings(whatsappSettings),
+      }),
       setNodeError: (nodeId, error) => set((s) => ({
         nodeErrors: { ...s.nodeErrors, [nodeId]: error }
       })),
@@ -195,7 +201,8 @@ export const useFlowStore = create(
         pendingConnection: snapshot.pendingConnection || null,
         deleteConfirm: snapshot.deleteConfirm || null,
         skipDeleteConfirmation: snapshot.skipDeleteConfirmation ?? false,
-        previewResumeLoading: false
+        previewResumeLoading: false,
+        whatsappSettings: normalizeWhatsappSettings(snapshot.whatsappSettings),
       }),
 
       resetFlow: () => {
@@ -214,7 +221,8 @@ export const useFlowStore = create(
           selectedNodeId: null,
           pendingConnection: null,
           deleteConfirm: null,
-          previewResumeLoading: false
+          previewResumeLoading: false,
+          whatsappSettings: { ...DEFAULT_WHATSAPP_SETTINGS },
         });
         // Ensure no save even after set
         if (typeof window !== 'undefined') {
@@ -506,6 +514,7 @@ export const useFlowStore = create(
           mode: 'create', // إرجاع الوضع الافتراضي
           automationId: null,
           deleteConfirm: null,
+          whatsappSettings: { ...DEFAULT_WHATSAPP_SETTINGS },
         });
 
         // Clear again after set to ensure persist middleware doesn't save

@@ -223,6 +223,7 @@ function RunningAutomationsContent() {
           edges: run.version.flow?.edges.map(edge => ({ ...edge, type: "custom" })) || [],
           name: run.automationFlow?.name,
           id: run.automationFlowId,
+          whatsapp: run.version.flow?.whatsapp,
         });
         useFlowStore.setState({ mode: 'run' });
         // setMode("run");

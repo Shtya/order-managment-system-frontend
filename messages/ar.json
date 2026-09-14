@@ -12756,6 +12756,7 @@
       "title": "حسابات الواتساب",
       "selectPlaceholder": "اختر رقم الهاتف",
       "allAccounts": "جميع الحسابات",
+      "randomAccount": "حساب عشوائي لكل تشغيل",
       "defaultAccountLabel": "الرقم الافتراضي للإرسال",
       "breadcrumb": {
         "home": "الرئيسية",
@@ -13523,7 +13524,17 @@
           "missingTrigger": "يجب إضافة عنصر تفعيل (Trigger) لحفظ الأتمتة.",
           "processingSteps": "جاري معالجة الخطوات...",
           "processingStepsFailed": "فشل في معالجة الخطوات.",
-          "processingStepsSuccess": "تم معالجة الخطوات بنجاح!"
+          "processingStepsSuccess": "تم معالجة الخطوات بنجاح!",
+          "whatsappSettings": "إعدادات واتساب",
+          "whatsappSettingsDisabled": "أضف خطوة واتساب لضبط رقم الإرسال"
+        },
+        "settings": {
+          "title": "رقم واتساب للإرسال",
+          "subtitle": "اختر حساب واتساب لهذه الأتمتة، أو اجعل كل تشغيل يختار حسابًا عشوائيًا. الرقم المختار يُستخدم لكل خطوات واتساب في نفس التشغيل.",
+          "account": "حساب واتساب",
+          "random": "حساب عشوائي لكل تشغيل",
+          "hint": "العشوائي هو الافتراضي. بعد بدء التشغيل يبقى رقمه ثابتًا للقوالب والرسائل والعروض وأدوات الذكاء الاصطناعي.",
+          "save": "حفظ"
         },
         "indicators": {
           "updated_automatically": "تم تحديث البيانات تلقائياً"
@@ -13929,6 +13940,8 @@
           "additionalInfo": "معلومات إضافية",
           "triggerEntity": "الكيان المحفز",
           "failureDetails": "تفاصيل الفشل",
+          "whatsappAccount": "رقم واتساب",
+          "whatsappAccountPhone": "رقم الهاتف",
           "entities": {
             "order": "طلب",
             "whatsapp": "واتساب"

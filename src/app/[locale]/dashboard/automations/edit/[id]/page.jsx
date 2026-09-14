@@ -202,7 +202,8 @@ export default function EditAutomationPage() {
           id: data.id,
           name: data.name,
           nodes: versionToUse?.flow?.nodes || [],
-          edges: versionToUse?.flow?.edges.map(edge => ({ ...edge, type: "custom" })) || []
+          edges: versionToUse?.flow?.edges.map(edge => ({ ...edge, type: "custom" })) || [],
+          whatsapp: versionToUse?.flow?.whatsapp,
         });
 
         setError(null);

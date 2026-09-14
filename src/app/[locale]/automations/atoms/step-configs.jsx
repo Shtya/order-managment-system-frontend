@@ -31,7 +31,6 @@ import { InteractiveMessageForm } from "../../whatsapp/atoms/chats/InteractiveMe
 import { TextMessageForm } from "../../whatsapp/atoms/chats/TextMessageForm";
 import { BusinessMessageForm } from "./BusinessMessageForm";
 import { businessMessageDefinitions, businessMessageTypes } from "./businessMessages";
-import WhatsAppAccountSelect from "../../whatsapp/atoms/WhatsAppAccountSelect";
 import Button_ from "@/components/atoms/Button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SendSmsModal } from "../../sms/atoms/SendSmsModal";
@@ -1848,7 +1847,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
     const [selectedMessage, setSelectedMessage] = useState(null); // { mode, type, businessUseCase? }
     const [businessStep, setBusinessStep] = useState('options'); // business form internal step: 'options' | 'message'
     const [tempValue, setTempValue] = useState(value || {});
-    const [accounts, setAccounts] = useState([]);
+    const flowWhatsappAccountId = useFlowStore((s) => s.whatsappSettings?.mode === 'fixed' ? s.whatsappSettings.accountId : null);
     const configuredType = tempValue.messageType;
     const selectedBusinessDefinition = selectedMessage?.mode === 'business'
         ? businessMessageDefinitions[selectedMessage.businessUseCase]
@@ -1884,18 +1883,6 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
         { icon: LayoutGrid, label: tChats("messageTypes.interactive"), description: tChats("messageTypes.descriptions.interactive"), color: "text-blue-600", type: "interactive", actionIntent: "branches" },
         { icon: MapIcon, label: tChats("messageTypes.location_request"), description: tChats("messageTypes.descriptions.location_request"), color: "text-emerald-600", type: "location_request", actionIntent: "location_request" },
     ];
-
-    const handleAccountChange = useCallback((accountId, account) => {
-        setTempValue((prev) => ({
-            ...prev,
-            accountId,
-            accountName: account?.name || null,
-        }));
-    }, [accounts]);
-
-    const handleAccountsLoaded = useCallback((loadedAccounts) => {
-        setAccounts(loadedAccounts);
-    }, []);
 
     const variableProps = useMemo(() => ({
         disableHydrate: false,
@@ -2011,8 +1998,6 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                     messageData: result.messageData,
                     businessConfig: result.businessConfig,
                     recipientNumber: tempValue.recipientNumber || "",
-                    accountId: tempValue.accountId,
-                    accountName: tempValue.accountName,
                 });
                 // Move data from temp state to permanent state upon saving form
                 setAddClientResponseToOrder(tempAddClientResponseToOrder);
@@ -2031,8 +2016,6 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                 businessConfig: undefined,
                 businessCommand: undefined,
                 recipientNumber: tempValue.recipientNumber || "",
-                accountId: tempValue.accountId,
-                accountName: tempValue.accountName,
             });
             // Move data from temp state to permanent state upon saving form
             setAddClientResponseToOrder(tempAddClientResponseToOrder);
@@ -2120,8 +2103,6 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
             messageType: tempValue.messageType,
             messageData: tempValue.messageData,
             recipientNumber: tempValue.recipientNumber || "",
-            accountId: tempValue.accountId,
-            accountName: tempValue.accountName,
             deletedOldUrls,
             branches: branches ?? []
         });
@@ -2143,7 +2124,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                     ref={formRef}
                     definition={definition}
                     variableProps={variableProps}
-                    accountId={tempValue?.accountId}
+                    accountId={flowWhatsappAccountId}
                     onStepChange={setBusinessStep}
                 >
                     {definition.messageType === 'interactive' && (
@@ -2211,7 +2192,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                         ref={formRef}
                         variableProps={variableProps}
                         type={selectedType}
-                        accountId={tempValue?.accountId}
+                        accountId={flowWhatsappAccountId}
                     />
                 );
             case 'location':
@@ -2267,7 +2248,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                         setLocalHeaderMediaFile={setLocalHeaderMediaFile}
                         localHeaderMediaFile={localHeaderMediaFile}
                         variableProps={variableProps}
-                        accountId={tempValue?.accountId}
+                        accountId={flowWhatsappAccountId}
                     >
                         <div className="mt-4 flex items-center gap-2">
                             <Checkbox
@@ -2302,7 +2283,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                         setHeaderMediaFile={setHeaderMediaFile}
                         headerMediaFile={headerMediaFile}
                         variableProps={variableProps}
-                        accountId={tempValue?.accountId}
+                        accountId={flowWhatsappAccountId}
                     >
                         <div className="mt-4 flex items-center gap-2">
                             <Checkbox
@@ -2371,7 +2352,7 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
 
                 {step === 'select' && (
                     <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                        <div className="grid grid-cols-1 gap-4 mb-8">
                             <FormGroup label={tConfig('recipientNumber')}>
                                 <Input
                                     placeholder={tConfig('recipientNumberPlaceholder')}
@@ -2380,12 +2361,6 @@ export function SendWhatsappMessageConfig({ isOpen, value, onChange, errors, set
                                     className="h-12 md:h-14 rounded-xl md:rounded-2xl px-4 md:px-6 text-xs md:text-sm"
                                 />
                             </FormGroup>
-                            <WhatsAppAccountSelect
-                                label={tConfig('whatsappAccount')}
-                                value={tempValue.accountId}
-                                onChange={handleAccountChange}
-                                onLoaded={handleAccountsLoaded}
-                            />
                         </div>
 
                         {/* Custom Messages */}

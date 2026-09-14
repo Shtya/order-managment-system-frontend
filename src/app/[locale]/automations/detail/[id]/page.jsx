@@ -124,7 +124,8 @@ export default function ViewAutomationPage() {
           id: data.id,
           name: data.name,
           nodes: versionToUse?.flow?.nodes || [],
-          edges: versionToUse?.flow?.edges.map(edge => ({ ...edge, type: "custom" })) || []
+          edges: versionToUse?.flow?.edges.map(edge => ({ ...edge, type: "custom" })) || [],
+          whatsapp: versionToUse?.flow?.whatsapp,
         });
 
         // Manually set mode to view since setFlowData defaults to edit/create

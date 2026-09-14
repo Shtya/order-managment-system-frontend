@@ -17,7 +17,8 @@ import {
     User,
     Eye,
     Beaker,
-    ChevronLeft
+    ChevronLeft,
+    Settings
 } from 'lucide-react';
 import { faker } from '@faker-js/faker';
 import { useRouter } from "@/i18n/navigation";
@@ -36,6 +37,8 @@ import RunDetailsPanel from './RunDetailsPanel';
 import StepExecutionDialog from './StepExecutionDialog';
 import { processNodesBeforeSave } from './nodeProcessors';
 import { BASE_CONFIG } from './automation-config';
+import AutomationWhatsappSettingsDialog from './AutomationWhatsappSettingsDialog';
+import { hasWhatsappAutomationSteps } from './whatsapp-flow-settings';
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
     const t = useTranslations("whatsApp.automations.builder");
@@ -73,7 +76,11 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
         setDeleteConfirm({ type: 'clear' });
     };
     const setFlowData = useFlowStore((s) => s.setFlowData);
+    const whatsappSettings = useFlowStore((s) => s.whatsappSettings);
+    const setWhatsappSettings = useFlowStore((s) => s.setWhatsappSettings);
     const [savedSnapshot, setSavedSnapshot] = useState(null);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const hasWhatsappSteps = useMemo(() => hasWhatsappAutomationSteps(nodes), [nodes]);
 
     // Recovery logic for inconsistent 'run' mode on initialization (e.g., after reload)
     useEffect(() => {
@@ -111,6 +118,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
             pendingConnection: snapshot.pendingConnection,
             deleteConfirm: snapshot.deleteConfirm,
             skipDeleteConfirmation: snapshot.skipDeleteConfirmation,
+            whatsappSettings: snapshot.whatsappSettings,
         });
 
         setPreviewSidebarOpen(false);
@@ -134,6 +142,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                     flow: {
                         nodes: snapshot.nodes,
                         edges: snapshot.edges,
+                        whatsapp: snapshot.whatsappSettings,
                     },
                 },
                 trigger: {
@@ -279,7 +288,9 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
             toast.loading(t('toolbar.processingSteps'), { id: processingToastId });
             
             // 1. Run all async node setups concurrently
-            const { processedNodes, allNewLinksIds } = await processNodesBeforeSave(nodes);
+            const { processedNodes, allNewLinksIds } = await processNodesBeforeSave(nodes, {
+                accountId: whatsappSettings?.mode === 'fixed' ? whatsappSettings.accountId : null,
+            });
             console.log("processedNodes", processedNodes);
 
             // Collect deletedOldUrls from all nodes
@@ -329,7 +340,12 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                         target: e.target,
                         sourceHandle: e.sourceHandle,
                         targetHandle: e.targetHandle
-                    }))
+                    })),
+                    whatsapp: {
+                        mode: whatsappSettings?.mode === 'fixed' ? 'fixed' : 'random',
+                        accountId: whatsappSettings?.mode === 'fixed' ? (whatsappSettings.accountId || null) : null,
+                        acknowledged: !!whatsappSettings?.acknowledged,
+                    },
                 },
                 ...(allDeleted.length > 0 || validNewIds.length > 0
                     ? {
@@ -430,6 +446,16 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                         label={t('toolbar.reorder')}
                         onClick={reorderFlow}
                     />
+                    {!isViewMode && !isPreviewMode && (
+                        <ToolbarButton
+                            icon={<Settings size={18} />}
+                            label={hasWhatsappSteps ? t('toolbar.whatsappSettings') : t('toolbar.whatsappSettingsDisabled')}
+                            disabled={!hasWhatsappSteps}
+                            showTooltipWhenDisabled
+                            badge={hasWhatsappSteps && !whatsappSettings?.acknowledged}
+                            onClick={() => setSettingsOpen(true)}
+                        />
+                    )}
                     <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-800 mx-1" />
                     {isViewMode ? (
                         hasPermission("automation.update") && (
@@ -505,6 +531,13 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                 onClose={() => setStepInfo(null)}
             />
 
+            <AutomationWhatsappSettingsDialog
+                open={settingsOpen}
+                onOpenChange={setSettingsOpen}
+                value={whatsappSettings}
+                onSave={setWhatsappSettings}
+            />
+
             {rightPanelCollapsed && previewRun && (
                 <button
                     onClick={() => setRightPanelCollapsed(false)}
@@ -517,14 +550,14 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
     );
 }
 
-function ToolbarButton({ icon, label, onClick, className, primary, danger, disabled, ...props }) {
+function ToolbarButton({ icon, label, onClick, className, primary, danger, disabled, badge, showTooltipWhenDisabled, ...props }) {
     return (
         <div className="group relative flex flex-col items-center" {...props}>
             <button
                 onClick={onClick}
                 disabled={disabled}
                 className={cn(
-                    "h-10 w-10 flex items-center justify-center rounded-xl transition-all duration-300",
+                    "relative h-10 w-10 flex items-center justify-center rounded-xl transition-all duration-300",
                     primary
                         ? "bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90"
                         : danger
@@ -535,10 +568,15 @@ function ToolbarButton({ icon, label, onClick, className, primary, danger, disab
                 )}
             >
                 {icon}
+                {badge && (
+                    <span className="absolute -top-1 -end-1 h-4 min-w-4 px-1 rounded-full bg-amber-500 text-white text-[9px] font-black flex items-center justify-center leading-none shadow-sm">
+                        !
+                    </span>
+                )}
             </button>
 
             {/* Tooltip */}
-            {!disabled && (
+            {(!disabled || showTooltipWhenDisabled) && (
                 <div className="absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[60]">
                     {/* Arrow */}
                     <div className="w-2 h-2 bg-slate-900 rotate-45 mx-auto -mb-1 relative top-[2px]" />

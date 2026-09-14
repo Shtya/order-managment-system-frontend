@@ -181,12 +181,6 @@ export function ActionNode({ id, data, selected }) {
                                             : (data.config?.messageType ? tChats("messageTypes." + data.config?.messageType) : '—')}
                                     </span>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="opacity-50 font-bold">{t('nodes.account')}</span>
-                                    <span className="font-black text-blue-700 dark:text-blue-400 truncate">
-                                        {data.config?.accountName ?? '—'}
-                                    </span>
-                                </div>
                                 {data.config?.recipientNumber && (
                                     <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
                                         <span className="opacity-50 text-[9px]">{t('nodes.recipient')}</span>

@@ -159,6 +159,18 @@ export default function RunDetailsPanel({
                   router.push(`/orders/details/${selectedRun?.triggerEntityId}`)
                 } : null}
               />}
+              {(selectedRun?.whatsappAccountId || selectedRun?.whatsappAccountName || selectedRun?.whatsappAccountPhone) && (
+                <>
+                  <InfoItem
+                    label={tRunPanel('whatsappAccount')}
+                    value={selectedRun?.whatsappAccountName || "—"}
+                  />
+                  <InfoItem
+                    label={tRunPanel('whatsappAccountPhone')}
+                    value={selectedRun?.whatsappAccountPhone || "—"}
+                  />
+                </>
+              )}
             </InfoSection>
 
             {selectedRun?.status === 'failed' && (

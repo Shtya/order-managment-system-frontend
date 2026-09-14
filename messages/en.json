@@ -12732,6 +12732,7 @@
       "title": "WhatsApp Accounts",
       "selectPlaceholder": "Select phone number",
       "allAccounts": "All Accounts",
+      "randomAccount": "Random account each run",
       "defaultAccountLabel": "Default Sending Account",
       "breadcrumb": {
         "home": "Home",
@@ -13499,7 +13500,17 @@
           "missingTrigger": "An automation requires a trigger node to be saved.",
           "processingSteps": "Processing steps...",
           "processingStepsFailed": "Failed to process steps.",
-          "processingStepsSuccess": "Steps processed successfully!"
+          "processingStepsSuccess": "Steps processed successfully!",
+          "whatsappSettings": "WhatsApp settings",
+          "whatsappSettingsDisabled": "Add a WhatsApp step to configure the sending number"
+        },
+        "settings": {
+          "title": "WhatsApp sending number",
+          "subtitle": "Choose a WhatsApp account for this automation, or pick a random account for each run. The chosen number is reused for every WhatsApp step in that run.",
+          "account": "WhatsApp account",
+          "random": "Random account each run",
+          "hint": "Random is the default. After a run starts, its number stays the same for templates, messages, upsells, and AI WhatsApp tools.",
+          "save": "Save"
         },
         "indicators": {
           "updated_automatically": "Data updated automatically"
@@ -13905,6 +13916,8 @@
           "additionalInfo": "Additional Info",
           "triggerEntity": "Trigger Entity",
           "failureDetails": "Failure Details",
+          "whatsappAccount": "WhatsApp number",
+          "whatsappAccountPhone": "Phone number",
           "entities": {
             "order": "Order",
             "whatsapp": "WhatsApp"

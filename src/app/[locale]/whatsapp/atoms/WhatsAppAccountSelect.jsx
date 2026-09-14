@@ -11,12 +11,16 @@ import api from "@/utils/api";
 import { useTranslations } from "next-intl";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
+export const WHATSAPP_ACCOUNT_RANDOM_VALUE = "__random__";
+
 export default function WhatsAppAccountSelect({
     label,
     noLabel = false,
     value,
     onChange,
     allowAll = false,
+    allowRandom = false,
+    randomLabel,
     onLoaded,
     onLoadChange,
     showDuplicates = true,
@@ -95,6 +99,7 @@ export default function WhatsAppAccountSelect({
 
     // Set the configured default account if nothing is selected yet.
     useEffect(() => {
+        if (allowRandom) return;
         if (
             !value &&
             defaultWhatsAppAccountId &&
@@ -112,6 +117,7 @@ export default function WhatsAppAccountSelect({
             }
         }
     }, [
+        allowRandom,
         value,
         defaultWhatsAppAccountId,
         accounts,
@@ -131,10 +137,14 @@ export default function WhatsAppAccountSelect({
             )}
 
             <Select
-                value={value}
+                value={allowRandom && !value ? WHATSAPP_ACCOUNT_RANDOM_VALUE : value}
                 onValueChange={(accountId) => {
                     if (accountId === "all") {
                         onChange?.("all", null);
+                        return;
+                    }
+                    if (accountId === WHATSAPP_ACCOUNT_RANDOM_VALUE) {
+                        onChange?.(null, null);
                         return;
                     }
 
@@ -155,6 +165,13 @@ export default function WhatsAppAccountSelect({
                 </SelectTrigger>
 
                 <SelectContent>
+                    {allowRandom && (
+                        <SelectItem value={WHATSAPP_ACCOUNT_RANDOM_VALUE}>
+                            <span className="font-bold text-sm">
+                                {randomLabel || t("randomAccount")}
+                            </span>
+                        </SelectItem>
+                    )}
                     {allowAll && (
                         <SelectItem value="all">
                             <span className="font-bold text-sm">

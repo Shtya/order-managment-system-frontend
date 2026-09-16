@@ -562,8 +562,8 @@
     "uncollectedOrders": "الطلبات غير المحصلة",
     "warehouseDistribution": "توزيع الطلبات",
     "customersTags": "الوسوم",
-    "customersSegments": "المجموعات",
-    "customersSegmentsTemplate": "قوالب المجموعات",
+    "customersSegments": "شرائح العملاء",
+    "customersSegmentsTemplate": "قوالب الشرائح",
     "warehousePrint": "طباعة البوالص",
     "warehousePreparation": "التحضير",
     "warehouseOutgoing": "خروج الطلبات",
@@ -3024,12 +3024,12 @@
       "campaigns_update": "تعديل الحملات",
       "campaigns_delete": "حذف الحملات",
       "campaigns_start": "بدء الحملات",
-      "client-segments_read": "عرض المجموعات",
-      "client-segments_create": "إنشاء المجموعات",
-      "client-segments_update": "تعديل المجموعات",
-      "client-segments_delete": "حذف المجموعات",
-      "client-segments_preview": "معاينة المجموعات",
-      "client-segments_freeze": "تجميد المجموعات",
+      "client-segments_read": "عرض شرائح العملاء",
+      "client-segments_create": "إنشاء شرائح العملاء",
+      "client-segments_update": "تعديل شرائح العملاء",
+      "client-segments_delete": "حذف شرائح العملاء",
+      "client-segments_preview": "معاينة شرائح العملاء",
+      "client-segments_freeze": "تحويل الشرائح إلى قائمة ثابتة",
       "conversation_create": "إنشاء المحادثات",
       "conversation_delete": "حذف المحادثات",
       "conversation_read": "عرض المحادثات",
@@ -3236,7 +3236,7 @@
       "automation": "الأتمتة",
       "categories": "التصنيفات",
       "campaigns": "الحملات",
-      "client-segments": "المجموعات",
+      "client-segments": "شرائح العملاء",
       "conversation": "المحادثات",
       "customer": "العملاء",
       "dashboard": "لوحة التحكم",
@@ -3821,6 +3821,7 @@
         "city": "المدينة",
         "area": "المنطقة",
         "address": "العنوان",
+        "landmark": "العلامة المميزة",
         "store": "المتجر",
         "trackingCode": "رقم التتبع",
         "shippingCost": "تكلفة الشحن",
@@ -7700,7 +7701,8 @@
       "cod": "الدفع عند الاستلام",
       "unknown": "طريقة غير معروفة",
       "wallet": "محفظة إلكترونية",
-      "other": "طريقة أخرى"
+      "other": "طريقة أخرى",
+      "bankTransfer": "تحويل بنكي"
     },
     "paymentStatuses": {
       "pending": "غير مدفوع",
@@ -14892,18 +14894,18 @@
         "followupUrlRequired": "أدرج حقل رابط الطلب في رسالة المتابعة."
       },
       "recipients": {
-        "segment": "مجموعة",
-        "segmentHint": "جمهور محفوظ",
+        "segment": "شريحة",
+        "segmentHint": "شريحة محفوظة",
         "file": "ملف",
         "fileHint": "رفع xlsx / csv",
         "manual": "يدوي",
         "manualHint": "أي رقم هاتف صالح، مثال: 2010xxxxxxxx.",
         "customers": "فلتر",
-        "customersHint": "نفس صفحة المجموعات",
-        "searchSegments": "ابحث في المجموعات",
+        "customersHint": "نفس صفحة شرائح العملاء",
+        "searchSegments": "ابحث في الشرائح",
         "searchSegmentsPlaceholder": "ابحث بالاسم…",
         "loading": "جارٍ التحميل…",
-        "noSegments": "لا توجد مجموعات.",
+        "noSegments": "لا توجد شرائح.",
         "selectedSegment": "المحدد",
         "fileTitle": "ارفع ملف المستلمين",
         "template": "القالب",
@@ -15045,54 +15047,54 @@
     }
   },
   "customerSegments": {
-    "title": "مجموعات العملاء",
-    "comingSoon": "محرر المجموعة قادم في الخطوة التالية.",
+    "title": "شرائح العملاء",
+    "comingSoon": "محرر الشريحة قادم في الخطوة التالية.",
     "breadcrumb": {
       "home": "لوحة التحكم",
       "customers": "العملاء",
-      "segments": "المجموعات",
-      "new": "مجموعة جديدة",
-      "edit": "تعديل المجموعة"
+      "segments": "شرائح العملاء",
+      "new": "شريحة جديدة",
+      "edit": "تعديل الشريحة"
     },
     "stats": {
-      "total": "كل المجموعات",
+      "total": "كل الشرائح",
       "active": "نشطة",
-      "dynamic": "ديناميكية",
-      "frozen": "مجمّدة",
-      "freezing": "جاري التجميد",
-      "freeze_failed": "فشل التجميد"
+      "dynamic": "تتحدث تلقائيًا",
+      "frozen": "ثابتة",
+      "freezing": "جاري الإنشاء",
+      "freeze_failed": "فشل الإنشاء"
     },
     "filters": {
       "status": "الحالة",
-      "type": "النوع"
+      "type": "نوع الشريحة"
     },
     "status": {
       "active": "نشطة",
       "inactive": "غير نشطة"
     },
     "types": {
-      "dynamic": "ديناميكية",
-      "frozen": "مجمّدة",
-      "freezing": "جاري التجميد",
-      "freeze_failed": "فشل التجميد"
+      "dynamic": "تتحدث تلقائيًا",
+      "frozen": "قائمة ثابتة",
+      "freezing": "جاري الإنشاء",
+      "freeze_failed": "فشل الإنشاء"
     },
     "columns": {
       "name": "الاسم",
-      "type": "النوع",
+      "type": "نوع الشريحة",
       "status": "الحالة",
       "estimatedRecipientsCount": "المستلمون التقديري",
-      "frozenRecipientsCount": "المستلمون المجمّدون",
-      "frozenAt": "تاريخ التجميد",
+      "frozenRecipientsCount": "عدد العملاء",
+      "frozenAt": "آخر تحديث",
       "createdAt": "تاريخ الإنشاء",
       "actions": "إجراءات"
     },
     "table": {
-      "searchPlaceholder": "البحث في المجموعات...",
-      "emptyTitle": "لا توجد مجموعات",
-      "emptySubtitle": "أنشئ مجموعة أو عدّل عوامل التصفية."
+      "searchPlaceholder": "البحث في الشرائح...",
+      "emptyTitle": "لا توجد شرائح عملاء",
+      "emptySubtitle": "أنشئ شريحة عملاء جديدة باستخدام الشروط المناسبة."
     },
     "actions": {
-      "new": "إضافة مجموعة",
+      "new": "إنشاء شريحة",
       "edit": "تعديل",
       "delete": "حذف",
       "freeze": "تجميد",
@@ -15100,54 +15102,54 @@
       "enable": "تفعيل",
       "disable": "تعطيل",
       "export": "تصدير",
-      "back": "العودة إلى المجموعات",
+      "back": "العودة إلى الشرائح",
       "useTemplate": "استخدام قالب"
     },
     "toolbar": {
       "export": "تصدير"
     },
     "delete": {
-      "title": "حذف المجموعة",
+      "title": "حذف الشريحة",
       "desc": "سيتم حذف «{name}» نهائيًا.",
       "confirm": "حذف",
       "cancel": "إلغاء"
     },
     "toggle": {
-      "disableTitle": "تعطيل المجموعة",
-      "enableTitle": "تفعيل المجموعة",
-      "disableDescription": "سيتم تعطيل «{name}» كمجموعة نشطة.",
-      "enableDescription": "ستصبح «{name}» مجموعة نشطة مرة أخرى.",
+      "disableTitle": "تعطيل الشريحة",
+      "enableTitle": "تفعيل الشريحة",
+      "disableDescription": "سيتم تعطيل «{name}» كشريحة نشطة.",
+      "enableDescription": "ستصبح «{name}» شريحة نشطة مرة أخرى.",
       "confirm": "تأكيد",
       "cancel": "إلغاء"
     },
     "toast": {
-      "deleted": "تم حذف المجموعة",
-      "frozen": "بدأ التجميد",
-      "frozenDone": "تم تجميد المجموعة",
-      "unfrozen": "تم إلغاء تجميد المجموعة",
-      "statusUpdated": "تم تحديث حالة المجموعة",
-      "fetchFailed": "فشل تحميل المجموعات",
-      "deleteFailed": "فشل حذف المجموعة",
-      "freezeFailed": "فشل تجميد المجموعة",
-      "unfreezeFailed": "فشل إلغاء تجميد المجموعة",
-      "created": "تم إنشاء المجموعة",
-      "createdFrozen": "تم إنشاء المجموعة. جاري بناء اللقطة.",
-      "updated": "تم تحديث المجموعة",
-      "loadFailed": "فشل تحميل المجموعة",
-      "previewFailed": "فشل معاينة الجمهور",
+      "deleted": "تم حذف الشريحة",
+      "frozen": "بدأ إنشاء القائمة الثابتة",
+      "frozenDone": "تم إنشاء القائمة الثابتة",
+      "unfrozen": "أصبحت الشريحة تتحدث تلقائيًا",
+      "statusUpdated": "تم تحديث حالة الشريحة",
+      "fetchFailed": "فشل تحميل الشرائح",
+      "deleteFailed": "فشل حذف الشريحة",
+      "freezeFailed": "فشل إنشاء القائمة الثابتة",
+      "unfreezeFailed": "فشل إلغاء التجميد",
+      "created": "تم إنشاء الشريحة",
+      "createdFrozen": "تم إنشاء الشريحة. جاري بناء القائمة الثابتة.",
+      "updated": "تم تحديث الشريحة",
+      "loadFailed": "فشل تحميل الشريحة",
+      "previewFailed": "فشل معاينة العملاء",
       "templateApplied": "تم تطبيق القالب",
       "templatesFailed": "فشل تحميل القوالب"
     },
     "validation": {
-      "nameRequired": "أدخل اسم المجموعة",
+      "nameRequired": "أدخل اسم الشريحة",
       "nameMax": "الاسم لا يتجاوز 160 حرفًا",
       "descriptionMax": "الوصف لا يتجاوز 1000 حرف",
-      "rulesMin": "أضف شرطًا واحدًا على الأقل",
+      "rulesMin": "أضف شرطًا واحدًا على الأقل لتحديد العملاء",
       "valueRequired": "أدخل قيمة لهذا الشرط"
     },
     "templates": {
       "title": "قوالب جاهزة",
-      "subtitle": "اختر قالبًا لملء الاسم والوصف والفلاتر. يمكنك تعديلها قبل الحفظ.",
+      "subtitle": "اختر قالبًا لملء الاسم والوصف والشروط. يمكنك تعديلها قبل الحفظ.",
       "use": "استخدام",
       "empty": "لا توجد قوالب نشطة بعد.",
       "noDescription": "لا يوجد وصف",
@@ -15155,58 +15157,60 @@
       "close": "إغلاق"
     },
     "form": {
-      "createTitle": "إنشاء مجموعة عملاء جديدة",
-      "editTitle": "تعديل مجموعة العملاء",
-      "subtitle": "أكمل الخطوات بالترتيب: المعلومات، ثم الفلتر، ثم المعاينة قبل الحفظ.",
-      "loading": "جاري تحميل المجموعة…",
-      "name": "اسم المجموعة",
-      "namePlaceholder": "مثال: العملاء القادمون من الإعلانات",
-      "description": "وصف المجموعة",
+      "createTitle": "إنشاء شريحة عملاء جديدة",
+      "editTitle": "تعديل شريحة العملاء",
+      "subtitle": "حدد شروط العملاء الذين تريد إضافتهم إلى الشريحة، ثم راجع النتائج قبل الحفظ.",
+      "loading": "جاري تحميل الشريحة…",
+      "name": "اسم الشريحة",
+      "namePlaceholder": "مثال: عملاء استلموا خلال آخر 30 يوم",
+      "description": "وصف الشريحة",
       "optional": "(اختياري)",
-      "descriptionPlaceholder": "اكتب وصفًا مختصرًا عن هذه المجموعة...",
-      "type": "نوع المجموعة",
+      "descriptionPlaceholder": "اكتب وصفًا مختصرًا يوضح العملاء المستهدفين من هذه الشريحة",
+      "type": "نوع الشريحة",
       "typeLocked": "لا يمكن تغيير النوع من هنا. استخدم التجميد أو إلغاءه من القائمة.",
       "typeCards": {
         "dynamic": {
-          "title": "ديناميكية (حية)",
-          "desc": "العملاء المطابقون للفلاتر الآن وفي المستقبل يُضافون تلقائيًا."
+          "title": "تتحدث تلقائيًا",
+          "desc": "يدخل ويخرج العملاء تلقائيًا من الشريحة حسب الشروط التي حددتها"
         },
         "frozen": {
-          "title": "مجمّدة (لقطة)",
-          "desc": "قائمة ثابتة للعملاء المطابقين الآن. قد يستغرق بناء اللقطة وقتًا."
+          "title": "قائمة ثابتة",
+          "desc": "يتم حفظ العملاء المطابقين وقت إنشاء الشريحة، ولا تتغير القائمة بعد ذلك"
         }
       },
-      "dynamicNote": "ستُحفظ المجموعة كجمهور حيّ. يمكنك تجميدها لاحقًا من قائمة المجموعات.",
-      "frozenNote": "بعد الحفظ ستبدأ مهمة بناء اللقطة. القائمة ستعرض حالة التجميد حتى تكتمل.",
-      "filterLocked": "لا يمكن تعديل فلاتر هذه اللقطة. ألغِ التجميد أولًا إذا احتجت جمهورًا حيًا.",
-      "reviewTitle": "مراجعة ومعاينة",
-      "reviewSubtitle": "راجع البيانات ثم حدّث التقدير قبل الحفظ. المعاينة في هذه الخطوة فقط.",
-      "conditions": "الشروط",
-      "estimatedResults": "تقدير النتائج",
-      "possibleCustomers": "عميل محتمل",
-      "frozenCount": "لقطة مجمّدة: {count} عميل",
-      "refreshPreview": "تحديث المعاينة",
-      "clients": "العملاء",
+      "dynamicNote": "",
+      "frozenNote": "",
+      "filterLocked": "لا يمكن تعديل شروط هذه القائمة الثابتة. ألغِ التجميد أولًا إذا احتجت شريحة تتحدث تلقائيًا.",
+      "filterTitle": "شروط الشريحة",
+      "filterSubtitle": "حدد الشروط التي يجب أن تنطبق على العملاء في هذه الشريحة",
+      "reviewTitle": "مراجعة العملاء",
+      "reviewSubtitle": "راجع بيانات الشريحة والشروط، ثم اعرض العملاء المطابقين قبل الحفظ.",
+      "conditions": "شروط الشريحة",
+      "estimatedResults": "العملاء المطابقون",
+      "possibleCustomers": "عميل مطابق",
+      "frozenCount": "قائمة ثابتة: {count} عميل",
+      "refreshPreview": "عرض العملاء المطابقين",
+      "clients": "معاينة العملاء",
       "noClients": "لا يوجد عملاء مطابقون.",
       "loadMore": "تحميل المزيد",
       "cancel": "إلغاء",
       "back": "رجوع",
-      "nextFilter": "التالي: بناء الفلتر",
-      "nextReview": "التالي: مراجعة ومعاينة",
+      "nextFilter": "التالي: تحديد الشروط",
+      "nextReview": "التالي: مراجعة العملاء",
       "save": "حفظ التغييرات",
-      "create": "إنشاء المجموعة",
+      "create": "إنشاء الشريحة",
       "steps": {
-        "identity": "معلومات المجموعة",
-        "filter": "بناء الفلتر",
-        "review": "مراجعة ومعاينة"
+        "identity": "معلومات الشريحة",
+        "filter": "تحديد الشروط",
+        "review": "مراجعة وحفظ"
       }
     }
   },
   "customerSegmentTemplates": {
-    "title": "قوالب مجموعات العملاء",
+    "title": "قوالب شرائح العملاء",
     "breadcrumb": {
       "home": "لوحة التحكم",
-      "segments": "قوالب المجموعات",
+      "segments": "قوالب الشرائح",
       "new": "قالب جديد",
       "edit": "تعديل القالب"
     },
@@ -15271,47 +15275,49 @@
       "nameRequired": "أدخل اسم القالب",
       "nameMax": "الاسم لا يتجاوز 160 حرفًا",
       "descriptionMax": "الوصف لا يتجاوز 1000 حرف",
-      "rulesMin": "أضف شرطًا واحدًا على الأقل",
+      "rulesMin": "أضف شرطًا واحدًا على الأقل لتحديد العملاء",
       "valueRequired": "أدخل قيمة لهذا الشرط"
     },
     "form": {
-      "createTitle": "إنشاء قالب مجموعة",
-      "editTitle": "تعديل قالب المجموعة",
-      "subtitle": "أكمل الخطوات بالترتيب: المعلومات، ثم الفلتر، ثم المراجعة قبل الحفظ.",
+      "createTitle": "إنشاء قالب شريحة",
+      "editTitle": "تعديل قالب الشريحة",
+      "subtitle": "حدد شروط العملاء لهذا القالب، ثم راجعها قبل الحفظ.",
       "name": "اسم القالب",
       "namePlaceholder": "مثال: العملاء المتكررون ذوو القيمة العالية",
-      "description": "الوصف",
+      "description": "وصف القالب",
       "optional": "(اختياري)",
-      "descriptionPlaceholder": "اكتب وصفًا مختصرًا لهذا الجمهور الجاهز...",
+      "descriptionPlaceholder": "اكتب وصفًا مختصرًا يوضح العملاء المستهدفين من هذا القالب",
       "reviewTitle": "مراجعة",
-      "reviewSubtitle": "راجع البيانات قبل الحفظ. المستخدمون يختارون نوع المجموعة عند الإنشاء من القالب.",
-      "conditions": "الشروط",
+      "reviewSubtitle": "راجع البيانات قبل الحفظ. المستخدمون يختارون نوع الشريحة عند الإنشاء من القالب.",
+      "conditions": "شروط الشريحة",
+      "filterTitle": "شروط الشريحة",
+      "filterSubtitle": "حدد الشروط التي يجب أن تنطبق على العملاء في هذه الشريحة",
       "cancel": "إلغاء",
       "back": "رجوع",
-      "nextFilter": "التالي: بناء الفلتر",
+      "nextFilter": "التالي: تحديد الشروط",
       "nextReview": "التالي: مراجعة",
       "save": "حفظ التغييرات",
       "create": "إنشاء القالب",
       "steps": {
         "identity": "معلومات القالب",
-        "filter": "بناء الفلتر",
+        "filter": "تحديد الشروط",
         "review": "مراجعة"
       }
     }
   },
   "audienceFilter": {
-    "title": "بناء الفلتر",
-    "subtitle": "اضغط «إضافة شرط» واختر الحقل. العلاقات (طلب، منتج…) تُنشأ تلقائيًا.",
+    "title": "شروط الشريحة",
+    "subtitle": "حدد الشروط التي يجب أن تنطبق على العملاء في هذه الشريحة",
     "addCondition": "إضافة شرط",
     "selectField": "اختر حقلًا",
     "searchFields": "ابحث عن حقل...",
     "removeCondition": "حذف الشرط",
     "removeGroup": "حذف المجموعة",
-    "emptyRules": "لا توجد شروط بعد. أضف شرطًا واختر الحقل.",
+    "emptyRules": "لم تتم إضافة أي شروط بعد",
     "loadingMetadata": "جاري تحميل الحقول…",
-    "rulesMin": "أضف شرطًا واحدًا على الأقل",
+    "rulesMin": "أضف شرطًا واحدًا على الأقل لتحديد العملاء",
     "valueRequired": "القيمة مطلوبة",
-    "logicAnd": "كلها مطابقة",
+    "logicAnd": "جميع الشروط",
     "logicOr": "أي منها",
     "noValueNeeded": "لا توجد قيمة مطلوبة",
     "valuesLoading": "جاري تحميل القيم…",
@@ -15336,54 +15342,62 @@
       "totalOrders": "من إجمالي الطلبات"
     },
     "entities": {
-      "client": "العميل",
-      "order": "الطلبات",
-      "order_item": "عناصر الطلب"
+      "client": "بيانات وأداء العميل",
+      "order": "بيانات الطلب",
+      "order_item": "تفاصيل المنتجات"
     },
     "entityShort": {
       "client": "ع",
       "order": "ط",
-      "order_item": "س"
+      "order_item": "م"
     },
     "entityHints": {
-      "client": "بيانات العميل نفسه",
+      "client": "بيانات العميل نفسه ومؤشرات أدائه",
       "order": "يوجد طلب مطابق لهذه الشروط",
-      "order_item": "يوجد سطر في الطلب يطابق هذه الشروط"
+      "order_item": "يوجد منتج في الطلب يطابق هذه الشروط"
     },
     "fields": {
       "client": {
-        "createdAt": "تاريخ الإنشاء",
         "tagId": "وسم العميل",
         "totalOrders": "إجمالي الطلبات",
-        "confirmedCount": "عدد المؤكد",
-        "confirmedRate": "معدل تأكيد الطلبات",
-        "deliveredCount": "عدد المسلَّم",
-        "returnedCount": "عدد المرتجع",
-        "cancelledCount": "عدد الملغى",
+        "deliveredCount": "عدد الطلبات المستلمة",
+        "deliveredRate": "معدل الاستلام",
+        "confirmedCount": "عدد الطلبات المؤكدة",
+        "confirmedRate": "معدل التأكيد",
+        "returnedCount": "عدد الطلبات المرتجعة",
+        "returnedRate": "معدل الإرجاع",
+        "cancelledCount": "عدد الطلبات الملغاة",
         "cancelRate": "معدل الإلغاء",
-        "deliveredRevenue": "إيراد المسلَّم"
+        "deliveredRevenue": "إجمالي قيمة الطلبات المستلمة",
+        "totalSales": "إجمالي قيمة الطلبات",
+        "createdAt": "تاريخ إنشاء العميل",
+        "lastOrderAt": "تاريخ آخر طلب",
+        "lastDeliveredAt": "تاريخ آخر طلب مستلم"
       },
       "order": {
         "statusId": "حالة الطلب",
+        "createdAt": "تاريخ الطلب",
         "storeId": "المتجر",
-        "cityId": "المدينة",
-        "tagId": "وسم الطلب",
-        "paymentStatus": "حالة الدفع",
+        "cityId": "المدينة / المنطقة",
         "paymentMethod": "طريقة الدفع",
-        "productsTotal": "إجمالي المنتجات",
         "shippingCompanyId": "شركة الشحن",
-        "finalTotal": "الإجمالي النهائي",
-        "confirmationSource": "مصدر التأكيد"
+        "finalTotal": "قيمة الطلب",
+        "productsTotal": "قيمة المنتجات",
+        "tagId": "وسم الطلب",
+        "confirmationSource": "مصدر التأكيد",
+        "deliveredAt": "تاريخ التوصيل",
+        "cancelCauseId": "سبب الإلغاء"
       },
       "order_item": {
-        "quantity": "الكمية"
+        "quantity": "الكمية",
+        "isAdditional": "العرض الإضافي (Upsell)"
       },
       "variant": {
-        "id": "المتغير"
+        "id": "SKU"
       },
       "product": {
         "id": "المنتج",
-        "categoryId": "فئة المنتج"
+        "categoryId": "قسم المنتج"
       }
     },
     "examples": {
@@ -15392,6 +15406,8 @@
         "tagId": "VIP",
         "totalOrders": "3",
         "confirmedRate": "20",
+        "deliveredRate": "40",
+        "returnedRate": "10",
         "cancelRate": "15"
       },
       "order": {

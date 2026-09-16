@@ -562,8 +562,8 @@
     "uncollectedOrders": "Uncollected Orders",
     "warehouseDistribution": "Order Distribution",
     "customersTags": "Tags",
-    "customersSegments": "Segments",
-    "customersSegmentsTemplate": "Segment Templates",
+    "customersSegments": "Customer segments",
+    "customersSegmentsTemplate": "Segment templates",
     "warehousePrint": "Print Waybills",
     "warehousePreparation": "Preparation",
     "warehouseOutgoing": "Outgoing Orders",
@@ -3023,12 +3023,12 @@
       "campaigns_update": "Update campaigns",
       "campaigns_delete": "Delete campaigns",
       "campaigns_start": "Start campaigns",
-      "client-segments_read": "View segments",
-      "client-segments_create": "Create segments",
-      "client-segments_update": "Update segments",
-      "client-segments_delete": "Delete segments",
-      "client-segments_preview": "Preview segments",
-      "client-segments_freeze": "Freeze segments",
+      "client-segments_read": "View customer segments",
+      "client-segments_create": "Create customer segments",
+      "client-segments_update": "Update customer segments",
+      "client-segments_delete": "Delete customer segments",
+      "client-segments_preview": "Preview customer segments",
+      "client-segments_freeze": "Convert segments to a fixed list",
       "conversation_create": "Create conversations",
       "conversation_delete": "Delete conversations",
       "conversation_read": "View conversations",
@@ -3234,7 +3234,7 @@
       "automation": "Automation",
       "categories": "Categories",
       "campaigns": "Campaigns",
-      "client-segments": "Segments",
+      "client-segments": "Customer segments",
       "conversation": "Conversation",
       "customer": "Customer",
       "dashboard": "Dashboard",
@@ -3816,6 +3816,7 @@
         "city": "City",
         "area": "Area",
         "address": "Address",
+        "landmark": "Landmark",
         "store": "Store",
         "trackingCode": "Tracking Code",
         "shippingCost": "Shipping Cost",
@@ -7709,6 +7710,7 @@
       "cash": "Cash",
       "card": "Card",
       "bank_transfer": "Bank Transfer",
+      "bankTransfer": "Bank Transfer",
       "cod": "Cash on Delivery",
       "unknown": "Unknown Method",
       "wallet": "E-Wallet",
@@ -14874,7 +14876,7 @@
         "manual": "Manual",
         "manualHint": "Any valid phone number, e.g. 2010xxxxxxxx.",
         "customers": "Filter",
-        "customersHint": "Same as Segment page",
+        "customersHint": "Same as the customer segments page",
         "searchSegments": "Search segments",
         "searchSegmentsPlaceholder": "Search by name…",
         "loading": "Loading…",
@@ -15020,54 +15022,54 @@
     }
   },
   "customerSegments": {
-    "title": "Customer Segments",
+    "title": "Customer segments",
     "comingSoon": "Segment editor is coming next.",
     "breadcrumb": {
       "home": "Dashboard",
       "customers": "Customers",
-      "segments": "Segments",
-      "new": "New Segment",
-      "edit": "Edit Segment"
+      "segments": "Customer segments",
+      "new": "New segment",
+      "edit": "Edit segment"
     },
     "stats": {
-      "total": "All Segments",
+      "total": "All segments",
       "active": "Active",
-      "dynamic": "Dynamic",
-      "frozen": "Frozen",
-      "freezing": "Freezing",
-      "freeze_failed": "Freeze Failed"
+      "dynamic": "Updates automatically",
+      "frozen": "Fixed",
+      "freezing": "Creating",
+      "freeze_failed": "Creation failed"
     },
     "filters": {
       "status": "Status",
-      "type": "Type"
+      "type": "Segment type"
     },
     "status": {
       "active": "Active",
       "inactive": "Inactive"
     },
     "types": {
-      "dynamic": "Dynamic",
-      "frozen": "Frozen",
-      "freezing": "Freezing",
-      "freeze_failed": "Freeze Failed"
+      "dynamic": "Updates automatically",
+      "frozen": "Fixed list",
+      "freezing": "Creating",
+      "freeze_failed": "Creation failed"
     },
     "columns": {
       "name": "Name",
-      "type": "Type",
+      "type": "Segment type",
       "status": "Status",
       "estimatedRecipientsCount": "Estimated Recipients",
-      "frozenRecipientsCount": "Frozen Recipients",
-      "frozenAt": "Frozen At",
-      "createdAt": "Created At",
+      "frozenRecipientsCount": "Customers",
+      "frozenAt": "Last updated",
+      "createdAt": "Created at",
       "actions": "Actions"
     },
     "table": {
       "searchPlaceholder": "Search segments...",
-      "emptyTitle": "No segments found",
-      "emptySubtitle": "Create a segment or adjust your filters."
+      "emptyTitle": "No customer segments",
+      "emptySubtitle": "Create a new customer segment with the right conditions."
     },
     "actions": {
-      "new": "Add Segment",
+      "new": "Create segment",
       "edit": "Edit",
       "delete": "Delete",
       "freeze": "Freeze",
@@ -15097,19 +15099,19 @@
     },
     "toast": {
       "deleted": "Segment deleted",
-      "frozen": "Freeze started",
-      "frozenDone": "Segment frozen",
-      "unfrozen": "Segment unfrozen",
+      "frozen": "Fixed list creation started",
+      "frozenDone": "Fixed list created",
+      "unfrozen": "Segment now updates automatically",
       "statusUpdated": "Segment status updated",
       "fetchFailed": "Failed to load segments",
       "deleteFailed": "Failed to delete segment",
-      "freezeFailed": "Failed to freeze segment",
+      "freezeFailed": "Failed to create the fixed list",
       "unfreezeFailed": "Failed to unfreeze segment",
       "created": "Segment created",
-      "createdFrozen": "Segment created. The snapshot is building.",
+      "createdFrozen": "Segment created. The fixed list is building.",
       "updated": "Segment updated",
       "loadFailed": "Failed to load segment",
-      "previewFailed": "Failed to preview audience",
+      "previewFailed": "Failed to preview customers",
       "templateApplied": "Template applied",
       "templatesFailed": "Failed to load templates"
     },
@@ -15117,12 +15119,12 @@
       "nameRequired": "Enter a segment name",
       "nameMax": "Name cannot exceed 160 characters",
       "descriptionMax": "Description cannot exceed 1000 characters",
-      "rulesMin": "Add at least one condition",
+      "rulesMin": "Add at least one condition to define customers",
       "valueRequired": "Enter a value for this condition"
     },
     "templates": {
       "title": "Ready-made templates",
-      "subtitle": "Choose a template to fill the name, description, and filters. You can still edit them before saving.",
+      "subtitle": "Choose a template to fill the name, description, and conditions. You can still edit them before saving.",
       "use": "Use",
       "empty": "No active templates yet.",
       "noDescription": "No description",
@@ -15132,56 +15134,58 @@
     "form": {
       "createTitle": "Create a new customer segment",
       "editTitle": "Edit customer segment",
-      "subtitle": "Complete the steps in order: details, then filters, then preview before saving.",
+      "subtitle": "Set the conditions for customers you want in this segment, then review the results before saving.",
       "loading": "Loading segment…",
       "name": "Segment name",
-      "namePlaceholder": "Example: Customers from ads",
-      "description": "Description",
+      "namePlaceholder": "Example: Customers delivered in the last 30 days",
+      "description": "Segment description",
       "optional": "(optional)",
-      "descriptionPlaceholder": "Write a short description of this audience…",
+      "descriptionPlaceholder": "Write a short description of the customers this segment targets",
       "type": "Segment type",
       "typeLocked": "Type cannot be changed here. Use freeze or unfreeze from the list.",
       "typeCards": {
         "dynamic": {
-          "title": "Dynamic (live)",
-          "desc": "Customers matching these filters now and in the future are included automatically."
+          "title": "Updates automatically",
+          "desc": "Customers enter and leave this segment automatically based on the conditions you set"
         },
         "frozen": {
-          "title": "Frozen (snapshot)",
-          "desc": "A fixed list of customers who match right now. Building the snapshot can take a while."
+          "title": "Fixed list",
+          "desc": "Matching customers are saved when the segment is created, and the list does not change after that"
         }
       },
-      "dynamicNote": "Saved as a live audience. You can freeze it later from the segments list.",
-      "frozenNote": "After save, a freeze job starts. The list will show Freezing until the snapshot is ready.",
-      "filterLocked": "This snapshot’s filters cannot be edited. Unfreeze it first if you need a live audience.",
-      "reviewTitle": "Review and preview",
-      "reviewSubtitle": "Check the details, then refresh the estimate before you save. Preview is only on this step.",
-      "conditions": "Conditions",
-      "estimatedResults": "Estimated results",
-      "possibleCustomers": "Possible customers",
-      "frozenCount": "Frozen snapshot: {count} customers",
-      "refreshPreview": "Refresh preview",
-      "clients": "Clients",
-      "noClients": "No matching clients.",
+      "dynamicNote": "",
+      "frozenNote": "",
+      "filterLocked": "This fixed list’s conditions cannot be edited. Unfreeze it first if you need a segment that updates automatically.",
+      "filterTitle": "Segment conditions",
+      "filterSubtitle": "Set the conditions that must apply to customers in this segment",
+      "reviewTitle": "Review customers",
+      "reviewSubtitle": "Review the segment details and conditions, then show matching customers before saving.",
+      "conditions": "Segment conditions",
+      "estimatedResults": "Matching customers",
+      "possibleCustomers": "Matching customers",
+      "frozenCount": "Fixed list: {count} customers",
+      "refreshPreview": "Show matching customers",
+      "clients": "Customer preview",
+      "noClients": "No matching customers.",
       "loadMore": "Load more",
       "cancel": "Cancel",
       "back": "Back",
-      "nextFilter": "Next: Filter builder",
-      "nextReview": "Next: Review and preview",
+      "nextFilter": "Next: Set conditions",
+      "nextReview": "Next: Review customers",
       "save": "Save changes",
       "create": "Create segment",
       "steps": {
         "identity": "Segment details",
-        "filter": "Filter builder",
-        "review": "Review and preview"
+        "filter": "Set conditions",
+        "review": "Review and save"
       }
     }
   },
   "customerSegmentTemplates": {
-    "title": "Segment Templates",
+    "title": "Customer segment templates",
     "breadcrumb": {
       "home": "Dashboard",
-      "segments": "Segment Templates",
+      "segments": "Segment templates",
       "new": "New Template",
       "edit": "Edit Template"
     },
@@ -15246,47 +15250,49 @@
       "nameRequired": "Enter a template name",
       "nameMax": "Name cannot exceed 160 characters",
       "descriptionMax": "Description cannot exceed 1000 characters",
-      "rulesMin": "Add at least one condition",
+      "rulesMin": "Add at least one condition to define customers",
       "valueRequired": "Enter a value for this condition"
     },
     "form": {
       "createTitle": "Create a segment template",
       "editTitle": "Edit segment template",
-      "subtitle": "Complete the steps in order: details, then filters, then review before saving.",
+      "subtitle": "Set the customer conditions for this template, then review them before saving.",
       "name": "Template name",
       "namePlaceholder": "Example: High-value repeat customers",
-      "description": "Description",
+      "description": "Template description",
       "optional": "(optional)",
-      "descriptionPlaceholder": "Write a short description of this ready-made audience…",
+      "descriptionPlaceholder": "Write a short description of the customers this template targets",
       "reviewTitle": "Review",
-      "reviewSubtitle": "Check the details before you save. Tenants will pick type when they create a segment from this template.",
-      "conditions": "Conditions",
+      "reviewSubtitle": "Check the details before you save. Tenants will pick segment type when they create a segment from this template.",
+      "conditions": "Segment conditions",
+      "filterTitle": "Segment conditions",
+      "filterSubtitle": "Set the conditions that must apply to customers in this segment",
       "cancel": "Cancel",
       "back": "Back",
-      "nextFilter": "Next: Filter builder",
+      "nextFilter": "Next: Set conditions",
       "nextReview": "Next: Review",
       "save": "Save changes",
       "create": "Create template",
       "steps": {
         "identity": "Template details",
-        "filter": "Filter builder",
+        "filter": "Set conditions",
         "review": "Review"
       }
     }
   },
   "audienceFilter": {
-    "title": "Filter builder",
-    "subtitle": "Click Add condition and pick a field. Related groups (order, product…) are created automatically.",
+    "title": "Segment conditions",
+    "subtitle": "Set the conditions that must apply to customers in this segment",
     "addCondition": "Add condition",
     "selectField": "Select field",
     "searchFields": "Search fields…",
     "removeCondition": "Remove condition",
     "removeGroup": "Remove group",
-    "emptyRules": "No conditions yet. Add a condition and choose a field.",
+    "emptyRules": "No conditions have been added yet",
     "loadingMetadata": "Loading fields…",
-    "rulesMin": "Add at least one condition",
+    "rulesMin": "Add at least one condition to define customers",
     "valueRequired": "Value is required",
-    "logicAnd": "Match all",
+    "logicAnd": "All conditions",
     "logicOr": "Match any",
     "noValueNeeded": "No value needed",
     "valuesLoading": "Loading values…",
@@ -15311,50 +15317,58 @@
       "totalOrders": "of total orders"
     },
     "entities": {
-      "client": "Customer",
-      "order": "Orders",
-      "order_item": "Order items"
+      "client": "Customer data & performance",
+      "order": "Order data",
+      "order_item": "Product details"
     },
     "entityShort": {
       "client": "C",
       "order": "O",
-      "order_item": "I"
+      "order_item": "P"
     },
     "entityHints": {
-      "client": "The customer themselves",
+      "client": "The customer themselves and their performance",
       "order": "Has an order matching these conditions",
-      "order_item": "Has a line on that order matching these conditions"
+      "order_item": "Has a product on that order matching these conditions"
     },
     "fields": {
       "client": {
-        "createdAt": "Created at",
         "tagId": "Customer tag",
         "totalOrders": "Total orders",
-        "confirmedCount": "Confirmed orders",
-        "confirmedRate": "Order confirmation rate",
         "deliveredCount": "Delivered orders",
+        "deliveredRate": "Delivery rate",
+        "confirmedCount": "Confirmed orders",
+        "confirmedRate": "Confirmation rate",
         "returnedCount": "Returned orders",
+        "returnedRate": "Return rate",
         "cancelledCount": "Cancelled orders",
-        "cancelRate": "Cancel percent",
-        "deliveredRevenue": "Delivered revenue"
+        "cancelRate": "Cancel rate",
+        "deliveredRevenue": "Delivered order value",
+        "totalSales": "Total order value",
+        "createdAt": "Customer created date",
+        "lastOrderAt": "Last order date",
+        "lastDeliveredAt": "Last delivered order date"
       },
       "order": {
         "statusId": "Order status",
+        "createdAt": "Order date",
         "storeId": "Store",
-        "cityId": "City",
-        "tagId": "Order tag",
-        "paymentStatus": "Payment status",
+        "cityId": "City / region",
         "paymentMethod": "Payment method",
-        "productsTotal": "Products total",
         "shippingCompanyId": "Shipping company",
-        "finalTotal": "Final total",
-        "confirmationSource": "Confirmation source"
+        "finalTotal": "Order value",
+        "productsTotal": "Products value",
+        "tagId": "Order tag",
+        "confirmationSource": "Confirmation source",
+        "deliveredAt": "Delivery date",
+        "cancelCauseId": "Cancel reason"
       },
       "order_item": {
-        "quantity": "Quantity"
+        "quantity": "Quantity",
+        "isAdditional": "Upsell"
       },
       "variant": {
-        "id": "Variant"
+        "id": "SKU"
       },
       "product": {
         "id": "Product",
@@ -15367,6 +15381,8 @@
         "tagId": "VIP",
         "totalOrders": "3",
         "confirmedRate": "20",
+        "deliveredRate": "40",
+        "returnedRate": "10",
         "cancelRate": "15"
       },
       "order": {

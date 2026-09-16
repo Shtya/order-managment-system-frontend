@@ -109,7 +109,7 @@ const pdfStyles = StyleSheet.create({
 
 const SystemLabelPDF = ({ orders, t, formatCurrency, locale, barcodeUrls, extraPages = null }) => {
   const isArabic = locale === "ar";
-
+  
   return (
     <Document>
       {orders.map((order) => (
@@ -161,6 +161,14 @@ const SystemLabelPDF = ({ orders, t, formatCurrency, locale, barcodeUrls, extraP
                   <View style={pdfStyles.fieldBox}>
                     <Text style={pdfStyles.fieldLabel}>{t("labelFields.city")}</Text>
                     <Text style={pdfStyles.fieldValue}>{order.city}</Text>
+                  </View>
+                  <View style={pdfStyles.fieldBox}>
+                    <Text style={pdfStyles.fieldLabel}>{t("labelFields.address")}</Text>
+                    <Text style={pdfStyles.fieldValue}>{order.address || "—"}</Text>
+                  </View>
+                  <View style={pdfStyles.fieldBox}>
+                    <Text style={pdfStyles.fieldLabel}>{t("labelFields.landmark")}</Text>
+                    <Text style={pdfStyles.fieldValue}>{order.landmark || "—"}</Text>
                   </View>
                 </View>
               </View>

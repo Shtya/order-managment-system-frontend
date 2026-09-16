@@ -610,11 +610,11 @@ export default function SegmentForm({ mode = "create", segmentId, variant = "seg
                       })}
                     </div>
                   )}
-                  {!isEdit && (
+                  {!isEdit && (type === "frozen" ? t("form.frozenNote") : t("form.dynamicNote")) ? (
                     <div className="rounded-lg bg-primary/10 px-3 py-2 text-xs text-primary">
                       {type === "frozen" ? t("form.frozenNote") : t("form.dynamicNote")}
                     </div>
-                  )}
+                  ) : null}
                 </div>
                 )}
               </div>
@@ -640,6 +640,8 @@ export default function SegmentForm({ mode = "create", segmentId, variant = "seg
                       lookupsLoading={lookupLoading}
                       invalidRuleIds={invalidRuleIds}
                       hiddenFields={hiddenFields}
+                      title={t("form.filterTitle")}
+                      subtitle={t("form.filterSubtitle")}
                     />
                   )}
                 />

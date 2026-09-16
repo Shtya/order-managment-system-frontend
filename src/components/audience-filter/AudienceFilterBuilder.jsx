@@ -254,6 +254,8 @@ export function AudienceFilterBuilder({
   lookupsLoading = {},
   invalidRuleIds = [],
   hiddenFields = [],
+  title,
+  subtitle,
 }) {
   const t = useTranslations("audienceFilter");
   if (!metadata) {
@@ -263,8 +265,8 @@ export function AudienceFilterBuilder({
   return (
     <div className="space-y-3">
       <div>
-        <h2 className="text-base font-semibold">{t("title")}</h2>
-        <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
+        <h2 className="text-base font-semibold">{title || t("title")}</h2>
+        <p className="text-xs text-muted-foreground">{subtitle || t("subtitle")}</p>
       </div>
       <GroupCard
         group={value}

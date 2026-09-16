@@ -5,19 +5,24 @@ import { useTranslations } from "next-intl";
 import {
   Activity,
   Box,
+  Calendar,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  CreditCard,
   DollarSign,
+  Gift,
   Hash,
   MapPin,
   Package,
   Percent,
   Plus,
+  RotateCcw,
   Store,
   Tag,
   Truck,
   User,
+  XCircle,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -31,21 +36,37 @@ import {
 
 const FIELD_ICONS = {
   "order.statusId": Activity,
+  "order.createdAt": Calendar,
   "order.confirmationSource": Activity,
   "order.storeId": Store,
   "order.shippingCompanyId": Truck,
   "order.cityId": MapPin,
+  "order.paymentMethod": CreditCard,
   "order.finalTotal": DollarSign,
   "order.productsTotal": DollarSign,
   "order.tagId": Tag,
+  "order.deliveredAt": Calendar,
+  "order.cancelCauseId": XCircle,
   "client.totalOrders": Hash,
   "client.tagId": Tag,
   "client.confirmedCount": CheckCircle2,
   "client.confirmedRate": Percent,
+  "client.deliveredCount": Package,
+  "client.deliveredRate": Percent,
+  "client.returnedCount": RotateCcw,
+  "client.returnedRate": Percent,
+  "client.cancelledCount": XCircle,
   "client.cancelRate": Percent,
+  "client.deliveredRevenue": DollarSign,
+  "client.totalSales": DollarSign,
+  "client.createdAt": Calendar,
+  "client.lastOrderAt": Calendar,
+  "client.lastDeliveredAt": Calendar,
   "product.categoryId": Box,
   "product.id": Package,
   "variant.id": Tag,
+  "order_item.quantity": Hash,
+  "order_item.isAdditional": Gift,
 };
 
 const ENTITY_ICONS = {
@@ -77,7 +98,7 @@ export function AudienceFieldPicker({
   const t = useTranslations("audienceFilter");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [expanded, setExpanded] = useState({ client: true });
+  const [expanded, setExpanded] = useState({ order_item: true });
   const index = useMemo(() => metadataIndex(metadata), [metadata]);
   const hiddenSet = useMemo(() => new Set(hiddenFields || []), [hiddenFields]);
 
@@ -112,7 +133,7 @@ export function AudienceFieldPicker({
       const entity = index.entities.get(entityKey);
       if (!entity) return false;
       if (matchesQuery(labelForEntity(entityKey))) return true;
-      if ((entity.fields || []).some((field) => {
+      return (entity.fields || []).some((field) => {
         if (hiddenSet.has(field.field)) return false;
         const fromKey = percentFromKey(field.field);
         return (
@@ -121,8 +142,7 @@ export function AudienceFieldPicker({
           matchesQuery(safeT(t, `examples.${field.field}`)) ||
           matchesQuery(fromKey ? safeT(t, `from.${fromKey}`) : "")
         );
-      })) return true;
-      return (entity.children || []).some((child) => entityHasMatch(child));
+      });
     },
     [hiddenSet, index.entities, labelForEntity, labelForField, matchesQuery, t],
   );
@@ -140,7 +160,7 @@ export function AudienceFieldPicker({
     [onChange],
   );
 
-  const renderEntity = (entityKey, level = 0) => {
+  const renderEntity = (entityKey) => {
     const entity = index.entities.get(entityKey);
     if (!entity || !entityHasMatch(entityKey)) return null;
     const isOpen = Boolean(query.trim()) || expanded[entityKey];
@@ -158,7 +178,6 @@ export function AudienceFieldPicker({
         matchesQuery(example)
       );
     });
-    const visibleChildren = (entity.children || []).filter((child) => entityHasMatch(child));
     return (
       <div key={entityKey} className="select-none">
         <div
@@ -209,7 +228,6 @@ export function AudienceFieldPicker({
                 </div>
               );
             })}
-            {visibleChildren.map((child) => renderEntity(child, level + 1))}
           </div>
         )}
       </div>
@@ -275,7 +293,7 @@ export function AudienceFieldPicker({
           />
         </div>
         <div className="max-h-[min(500px,70vh)] overflow-y-auto overscroll-contain p-2">
-          {renderEntity(index.rootEntity)}
+          {(metadata?.entities || []).map((entity) => renderEntity(entity.entity))}
         </div>
       </PopoverContent>
     </Popover>

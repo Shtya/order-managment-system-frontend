@@ -2,7 +2,6 @@ import api from "@/utils/api";
 import {
   CONFIRMATION_SOURCES,
   PAYMENT_METHODS,
-  PAYMENT_STATUSES,
   unwrapList,
 } from "@/app/[locale]/tags/atoms/condition-fields";
 
@@ -11,6 +10,7 @@ export const TENANT_AUDIENCE_FIELDS = [
   "order.tagId",
   "order.storeId",
   "order.shippingCompanyId",
+  "order.cancelCauseId",
   "product.categoryId",
   "order.statusId",
   "product.id",
@@ -27,6 +27,7 @@ export const FIELD_TO_LOOKUP_KEY = {
   "order.storeId": "stores",
   "order.cityId": "cities",
   "order.shippingCompanyId": "shipping",
+  "order.cancelCauseId": "cancelCauses",
   "client.tagId": "clientTags",
   "order.tagId": "orderTags",
   "product.categoryId": "categories",
@@ -36,6 +37,7 @@ const TENANT_LOOKUP_KEYS = new Set([
   "statuses",
   "stores",
   "shipping",
+  "cancelCauses",
   "clientTags",
   "orderTags",
   "categories",
@@ -46,6 +48,7 @@ export const EMPTY_AUDIENCE_LOOKUPS = {
   stores: [],
   cities: [],
   shipping: [],
+  cancelCauses: [],
   clientTags: [],
   orderTags: [],
   categories: [],
@@ -92,6 +95,10 @@ async function fetchLookupKey(key) {
       const res = await api.get("/lookups/categories", { params: { limit: 200 } }).catch(() => ({ data: [] }));
       return unwrapList(res.data);
     }
+    case "cancelCauses": {
+      const res = await api.get("/cancel-causes/selectable", { params: { limit: 200 } }).catch(() => ({ data: [] }));
+      return unwrapList(res.data);
+    }
     default:
       return [];
   }
@@ -107,7 +114,7 @@ export async function fetchAudienceLookupKeys(keys) {
 
 export async function fetchAudienceLookups({ includeTenant = true } = {}) {
   const keys = includeTenant
-    ? ["statuses", "stores", "cities", "shipping", "clientTags", "orderTags", "categories"]
+    ? ["statuses", "stores", "cities", "shipping", "cancelCauses", "clientTags", "orderTags", "categories"]
     : ["cities"];
   const loaded = await fetchAudienceLookupKeys(keys);
   return { ...EMPTY_AUDIENCE_LOOKUPS, ...loaded };
@@ -178,10 +185,24 @@ export function buildAudienceFieldOptions({ lookups, locale, tOrders, tTags }) {
     label: category.name || category.title || category.id,
   }));
 
+  const paymentOptions = PAYMENT_METHODS.map((value) => ({
+    value,
+    label: tOrders(
+      value === "bank_transfer" ? "paymentMethods.bankTransfer" : `paymentMethods.${value}`,
+    ),
+  }));
+  const cancelCauseOptions = (lookups.cancelCauses || []).map((cause) => ({
+    value: cause.id,
+    label: cause.name || cause.code || cause.id,
+  }));
+
   return {
     "order.statusId": statusOptions,
     "order.storeId": storeOptions,
+    "order.cityId": cityOptions,
+    "order.paymentMethod": paymentOptions,
     "order.shippingCompanyId": shippingOptions,
+    "order.cancelCauseId": cancelCauseOptions,
     "client.tagId": (lookups.clientTags || []).map(tagOption),
     "order.tagId": (lookups.orderTags || []).map(tagOption),
     "product.categoryId": categoryOptions,

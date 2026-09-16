@@ -397,6 +397,8 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                                 [t("labelFields.phone"), order.phoneNumber],
                                 [t("labelFields.city"), order.city],
                                 [t("labelFields.area"), order.area || "—"],
+                                [t("labelFields.address"), order.address || "—"],
+                                [t("labelFields.landmark"), order.landmark || "—"],
                               ].map(([k, v]) => (
                                 <div key={k} className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5">
                                   <p className="text-[10px] text-slate-400 mb-0.5">{k}</p>

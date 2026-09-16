@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import {
     Save,
@@ -26,6 +26,7 @@ import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/cn';
 import api from "@/utils/api";
+import Button_ from "@/components/atoms/Button";
 
 import { useFlowStore } from '@/hook/useFlowStore';
 import { OrderDetailModal } from '@/app/[locale]/warehouse/tabs/DistributionTab';
@@ -38,7 +39,9 @@ import StepExecutionDialog from './StepExecutionDialog';
 import { processNodesBeforeSave } from './nodeProcessors';
 import { BASE_CONFIG } from './automation-config';
 import AutomationWhatsappSettingsDialog from './AutomationWhatsappSettingsDialog';
-import { hasWhatsappAutomationSteps } from './whatsapp-flow-settings';
+import { countWhatsappAutomationSteps, hasWhatsappAutomationSteps } from './whatsapp-flow-settings';
+
+const WHATSAPP_SETTINGS_TOAST_ID = "automation-whatsapp-settings";
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
     const t = useTranslations("whatsApp.automations.builder");
@@ -81,6 +84,115 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
     const [savedSnapshot, setSavedSnapshot] = useState(null);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const hasWhatsappSteps = useMemo(() => hasWhatsappAutomationSteps(nodes), [nodes]);
+    const whatsappStepCount = useMemo(() => countWhatsappAutomationSteps(nodes), [nodes]);
+    const previousWhatsappStepCountRef = useRef(null);
+    const hasAcknowledgedWhatsappSettings = !!whatsappSettings?.acknowledged;
+
+    const markWhatsappSettingsSeen = useCallback(() => {
+        toast.dismiss(WHATSAPP_SETTINGS_TOAST_ID);
+        if (hasAcknowledgedWhatsappSettings) return;
+        setWhatsappSettings({
+            ...whatsappSettings,
+            acknowledged: true,
+        });
+    }, [hasAcknowledgedWhatsappSettings, setWhatsappSettings, whatsappSettings]);
+
+    const openWhatsappSettings = useCallback(() => {
+        markWhatsappSettingsSeen();
+        setSettingsOpen(true);
+    }, [markWhatsappSettingsSeen]);
+
+    const showWhatsappSettingsToast = useCallback(() => {
+
+        toast.custom(
+            (toastItem) => (
+                <div
+                className={cn(
+                    "pointer-events-auto relative flex w-max max-w-[calc(100vw-2rem)] items-center gap-4 rounded-2xl border border-primary/20 bg-white p-3 shadow-xl dark:border-primary/30 dark:bg-slate-900 md:max-w-2xl",
+                    toastItem.visible ? "animate-enter" : "animate-leave"
+                )}
+            >
+                {/* Soft Icon */}
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
+                    <Settings size={20} />
+                </div>
+            
+                {/* Text Content */}
+                <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold leading-snug text-slate-800 dark:text-slate-100">
+                        {t("toolbar.whatsappSettingsReminderTitle")}
+                    </p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                        {t("toolbar.whatsappSettingsReminderBody")}
+                    </p>
+                </div>
+            
+                {/* Action Button */}
+                <div className="shrink-0">
+                    <Button_
+                        size="sm"
+                        variant="solid"
+                        label={t("toolbar.openWhatsappSettings")}
+                        icon={<Settings size={14} />}
+                        onClick={openWhatsappSettings}
+                    />
+                </div>
+            
+                {/* Close Button */}
+                <button
+                    type="button"
+                    className="shrink-0 rounded-md p-1 text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+                    aria-label={t("toolbar.close")}
+                    onClick={() => toast.dismiss(toastItem.id)}
+                >
+                    <X size={18} strokeWidth={1.75} />
+                </button>
+            </div>
+            ),
+            {
+                id: WHATSAPP_SETTINGS_TOAST_ID,
+                duration: 15000,
+                style: {
+                    background: "transparent",
+                    boxShadow: "none",
+                    border: "none",
+                    padding: 0,
+                },
+            },
+        );
+    }, [openWhatsappSettings, t]);
+
+    useEffect(() => {
+        const previousCount = previousWhatsappStepCountRef.current;
+        previousWhatsappStepCountRef.current = whatsappStepCount;
+
+        if (previousCount === null) return;
+
+        if (whatsappStepCount === 0) {
+            toast.dismiss(WHATSAPP_SETTINGS_TOAST_ID);
+            return;
+        }
+
+        const movedFromZeroToOne = previousCount === 0 && whatsappStepCount >= 1;
+      
+        if (
+            !movedFromZeroToOne
+            || hasAcknowledgedWhatsappSettings
+            || isViewMode
+            || isPreviewMode
+        ) {
+            
+            return;
+        }
+        
+        showWhatsappSettingsToast();
+    }, [
+        hasAcknowledgedWhatsappSettings,
+        isPreviewMode,
+        isViewMode,
+        showWhatsappSettingsToast,
+        whatsappStepCount,
+    ]);
 
     // Recovery logic for inconsistent 'run' mode on initialization (e.g., after reload)
     useEffect(() => {
@@ -453,7 +565,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                             disabled={!hasWhatsappSteps}
                             showTooltipWhenDisabled
                             badge={hasWhatsappSteps && !whatsappSettings?.acknowledged}
-                            onClick={() => setSettingsOpen(true)}
+                            onClick={openWhatsappSettings}
                         />
                     )}
                     <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-800 mx-1" />
@@ -533,7 +645,10 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
 
             <AutomationWhatsappSettingsDialog
                 open={settingsOpen}
-                onOpenChange={setSettingsOpen}
+                onOpenChange={(open) => {
+                    if (open) toast.dismiss(WHATSAPP_SETTINGS_TOAST_ID);
+                    setSettingsOpen(open);
+                }}
                 value={whatsappSettings}
                 onSave={setWhatsappSettings}
             />

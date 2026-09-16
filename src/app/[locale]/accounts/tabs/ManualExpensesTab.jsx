@@ -434,7 +434,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl">
               {t("manualExpenses.form.cancel")}
             </Button>
-            <Button type="submit" className="rounded-xl px-8" disabled={loading}>
+            <Button type="submit" className="rounded-xl px-8" disabled={loading} >
               {loading ? <Loader2 size={16} className="animate-spin" /> : t("manualExpenses.form.save")}
             </Button>
           </DialogFooter>
@@ -1013,7 +1013,7 @@ export function CategoryFormModal({ open, onOpenChange, editingCategory, onSave 
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl">
               {t("form.cancel") || "Cancel"}
             </Button>
-            <Button type="submit" className="rounded-xl px-8 bg-slate-800 hover:bg-slate-900 text-white" disabled={loading}>
+            <Button type="submit" className="rounded-xl text-white" disabled={loading}>
               {loading ? <Loader2 size={16} className="animate-spin" /> : (t("categoryMgmt.saveBtn") || "Save")}
             </Button>
           </DialogFooter>

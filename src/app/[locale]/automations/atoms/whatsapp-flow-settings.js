@@ -11,10 +11,14 @@ export const DEFAULT_WHATSAPP_SETTINGS = {
     acknowledged: false,
 };
 
-export function hasWhatsappAutomationSteps(nodes = []) {
-    return nodes.some((node) =>
+export function countWhatsappAutomationSteps(nodes = []) {
+    return nodes.filter((node) =>
         WHATSAPP_AUTOMATION_STEP_TYPES.includes(node?.data?.type),
-    );
+    ).length;
+}
+
+export function hasWhatsappAutomationSteps(nodes = []) {
+    return countWhatsappAutomationSteps(nodes) > 0;
 }
 
 export function normalizeWhatsappSettings(settings) {

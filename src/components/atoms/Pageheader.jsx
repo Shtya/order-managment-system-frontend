@@ -298,7 +298,7 @@ function InfoCard({
 							</div>
 							<div style={{
 								// fontFamily: "'Instrument Serif', serif",
-								fontSize: 24, fontWeight: 500, lineHeight: 1,
+								fontSize: 20, fontWeight: 500, lineHeight: 1,
 								letterSpacing: "-0.025em",
 								color: hov ? accent : "var(--card-foreground)",
 								transition: "color .22s",

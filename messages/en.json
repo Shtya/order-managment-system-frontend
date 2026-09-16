@@ -25,12 +25,12 @@
     "webhook": {
       "title": "Webhook Setup",
       "subtitleBosta": "Copy the values and enter them in Bosta",
-     "subtitleTurbo": "Copy the values and enter them in Turbo", 
+      "subtitleTurbo": "Copy the values and enter them in Turbo",
       "subtitle": "Copy the values and enter them with the shipping company",
       "triggerTitle": "When does it run?",
       "triggerDescriptionBosta": "Bosta will send a POST request to the Webhook URL when the shipment status changes (not when it is created).",
-       "triggerDescriptionTurbo": "Turbo will send a POST request to the Webhook URL when the shipment status changes (not when it is created).", 
-       "triggerDescription": "The shipping company will send a POST request to the Webhook URL when the shipment status changes (not when it is created).",
+      "triggerDescriptionTurbo": "Turbo will send a POST request to the Webhook URL when the shipment status changes (not when it is created).",
+      "triggerDescription": "The shipping company will send a POST request to the Webhook URL when the shipment status changes (not when it is created).",
       "urlLabel": "Webhook URL",
       "urlHintBosta": "Put this URL in Bosta under Webhook URL.",
       "urlHintTurbo": "Put this URL in Turbo under Webhook URL.",
@@ -38,7 +38,7 @@
       "headerName": "Header Name",
       "headerValue": "Header Value (Secret)",
       "securityHintBosta": "In Bosta: put the header name and value in the Authorization Key fields (optional, but recommended for security).",
-       "securityHintTurbo": "In Turbo: put the header name and value in the Authorization Key fields (optional, but recommended for security).", 
+      "securityHintTurbo": "In Turbo: put the header name and value in the Authorization Key fields (optional, but recommended for security).",
       "securityHint": "For the shipping company: put the header name and value in the Authorization Key fields (optional, but recommended for security).",
       "rotate": "Rotate Secret",
       "docsBosta": "Bosta Guide",
@@ -13518,7 +13518,11 @@
           "processingStepsFailed": "Failed to process steps.",
           "processingStepsSuccess": "Steps processed successfully!",
           "whatsappSettings": "WhatsApp settings",
-          "whatsappSettingsDisabled": "Add a WhatsApp step to configure the sending number"
+          "whatsappSettingsDisabled": "Add a WhatsApp step to configure the sending number",
+          "whatsappSettingsReminderTitle": "WhatsApp settings",
+          "whatsappSettingsReminderBody": "Configure WhatsApp settings and choose the number used for sending",
+          "openWhatsappSettings": "Open settings",
+          "close": "Close"
         },
         "settings": {
           "title": "WhatsApp sending number",

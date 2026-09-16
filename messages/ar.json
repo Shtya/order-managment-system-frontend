@@ -29,7 +29,7 @@
       "subtitle": "انسخ القيم وضعها لدي شركة الشحن",
       "triggerTitle": "متى يعمل؟",
       "triggerDescriptionBosta": "بوسطة سترسل POST إلى رابط الـ Webhook عند تغيّر حالة الشحنة (ليس عند الإنشاء).",
-     "triggerDescriptionTurbo": "تربو سترسل POST إلى رابط الـ Webhook عند تغيّر حالة الشحنة (ليس عند الإنشاء).", 
+      "triggerDescriptionTurbo": "تربو سترسل POST إلى رابط الـ Webhook عند تغيّر حالة الشحنة (ليس عند الإنشاء).",
       "triggerDescription": "شركة الشحن سترسل POST إلى رابط الـ Webhook عند تغيّر حالة الشحنة (ليس عند الإنشاء).",
       "urlLabel": "رابط Webhook",
       "urlHintBosta": "ضع هذا الرابط في بوسطة داخل Webhook URL.",
@@ -38,7 +38,7 @@
       "headerName": "اسم الهيدر",
       "headerValue": "قيمة الهيدر (Secret)",
       "securityHintBosta": "في بوسطة: ضع اسم الهيدر وقيمته في حقول Authorization Key (اختياري، لكن يُنصح به للأمان).",
-       "securityHintTurbo": "في تربو: ضع اسم الهيدر وقيمته في حقول Authorization Key (اختياري، لكن يُنصح به للأمان).", 
+      "securityHintTurbo": "في تربو: ضع اسم الهيدر وقيمته في حقول Authorization Key (اختياري، لكن يُنصح به للأمان).",
       "securityHint": "في شركة الشحن: ضع اسم الهيدر وقيمته في حقول Authorization Key (اختياري، لكن يُنصح به للأمان).",
       "rotate": "تغيير السر",
       "docsBosta": "دليل بوسطة",
@@ -13542,7 +13542,11 @@
           "processingStepsFailed": "فشل في معالجة الخطوات.",
           "processingStepsSuccess": "تم معالجة الخطوات بنجاح!",
           "whatsappSettings": "إعدادات واتساب",
-          "whatsappSettingsDisabled": "أضف خطوة واتساب لضبط رقم الإرسال"
+          "whatsappSettingsDisabled": "أضف خطوة واتساب لضبط رقم الإرسال",
+          "whatsappSettingsReminderTitle": "إعدادات واتساب",
+          "whatsappSettingsReminderBody": "أضبط إعدادات واتساب واختار الرقم الذي سيستخدم في الإرسال",
+          "openWhatsappSettings": "فتح الإعدادات",
+          "close": "إغلاق"
         },
         "settings": {
           "title": "رقم واتساب للإرسال",

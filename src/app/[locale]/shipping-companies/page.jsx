@@ -501,13 +501,16 @@ export function WebhookModal({ company, onClose }) {
 		handleCopy,
 		handleRotateSecret
 	} = useShippingWebhook(company.code);
-
+	const isTurbo = company.code === "turbo";
+	const isBosta = company.code === "bosta";
+	const meta = PROVIDER_META[company.code];
+	const webhookUrl = meta?.guide?.webhookUrl;
 	return (
 		<ModalShell onClose={onClose} maxWidth="max-w-lg">
 			<ModalHeader
 				icon={Webhook}
 				title={t("webhook.title")}
-				subtitle={t("webhook.subtitle")}
+				subtitle={isBosta ? t("webhook.subtitleBosta") : isTurbo ? t("webhook.subtitleTurbo") : t("webhook.subtitle")}
 				onClose={onClose}
 			/>
 
@@ -517,7 +520,7 @@ export function WebhookModal({ company, onClose }) {
 						{t("webhook.triggerTitle")}
 					</p>
 					<p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-						{t("webhook.triggerDescription")}
+						{isBosta ? t("webhook.triggerDescriptionBosta") : isTurbo ? t("webhook.triggerDescriptionTurbo") : t("webhook.triggerDescription")}
 					</p>
 				</div>
 
@@ -546,7 +549,7 @@ export function WebhookModal({ company, onClose }) {
 								</button>
 							</div>
 							<p className="text-[11px] text-[var(--muted-foreground)]">
-								{t("webhook.urlHint")}
+								{isBosta ? t("webhook.urlHintBosta") : isTurbo ? t("webhook.urlHintTurbo") : t("webhook.urlHint")}
 							</p>
 						</div>)}
 
@@ -590,7 +593,7 @@ export function WebhookModal({ company, onClose }) {
 
 						<div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
 							<p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-								{t("webhook.securityHint")}
+								{isBosta ? t("webhook.securityHintBosta") : isTurbo ? t("webhook.securityHintTurbo") : t("webhook.securityHint")}
 							</p>
 							<button
 								onClick={handleRotateSecret}
@@ -613,11 +616,11 @@ export function WebhookModal({ company, onClose }) {
 
 				<div className="flex justify-end gap-2 pt-2">
 					<GhostBtn onClick={onClose}>{t("webhook.close")}</GhostBtn>
-					<a href="https://docs.bosta.co/docs/how-to/get-delivery-status-via-webhook/" target="_blank" rel="noopener noreferrer">
+					{webhookUrl && <a href={webhookUrl} target="_blank" rel="noopener noreferrer">
 						<PrimaryBtn>
-							<ExternalLink size={14} /> {t("webhook.docs")}
+							<ExternalLink size={14} /> {isBosta ? t("webhook.docsBosta") : isTurbo ? t("webhook.docsTurbo") : t("webhook.docs")}
 						</PrimaryBtn>
-					</a>
+					</a>}
 				</div>
 			</div>
 		</ModalShell>

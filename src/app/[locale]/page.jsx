@@ -280,7 +280,7 @@ function Hero({ t, heroImage, locale, switchLocale, user }) {
             className="flex items-center gap-2 rtl:pr-[20px] ltr:pl-[20px]  font-[600] mt-1 text-sm text-[#25456F]"
           >
             {t("hero.trialNote")}
-            <span className="text-base">💳</span>
+            
           </motion.p>
 
         </div>

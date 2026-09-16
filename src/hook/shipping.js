@@ -41,6 +41,7 @@ export const PROVIDER_META = {
         webhookHiddenFields: [],
         guide: {
             docsUrl: "https://docs.bosta.co/docs/how-to/get-your-api-key",
+            webhookUrl: "https://docs.bosta.co/docs/how-to/get-delivery-status-via-webhook/",
             showSteps: false,
             steps: [
                 {
@@ -105,7 +106,8 @@ export const PROVIDER_META = {
         ],
         webhookHiddenFields: ["headerName"],
         guide: {
-            mainUrl: "https://turbo-eg.com",
+            docsUrl: "https://turbo-eg.com",
+            webhookUrl: "https://turbo-eg.com",
             showSteps: true,
             steps: [
                 {

@@ -28,6 +28,10 @@ import {
   WIZARD_STEPS,
 } from "./wizardSchema";
 import { fromApiFilter } from "@/components/audience-filter";
+import {
+  campaignListHref,
+  normalizeCampaignChannel,
+} from "../campaignChannel";
 
 const STEPS = WIZARD_STEPS;
 const EDITABLE_STATUSES = ["draft", "scheduled"];
@@ -110,9 +114,11 @@ function mapCampaignToForm(campaign) {
   };
 }
 
-export default function CampaignWizard({ mode = "create", campaignId = null, copyFromId = null }) {
+export default function CampaignWizard({ mode = "create", campaignId = null, copyFromId = null, channel: channelProp = null }) {
   const isEdit = mode === "edit";
   const isCopy = !isEdit && !!copyFromId;
+  // Channel is locked from the URL (/campaigns/{type}); invalid → WhatsApp.
+  const lockedChannel = normalizeCampaignChannel(channelProp ?? "whatsapp");
   const t = useTranslations("campaigns.wizard");
   const tc = useTranslations("campaigns");
   const router = useRouter();
@@ -123,8 +129,22 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
   const [notEditable, setNotEditable] = useState(false);
 
   const { control, watch, setValue, getValues, reset, setError, clearErrors, formState: { errors } } = useForm({
-    defaultValues: initialWizardData,
+    defaultValues: { ...initialWizardData, channel: lockedChannel },
   });
+
+  const watchedChannel = watch("channel");
+  const listHref = useMemo(
+    () => campaignListHref(watchedChannel),
+    [watchedChannel],
+  );
+
+  // Fresh create / duplicate: keep the URL channel locked.
+  // Edit keeps the stored campaign channel (applied on load below).
+  useEffect(() => {
+    if (isEdit) return;
+    setValue("channel", lockedChannel, { shouldDirty: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lockedChannel, isEdit]);
 
   useEffect(() => {
     setDocumentTitle(t(isEdit ? "editTitle" : "title"));
@@ -163,10 +183,10 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
   const breadcrumbs = useMemo(
     () => [
       { name: tc("breadcrumb.home"), href: "/dashboard" },
-      { name: tc("breadcrumb.campaigns"), href: "/campaigns" },
+      { name: tc("breadcrumb.campaigns"), href: listHref },
       { name: t(isEdit ? "editTitle" : "title") },
     ],
-    [tc, t, isEdit],
+    [tc, t, isEdit, listHref],
   );
 
   const goNext = async () => {
@@ -257,7 +277,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
         });
       }
       toast.success(t("saved"));
-      router.push("/campaigns");
+      router.push(campaignListHref(values.channel));
     } catch (error) {
       toast.error(normalizeAxiosError(error) || t("saveFailed"));
     } finally {
@@ -288,7 +308,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
           <CardContent className="pt-6">
             <p className="text-sm text-red-500">{t("notEditable")}</p>
             <div className="mt-4">
-              <Button_ size="sm" variant="outline" label={t("backToList")} onClick={() => router.push("/campaigns")} />
+              <Button_ size="sm" variant="outline" label={t("backToList")} onClick={() => router.push(listHref)} />
             </div>
           </CardContent>
         </Card>

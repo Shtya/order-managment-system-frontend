@@ -593,7 +593,11 @@
     "ai": "الذكاء الاصطناعي",
     "platformNumbers": "أرقام واتساب المنصة",
     "revenueStats": "إيرادات واتساب",
-    "campaigns": "الحملات"
+    "campaigns": "الحملات",
+    "campaignsWhatsapp": "واتساب",
+    "campaignsSms": "رسائل نصية (SMS)",
+    "campaignsEmail": "بريد الإلكتروني",
+    "comingSoon": "قريبًا"
   },
   "gettingStarted": {
     "allComplete": {
@@ -14691,6 +14695,7 @@
       "orders": "طلبات",
       "sales": "مبيعات",
       "cost": "التكلفة",
+      "profit": "الربح",
       "actions": "إجراءات"
     },
     "table": {
@@ -14751,9 +14756,16 @@
         "replied": "ردود",
         "failed": "فشل الإرسال",
         "pending": "قيد الانتظار",
-        "orders": "الطلبات",
+        "orders": "إجمالي الطلبات",
         "successRate": "معدل نجاح الارسال ",
-        "conversion": "التحويل"
+        "conversion": "التحويل",
+        "totalSales": "إجمالي المبيعات",
+        "totalProfit": "إجمالي الربح",
+        "deliveredOrders": "طلبات تم توصيلها",
+        "returnedOrders": "طلبات مرتجعة",
+        "pendingOrders": "طلبات مع شركات الشحن",
+        "deliveryRate": "معدل توصيل الطلبات",
+        "cost": "تكلفة الرسائل"
       },
       "sections": {
         "general": "معلومات عامة",
@@ -14798,7 +14810,7 @@
         "read": "تمت القراءة",
         "replied": "رد",
         "order": "الطلب",
-        "cost": "التكلفة",
+        "cost": "تكلفة الرسائل",
         "failureReason": "سبب الفشل",
         "actions": "إجراءات"
       },
@@ -14844,6 +14856,7 @@
       "delayMax": "أقصى تأخير (ثانية)",
       "maxPerHour": "أقصى رسائل / ساعة",
       "channel": "القناة",
+      "channelLockedHint": "يتم تحديدها من الصفحة التي أتيت منها.",
       "channels": {
         "whatsapp": "واتساب للأعمال",
         "whatsappHint": "إرسال رسائل باستخدام قوالب واتساب المعتمدة.",

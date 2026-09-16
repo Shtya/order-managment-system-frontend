@@ -65,10 +65,11 @@ export function filterSidebarItems(items, user) {
 export function getFirstAccessibleHref(items) {
   for (const item of items) {
     if (item.children?.length) {
-      if (item.children[0]?.href) return item.children[0].href;
+      const first = item.children.find((c) => c.href && !c.comingSoon);
+      if (first?.href) return first.href;
       continue;
     }
-    if (item.href) return item.href;
+    if (item.href && !item.comingSoon) return item.href;
   }
   return null;
 }

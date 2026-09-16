@@ -108,7 +108,7 @@ export default function StepReview({ getValues }) {
     [t("description"), v.description || empty],
     [t("workingHours"), v.workingHoursEnabled ? `${v.workingHoursStart} → ${v.workingHoursEnd}` : t("review.offHours")],
     [t("delayMax"), `${v.delayMinSeconds}s → ${v.delayMaxSeconds}s`],
-    [t("channel"), t("channels.whatsapp")],
+    [t("channel"), t(`channels.${["whatsapp", "sms", "email"].includes(v.channel) ? v.channel : "whatsapp"}`)],
     [t("scheduleMode"), v.scheduleMode === "scheduled"
       ? combineScheduledAt(v.scheduledDate, v.scheduledTime) || `${v.scheduledDate || ""} ${v.scheduledTime || ""}`
       : t("scheduleNow")],

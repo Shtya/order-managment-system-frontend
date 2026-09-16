@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { MessageCircle, Mail, MessageSquareText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -16,21 +15,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
-import { cn } from "@/utils/cn";
+import { Badge } from "@/components/ui/badge";
 import { CAMPAIGN_CATEGORIES } from "./wizardSchema";
-
-const CHANNELS = [
-  { id: "whatsapp", icon: MessageCircle, enabled: true },
-  { id: "sms", icon: MessageSquareText, enabled: false },
-  { id: "email", icon: Mail, enabled: false },
-];
+import { normalizeCampaignChannel } from "../campaignChannel";
 
 export default function StepGeneral({ control, errors, watch, setValue }) {
   const t = useTranslations("campaigns.wizard");
 
   const workingHoursEnabled = watch("workingHoursEnabled");
   const workingHoursTimezone = watch("workingHoursTimezone");
-  const channel = watch("channel");
+  // Channel is locked from the URL (/campaigns/{type}); no picker here.
+  const channel = normalizeCampaignChannel(watch("channel"));
   const scheduleMode = watch("scheduleMode");
 
   useEffect(() => {
@@ -172,42 +167,12 @@ export default function StepGeneral({ control, errors, watch, setValue }) {
       </div>
 
       <div className="space-y-2">
-        <Label>
-          {t("channel")} <span className="text-red-500">*</span>
-        </Label>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {CHANNELS.map((c) => {
-            const Icon = c.icon;
-            const active = channel === c.id;
-            return (
-              <button
-                key={c.id}
-                type="button"
-                disabled={!c.enabled}
-                onClick={() => setValue("channel", c.id, { shouldDirty: true })}
-                className={cn(
-                  "flex gap-3 rounded-xl border p-3.5 text-start transition-all",
-                  active
-                    ? "border-primary bg-primary/5 shadow-[0_0_0_3px_rgb(var(--primary-shadow))]"
-                    : "border-border bg-background",
-                  !c.enabled && "opacity-60 cursor-not-allowed",
-                )}
-              >
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                  <Icon size={18} />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-bold">
-                    {t(`channels.${c.id}`)}
-                    {!c.enabled && <span className="ms-2 text-[10px] font-medium text-muted-foreground">· {t(`channels.${c.id}Hint`)}</span>}
-                  </span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground leading-relaxed">
-                    {t(`channels.${c.id}Hint`)}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
+        <Label>{t("channel")}</Label>
+        <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3.5 py-3">
+          <Badge variant="outline" className="font-bold">
+            {t(`channels.${channel}`)}
+          </Badge>
+          <span className="text-xs text-muted-foreground">{t("channelLockedHint")}</span>
         </div>
       </div>
 

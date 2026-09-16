@@ -928,7 +928,6 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                     label={tForm("accountLabel")}
                                                     onLoadChange={setLoadAccounts}
                                                     onLoaded={setAccounts}
-                                                    showDuplicates={false}
                                                 />
                                             )}
                                         />

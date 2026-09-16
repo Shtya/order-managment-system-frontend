@@ -37,6 +37,7 @@ import {
   Boxes,
   MessageSquare,
   Ticket,
+  Mail,
   Rocket,
   GraduationCap,
   Bot,
@@ -321,9 +322,37 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
     {
       icon: Megaphone,
       labelKey: "campaigns",
-      href: "/campaigns",
+      href: "/campaigns/whatsapp",
       permission: "campaigns.read",
       allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
+      children: [
+        {
+          icon: Megaphone,
+          labelKey: "campaigns",
+          href: "/campaigns",
+          permission: "campaigns.read",
+        },
+        {
+          icon: FaWhatsapp,
+          labelKey: "campaignsWhatsapp",
+          href: "/campaigns/new/whatsapp",
+          permission: "campaigns.read",
+        },
+        {
+          icon: MessageSquare,
+          labelKey: "campaignsSms",
+          href: "/campaigns/new/sms",
+          permission: "campaigns.read",
+          comingSoon: true,
+        },
+        {
+          icon: Mail,
+          labelKey: "campaignsEmail",
+          href: "/campaigns/new/email",
+          permission: "campaigns.read",
+          comingSoon: true,
+        },
+      ],
     },
     {
       icon: MessageSquare,

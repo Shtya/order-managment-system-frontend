@@ -8,17 +8,21 @@ import {
   Ban,
   Check,
   Copy,
+  DollarSign,
   Edit,
   Megaphone,
+  PackageCheck,
   Pause,
   Play,
   RotateCcw,
   Trash2,
+  TrendingUp,
   Users,
   Send,
   Eye,
   MessageCircle,
   ShoppingCart,
+  Wallet,
   XCircle,
   Clock,
   BadgeCheck,
@@ -125,6 +129,8 @@ export default function CampaignDetailsPage() {
   const [metadata, setMetadata] = useState(null);
   const [lookupsRaw, setLookupsRaw] = useState(EMPTY_AUDIENCE_LOOKUPS);
   const [whatsappAccount, setWhatsappAccount] = useState(null);
+  const [performance, setPerformance] = useState(null);
+  const [perfLoading, setPerfLoading] = useState(false);
   const searchTimer = useRef(null);
   const liveRefreshTimer = useRef(null);
 
@@ -170,9 +176,29 @@ export default function CampaignDetailsPage() {
     [id, page, limit, appliedStatus, debouncedSearch, t],
   );
 
+  // Order-based financial + delivery aggregates (single backend query).
+  // Order status changes don't emit campaign socket events, so this
+  // refreshes on mount and after actions, not on every live tick.
+  const fetchPerformance = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) setPerfLoading(true);
+      try {
+        const res = await api.get(`/campaigns/${id}/order-performance`);
+        const body = res.data?.totalOrders != null ? res.data : res.data?.data;
+        if (body?.totalOrders != null) setPerformance(body);
+      } catch {
+        /* cards fall back to the campaign counters */
+      } finally {
+        if (!silent) setPerfLoading(false);
+      }
+    },
+    [id],
+  );
+
   useEffect(() => {
     fetchCampaign();
-  }, [fetchCampaign]);
+    fetchPerformance();
+  }, [fetchCampaign, fetchPerformance]);
 
   useEffect(() => {
     if (!subscribe || !id) return undefined;
@@ -293,11 +319,18 @@ export default function CampaignDetailsPage() {
       { key: "replied", name: td("stats.replied"), value: campaign?.repliedCount ?? 0, icon: MessageCircle, sortOrder: 4 },
       { key: "failed", name: td("stats.failed"), value: failed, icon: XCircle, sortOrder: 5 },
       { key: "pending", name: td("stats.pending"), value: pending, icon: Clock, sortOrder: 6 },
-      { key: "orders", name: td("stats.orders"), value: campaign?.ordersCount ?? 0, icon: ShoppingCart, sortOrder: 7 },
-      { key: "successRate", name: td("stats.successRate"), value: `${successRate}%`, icon: BadgeCheck, sortOrder: 8 },
-      { key: "conversion", name: td("stats.conversion"), value: `${conversionRate}%`, icon: Percent, sortOrder: 9 },
+      { key: "successRate", name: td("stats.successRate"), value: `${successRate}%`, icon: BadgeCheck, sortOrder: 7 },
+      { key: "conversion", name: td("stats.conversion"), value: `${conversionRate}%`, icon: Percent, sortOrder: 8 },
+      { key: "totalSales", name: td("stats.totalSales"), value: perfLoading && !performance ? "—" : formatCurrency(Number(performance?.salesAmount ?? campaign?.salesAmount ?? 0)), icon: DollarSign, sortOrder: 9 },
+      { key: "totalProfit", name: td("stats.totalProfit"), value: formatCurrency(Number(performance?.profitAmount ?? 0)), icon: TrendingUp, sortOrder: 10 },
+      { key: "cost", name: td("stats.cost"), value: formatCurrency(Number(campaign?.costAmount ?? 0)), icon: Wallet, sortOrder: 11 },
+      { key: "orders", name: td("stats.orders"), value: campaign?.ordersCount ?? 0, icon: ShoppingCart, sortOrder: 12 },
+      { key: "deliveredOrders", name: td("stats.deliveredOrders"), value: perfLoading && !performance ? "—" : Number(performance?.deliveredOrders ?? 0).toLocaleString(), icon: PackageCheck, sortOrder: 13 },
+      { key: "returnedOrders", name: td("stats.returnedOrders"), value: perfLoading && !performance ? "—" : Number(performance?.returnedOrders ?? 0).toLocaleString(), icon: RotateCcw, sortOrder: 14 },
+      { key: "pendingOrders", name: td("stats.pendingOrders"), value: perfLoading && !performance ? "—" : Number(performance?.pendingOrders ?? 0).toLocaleString(), icon: Clock, sortOrder: 15 },
+      { key: "deliveryRate", name: td("stats.deliveryRate"), value: perfLoading && !performance ? "—" : `${Number(performance?.deliveryRate ?? 0)}%`, icon: Percent, sortOrder: 16 },
     ],
-    [td, campaign, sent, delivered, failed, pending, successRate, conversionRate],
+    [td, campaign, sent, delivered, failed, pending, successRate, conversionRate, formatCurrency, performance, perfLoading],
   );
 
   const formatDate = (value) => {
@@ -335,12 +368,13 @@ export default function CampaignDetailsPage() {
       } else if (type === "delete") {
         await api.delete(`/campaigns/${id}`);
         toast.success(t("toast.deleted"));
-        router.push("/campaigns");
+        router.push(`/campaigns`);
         return;
       }
       setConfirm({ open: false, type: null });
       fetchCampaign();
       fetchRecipients({ page: 1 });
+      fetchPerformance({ silent: true });
     } catch (error) {
       toast.error(normalizeAxiosError(error) || t("toast.actionFailed"));
     } finally {
@@ -349,10 +383,12 @@ export default function CampaignDetailsPage() {
   };
 
   const status = campaign?.status;
+  // Back to the channel list this campaign belongs to (/campaigns/{type}).
+  const listHref = `/campaigns`;
   const headerButtons = (
     <div className="flex flex-wrap items-center gap-2">
       {status === "scheduled" && (
-        <Button_ size="sm" variant="solid" label={t("actions.edit")} icon={<Edit size={16} />} permission="campaigns.update" onClick={() => router.push(`/campaigns/${id}/edit`)} />
+        <Button_ size="sm" variant="solid" label={t("actions.edit")} icon={<Edit size={16} />} permission="campaigns.update" onClick={() => router.push(`/campaigns/${id}/edit?channel=${campaign?.channel || "whatsapp"}`)} />
       )}
       {status === "scheduled" && (
         <Button_ size="sm" variant="outline" label={t("actions.startNow")} icon={<Play size={16} />} permission="campaigns.start" onClick={() => setConfirm({ open: true, type: "start" })} />
@@ -369,7 +405,7 @@ export default function CampaignDetailsPage() {
       {status === "failed" && (
         <Button_ size="sm" variant="outline" label={t("actions.retryFailed")} icon={<RotateCcw size={16} />} permission="campaigns.start" onClick={() => setConfirm({ open: true, type: "retry" })} />
       )}
-      <Button_ size="sm" variant="outline" label={t("actions.duplicate")} icon={<Copy size={16} />} permission="campaigns.create" onClick={() => router.push(`/campaigns/new?fromId=${id}`)} />
+      <Button_ size="sm" variant="outline" label={t("actions.duplicate")} icon={<Copy size={16} />} permission="campaigns.create" onClick={() => router.push(`/campaigns/new/${campaign?.channel || "whatsapp"}?fromId=${id}`)} />
       {status !== "running" && status !== "paused" && (
         <Button_ size="sm" variant="outline" label={t("actions.delete")} icon={<Trash2 size={16} />} permission="campaigns.delete" onClick={() => setConfirm({ open: true, type: "delete" })} />
       )}
@@ -476,7 +512,7 @@ export default function CampaignDetailsPage() {
   if (loading) {
     return (
       <div className="min-h-screen p-5 space-y-4">
-        <PageHeader breadcrumbs={[{ name: t("breadcrumb.home"), href: "/dashboard" }, { name: t("breadcrumb.campaigns"), href: "/campaigns" }, { name: td("title") }]} />
+        <PageHeader breadcrumbs={[{ name: t("breadcrumb.home"), href: "/dashboard" }, { name: t("breadcrumb.campaigns"), href: listHref }, { name: td("title") }]} />
         <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
           <Bone className="h-7 w-64 max-w-full" />
           <Bone className="h-4 w-96 max-w-full" />
@@ -491,11 +527,11 @@ export default function CampaignDetailsPage() {
   if (!campaign) {
     return (
       <div className="min-h-screen p-5 space-y-4">
-        <PageHeader breadcrumbs={[{ name: t("breadcrumb.home"), href: "/dashboard" }, { name: t("breadcrumb.campaigns"), href: "/campaigns" }, { name: td("title") }]} />
+        <PageHeader breadcrumbs={[{ name: t("breadcrumb.home"), href: "/dashboard" }, { name: t("breadcrumb.campaigns"), href: listHref }, { name: td("title") }]} />
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 dark:border-red-900/40 dark:bg-red-950/30">
           <p className="font-bold">{td("notFound")}</p>
           <div className="mt-4">
-            <Button_ size="sm" variant="outline" label={tw("backToList")} onClick={() => router.push("/campaigns")} />
+            <Button_ size="sm" variant="outline" label={tw("backToList")} onClick={() => router.push(listHref)} />
           </div>
         </div>
       </div>
@@ -518,13 +554,13 @@ export default function CampaignDetailsPage() {
     retry: { title: t("confirm.retryTitle"), description: t("confirm.retryDesc", { name: campaign.name }), confirmText: t("actions.retryFailed") },
     delete: { title: t("confirm.deleteTitle"), description: t("confirm.deleteDesc", { name: campaign.name }), confirmText: t("actions.delete") },
   }[confirm.type] || {};
-  console.log(fromApiFilter(campaign.audienceFilter))
+  
   return (
     <div className="min-h-screen p-5 space-y-4">
       <PageHeader
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
-          { name: t("breadcrumb.campaigns"), href: "/campaigns" },
+          { name: t("breadcrumb.campaigns"), href: listHref },
           { name: campaign.name || td("title") },
         ]}
         stats={statsCards}

@@ -593,7 +593,11 @@
     "ai": "AI",
     "platformNumbers": "WhatsApp Numbers",
     "revenueStats": "WhatsApp Revenue",
-    "campaigns": "Campaigns"
+    "campaigns": "Campaigns",
+    "campaignsWhatsapp": "WhatsApp",
+    "campaignsSms": "SMS",
+    "campaignsEmail": "Email",
+    "comingSoon": "Coming Soon"
   },
   "gettingStarted": {
     "allComplete": {
@@ -14666,6 +14670,7 @@
       "orders": "Orders",
       "sales": "Sales",
       "cost": "Cost",
+      "profit": "Profit",
       "actions": "Actions"
     },
     "table": {
@@ -14726,9 +14731,16 @@
         "replied": "Replied",
         "failed": "Sending failed",
         "pending": "Pending",
-        "orders": "Orders",
+        "orders": "Total Orders",
         "successRate": "Sending Success Rate",
-        "conversion": "Conversion"
+        "conversion": "Conversion",
+        "totalSales": "Total sales",
+        "totalProfit": "Total profit",
+        "deliveredOrders": "Delivered orders",
+        "returnedOrders": "Returned orders",
+        "pendingOrders": "Shipped orders",
+        "deliveryRate": "Order Delivery Rate",
+        "cost": "Messages Cost"
       },
       "sections": {
         "general": "General information",
@@ -14773,7 +14785,7 @@
         "read": "Read",
         "replied": "Replied",
         "order": "Order",
-        "cost": "Cost",
+        "cost": "Messages Cost",
         "failureReason": "Failure reason",
         "actions": "Actions"
       },
@@ -14819,6 +14831,7 @@
       "delayMax": "Max delay (sec)",
       "maxPerHour": "Max messages / hour",
       "channel": "Channel",
+      "channelLockedHint": "Set from the page you came from.",
       "channels": {
         "whatsapp": "WhatsApp Business",
         "whatsappHint": "Send messages using approved WhatsApp templates.",

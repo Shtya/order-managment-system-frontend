@@ -1,19 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import VariableInput from "@/components/ui/VariableInput";
 import Button_ from "@/components/atoms/Button";
 import { InternalTemplateDialog } from "@/app/[locale]/whatsapp/atoms/InternalTemplateDialog";
+import WhatsAppAccountSelect from "@/app/[locale]/whatsapp/atoms/WhatsAppAccountSelect";
 import TemplatePreview from "@/app/[locale]/whatsapp/atoms/TemplatePreview";
 import MediaUpload from "@/app/[locale]/whatsapp/atoms/MediaUpload";
 import LocationFields from "@/app/[locale]/whatsapp/atoms/chats/LocationFields";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
 import { campaignTemplateChipPreview, getCampaignPlaceholderChips } from "../campaignPlaceholders";
 
-function buildInitialWhatsapp(template, accountId) {
+function buildInitialWhatsapp(template, accountId, wabaId) {
   const config = template.templateConfig || {};
   const paramFormat = template.templateConfig?.parameterFormat || config.parameterFormat;
   const headerVars = [...new Set(extractVariableNames(config.headerText, paramFormat))];
@@ -49,6 +50,7 @@ function buildInitialWhatsapp(template, accountId) {
     needsLocation: config.headerType === "LOCATION",
     headerType: config.headerType,
     accountId,
+    wabaId: wabaId || template.account?.wabaId || template.wabaId || null,
   };
 }
 
@@ -57,6 +59,7 @@ export default function StepMessage({ watch, setValue }) {
   const accountId = watch("whatsappAccountId");
   const whatsapp = watch("whatsapp");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [accounts, setAccounts] = useState([]);
   const customerVariables = useMemo(() => getCampaignPlaceholderChips(t), [t]);
   const variableProps = useMemo(
     () => ({
@@ -92,13 +95,56 @@ export default function StepMessage({ watch, setValue }) {
 
   const handleSelectTemplate = (template) => {
     const selectedAccountId = !!template?.selectedAccountId && !["all", null].includes(template?.selectedAccountId) ? template.selectedAccountId : template?.accountId;
+    const selectedAccount = accounts.find((account) => account.id === selectedAccountId);
     setValue("whatsappAccountId", selectedAccountId, { shouldDirty: true });
-    updateWhatsapp(buildInitialWhatsapp({ ...template, accountId: selectedAccountId }, selectedAccountId));
+    updateWhatsapp(
+      buildInitialWhatsapp(
+        { ...template, accountId: selectedAccountId },
+        selectedAccountId,
+        selectedAccount?.wabaId,
+      ),
+    );
     setDialogOpen(false);
   };
 
+  // Templates are owned by a WABA. Switching to another number on the
+  // same WABA keeps the template; a different WABA clears it.
+  const handleAccountChange = useCallback(
+    (nextAccountId, selectedAccount) => {
+      setValue("whatsappAccountId", nextAccountId, { shouldDirty: true });
+
+      const current = watch("whatsapp");
+      if (!current?.templateId || !nextAccountId || current.accountId === nextAccountId) {
+        return;
+      }
+
+      const previousWabaId =
+        current.wabaId ||
+        accounts.find((account) => account.id === current.accountId)?.wabaId;
+      const nextWabaId = selectedAccount?.wabaId;
+
+      if (previousWabaId && nextWabaId && previousWabaId === nextWabaId) {
+        setValue(
+          "whatsapp",
+          { ...current, accountId: nextAccountId, wabaId: nextWabaId },
+          { shouldDirty: true },
+        );
+        return;
+      }
+
+      setValue("whatsapp", null, { shouldDirty: true });
+    },
+    [accounts, setValue, watch],
+  );
+
   return (
     <div className="space-y-4">
+      <WhatsAppAccountSelect
+        label={t("message.account")}
+        value={accountId}
+        onChange={handleAccountChange}
+        onLoaded={setAccounts}
+      />
       <div className="rounded-xl border border-border p-4 space-y-3">
         {!whatsapp?.templateId ? (
           <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border p-6 text-center">

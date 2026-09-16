@@ -87,7 +87,7 @@ export const stepGeneralSchema = yup.object({
     .test("max-gte-min", "validation.delayMax", function (v) {
       return v >= this.parent.delayMinSeconds;
     }),
-  channel: yup.string().oneOf(["whatsapp"]).required(),
+  channel: yup.string().oneOf(["whatsapp", "sms", "email"]).required(),
   scheduleMode: yup.string().oneOf(["now", "scheduled"]).required(),
   scheduledDate: yup.string().when("scheduleMode", {
     is: "scheduled",
@@ -252,7 +252,10 @@ export function buildCampaignPayload(data, opts = {}) {
     name: data.name.trim(),
     description: data.description?.trim() || undefined,
     category: data.category,
-    channel: "whatsapp",
+    // Channel is locked from the URL (/campaigns/{type}); invalid → WhatsApp.
+    channel: ["whatsapp", "sms", "email"].includes(data.channel)
+      ? data.channel
+      : "whatsapp",
     audienceType: data.audienceType,
     scheduleMode: data.scheduleMode,
     delayMinSeconds: Number(data.delayMinSeconds),

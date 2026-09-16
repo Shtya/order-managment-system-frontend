@@ -153,13 +153,15 @@ function MenuItem({
   const hasUnderTestChild = Boolean(
     !isUnderTest && item.children?.some((c) => c.allowedEmails?.length),
   );
+  // Items flagged `comingSoon` stay visible but disabled, with a small flag.
+  const isComingSoon = Boolean(item.comingSoon);
 
   const sharedClass = `
     w-full group relative flex items-center overflow-hidden
     ${isOpen ? "gap-2.5 px-2 py-[6px]" : "py-[5px] justify-center"}
     rounded-xl select-none
     transition-all duration-150
-    ${item.isLocked ? "opacity-60 cursor-not-allowed grayscale pointer-events-none" : "cursor-pointer"}
+    ${item.isLocked || isComingSoon ? "opacity-60 cursor-not-allowed grayscale pointer-events-none" : "cursor-pointer"}
     ${!active && "hover:bg-sidebar-foreground/20"}
   `;
 
@@ -213,6 +215,11 @@ function MenuItem({
               <span className="text-[12.5px] font-[560] tracking-[-0.01em] whitespace-nowrap truncate leading-none">
                 {label}
               </span>
+              {isComingSoon && (
+                <span className="shrink-0 rounded-full border border-amber-500/30 bg-amber-500/15 px-1.5 py-px text-[8px] font-bold tracking-wide text-amber-600 dark:text-amber-400 leading-none">
+                  {t("comingSoon")}
+                </span>
+              )}
               {isUnderTest && (
                 <span
                   title="Under test"
@@ -347,6 +354,88 @@ function SubItem({ child, isActive, isRTL, index }) {
   const active = isActive(child.href);
   // Child gated by `allowedEmails` is still under test → highlight it.
   const isUnderTest = Boolean(child.allowedEmails?.length);
+  // Children flagged `comingSoon` stay visible but disabled, with a flag.
+  const isComingSoon = Boolean(child.comingSoon);
+
+  const body = (
+    <>
+      <span
+        className={`absolute ${isRTL ? "right-0" : "left-0"} top-[20%] h-[60%] w-[2px] rounded-full transition-all duration-200`}
+        style={{
+          background: active
+            ? "linear-gradient(180deg, var(--primary), var(--third))"
+            : "transparent",
+        }}
+      />
+
+      <span
+        className="shrink-0 flex items-center justify-center w-6 h-6 rounded-lg transition-all duration-200"
+        style={
+          active
+            ? {
+              background: "var(--sidebar-active-bg)",
+            }
+            : {
+              background: "var(--sideIcon)",
+            }
+        }
+      >
+        <Icon
+          className={`transition-colors ${active ? "text-primary" : "text-sidebar-foreground"}`}
+          size={11}
+          strokeWidth={active ? 2.4 : 1.9}
+        />
+      </span>
+
+      <span className="text-[12px] leading-none whitespace-nowrap flex-1 truncate font-[500] flex items-center gap-1.5 min-w-0">
+        <span className="truncate">{t(child.labelKey)}</span>
+        {isComingSoon && (
+          <span className="shrink-0 rounded-full border border-amber-500/30 bg-amber-500/15 px-1.5 py-px text-[8px] font-bold tracking-wide text-amber-600 dark:text-amber-400 leading-none">
+            {t("comingSoon")}
+          </span>
+        )}
+        {isUnderTest && (
+          <span className="shrink-0 text-[8px] font-bold tracking-wide text-amber-500/90 leading-none">
+            • TEST
+          </span>
+        )}
+      </span>
+
+      {active && (
+        <motion.span
+          layoutId="childActivePill"
+          className="w-1.5 h-1.5 rounded-full shrink-0"
+          style={{
+            background:
+              "linear-gradient(180deg, var(--primary), var(--third))",
+          }}
+          transition={{ type: "spring", stiffness: 500, damping: 32 }}
+        />
+      )}
+    </>
+  );
+
+  const disabledClass = `
+    relative flex items-center gap-2 py-[5.5px] rounded-xl
+    transition-all duration-150 group overflow-hidden
+    ${isRTL ? "pr-2.5 pl-1.5" : "pl-2.5 pr-1.5"}
+    opacity-60 cursor-not-allowed grayscale select-none
+  `;
+
+  const linkClass = `
+    relative flex items-center gap-2 py-[5.5px] rounded-xl
+    transition-all duration-150 group overflow-hidden
+    ${isRTL ? "pr-2.5 pl-1.5" : "pl-2.5 pr-1.5"}
+    ${!active && "hover:bg-sidebar-foreground/5"}
+  `;
+
+  const linkStyle = active
+    ? {
+      background: "var(--sidebar-active-bg)",
+      color: "var(--primary)",
+      fontWeight: 700,
+    }
+    : { color: "var(--sidebar-foreground)" };
 
   return (
     <motion.div
@@ -355,76 +444,27 @@ function SubItem({ child, isActive, isRTL, index }) {
       exit={{ opacity: 0, x: isRTL ? 8 : -8 }}
       transition={{ delay: index * 0.03, duration: 0.16 }}
     >
-      <Link
-        href={child.href}
-        data-getting-started={child.gettingStartedKey}
-        data-getting-started-type={child.gettingStartedType}
-        title={isUnderTest ? "Under test" : undefined}
-        className={`
-          relative flex items-center gap-2 py-[5.5px] rounded-xl
-          transition-all duration-150 group overflow-hidden
-          ${isRTL ? "pr-2.5 pl-1.5" : "pl-2.5 pr-1.5"}
-          ${!active && "hover:bg-sidebar-foreground/5"}
-        `}
-        style={
-          active
-            ? {
-              background: "var(--sidebar-active-bg)",
-              color: "var(--primary)",
-              fontWeight: 700,
-            }
-            : { color: "var(--sidebar-foreground)" }
-        }
-      >
-        <span
-          className={`absolute ${isRTL ? "right-0" : "left-0"} top-[20%] h-[60%] w-[2px] rounded-full transition-all duration-200`}
-          style={{
-            background: active
-              ? "linear-gradient(180deg, var(--primary), var(--third))"
-              : "transparent",
-          }}
-        />
-
-        <span
-          className="shrink-0 flex items-center justify-center w-6 h-6 rounded-lg transition-all duration-200"
-          style={
-            active
-              ? {
-                background: "var(--sidebar-active-bg)",
-              }
-              : {
-                background: "var(--sideIcon)",
-              }
-          }
+      {isComingSoon ? (
+        <div
+          aria-disabled
+          title={t("comingSoon")}
+          className={disabledClass}
+          style={{ color: "var(--sidebar-foreground)" }}
         >
-          <Icon
-            className={`transition-colors ${active ? "text-primary" : "text-sidebar-foreground"}`}
-            size={11}
-            strokeWidth={active ? 2.4 : 1.9}
-          />
-        </span>
-
-        <span className="text-[12px] leading-none whitespace-nowrap flex-1 truncate font-[500] flex items-center gap-1.5 min-w-0">
-          <span className="truncate">{t(child.labelKey)}</span>
-          {isUnderTest && (
-            <span className="shrink-0 text-[8px] font-bold tracking-wide text-amber-500/90 leading-none">
-              • TEST
-            </span>
-          )}
-        </span>
-
-        {active && (
-          <motion.span
-            layoutId="childActivePill"
-            className="w-1.5 h-1.5 rounded-full shrink-0"
-            style={{
-              background:
-                "linear-gradient(180deg, var(--primary), var(--third))",
-            }}
-            transition={{ type: "spring", stiffness: 500, damping: 32 }}
-          />
-        )}
-      </Link>
+          {body}
+        </div>
+      ) : (
+        <Link
+          href={child.href}
+          data-getting-started={child.gettingStartedKey}
+          data-getting-started-type={child.gettingStartedType}
+          title={isUnderTest ? "Under test" : undefined}
+          className={linkClass}
+          style={linkStyle}
+        >
+          {body}
+        </Link>
+      )}
     </motion.div>
   );
 }

@@ -102,7 +102,7 @@ function AnimatedCounter({ value, delay = 0 }) {
 	 INFO CARD
 ══════════════════════════════════════════════════════════════ */
 function InfoCard({
-	title, value, icon, editable,
+	title, value, icon, editable, showFlag,
 	isAddCard, onEdit, onDelete, onClick,
 	trend,
 	description,
@@ -322,7 +322,7 @@ function InfoCard({
 						</motion.div>
 						{editable && (
 							<>
-								<motion.div
+								{showFlag && <motion.div
 									animate={{ opacity: hov ? 0 : 1 }}
 									transition={{ duration: .15 }}
 									style={{
@@ -337,7 +337,7 @@ function InfoCard({
 								>
 									<span style={{ width: 5, height: 5, borderRadius: "50%", background: accent, display: "inline-block" }} />
 									{t("custom")}
-								</motion.div>
+								</motion.div>}
 								<AnimatePresence>
 									{hov && (
 										<motion.div
@@ -785,6 +785,7 @@ export function StatsGrid({ stats }) {
 						>
 							{stat.isAddCard ? (
 								<InfoCard
+									showFlag={stat.showFlag != undefined ? !!stat.showFlag : true}
 									title={stat.name}
 									icon={stat.icon}
 									isAddCard
@@ -793,6 +794,7 @@ export function StatsGrid({ stats }) {
 								/>
 							) : (
 								<InfoCard
+									showFlag={stat.showFlag != undefined ? !!stat.showFlag : true}
 									title={stat.name}
 									value={String(stat.value ?? 0)}
 									icon={stat.icon}

@@ -170,9 +170,10 @@ export default function Accounts() {
                     id: cat.id,
                     name: cat.name,
                     value: `${cat.expensesCount || 0} ${t("stats.manualExpensesStat")} · ${formatCurrency(Number(cat.totalCost || 0))}`,
-                    icon: Plus,
+                    icon: Package,
                     // color: "#a855f7",
                     editable: true,
+                    showFlag: false,
                     onDelete: () => handleDeleteCategory(cat),
                     // 4. تغيير الـ onEdit ليفتح نافذة التصنيفات
                     onEdit: () => handleEditCategory(cat),

@@ -41,11 +41,11 @@ import {
   Lock,
   ChevronDown,
   Check,
-  PenLine,
+  // PenLine,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { cn } from "@/utils/cn";
@@ -57,7 +57,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectSeparator,
+  // SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -80,7 +80,7 @@ function makeId() {
   return `img_${Date.now()}_${++_imgIdCounter}`;
 }
 
-const OTHER_CANCEL_CAUSE = "__other__";
+// const OTHER_CANCEL_CAUSE = "__other__";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -845,22 +845,22 @@ export const getReasons = (t) => [
 function ReplacementInfoSection({ form, setForm, errors, priceAdjustments, formatCurrency }) {
   const tOrder = useTranslations("createOrder");
   const t = useTranslations("CreateReplacement");
-  const locale = useLocale();
-  const isRtl = locale === "ar";
-  const [selectableCancelCauses, setSelectableCancelCauses] = useState([]);
-  const otherSelected = form.cancelCauseId === OTHER_CANCEL_CAUSE;
+  // const locale = useLocale();
+  // const isRtl = locale === "ar";
+  // const [selectableCancelCauses, setSelectableCancelCauses] = useState([]);
+  // const otherSelected = form.cancelCauseId === OTHER_CANCEL_CAUSE;
 
-  useEffect(() => {
-    const fetchSelectableCancelCauses = async () => {
-      try {
-        const r = await api.get("/cancel-causes/selectable");
-        setSelectableCancelCauses(r.data?.records || []);
-      } catch {
-        setSelectableCancelCauses([]);
-      }
-    };
-    fetchSelectableCancelCauses();
-  }, []);
+  // useEffect(() => {
+  //   const fetchSelectableCancelCauses = async () => {
+  //     try {
+  //       const r = await api.get("/cancel-causes/selectable");
+  //       setSelectableCancelCauses(r.data?.records || []);
+  //     } catch {
+  //       setSelectableCancelCauses([]);
+  //     }
+  //   };
+  //   fetchSelectableCancelCauses();
+  // }, []);
 
   return (
     <Section title={t("sections.replacementInfo")} icon={FileText} delay={0.05}>
@@ -869,7 +869,7 @@ function ReplacementInfoSection({ form, setForm, errors, priceAdjustments, forma
 
         {/* ── Row 1: reason + another reason + shipping company ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FieldInput
+        {/* <FieldInput
             label={t("fields.selectCause")}
             error={errors.cancelCauseId}
           >
@@ -944,7 +944,7 @@ function ReplacementInfoSection({ form, setForm, errors, priceAdjustments, forma
               )}
               style={{ textAlign: isRtl ? "right" : "left", opacity: otherSelected ? 1 : 0.55 }}
             />
-          </FieldInput>)}
+          </FieldInput>)} */}
           {/* reason */}
           <FieldInput
             label={t("fields.reasonOfReplacement")}
@@ -2078,8 +2078,8 @@ export default function CreateReplacementPage({
   const [form, setForm] = useState({
     reason: "",
     anotherReason: "",
-    cancelCauseId: "",
-    customCauseName: "",
+    // cancelCauseId: "",
+    // customCauseName: "",
     shippingCompanyId: "",
     paymentMethod: "cod",
     shippingCost: 0,
@@ -2128,8 +2128,8 @@ export default function CreateReplacementPage({
         setForm({
           reason: data.reason ?? "",
           anotherReason: data.anotherReason ?? "",
-          cancelCauseId: data.originalOrder?.lastCancelCauseId ?? "",
-          customCauseName: "",
+          // cancelCauseId: data.originalOrder?.lastCancelCauseId ?? "",
+          // customCauseName: "",
           shippingCompanyId: data.shippingCompanyId
             ? String(data.shippingCompanyId)
             : "",
@@ -2201,16 +2201,16 @@ export default function CreateReplacementPage({
     const e = {};
     if (!selectedOrder) e.order = t("validation.orderRequired");
     if (!form.reason) e.reason = t("validation.reasonRequired");
-    if (!isEditMode) {
-      const isOther = form.cancelCauseId === OTHER_CANCEL_CAUSE;
-      if (isOther) {
-        if (!form.customCauseName?.trim() || form.customCauseName.trim().length < 3) {
-          e.customCauseName = t("validation.causeRequired");
-        }
-      } else if (!form.cancelCauseId) {
-        e.cancelCauseId = t("validation.causeRequired");
-      }
-    }
+    // if (!isEditMode) {
+    //   const isOther = form.cancelCauseId === OTHER_CANCEL_CAUSE;
+    //   if (isOther) {
+    //     if (!form.customCauseName?.trim() || form.customCauseName.trim().length < 3) {
+    //       e.customCauseName = t("validation.causeRequired");
+    //     }
+    //   } else if (!form.cancelCauseId) {
+    //     e.cancelCauseId = t("validation.causeRequired");
+    //   }
+    // }
     // if (!form.anotherReason) e.anotherReason = t("validation.anotherReasonRequired");
     if (!form.paymentMethod)
       e.paymentMethod = t("validation.paymentMethodRequired");
@@ -2245,13 +2245,13 @@ export default function CreateReplacementPage({
       fd.append("originalOrderId", selectedOrder.id);
       fd.append("reason", form.reason);
       fd.append("anotherReason", form.anotherReason);
-      if (!isEditMode) {
-        if (form.cancelCauseId === OTHER_CANCEL_CAUSE) {
-          fd.append("customCauseName", form.customCauseName.trim());
-        } else if (form.cancelCauseId) {
-          fd.append("cancelCauseId", form.cancelCauseId);
-        }
-      }
+      // if (!isEditMode) {
+      //   if (form.cancelCauseId === OTHER_CANCEL_CAUSE) {
+      //     fd.append("customCauseName", form.customCauseName.trim());
+      //   } else if (form.cancelCauseId) {
+      //     fd.append("cancelCauseId", form.cancelCauseId);
+      //   }
+      // }
       fd.append("paymentMethod", form.paymentMethod);
       if (form.shippingCompanyId && form.shippingCompanyId !== "none") {
         fd.append("shippingCompanyId", form.shippingCompanyId);

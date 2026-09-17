@@ -567,6 +567,7 @@ function BundleRow({ bundle, idx, isSelected, debounced, onSelect, t, formatCurr
    Main component
 ───────────────────────────────────────────────────────────────────────── */
 export function ProductSkuSearchPopover({
+  allowNotAvailable = true,
   handleSelectSku,
   selectedSkus = [],
   closeOnSelect = true,
@@ -769,6 +770,9 @@ export function ProductSkuSearchPopover({
   }, [open]);
 
   function selectSku(sku) {
+    if(!allowNotAvailable && !sku.available){
+      return;
+    }
     handleSelectSku(sku); 
     if (closeOnSelect) {
       setOpen(false);

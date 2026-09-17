@@ -3452,8 +3452,8 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
 
 export function OrderCancelCausesModal({ isOpen, onClose, order }) {
   const tCommon = useTranslations("common");
-  const t = useTranslations("orders");
   const tCauses = useTranslations("cancelCauses");
+  const t = useTranslations("orders");
 
   const [pager, setPager] = useState({
     total_records: 0,

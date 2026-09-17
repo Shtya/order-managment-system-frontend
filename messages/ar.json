@@ -8693,7 +8693,9 @@
       "orderNumber": "كود الطلب",
       "reasonOfReplacement": "اكتب سبب الاستبدال",
       "anotherReason": "اكتب سببًا إضافيًا (اختياري)",
-      "shippingCompany": "اختر شركة الشحن"
+      "shippingCompany": "اختر شركة الشحن",
+      "selectCause": "اختر السبب",
+      "customCause": "اكتب السبب الآخر..."
     },
     "labels": {
       "ordersFound": "طلبات تم العثور عليها",
@@ -8721,6 +8723,9 @@
     "fields": {
       "reasonOfReplacement": "سبب الاستبدال",
       "anotherReason": "سبب إضافي",
+      "selectCause": "سبب الإلغاء",
+      "otherCause": "سبب آخر",
+      "customCause": "سبب الإلغاء الأخر",
       "shippingCompany": "شركة الشحن",
       "itemDifference": "رصيد العميل (العناصر)",
       "additionalDiscount": "خصم إضافي",
@@ -8785,6 +8790,7 @@
     "validation": {
       "orderRequired": "الطلب مطلوب",
       "reasonRequired": "السبب مطلوب",
+      "causeRequired": "يرجى اختيار سبب أو كتابة سبب مخصص",
       "paymentMethodRequired": "طريقة الدفع مطلوبة",
       "itemsRequired": "يجب اختيار عنصر واحد على الأقل",
       "newVariantRequired": "يرجى اختيار متغير الاستبدال لكل عنصر محدد",

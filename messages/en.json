@@ -8705,7 +8705,9 @@
       "orderNumber": "Order Number",
       "reasonOfReplacement": "Write the reason for replacement",
       "anotherReason": "Write an additional reason (optional)",
-      "shippingCompany": "Select shipping company"
+      "shippingCompany": "Select shipping company",
+      "selectCause": "Select a cause",
+      "customCause": "Write the other cause..."
     },
     "labels": {
       "ordersFound": "Orders Found",
@@ -8733,6 +8735,9 @@
     "fields": {
       "reasonOfReplacement": "Reason for Replacement",
       "anotherReason": "Additional Reason",
+      "selectCause": "Cancel cause",
+      "otherCause": "Other cause",
+      "customCause": "Other cancel cause ",
       "shippingCompany": "Shipping Company",
       "itemDifference": "Client Credit (Items)",
       "additionalDiscount": "Additional Discount",
@@ -8797,6 +8802,7 @@
     "validation": {
       "orderRequired": "Order is required",
       "reasonRequired": "Reason is required",
+      "causeRequired": "Please select a cause or write a custom one",
       "paymentMethodRequired": "Payment method is required",
       "itemsRequired": "At least one item must be selected",
       "newVariantRequired": "Please choose a replacement variant for each selected item",

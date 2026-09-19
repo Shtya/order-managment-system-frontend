@@ -14889,8 +14889,6 @@
         "variablesRequired": "Fill all template variables.",
         "orderLinkUnavailable": "This template cannot use order links.",
         "productsRequired": "Add at least one product.",
-        "followupButtonRequired": "Choose one quick-reply button.",
-        "followupUrlRequired": "Insert the order link field into the follow-up message.",
         "followupReplyRequired": "Set an automatic reply for every template button."
       },
       "recipients": {

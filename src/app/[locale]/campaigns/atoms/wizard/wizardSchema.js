@@ -57,10 +57,8 @@ export const initialWizardData = {
   products: [],
   shippingPrice: 0,
   orderReplyFollowupEnabled: false,
-  orderReplyFollowupText: "",
-  orderReplyFollowupButtonIndex: null,
-  // Multi-button automatic replies: one entry per template quick-reply
-  // button — { buttonIndex, text }. Every button requires a reply.
+  // Automatic replies: one entry per template quick-reply button —
+  // { buttonIndex, text }. Every button requires a reply.
   orderReplyFollowups: [],
 };
 
@@ -283,8 +281,7 @@ export function buildCampaignPayload(data, opts = {}) {
     const followupOn = inspect.qrOnly ? true : !!data.orderReplyFollowupEnabled;
     payload.orderReplyFollowupEnabled = followupOn;
     if (followupOn && inspect.hasQuickReply) {
-      // One reply per template button; legacy single-button fields mirror
-      // the first entry for backward compatibility.
+      // One reply per template button.
       const followups = (Array.isArray(data.orderReplyFollowups)
         ? data.orderReplyFollowups
         : []
@@ -301,10 +298,6 @@ export function buildCampaignPayload(data, opts = {}) {
           text: String(item.text),
         }));
       payload.orderReplyFollowups = followups;
-      if (followups.length) {
-        payload.orderReplyFollowupText = followups[0].text;
-        payload.orderReplyFollowupButtonIndex = followups[0].buttonIndex;
-      }
     }
   }
   if (data.maxMessagesPerHour) payload.maxMessagesPerHour = Number(data.maxMessagesPerHour);

@@ -33,26 +33,15 @@ export default function StepReview({ getValues }) {
   const empty = t("review.empty");
   const placeholderChips = useMemo(() => getCampaignPlaceholderChips(t), [t]);
   const inspect = useMemo(() => inspectTemplateOrderLink(v.whatsapp), [v.whatsapp]);
-  // Multi-button replies with legacy single-button fallback (old rows).
   const followupList = useMemo(() => {
     const list = Array.isArray(v.orderReplyFollowups) ? v.orderReplyFollowups : [];
-    if (list.length) {
-      return list.map((item) => ({
-        buttonIndex: Number(item?.buttonIndex),
-        text: String(item?.text ?? ""),
-      }));
-    }
-    if (v.orderReplyFollowupEnabled && String(v.orderReplyFollowupText ?? "").trim()) {
-      return [{
-        buttonIndex: Number(v.orderReplyFollowupButtonIndex ?? 0),
-        text: String(v.orderReplyFollowupText),
-      }];
-    }
-    return [];
-  }, [v.orderReplyFollowups, v.orderReplyFollowupEnabled, v.orderReplyFollowupText, v.orderReplyFollowupButtonIndex]);
+    return list.map((item) => ({
+      buttonIndex: Number(item?.buttonIndex),
+      text: String(item?.text ?? ""),
+    }));
+  }, [v.orderReplyFollowups]);
   const followupButtonLabel = (buttonIndex) =>
     inspect.quickReplies.find((btn) => btn.index === Number(buttonIndex))?.text ||
-    v.orderReplyFollowupButtonText ||
     "—";
   const products = v.products || [];
   const productsTotal = products.reduce(

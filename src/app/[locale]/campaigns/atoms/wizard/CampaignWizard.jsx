@@ -106,24 +106,12 @@ function mapCampaignToForm(campaign) {
     })),
     shippingPrice: Number(campaign.shippingPrice || 0),
     orderReplyFollowupEnabled: !!campaign.orderReplyFollowupEnabled,
-    orderReplyFollowupText: campaign.orderReplyFollowupText || "",
-    orderReplyFollowupButtonIndex:
-      campaign.orderReplyFollowupButtonIndex == null
-        ? null
-        : Number(campaign.orderReplyFollowupButtonIndex),
-    // Multi-button replies with legacy single-button fallback (old rows).
-    orderReplyFollowups: Array.isArray(campaign.orderReplyFollowups) &&
-      campaign.orderReplyFollowups.length
+    orderReplyFollowups: Array.isArray(campaign.orderReplyFollowups)
       ? campaign.orderReplyFollowups.map((item) => ({
         buttonIndex: Number(item?.buttonIndex ?? 0),
         text: String(item?.text ?? ""),
       }))
-      : campaign.orderReplyFollowupText
-        ? [{
-          buttonIndex: Number(campaign.orderReplyFollowupButtonIndex ?? 0),
-          text: String(campaign.orderReplyFollowupText),
-        }]
-        : [],
+      : [],
   };
 }
 

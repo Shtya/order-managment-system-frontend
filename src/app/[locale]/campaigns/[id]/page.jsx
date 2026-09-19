@@ -665,17 +665,12 @@ export default function CampaignDetailsPage() {
           {campaign.orderReplyFollowupEnabled && (
             <div className="space-y-2">
               <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{tw("offer.followup")}</p>
-              {(Array.isArray(campaign.orderReplyFollowups) && campaign.orderReplyFollowups.length
+              {(Array.isArray(campaign.orderReplyFollowups)
                 ? campaign.orderReplyFollowups.map((item) => ({
                   buttonIndex: Number(item?.buttonIndex ?? 0),
                   text: String(item?.text ?? ""),
                 }))
-                : campaign.orderReplyFollowupText
-                  ? [{
-                    buttonIndex: Number(campaign.orderReplyFollowupButtonIndex ?? 0),
-                    text: String(campaign.orderReplyFollowupText),
-                  }]
-                  : []
+                : []
               ).map((item, i) => (
                 <div key={`${item.buttonIndex}-${i}`} className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
                   <div>
@@ -683,7 +678,7 @@ export default function CampaignDetailsPage() {
                     <p className="mt-1 text-sm font-medium">
                       {inspectTemplateOrderLink(snap).quickReplies.find(
                         (btn) => btn.index === Number(item.buttonIndex),
-                      )?.text || campaign.orderReplyFollowupButtonText || "—"}
+                      )?.text || "—"}
                     </p>
                   </div>
                   <div>

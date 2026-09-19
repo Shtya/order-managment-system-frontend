@@ -14914,8 +14914,6 @@
         "variablesRequired": "املأ كل متغيرات القالب.",
         "orderLinkUnavailable": "هذا القالب لا يدعم روابط الطلب.",
         "productsRequired": "أضف منتجاً واحداً على الأقل.",
-        "followupButtonRequired": "اختر زر رد سريع واحد.",
-        "followupUrlRequired": "أدرج حقل رابط الطلب في رسالة المتابعة.",
         "followupReplyRequired": "حدد ردًا تلقائيًا لكل زر في القالب."
       },
       "recipients": {

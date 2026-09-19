@@ -126,6 +126,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
   const [step, setStep] = useState(0);
   const [stepError, setStepError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [nameStatus, setNameStatus] = useState(null);
   const [pageLoading, setPageLoading] = useState(isEdit || isCopy);
   const [notEditable, setNotEditable] = useState(false);
 
@@ -202,6 +203,10 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
         setStepError(t("fixStepErrors"));
         return;
       }
+      if (nameStatus === "checking" || nameStatus === "taken") {
+        setStepError(t(nameStatus === "taken" ? "nameTaken" : "fixStepErrors"));
+        return;
+      }
     }
     if (step === 1) {
       const errs = validateStepRecipients(values);
@@ -235,6 +240,10 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
     const o = validateStepOffer(values);
     if (Object.keys(g).length || Object.keys(r).length || Object.keys(m).length || Object.keys(o).length) {
       setStepError(t("fixStepErrors"));
+      return;
+    }
+    if (nameStatus === "checking" || nameStatus === "taken") {
+      setStepError(t(nameStatus === "taken" ? "nameTaken" : "fixStepErrors"));
       return;
     }
     setSaving(true);
@@ -355,7 +364,17 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
 
       <Card>
         <CardContent className="pt-6">
-          {step === 0 && <StepGeneral control={control} errors={errors} watch={watch} setValue={setValue} />}
+          {step === 0 && (
+            <StepGeneral
+              control={control}
+              errors={errors}
+              watch={watch}
+              setValue={setValue}
+              campaignId={isEdit ? campaignId : null}
+              nameStatus={nameStatus}
+              setNameStatus={setNameStatus}
+            />
+          )}
           {step === 1 && <StepRecipients control={control} watch={watch} setValue={setValue} getValues={getValues} />}
           {step === 2 && <StepMessage watch={watch} setValue={setValue} getValues={getValues} />}
           {step === 3 && <StepOffer watch={watch} setValue={setValue} />}

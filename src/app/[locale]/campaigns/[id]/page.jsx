@@ -402,7 +402,7 @@ export default function CampaignDetailsPage() {
       {["scheduled", "running", "paused"].includes(status) && (
         <Button_ size="sm" variant="outline" label={t("actions.cancel")} icon={<Ban size={16} />} permission="campaigns.update" onClick={() => setConfirm({ open: true, type: "cancel" })} />
       )}
-      {status === "failed" && (
+      {(status === "failed" || status === "completed") && failed > 0 && (
         <Button_ size="sm" variant="outline" label={t("actions.retryFailed")} icon={<RotateCcw size={16} />} permission="campaigns.start" onClick={() => setConfirm({ open: true, type: "retry" })} />
       )}
       <Button_ size="sm" variant="outline" label={t("actions.duplicate")} icon={<Copy size={16} />} permission="campaigns.create" onClick={() => router.push(`/campaigns/new/${campaign?.channel || "whatsapp"}?fromId=${id}`)} />

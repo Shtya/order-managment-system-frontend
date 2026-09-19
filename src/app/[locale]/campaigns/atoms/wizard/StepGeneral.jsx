@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
@@ -16,17 +16,58 @@ import {
 } from "@/components/ui/select";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { Badge } from "@/components/ui/badge";
+import { FieldStatusInfo } from "@/components/atoms/SlugInput";
+import { cn } from "@/utils/cn";
+import api from "@/utils/api";
 import { CAMPAIGN_CATEGORIES } from "./wizardSchema";
 import { normalizeCampaignChannel } from "../campaignChannel";
 
-export default function StepGeneral({ control, errors, watch, setValue }) {
+export default function StepGeneral({
+  control,
+  errors,
+  watch,
+  setValue,
+  campaignId,
+  nameStatus,
+  setNameStatus,
+}) {
   const t = useTranslations("campaigns.wizard");
 
   const workingHoursEnabled = watch("workingHoursEnabled");
   const workingHoursTimezone = watch("workingHoursTimezone");
+  const name = watch("name");
   // Channel is locked from the URL (/campaigns/{type}); no picker here.
   const channel = normalizeCampaignChannel(watch("channel"));
   const scheduleMode = watch("scheduleMode");
+  const [debouncedName, setDebouncedName] = useState(name);
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedName(name), 600);
+    return () => clearTimeout(id);
+  }, [name]);
+
+  useEffect(() => {
+    const trimmed = String(debouncedName || "").trim();
+    if (!trimmed || errors.name?.message === "validation.nameRequired") {
+      setNameStatus?.(null);
+      return;
+    }
+    let cancelled = false;
+    setNameStatus?.("checking");
+    (async () => {
+      try {
+        const params = new URLSearchParams({ name: trimmed });
+        if (campaignId) params.append("campaign", campaignId);
+        const res = await api.get(`/campaigns/check-name?${params}`);
+        if (!cancelled) setNameStatus?.(res.data?.isUnique ? "unique" : "taken");
+      } catch {
+        if (!cancelled) setNameStatus?.(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedName, campaignId, errors.name?.message, setNameStatus]);
 
   useEffect(() => {
     if (!workingHoursTimezone && typeof Intl !== "undefined") {
@@ -47,10 +88,25 @@ export default function StepGeneral({ control, errors, watch, setValue }) {
             name="name"
             control={control}
             render={({ field }) => (
-              <Input {...field} maxLength={255} placeholder={t("namePlaceholder")} />
+              <Input
+                {...field}
+                maxLength={255}
+                placeholder={t("namePlaceholder")}
+                className={cn(
+                  nameStatus === "unique" && "border-green-500 focus-visible:ring-green-500/20",
+                  nameStatus === "taken" && "border-red-500 focus-visible:ring-red-500/20",
+                )}
+              />
             )}
           />
           {errors.name && <p className="text-xs text-red-500">{t(errors.name.message)}</p>}
+          <FieldStatusInfo
+            name="name"
+            errors={errors}
+            value={String(name || "").trim()}
+            status={nameStatus}
+            t={t}
+          />
         </div>
         <div className="space-y-2">
           <Label>{t("category")}</Label>

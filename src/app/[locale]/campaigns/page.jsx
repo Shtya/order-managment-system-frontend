@@ -362,7 +362,9 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
       });
     }
 
-    if (status === "failed"
+    if (
+      (status === "failed" || status === "completed") &&
+      Number(row.failedCount || 0) > 0
     ) {
       actions.push({
         icon: busy ? <Loader2 className="animate-spin" /> : <RotateCcw />,

@@ -9,7 +9,7 @@ const PlatformSettingsContext = createContext();
 export function PlatformSettingsProvider({ children }) {
   const [settings, setSettings] = useState(null);
   const [company, setCompany] = useState(null);
-  const { accessToken,hasPermission } = useAuth()
+  const { accessToken, hasPermission,isSuperAdmin } = useAuth()
   const [shippingCompanies, setShippingCompanies] = useState([]);
   
   const [isSettingsLoading, setIsSettingsLoading] = useState(true);
@@ -32,7 +32,7 @@ export function PlatformSettingsProvider({ children }) {
 const hasUserReadPermission = hasPermission("users.read") || hasPermission("orders.confirm-incoming");
   
   const fetchCompany = useCallback(async () => {
-    if (!accessToken || !hasUserReadPermission) return;
+    if (!accessToken || !hasUserReadPermission || isSuperAdmin) return;
     setIsCompanyLoading(true);
     try {
       const res = await api.get("/users/company");

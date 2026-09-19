@@ -16,6 +16,7 @@ import {
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import Button_ from "@/components/atoms/Button";
 import VariableInput from "@/components/ui/VariableInput";
+import { FieldTooltip } from "@/components/ui/field-tooltip";
 import { inspectTemplateOrderLink } from "../campaignOrderUrl";
 import { getCampaignPlaceholderChips } from "../campaignPlaceholders";
 
@@ -24,8 +25,12 @@ export default function StepOffer({ watch, setValue }) {
   const whatsapp = watch("whatsapp");
   const enablePurchasePage = watch("enablePurchasePage");
   const products = watch("products") || [];
+  const followups = watch("orderReplyFollowups") || [];
   const inspect = useMemo(() => inspectTemplateOrderLink(whatsapp), [whatsapp]);
-  const inspectKey = `${inspect.hasOrderUrlVariable ? 1 : 0}:${inspect.hasQuickReply ? 1 : 0}`;
+  // Same button variants as today (custom + quick-reply), keyed by
+  // index + text so template changes reconcile the reply list below.
+  const buttons = inspect.quickReplies;
+  const inspectKey = `${inspect.hasOrderUrlVariable ? 1 : 0}:${inspect.hasQuickReply ? 1 : 0}:${buttons.map((b) => `${b.index}:${b.text}`).join("|")}`;
   const lastInspectKey = useRef("");
 
   const customerVariables = useMemo(() => getCampaignPlaceholderChips(t), [t]);
@@ -42,21 +47,40 @@ export default function StepOffer({ watch, setValue }) {
   const followupHidden = !inspect.hasQuickReply;
   const followupOn = followupForced || !!watch("orderReplyFollowupEnabled");
   const followupDefault = t("offer.followupDefault");
-  console.log(("followupDefault", followupDefault));
+
+  // One reply per template button. User edits are preserved by button
+  // index; the default reply goes to the first button only when no
+  // button has a message yet.
+  const reconcileFollowups = (list) => {
+    const current = Array.isArray(list) ? list : [];
+    const hasAnyMessage = current.some((item) =>
+      String(item?.text ?? "").trim(),
+    );
+    return buttons.map((btn, i) => {
+      const existing = current.find(
+        (item) => Number(item?.buttonIndex) === btn.index,
+      );
+      const text = String(existing?.text ?? "");
+      return {
+        buttonIndex: btn.index,
+        text: text || (!hasAnyMessage && i === 0 ? followupDefault : ""),
+      };
+    });
+  };
+
   useEffect(() => {
     if (lastInspectKey.current === inspectKey) return;
     lastInspectKey.current = inspectKey;
     setValue("enablePurchasePage", inspect.orderLinkAvailable, { shouldDirty: true });
     if (!inspect.hasQuickReply) {
       setValue("orderReplyFollowupEnabled", false, { shouldDirty: true });
+      setValue("orderReplyFollowups", [], { shouldDirty: true });
       return;
     }
     if (inspect.qrOnly) {
       setValue("orderReplyFollowupEnabled", true, { shouldDirty: true });
-      if (!String(watch("orderReplyFollowupText") || "").trim()) {
-        setValue("orderReplyFollowupText", followupDefault, { shouldDirty: true });
-      }
     }
+    setValue("orderReplyFollowups", reconcileFollowups(watch("orderReplyFollowups")), { shouldDirty: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inspectKey, inspect.orderLinkAvailable, inspect.hasQuickReply, inspect.qrOnly, followupDefault, setValue]);
 
@@ -65,13 +89,32 @@ export default function StepOffer({ watch, setValue }) {
     setValue("enablePurchasePage", on, { shouldDirty: true });
     if (on && followupForced) {
       setValue("orderReplyFollowupEnabled", true, { shouldDirty: true });
-      if (!String(watch("orderReplyFollowupText") || "").trim()) {
-        setValue("orderReplyFollowupText", followupDefault, { shouldDirty: true });
-      }
+      setValue("orderReplyFollowups", reconcileFollowups(watch("orderReplyFollowups")), { shouldDirty: true });
     }
     if (!on) {
       setValue("orderReplyFollowupEnabled", false, { shouldDirty: true });
     }
+  };
+
+  const updateFollowupText = (buttonIndex, value) => {
+    const current = watch("orderReplyFollowups") || [];
+    const key = Number(buttonIndex);
+    const exists = (current || []).some((item) => Number(item?.buttonIndex) === key);
+    const next = exists
+      ? current.map((item) =>
+        Number(item?.buttonIndex) === key
+          ? { ...item, buttonIndex: key, text: value }
+          : item,
+      )
+      : [...(current || []), { buttonIndex: key, text: value }];
+    setValue("orderReplyFollowups", next, { shouldDirty: true });
+  };
+
+  const followupTextFor = (buttonIndex) => {
+    const entry = (followups || []).find(
+      (item) => Number(item?.buttonIndex) === Number(buttonIndex),
+    );
+    return String(entry?.text ?? "");
   };
 
   const handleSelectSku = (skus) => {
@@ -205,7 +248,10 @@ export default function StepOffer({ watch, setValue }) {
             <div className="rounded-xl border border-border p-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold">{t("offer.followup")}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold">{t("offer.followup")}</p>
+                    <FieldTooltip description={t("offer.followupHelp")} />
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {followupForced ? t("offer.followupForced") : t("offer.followupHint")}
                   </p>
@@ -215,50 +261,35 @@ export default function StepOffer({ watch, setValue }) {
                   disabled={followupForced}
                   onCheckedChange={(on) => {
                     setValue("orderReplyFollowupEnabled", on, { shouldDirty: true });
-                    if (on && !String(watch("orderReplyFollowupText") || "").trim()) {
-                      setValue("orderReplyFollowupText", followupDefault, { shouldDirty: true });
+                    if (on) {
+                      setValue("orderReplyFollowups", reconcileFollowups(watch("orderReplyFollowups")), { shouldDirty: true });
                     }
                   }}
                 />
               </div>
               {followupOn && (
-                <>
-                  <div className="space-y-1.5">
-                    <Label>{t("offer.quickReply")}</Label>
-                    <Select
-                      value={
-                        watch("orderReplyFollowupButtonIndex") == null
-                          ? ""
-                          : String(watch("orderReplyFollowupButtonIndex"))
-                      }
-                      onValueChange={(v) =>
-                        setValue("orderReplyFollowupButtonIndex", Number(v), { shouldDirty: true })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("offer.chooseQuickReply")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {inspect.quickReplies.map((btn) => (
-                          <SelectItem key={btn.index} value={String(btn.index)}>
-                            {btn.text || `#${btn.index + 1}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>{t("offer.followupText")}</Label>
-                    <VariableInput
-                      multiline
-                      rows={4}
-                      value={watch("orderReplyFollowupText") || ""}
-                      onChange={(value) => setValue("orderReplyFollowupText", value, { shouldDirty: true })}
-                      {...variableProps}
-                    />
-                    <p className="text-[11px] text-muted-foreground">{t("offer.followupTextHint")}</p>
-                  </div>
-                </>
+                <div className="space-y-3">
+                  {buttons.map((btn) => (
+                    <div key={btn.index} className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">{t("offer.quickReply")}</p>
+                        <p className="mt-1 text-sm font-medium">{btn.text || `#${btn.index + 1}`}</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>{t("offer.followupText")}</Label>
+                        <VariableInput
+                          multiline
+                          rows={4}
+                          value={followupTextFor(btn.index)}
+                          onChange={(value) => updateFollowupText(btn.index, value)}
+                          {...variableProps}
+                          placeholder={t("offer.followupTextPlaceholder")}
+                        />
+                        <p className="text-[11px] text-muted-foreground">{t("offer.followupTextHint")}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}

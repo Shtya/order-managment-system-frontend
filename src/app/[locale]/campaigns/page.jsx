@@ -462,6 +462,15 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
       ),
     },
     {
+      key: "audience",
+      header: t("columns.audience"),
+      cell: (row) => (
+        <span className="text-sm tabular-nums">
+          {Number(row.recipientsCount || 0).toLocaleString()}
+        </span>
+      ),
+    },
+    {
       key: "sentCount",
       header: t("columns.sent"),
       cell: (row) => (

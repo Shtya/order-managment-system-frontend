@@ -55,9 +55,9 @@ function buildInitialWhatsapp(template, accountId, wabaId) {
 }
 
 export default function StepMessage({ watch, setValue }) {
-  const t = useTranslations("campaigns.wizard");
   const accountId = watch("whatsappAccountId");
   const whatsapp = watch("whatsapp");
+  const t = useTranslations("campaigns.wizard");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const customerVariables = useMemo(() => getCampaignPlaceholderChips(t), [t]);
@@ -139,6 +139,7 @@ export default function StepMessage({ watch, setValue }) {
 
   return (
     <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">{t("message.subtitle")}</p>
       <WhatsAppAccountSelect
         label={t("message.account")}
         value={accountId}

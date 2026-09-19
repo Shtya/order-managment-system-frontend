@@ -21,7 +21,7 @@ function FieldTooltip({ description, side = "top", sideOffset = 4, className, st
           className={`size-3.5 shrink-0 text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-help ${className || ""}`}
         />
       </TooltipTrigger>
-      <TooltipContent side={side} sideOffset={sideOffset}>
+      <TooltipContent side={side} sideOffset={sideOffset} className="max-w-xs whitespace-pre-line text-start font-medium">
         {description}
       </TooltipContent>
     </Tooltip>

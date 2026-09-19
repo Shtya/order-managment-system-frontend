@@ -3,7 +3,6 @@
 import * as yup from "yup";
 import {
   inspectTemplateOrderLink,
-  textHasOrderLinkVariable,
 } from "../campaignOrderUrl";
 
 export const CAMPAIGN_CATEGORIES = [
@@ -60,6 +59,9 @@ export const initialWizardData = {
   orderReplyFollowupEnabled: false,
   orderReplyFollowupText: "",
   orderReplyFollowupButtonIndex: null,
+  // Multi-button automatic replies: one entry per template quick-reply
+  // button — { buttonIndex, text }. Every button requires a reply.
+  orderReplyFollowups: [],
 };
 
 const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -233,15 +235,18 @@ export function validateStepOffer(data) {
   }
   const followupOn = inspect.qrOnly ? true : !!data.orderReplyFollowupEnabled;
   if (inspect.hasQuickReply && followupOn) {
-    if (
-      data.orderReplyFollowupButtonIndex === null ||
-      data.orderReplyFollowupButtonIndex === undefined ||
-      data.orderReplyFollowupButtonIndex === ""
-    ) {
-      errors.orderReplyFollowupButtonIndex = "validation.followupButtonRequired";
-    }
-    if (!textHasOrderLinkVariable(data.orderReplyFollowupText)) {
-      errors.orderReplyFollowupText = "validation.followupUrlRequired";
+    // Every template button must have its own reply message configured.
+    const followups = Array.isArray(data.orderReplyFollowups)
+      ? data.orderReplyFollowups
+      : [];
+    const missing = inspect.quickReplies.some((btn) => {
+      const entry = followups.find(
+        (item) => Number(item?.buttonIndex) === btn.index,
+      );
+      return !String(entry?.text ?? "").trim();
+    });
+    if (missing) {
+      errors.orderReplyFollowups = "validation.followupReplyRequired";
     }
   }
   return errors;
@@ -274,14 +279,33 @@ export function buildCampaignPayload(data, opts = {}) {
       price: Number(p.price || 0),
       sortOrder: index,
     }));
-    payload.orderReplyFollowupEnabled = inspectTemplateOrderLink(data.whatsapp).qrOnly
-      ? true
-      : !!data.orderReplyFollowupEnabled;
-    payload.orderReplyFollowupText = data.orderReplyFollowupText || undefined;
-    payload.orderReplyFollowupButtonIndex =
-      data.orderReplyFollowupButtonIndex === "" || data.orderReplyFollowupButtonIndex == null
-        ? undefined
-        : Number(data.orderReplyFollowupButtonIndex);
+    const inspect = inspectTemplateOrderLink(data.whatsapp);
+    const followupOn = inspect.qrOnly ? true : !!data.orderReplyFollowupEnabled;
+    payload.orderReplyFollowupEnabled = followupOn;
+    if (followupOn && inspect.hasQuickReply) {
+      // One reply per template button; legacy single-button fields mirror
+      // the first entry for backward compatibility.
+      const followups = (Array.isArray(data.orderReplyFollowups)
+        ? data.orderReplyFollowups
+        : []
+      )
+        .filter(
+          (item) =>
+            item != null &&
+            item.buttonIndex !== "" &&
+            item.buttonIndex != null &&
+            String(item.text ?? "").trim(),
+        )
+        .map((item) => ({
+          buttonIndex: Number(item.buttonIndex),
+          text: String(item.text),
+        }));
+      payload.orderReplyFollowups = followups;
+      if (followups.length) {
+        payload.orderReplyFollowupText = followups[0].text;
+        payload.orderReplyFollowupButtonIndex = followups[0].buttonIndex;
+      }
+    }
   }
   if (data.maxMessagesPerHour) payload.maxMessagesPerHour = Number(data.maxMessagesPerHour);
   if (data.workingHoursEnabled) {

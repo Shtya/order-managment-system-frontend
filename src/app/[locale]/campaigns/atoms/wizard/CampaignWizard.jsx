@@ -111,6 +111,19 @@ function mapCampaignToForm(campaign) {
       campaign.orderReplyFollowupButtonIndex == null
         ? null
         : Number(campaign.orderReplyFollowupButtonIndex),
+    // Multi-button replies with legacy single-button fallback (old rows).
+    orderReplyFollowups: Array.isArray(campaign.orderReplyFollowups) &&
+      campaign.orderReplyFollowups.length
+      ? campaign.orderReplyFollowups.map((item) => ({
+        buttonIndex: Number(item?.buttonIndex ?? 0),
+        text: String(item?.text ?? ""),
+      }))
+      : campaign.orderReplyFollowupText
+        ? [{
+          buttonIndex: Number(campaign.orderReplyFollowupButtonIndex ?? 0),
+          text: String(campaign.orderReplyFollowupText),
+        }]
+        : [],
   };
 }
 
@@ -165,6 +178,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
           return;
         }
         const mapped = mapCampaignToForm(row);
+        
         // Duplicate flow: reuse everything as initial data except the
         // (unique) name, which the user must enter fresh.
         reset(isCopy ? { ...mapped, name: "" } : mapped);

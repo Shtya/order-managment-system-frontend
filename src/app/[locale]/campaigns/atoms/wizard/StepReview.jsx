@@ -33,9 +33,27 @@ export default function StepReview({ getValues }) {
   const empty = t("review.empty");
   const placeholderChips = useMemo(() => getCampaignPlaceholderChips(t), [t]);
   const inspect = useMemo(() => inspectTemplateOrderLink(v.whatsapp), [v.whatsapp]);
-  const chosenReply = inspect.quickReplies.find(
-    (btn) => btn.index === Number(v.orderReplyFollowupButtonIndex),
-  );
+  // Multi-button replies with legacy single-button fallback (old rows).
+  const followupList = useMemo(() => {
+    const list = Array.isArray(v.orderReplyFollowups) ? v.orderReplyFollowups : [];
+    if (list.length) {
+      return list.map((item) => ({
+        buttonIndex: Number(item?.buttonIndex),
+        text: String(item?.text ?? ""),
+      }));
+    }
+    if (v.orderReplyFollowupEnabled && String(v.orderReplyFollowupText ?? "").trim()) {
+      return [{
+        buttonIndex: Number(v.orderReplyFollowupButtonIndex ?? 0),
+        text: String(v.orderReplyFollowupText),
+      }];
+    }
+    return [];
+  }, [v.orderReplyFollowups, v.orderReplyFollowupEnabled, v.orderReplyFollowupText, v.orderReplyFollowupButtonIndex]);
+  const followupButtonLabel = (buttonIndex) =>
+    inspect.quickReplies.find((btn) => btn.index === Number(buttonIndex))?.text ||
+    v.orderReplyFollowupButtonText ||
+    "—";
   const products = v.products || [];
   const productsTotal = products.reduce(
     (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 1),
@@ -47,6 +65,7 @@ export default function StepReview({ getValues }) {
   const [segment, setSegment] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const [lookupsRaw, setLookupsRaw] = useState(EMPTY_AUDIENCE_LOOKUPS);
+  const [whatsappAccount, setWhatsappAccount] = useState(null);
 
   useEffect(() => {
     if (v.audienceType !== "segment" || !v.audienceSegmentId) return;
@@ -90,6 +109,26 @@ export default function StepReview({ getValues }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const accountId = v.whatsappAccountId || v.whatsapp?.accountId;
+    if (!accountId) {
+      setWhatsappAccount(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.get(`/whatsapp-accounts/${accountId}`);
+        if (!cancelled) setWhatsappAccount(res.data?.id ? res.data : res.data?.data);
+      } catch {
+        if (!cancelled) setWhatsappAccount(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [v.whatsappAccountId, v.whatsapp?.accountId]);
+
   const fieldOptions = useMemo(
     () => buildAudienceFieldOptions({ lookups: lookupsRaw, locale, tOrders, tTags, tAudience: ta }),
     [lookupsRaw, locale, tOrders, tTags, ta],
@@ -104,15 +143,19 @@ export default function StepReview({ getValues }) {
 
   const rows = [
     [t("name"), v.name || empty],
-    [t("category"), v.category ? t(`categories.${v.category}`) : empty],
-    [t("description"), v.description || empty],
-    [t("workingHours"), v.workingHoursEnabled ? `${v.workingHoursStart} → ${v.workingHoursEnd}` : t("review.offHours")],
-    [t("delayMax"), `${v.delayMinSeconds}s → ${v.delayMaxSeconds}s`],
-    [t("channel"), t(`channels.${["whatsapp", "sms", "email"].includes(v.channel) ? v.channel : "whatsapp"}`)],
-    [t("scheduleMode"), v.scheduleMode === "scheduled"
+    [t("review.category"), v.category ? t(`categories.${v.category}`) : empty],
+    [t("review.description"), v.description || empty],
+    [t("review.workingHours"), v.workingHoursEnabled ? `${v.workingHoursStart} → ${v.workingHoursEnd}` : t("review.offHours")],
+    [t("review.delayRange"), `${v.delayMinSeconds}s → ${v.delayMaxSeconds}s`],
+    [t("review.channel"), t(`channels.${["whatsapp", "sms", "email"].includes(v.channel) ? v.channel : "whatsapp"}`)],
+    [t("review.scheduleMode"), v.scheduleMode === "scheduled"
       ? combineScheduledAt(v.scheduledDate, v.scheduledTime) || `${v.scheduledDate || ""} ${v.scheduledTime || ""}`
       : t("scheduleNow")],
-    [t("maxPerHour"), v.maxMessagesPerHour || "—"],
+    [t("review.maxPerHour"), v.maxMessagesPerHour || "—"],
+    [
+      t("review.whatsappNumber"),
+      whatsappAccount?.mobileNumber || whatsappAccount?.name || empty,
+    ],
   ];
 
   return (
@@ -260,21 +303,23 @@ export default function StepReview({ getValues }) {
             {v.orderReplyFollowupEnabled && (
               <div className="space-y-2">
                 <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{t("offer.followup")}</p>
-                <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground">{t("review.followupButton")}</p>
-                    <p className="mt-1 text-sm font-medium">{chosenReply?.text || empty}</p>
+                {followupList.map((item, i) => (
+                  <div key={`${item.buttonIndex}-${i}`} className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">{t("review.followupButton")}</p>
+                      <p className="mt-1 text-sm font-medium">{followupButtonLabel(item.buttonIndex)}</p>
+                    </div>
+                    <div>
+                      <p className="mb-1 text-xs text-muted-foreground">{t("review.followupMessage")}</p>
+                      <VariableTextPreview
+                        text={item.text}
+                        variables={placeholderChips}
+                        locale={locale}
+                        empty={empty}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <p className="mb-1 text-xs text-muted-foreground">{t("review.followupMessage")}</p>
-                    <VariableTextPreview
-                      text={v.orderReplyFollowupText}
-                      variables={placeholderChips}
-                      locale={locale}
-                      empty={empty}
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
             )}
           </>

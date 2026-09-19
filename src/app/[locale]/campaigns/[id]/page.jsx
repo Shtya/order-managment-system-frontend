@@ -665,25 +665,38 @@ export default function CampaignDetailsPage() {
           {campaign.orderReplyFollowupEnabled && (
             <div className="space-y-2">
               <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{tw("offer.followup")}</p>
-              <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
-                <div>
-                  <p className="text-xs text-muted-foreground">{tw("review.followupButton")}</p>
-                  <p className="mt-1 text-sm font-medium">
-                    {inspectTemplateOrderLink(snap).quickReplies.find(
-                      (btn) => btn.index === Number(campaign.orderReplyFollowupButtonIndex),
-                    )?.text || campaign.orderReplyFollowupButtonText || "—"}
-                  </p>
+              {(Array.isArray(campaign.orderReplyFollowups) && campaign.orderReplyFollowups.length
+                ? campaign.orderReplyFollowups.map((item) => ({
+                  buttonIndex: Number(item?.buttonIndex ?? 0),
+                  text: String(item?.text ?? ""),
+                }))
+                : campaign.orderReplyFollowupText
+                  ? [{
+                    buttonIndex: Number(campaign.orderReplyFollowupButtonIndex ?? 0),
+                    text: String(campaign.orderReplyFollowupText),
+                  }]
+                  : []
+              ).map((item, i) => (
+                <div key={`${item.buttonIndex}-${i}`} className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{tw("review.followupButton")}</p>
+                    <p className="mt-1 text-sm font-medium">
+                      {inspectTemplateOrderLink(snap).quickReplies.find(
+                        (btn) => btn.index === Number(item.buttonIndex),
+                      )?.text || campaign.orderReplyFollowupButtonText || "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs text-muted-foreground">{tw("review.followupMessage")}</p>
+                    <VariableTextPreview
+                      text={item.text}
+                      variables={placeholderChips}
+                      locale={locale}
+                      empty="—"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <p className="mb-1 text-xs text-muted-foreground">{tw("review.followupMessage")}</p>
-                  <VariableTextPreview
-                    text={campaign.orderReplyFollowupText}
-                    variables={placeholderChips}
-                    locale={locale}
-                    empty="—"
-                  />
-                </div>
-              </div>
+              ))}
             </div>
           )}
         </section>

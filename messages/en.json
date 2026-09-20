@@ -13495,6 +13495,7 @@
           "resolveErrors": "Please resolve all node errors before saving.",
           "minNodes": "Workflow must contain at least two nodes.",
           "exactlyOneTrigger": "Workflow must contain exactly one trigger.",
+          "circularDependency": "Circular dependency: {path}",
           "publishedSuccess": "Automation published successfully!",
           "savedSuccess": "Automation saved successfully!",
           "saveFailed": "Failed to save automation.",

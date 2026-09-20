@@ -1,21 +1,21 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath } from '@xyflow/react';
 import { Trash2, Link2Off } from 'lucide-react';
 import { useFlowStore } from '@/hook/useFlowStore';
 import { cn } from '@/utils/cn';
 import { useTranslations } from 'next-intl';
 
-export default function CustomEdge({
-    id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, markerEnd, selected
+function CustomEdge({
+    id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, markerEnd, selected, animated
 }) {
     const t = useTranslations("whatsApp.automations.builder.toolbar");
     const deleteEdge = useFlowStore((s) => s.deleteEdge);
     const disconnectEdge = useFlowStore((s) => s.disconnectEdge);
-    const mode = useFlowStore((s) => s.mode);
+    const isViewMode = useFlowStore((s) => s.mode === 'view');
+    const isRunMode = useFlowStore((s) => s.mode === 'run');
+    const isTakenPath = useFlowStore((s) => s.mode === 'run' && s.runPathEdgeIds?.has(id));
+    const isCycleEdge = useFlowStore((s) => Boolean(s.cycleHighlight?.edgeIds?.includes(id)));
     const [isHovered, setIsHovered] = useState(false);
-
-    const isViewMode = mode === 'view';
-    const isRunMode = mode === 'run';
 
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition,
@@ -40,7 +40,17 @@ export default function CustomEdge({
             <BaseEdge
                 path={edgePath}
                 markerEnd={markerEnd}
-                style={{ ...style, strokeWidth: 2, stroke: (isHovered || selected) ? '#2563eb' : '#cbd5e1' }}
+                animated={isRunMode ? isTakenPath : animated}
+                style={{
+                    ...style,
+                    strokeWidth: isCycleEdge || isTakenPath ? 2.5 : isRunMode ? 1.5 : 2,
+                    opacity: isRunMode && !isTakenPath && !isCycleEdge ? 0.9 : 1,
+                    stroke: isCycleEdge
+                        ? '#e11d48'
+                        : isTakenPath
+                            ? '#10b981'
+                            : (isHovered || selected) && !isRunMode ? '#2563eb' : '#cbd5e1',
+                }}
                 className="react-flow__edge-path transition-colors cursor-pointer"
             />
             {/* Hidden wider path to make it easier to hover */}
@@ -93,3 +103,5 @@ export default function CustomEdge({
         </g>
     );
 }
+
+export default memo(CustomEdge);

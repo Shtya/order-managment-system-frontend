@@ -26,6 +26,7 @@ import { ConfirmDeleteDialog } from "@/app/[locale]/automations/atoms/ConfirmDel
 import { AUTOMATION_CONFIG } from "@/app/[locale]/automations/atoms/automation-config";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
+import { isValidFlowConnection } from "@/app/[locale]/automations/utils/isValidFlowConnection";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -139,25 +140,7 @@ function BuilderCanvas() {
   };
 
   const isValidConnection = useCallback((connection) => {
-    const { source, target, sourceHandle, targetHandle } = connection;
-
-    // 1. Do not allow self-connections
-    if (source === target) return false;
-
-    // 2. Each handle should have only one connection
-    // Check if source handle already has an outgoing edge
-    const isSourceHandleOccupied = edges.some(
-      (edge) => edge.source === source && edge.sourceHandle === sourceHandle
-    );
-    if (isSourceHandleOccupied) return false;
-
-    // Check if target handle already has an incoming edge
-    const isTargetHandleOccupied = edges.some(
-      (edge) => edge.target === target && edge.targetHandle === targetHandle
-    );
-    if (isTargetHandleOccupied) return false;
-
-    return true;
+    return isValidFlowConnection(connection, edges);
   }, [edges]);
 
   return (

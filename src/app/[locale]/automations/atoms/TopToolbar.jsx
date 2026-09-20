@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
     Save,
     Play,
@@ -40,11 +40,13 @@ import { processNodesBeforeSave } from './nodeProcessors';
 import { BASE_CONFIG } from './automation-config';
 import AutomationWhatsappSettingsDialog from './AutomationWhatsappSettingsDialog';
 import { countWhatsappAutomationSteps, hasWhatsappAutomationSteps } from './whatsapp-flow-settings';
+import { findCircularDependency, formatCyclePath, getCycleEdgeIds } from '../utils/detect-cycles';
 
 const WHATSAPP_SETTINGS_TOAST_ID = "automation-whatsapp-settings";
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
     const t = useTranslations("whatsApp.automations.builder");
+    const locale = useLocale();
     const { isSuperAdmin, user, hasPermission } = useAuth();
     const edges = useFlowStore((s) => s.edges);
     const nodes = useFlowStore((s) => s.nodes);
@@ -55,6 +57,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
     const restoreFlow = useFlowStore((s) => s.restoreFlow);
     const resetFlow = useFlowStore((s) => s.resetFlow);
     const reorderFlow = useFlowStore((s) => s.reorderFlow);
+    const setCycleHighlight = useFlowStore((s) => s.setCycleHighlight);
     const mode = useFlowStore((s) => s.mode);
     const automationId = useFlowStore((s) => s.automationId);
     const [saving, setSaving] = useState(false);
@@ -383,6 +386,19 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
             return false;
         }
 
+        const cycle = findCircularDependency({ nodes, edges });
+        if (cycle) {
+            setCycleHighlight({
+                nodeIds: cycle,
+                edgeIds: getCycleEdgeIds(cycle, edges),
+            });
+            toast.error(t('toolbar.circularDependency', {
+                path: formatCyclePath(cycle, nodes, locale),
+            }));
+            return false;
+        }
+
+        setCycleHighlight(null);
         return true;
     };
 

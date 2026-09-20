@@ -2,6 +2,45 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Node, Edge, addEdge, applyNodeChanges, applyEdgeChanges, Connection } from '@xyflow/react';
 import { DEFAULT_WHATSAPP_SETTINGS, normalizeWhatsappSettings } from '@/app/[locale]/automations/atoms/whatsapp-flow-settings';
+import { isValidFlowConnection } from '@/app/[locale]/automations/utils/isValidFlowConnection';
+import { getRunPathEdgeIds } from '@/app/[locale]/automations/utils/isRunPathEdge';
+
+const EMPTY_RUN_PATH_IDS = new Set();
+
+function attachRunPath(set, get) {
+  return (partial, replace) => {
+    if (typeof partial === 'function') {
+      return set((state) => {
+        const resolved = partial(state);
+        if (!resolved || replace === true) return resolved;
+        if (!Object.prototype.hasOwnProperty.call(resolved, 'edges')
+          && !Object.prototype.hasOwnProperty.call(resolved, 'currentRun')) {
+          return resolved;
+        }
+        const currentRun = Object.prototype.hasOwnProperty.call(resolved, 'currentRun')
+          ? resolved.currentRun
+          : state.currentRun;
+        const edges = Object.prototype.hasOwnProperty.call(resolved, 'edges')
+          ? resolved.edges
+          : state.edges;
+        return { ...resolved, runPathEdgeIds: getRunPathEdgeIds(currentRun, edges) };
+      }, replace);
+    }
+    if (partial && replace !== true
+      && (Object.prototype.hasOwnProperty.call(partial, 'edges')
+        || Object.prototype.hasOwnProperty.call(partial, 'currentRun'))) {
+      const state = get();
+      const currentRun = Object.prototype.hasOwnProperty.call(partial, 'currentRun')
+        ? partial.currentRun
+        : state.currentRun;
+      const edges = Object.prototype.hasOwnProperty.call(partial, 'edges')
+        ? partial.edges
+        : state.edges;
+      return set({ ...partial, runPathEdgeIds: getRunPathEdgeIds(currentRun, edges) }, replace);
+    }
+    return set(partial, replace);
+  };
+}
 
 const calculatePosition = (sourceNode, handleId) => {
   let offsetX = 0;
@@ -40,6 +79,30 @@ const calculatePosition = (sourceNode, handleId) => {
 let preventStorageSave = false;
 const FLOW_STORAGE_KEY = 'whatsapp-automation-flow';
 const SKIP_DELETE_KEY = 'skip_delete';
+
+const createEdgeId = (source, target, sourceHandle) =>
+  `edge_${source}_${sourceHandle || 'out'}_${target}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+function getDownstreamNodeIds(edges, startId) {
+  const collected = [];
+  const visited = new Set();
+
+  const walk = (nodeId) => {
+    if (visited.has(nodeId)) return;
+    visited.add(nodeId);
+
+    edges
+      .filter((edge) => edge.source === nodeId)
+      .forEach((edge) => {
+        if (visited.has(edge.target)) return;
+        collected.push(edge.target);
+        walk(edge.target);
+      });
+  };
+
+  walk(startId);
+  return [...new Set(collected)];
+}
 
 // Reusable function to clear flow localStorage while preserving skipDeleteConfirmation
 const clearFlowStorage = () => {
@@ -117,7 +180,9 @@ const createCustomStorage = () => {
 
 export const useFlowStore = create(
   persist(
-    (set, get) => ({
+    (set, get) => {
+    set = attachRunPath(set, get);
+    return {
       nodes: [],
       edges: [],
       name: '',
@@ -127,6 +192,7 @@ export const useFlowStore = create(
       nodeLoading: {}, // { nodeId: bool }
       mode: 'create', // 'create' | 'edit' | 'view' | 'run'
       currentRun: null, // AutomationRunEntity
+      runPathEdgeIds: EMPTY_RUN_PATH_IDS,
       automationId: null,
       selectedNodeId: null,
       pendingConnection: null, // { nodeId, type }
@@ -134,9 +200,10 @@ export const useFlowStore = create(
       skipDeleteConfirmation: typeof window !== 'undefined' ? localStorage.getItem('skip_delete') === 'true' : false,
       previewResumeLoading: false, // Loading state for preview resume API call
       whatsappSettings: { ...DEFAULT_WHATSAPP_SETTINGS },
+      cycleHighlight: null, // { nodeIds: string[], edgeIds: string[] } | null
 
-      setNodes: (nodes) => set({ nodes }),
-      setEdges: (edges) => set({ edges }),
+      setNodes: (nodes) => set({ nodes, cycleHighlight: null }),
+      setEdges: (edges) => set({ edges, cycleHighlight: null }),
       setName: (name) => set({ name, nameError: null }),
       setNameError: (error) => set({ nameError: error }),
       setMode: (mode) => set((state) => {
@@ -165,6 +232,7 @@ export const useFlowStore = create(
           nodeLoading: {},
           previewResumeLoading: false,
           whatsappSettings: normalizeWhatsappSettings(whatsapp),
+          cycleHighlight: null,
         });
         setTimeout(() => { preventStorageSave = false; }, 0);
         return result;
@@ -184,6 +252,8 @@ export const useFlowStore = create(
       setPendingConnection: (conn) => set({ pendingConnection: conn }),
       setDeleteConfirm: (confirm) => set({ deleteConfirm: confirm }),
       setPreviewResumeLoading: (loading) => set({ previewResumeLoading: loading }),
+      setCycleHighlight: (cycleHighlight) => set({ cycleHighlight }),
+      clearCycleHighlight: () => set({ cycleHighlight: null }),
 
 
       restoreFlow: (snapshot) => set({
@@ -203,6 +273,7 @@ export const useFlowStore = create(
         skipDeleteConfirmation: snapshot.skipDeleteConfirmation ?? false,
         previewResumeLoading: false,
         whatsappSettings: normalizeWhatsappSettings(snapshot.whatsappSettings),
+        cycleHighlight: null,
       }),
 
       resetFlow: () => {
@@ -223,6 +294,7 @@ export const useFlowStore = create(
           deleteConfirm: null,
           previewResumeLoading: false,
           whatsappSettings: { ...DEFAULT_WHATSAPP_SETTINGS },
+          cycleHighlight: null,
         });
         // Ensure no save even after set
         if (typeof window !== 'undefined') {
@@ -242,14 +314,28 @@ export const useFlowStore = create(
         set({ nodes: applyNodeChanges(changes, get().nodes) });
       },
       onEdgesChange: (changes) => {
-        set({ edges: applyEdgeChanges(changes, get().edges) });
+        const graphChanged = changes.some((change) => change.type === 'remove' || change.type === 'add');
+        set({
+          edges: applyEdgeChanges(changes, get().edges),
+          ...(graphChanged ? { cycleHighlight: null } : {}),
+        });
       },
 
       onConnect: (connection) => {
         console.log("connection add edge: ", connection)
+        const { edges } = get();
+        if (!isValidFlowConnection(connection, edges)) {
+          return;
+        }
         set({
-          edges: addEdge({ ...connection, animated: true, type: 'custom' }, get().edges),
-          pendingConnection: null
+          edges: addEdge({
+            ...connection,
+            id: createEdgeId(connection.source, connection.target, connection.sourceHandle),
+            animated: true,
+            type: 'custom',
+          }, edges),
+          pendingConnection: null,
+          cycleHighlight: null,
         });
       },
       setSelectedNode: (id) => set({ selectedNodeId: id }),
@@ -268,7 +354,7 @@ export const useFlowStore = create(
           }
 
           const newEdge = {
-            id: `edge_${pendingConnection.nodeId}_${newNode.id}`,
+            id: createEdgeId(pendingConnection.nodeId, newNode.id, pendingConnection.handleId),
             source: pendingConnection.nodeId,
             sourceHandle: pendingConnection.handleId,
             target: newNode.id,
@@ -279,10 +365,11 @@ export const useFlowStore = create(
           set({
             nodes: [...nodes, newNode],
             edges: [...edges, newEdge],
-            pendingConnection: null
+            pendingConnection: null,
+            cycleHighlight: null,
           });
         } else {
-          set({ nodes: [...nodes, newNode] });
+          set({ nodes: [...nodes, newNode], cycleHighlight: null });
         }
       },
 
@@ -323,9 +410,19 @@ export const useFlowStore = create(
 
       addEdge: (edge) => {
         console.log("add edge: ", edge)
+        const { edges } = get();
+        if (!isValidFlowConnection(edge, edges, edge.id)) {
+          return;
+        }
         set({
-          edges: [...get().edges, { ...edge, animated: true, type: 'custom' }],
-          pendingConnection: null
+          edges: [...edges, {
+            ...edge,
+            id: edge.id || createEdgeId(edge.source, edge.target, edge.sourceHandle),
+            animated: true,
+            type: 'custom',
+          }],
+          pendingConnection: null,
+          cycleHighlight: null,
         });
       },
 
@@ -368,13 +465,15 @@ export const useFlowStore = create(
           nodes: nodes.map((node) =>
             node.id === id ? { ...node, data: { ...node.data, ...data } } : node
           ),
-          edges: updatedEdges
+          edges: updatedEdges,
+          cycleHighlight: null,
         });
       },
 
       disconnectEdge: (edgeId) => {
         set({
-          edges: get().edges.filter(e => e.id !== edgeId)
+          edges: get().edges.filter(e => e.id !== edgeId),
+          cycleHighlight: null,
         });
       },
 
@@ -386,20 +485,8 @@ export const useFlowStore = create(
         if (isEditMode && node?.type === 'trigger') {
           return;
         }
-        // Find all nodes that are downstream from this node
-        const getDownstreamNodeIds = (nodeId) => {
-          let connectedNodeIds = [];
-          const outgoingEdges = edges.filter(e => e.source === nodeId);
 
-          outgoingEdges.forEach(edge => {
-            connectedNodeIds.push(edge.target);
-            connectedNodeIds = [...connectedNodeIds, ...getDownstreamNodeIds(edge.target)];
-          });
-
-          return [...new Set(connectedNodeIds)];
-        };
-
-        const downstreamIds = getDownstreamNodeIds(id);
+        const downstreamIds = getDownstreamNodeIds(edges, id);
 
         if (skipDeleteConfirmation) {
           executeDeletion(id, downstreamIds);
@@ -446,7 +533,8 @@ export const useFlowStore = create(
           nodeLoading: newNodeLoading,
           selectedNodeId: allIdsToDelete.includes(get().selectedNodeId) ? null : get().selectedNodeId,
           pendingConnection: allIdsToDelete.includes(get().pendingConnection?.nodeId) ? null : get().pendingConnection,
-          deleteConfirm: null
+          deleteConfirm: null,
+          cycleHighlight: null,
         });
       },
 
@@ -469,27 +557,15 @@ export const useFlowStore = create(
             selectedNodeId: null,
             pendingConnection: null,
             deleteConfirm: null,
-            previewResumeLoading: false
+            previewResumeLoading: false,
+            cycleHighlight: null,
           });
           return;
         }
 
         const { id } = deleteConfirm;
 
-        // Find all nodes that are downstream from this node
-        const getDownstreamNodeIds = (nodeId) => {
-          let connectedNodeIds = [];
-          const outgoingEdges = edges.filter(e => e.source === nodeId);
-
-          outgoingEdges.forEach(edge => {
-            connectedNodeIds.push(edge.target);
-            connectedNodeIds = [...connectedNodeIds, ...getDownstreamNodeIds(edge.target)];
-          });
-
-          return [...new Set(connectedNodeIds)];
-        };
-
-        const downstreamIds = getDownstreamNodeIds(id);
+        const downstreamIds = getDownstreamNodeIds(edges, id);
         executeDeletion(id, downstreamIds);
       },
 
@@ -515,6 +591,7 @@ export const useFlowStore = create(
           automationId: null,
           deleteConfirm: null,
           whatsappSettings: { ...DEFAULT_WHATSAPP_SETTINGS },
+          cycleHighlight: null,
         });
 
         // Clear again after set to ensure persist middleware doesn't save
@@ -540,7 +617,8 @@ export const useFlowStore = create(
         // Add more validation logic as needed
         return true;
       }
-    }),
+    };
+    },
     {
       name: 'whatsapp-automation-flow',
       storage: createCustomStorage(),
@@ -556,10 +634,12 @@ export const useFlowStore = create(
           nameError,
           nodeErrors,
           currentRun,
+          runPathEdgeIds,
           nodeHydration,
           nodeLoading,
           deleteConfirm,
           pendingConnection,
+          cycleHighlight,
           ...rest
         } = state;
         return rest;

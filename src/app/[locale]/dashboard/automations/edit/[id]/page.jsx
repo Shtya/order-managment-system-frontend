@@ -21,6 +21,7 @@ import { useReactFlow, ReactFlow, Background, Controls, MiniMap, Panel } from "@
 import { useRef, useCallback } from "react";
 import { TopToolbar } from "@/app/[locale]/automations/atoms/TopToolbar";
 import { useTranslations } from "next-intl";
+import { isValidFlowConnection } from "@/app/[locale]/automations/utils/isValidFlowConnection";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -114,16 +115,7 @@ function BuilderCanvas({ version }) {
   };
 
   const isValidConnection = useCallback((connection) => {
-    const { source, target, sourceHandle, targetHandle } = connection;
-    if (source === target) return false;
-
-    const isSourceHandleOccupied = edges.some(edge => edge.source === source && edge.sourceHandle === sourceHandle);
-    if (isSourceHandleOccupied) return false;
-
-    const isTargetHandleOccupied = edges.some(edge => edge.target === target && edge.targetHandle === targetHandle);
-    if (isTargetHandleOccupied) return false;
-
-    return true;
+    return isValidFlowConnection(connection, edges);
   }, [edges]);
 
   return (

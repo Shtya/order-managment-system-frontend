@@ -35,7 +35,11 @@ export function CustomHandle({ isConnected, position, noOffset, className, nodeI
             <Handle
                 position={position}
                 {...props}
-                isConnectable={props.isConnectable ?? !isConnected}
+                isConnectable={props.isConnectable ?? (
+                    !isViewMode &&
+                    !isRunMode 
+                    && !(props.type === 'source' && isConnected)
+                )}
                 className={cn(
                     "!w-3 !h-3 !border-2 !border-white transition-all duration-200 !static !translate-x-0 !translate-y-0",
                     // Glowing effect if connected

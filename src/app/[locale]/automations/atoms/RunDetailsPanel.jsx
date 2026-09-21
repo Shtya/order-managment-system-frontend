@@ -62,7 +62,9 @@ export default function RunDetailsPanel({
     // Use translated label if available
     if (node.type === 'trigger') return tBuilder(`triggerTypes.${node.data.type}`);
     if (node.type === 'action') return tBuilder(`actionTypes.${node.data.type}`);
-    if (node.type === 'condition') return tBuilder(`conditionTypes.${node.data.type}`);
+    if (node.type === 'condition') {
+      return node.data?.label || tBuilder(`conditionTypes.${node.data.type}`);
+    }
     
     return node.data?.label || node.id || "—";
   }, [selectedRun, tBuilder]);

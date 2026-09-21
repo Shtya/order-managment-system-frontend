@@ -1,5 +1,5 @@
 import { testEmails } from '@/config/sidebarMenu';
-import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle, Bot, UserX, UserPlus } from 'lucide-react';
+import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle, Bot, UserX, UserPlus, MapPin } from 'lucide-react';
 
 /**
  * Automation Configuration
@@ -225,6 +225,15 @@ export const BASE_CONFIG = {
                         type: 'condition',
                         configComponent: 'QuickOrderStatusConfig',
                         className: 'max-w-xl!'
+                    },
+                    {
+                        id: 'ai_address_completeness',
+                        icon: MapPin,
+                        type: 'condition',
+                        configComponent: 'AiAddressCompletenessConfig',
+                        className: 'max-w-xl!',
+                        hasCustom: true,
+                        allowedEmails: testEmails,
                     }
                 ]
             }

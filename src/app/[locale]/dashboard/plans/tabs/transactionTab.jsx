@@ -35,6 +35,30 @@ function formatDate(dateStr) {
         day: "numeric",
     });
 }
+
+function formatTransactionAmount(amount, currency, sign, formatCurrency) {
+    if (amount === undefined || amount === null || amount === "") return "—";
+    const n = Number(amount);
+    if (!Number.isFinite(n)) return "—";
+    const abs = Math.abs(n);
+    if (abs > 0 && abs < 0.01) {
+        const formatted = n.toLocaleString("en-US", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 8,
+        });
+        return `${formatted} ${(sign || currency || "").trim()}`.trim();
+    }
+    return formatCurrency(amount, currency, sign);
+}
+
+function transactionDollarAmount(row) {
+    const dollars = Number(row.amountInDollars);
+    if (Number.isFinite(dollars) && Math.abs(dollars) >= 0.01) return dollars;
+    const amount = Number(row.amount);
+    const currency = String(row.currency || "").toUpperCase();
+    if (currency === "USD" || currency === "US$" || currency === "$") return amount;
+    return Number.isFinite(dollars) && dollars !== 0 ? dollars : amount;
+}
 export const TransactionStatus = Object.freeze({
     SUCCESS: 'success',
     FAILED: 'failed',
@@ -234,7 +258,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
             header: t("columns.amount"),
             cell: (row) => (
                 <span className="font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
-                    {formatCurrency(row.amount, row.currency || platformCurrency)}
+                    {formatTransactionAmount(row.amount, row.currency || platformCurrency, undefined, formatCurrency)}
                 </span>
             ),
         },
@@ -243,7 +267,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
             header: t("columns.amountInDollar"),
             cell: (row) => (
                 <span className="font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
-                    {formatCurrency(row.amountInDollars, dollor, dollorSign)}
+                    {formatTransactionAmount(transactionDollarAmount(row), dollor, dollorSign, formatCurrency)}
                 </span>
             ),
         }] : []),

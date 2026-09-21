@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
-import { Position } from '@xyflow/react';
-import { GitBranch, Zap, Check, Loader2, X } from 'lucide-react';
+import React, { useEffect, useMemo } from 'react';
+import { Position, useUpdateNodeInternals } from '@xyflow/react';
+import { GitBranch, Zap, Check, Loader2, X, MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
 import { useFlowStore } from '@/hook/useFlowStore';
+import { cn } from '@/utils/cn';
 
 export function ConditionNode({ id, data, selected }) {
     const t = useTranslations("whatsApp.automations.builder");
@@ -12,23 +13,30 @@ export function ConditionNode({ id, data, selected }) {
     const CONDITION_TYPES = useMemo(() => ({
         'order_check': { label: t('conditionTypes.order_check'), icon: GitBranch, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
         'quick_order_status': { label: t('conditionTypes.quick_order_status'), icon: Zap, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
+        'ai_address_completeness': { label: t('conditionTypes.ai_address_completeness'), icon: MapPin, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
     }), [t]);
 
     const condition = CONDITION_TYPES[data.type] || CONDITION_TYPES['order_check'];
     const Icon = condition.icon;
     const edges = useFlowStore((s) => s.edges);
     const loading = useFlowStore((s) => s.nodeLoading[id]);
+    const updateNodeInternals = useUpdateNodeInternals();
+    const branches = data.config?.branches || [];
+    const hasBranches = branches.length > 0;
 
     const isTrueConnected = edges.some(e => e.source === id && e.sourceHandle === 'true');
     const isFalseConnected = edges.some(e => e.source === id && e.sourceHandle === 'false');
 
+    useEffect(() => {
+        updateNodeInternals(id);
+    }, [id, branches.length, updateNodeInternals]);
 
     return (
         <BaseNode
             id={id}
             data={data}
             selected={selected}
-            title={condition.label}
+            title={data.type === 'ai_address_completeness' ? condition.label : (data.label || condition.label)}
             subtitle={t('nodes.condition.subtitle')}
             icon={Icon}
             colorClass={condition.color}
@@ -78,42 +86,78 @@ export function ConditionNode({ id, data, selected }) {
                                 <span className="font-black text-purple-700 dark:text-purple-400 uppercase tracking-tight">{data.config?.status || '—'}</span>
                             </div>
                         )}
+                        {data.type === 'ai_address_completeness' && (
+                            <div className="text-center font-bold text-purple-700 dark:text-purple-400 leading-relaxed">
+                                {t('nodes.aiAddressCompletenessSubtitle')}
+                            </div>
+                        )}
                     </>
                 )}
             </div>
 
-            {/* Dynamic Branching Outputs (True / False) */}
-            <div className="absolute top-full left-[20%] -translate-x-1/2 flex flex-col items-center">
-                <CustomHandle
-                    type="source"
-                    position={Position.Bottom}
-                    id="true"
-                    noOffset
-                    className="!static !translate-y-0"
-                    nodeId={id}
-                    isConnected={isTrueConnected}
-                />
-                <div className="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20 shadow-sm mt-1.5">
-                    <Check size={8} strokeWidth={4} className="text-emerald-600" />
-                    <span className="text-[8px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tighter">{t('nodes.yes')}</span>
-                </div>
-            </div>
+            {hasBranches ? (
+                branches.map((branch, i) => {
+                    const leftPos = ((i + 1) * 100) / (branches.length + 1);
+                    const isConnected = edges.some(e => e.source === id && e.sourceHandle === branch.id);
+                    return (
+                        <div
+                            key={branch.id}
+                            className="absolute top-full flex flex-col items-center"
+                            style={{ left: `${leftPos}%`, transform: 'translateX(-50%)' }}
+                        >
+                            <CustomHandle
+                                type="source"
+                                position={Position.Bottom}
+                                id={branch.id}
+                                noOffset
+                                className="!static !translate-y-0"
+                                nodeId={id}
+                                isConnected={isConnected}
+                            />
+                            <span className={cn(
+                                "text-[8px] font-black tracking-tighter px-1.5 py-0.5 rounded-full border shadow-sm whitespace-nowrap mt-2",
+                                "text-slate-400 bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                            )}>
+                                {branch.label}
+                            </span>
+                        </div>
+                    );
+                })
+            ) : (
+                <>
+                    <div className="absolute top-full left-[20%] -translate-x-1/2 flex flex-col items-center">
+                        <CustomHandle
+                            type="source"
+                            position={Position.Bottom}
+                            id="true"
+                            noOffset
+                            className="!static !translate-y-0"
+                            nodeId={id}
+                            isConnected={isTrueConnected}
+                        />
+                        <div className="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20 shadow-sm mt-1.5">
+                            <Check size={8} strokeWidth={4} className="text-emerald-600" />
+                            <span className="text-[8px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tighter">{t('nodes.yes')}</span>
+                        </div>
+                    </div>
 
-            <div className="absolute top-full left-[80%] -translate-x-1/2 flex flex-col items-center">
-                <CustomHandle
-                    type="source"
-                    position={Position.Bottom}
-                    id="false"
-                    noOffset
-                    className="!static !translate-y-0"
-                    nodeId={id}
-                    isConnected={isFalseConnected}
-                />
-                <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-500/10 px-1.5 py-0.5 rounded-lg border border-rose-100 dark:border-rose-500/20 shadow-sm mt-1.5">
-                    <X size={8} strokeWidth={4} className="text-rose-600" />
-                    <span className="text-[8px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-tighter">{t('nodes.no')}</span>
-                </div>
-            </div>
+                    <div className="absolute top-full left-[80%] -translate-x-1/2 flex flex-col items-center">
+                        <CustomHandle
+                            type="source"
+                            position={Position.Bottom}
+                            id="false"
+                            noOffset
+                            className="!static !translate-y-0"
+                            nodeId={id}
+                            isConnected={isFalseConnected}
+                        />
+                        <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-500/10 px-1.5 py-0.5 rounded-lg border border-rose-100 dark:border-rose-500/20 shadow-sm mt-1.5">
+                            <X size={8} strokeWidth={4} className="text-rose-600" />
+                            <span className="text-[8px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-tighter">{t('nodes.no')}</span>
+                        </div>
+                    </div>
+                </>
+            )}
         </BaseNode>
     );
 }

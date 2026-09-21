@@ -90,13 +90,14 @@ const hasUserReadPermission = hasPermission("users.read") || hasPermission("orde
 
 
   const formatCurrency = useCallback((amount, defaultCurrency, sign) => {
-    if (amount === undefined || amount === null) return "—";
-    
-    const formatted = Number(amount).toLocaleString("en-US", {
+    if (amount === undefined || amount === null || amount === "") return "—";
+    const n = Number(amount);
+    if (!Number.isFinite(n)) return "—";
+    const abs = Math.abs(n);
+    const formatted = n.toLocaleString("en-US", {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: abs > 0 && abs < 0.01 ? 8 : 2,
     });
-    
     return `${formatted} ${(sign || defaultCurrency || currency).trim()}`;
   }, [currency]);
 

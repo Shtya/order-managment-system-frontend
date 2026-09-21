@@ -3129,6 +3129,143 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     );
 }
 
+const ADDRESS_COMPLETENESS_TOKEN_MIN = 4500;
+const ADDRESS_COMPLETENESS_TOKEN_MAX = 6000;
+const ADDRESS_COMPLETENESS_CRITERIA_KEYS = [
+    "cityArea",
+    "street",
+    "building",
+    "consistent",
+    "reachable",
+    "unitOptional",
+];
+
+function getAddressCompletenessBranches(tNodes) {
+    return [
+        { id: "valid", label: tNodes("branches.addressValid"), condition: "valid" },
+        { id: "not_valid", label: tNodes("branches.addressNotValid"), condition: "not_valid" },
+        { id: "not_sure", label: tNodes("branches.addressNotSure"), condition: "not_sure" },
+    ];
+}
+
+/**
+ * Condition: AI address completeness
+ */
+export function AiAddressCompletenessConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
+    const tCommon = useTranslations("common");
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tNodes = useTranslations("whatsApp.automations.builder.nodes");
+    const { settings } = usePlatformSettings();
+    const aiBilling = settings?.billing?.aiDecision || {};
+    const tokenPrice = aiBilling.tokenPrice ?? 0.5;
+    const durationDays = aiBilling.allowance?.durationDays;
+
+    useEffect(() => {
+        setDisabled(false);
+    }, [setDisabled]);
+
+    const handleSave = () => {
+        const nextValue = {
+            ...value,
+            branches: value?.branches?.length ? value.branches : getAddressCompletenessBranches(tNodes),
+        };
+        onChange(nextValue);
+        onClose(nextValue);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
+            <DialogContent className="sm:max-w-[550px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                            <MapPin size={20} />
+                        </div>
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="truncate">{tConfig("aiAddressCompletenessTitle")}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                                {tConfig("aiAddressCompletenessDesc")}
+                            </DialogDescription>
+                        </div>
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
+                    <div className="space-y-4">
+                        <FormGroup label={tConfig("aiAddressCompletenessCostTitle")}>
+                            <div className="rounded-2xl border border-border bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed space-y-2">
+                                <p className="m-0">
+                                    {tConfig.rich("aiAddressCompletenessCostBody", {
+                                        price: () => (
+                                            <strong className="font-semibold text-slate-700 dark:text-slate-200">
+                                                ${tokenPrice}
+                                            </strong>
+                                        ),
+                                    })}
+                                </p>
+                                <p className="m-0">
+                                    {tConfig.rich("aiAddressCompletenessTokensEstimate", {
+                                        tokens: () => (
+                                            <strong className="font-semibold text-slate-700 dark:text-slate-200">
+                                                {ADDRESS_COMPLETENESS_TOKEN_MIN} - {ADDRESS_COMPLETENESS_TOKEN_MAX}
+                                            </strong>
+                                        ),
+                                    })}
+                                </p>
+                                {durationDays != null && Number(durationDays) > 0 && (
+                                    <p className="m-0 text-xs text-muted-foreground">
+                                        {tConfig("aiAddressCompletenessAllowanceDays", { days: durationDays })}
+                                    </p>
+                                )}
+                            </div>
+                        </FormGroup>
+
+                        <FormGroup label={tConfig("aiAddressCompletenessHowTitle")}>
+                            <div className="rounded-2xl border border-border bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                                {tConfig("aiAddressCompletenessHowBody")}
+                            </div>
+                        </FormGroup>
+
+                        <FormGroup label={tConfig("aiAddressCompletenessCriteriaTitle")} error={errors?.address}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {ADDRESS_COMPLETENESS_CRITERIA_KEYS.map((key) => (
+                                    <div
+                                        key={key}
+                                        className="min-h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 px-4 py-2 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"
+                                    >
+                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                                        {tConfig(`aiAddressCompletenessCriteria.${key}`)}
+                                    </div>
+                                ))}
+                            </div>
+                        </FormGroup>
+                    </div>
+                </div>
+
+                <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
+                    <div className="flex items-center justify-end gap-3 w-full">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onClose(null)}
+                            className="rounded-xl px-6"
+                        >
+                            {tCommon("cancel")}
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleSave}
+                            className="rounded-xl px-8"
+                        >
+                            {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
+                        </Button>
+                    </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 /**
  * Condition: Quick Order Status
  */

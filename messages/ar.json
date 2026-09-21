@@ -11899,7 +11899,8 @@
     },
     "tabs": {
       "contacts": "جهات الاتصال والتواصل الاجتماعي",
-      "whatsapp": "واتساب"
+      "whatsapp": "واتساب",
+      "aiDecision": "قرار الذكاء الاصطناعي"
     },
     "contacts": {
       "primaryTitle": "معلومات الاتصال الأساسية",
@@ -11927,6 +11928,30 @@
         }
       }
     },
+    "aiDecision": {
+      "pricingTitle": "أسعار قرار الذكاء الاصطناعي",
+      "pricingSubtitle": "سعر واحد بالدولار الأمريكي لكل مليون توكن، يُطبق دائمًا على توكنز الإدخال والإخراج.",
+      "tokenPriceLabel": "سعر التوكن / مليون توكن ($)",
+      "tokenPriceHint": "سعر واحد يُحتسب على البيانات المرسلة والتوكنز التي يرجعها النموذج معًا.",
+      "allowanceTitle": "الحصة المجانية",
+      "allowanceSubtitle": "التوكنز المجانية الممنوحة لكل مستأجر قبل الخصم من المحفظة.",
+      "modes": {
+        "unlimited": {
+          "name": "مجاني غير محدود",
+          "desc": "كل الاستخدام مجاني. لا يتم حجز أو خصم أي مبلغ من المحافظ."
+        },
+        "limited": {
+          "name": "حصة مجانية محدودة",
+          "desc": "منح عدد ثابت من التوكنز المجانية، ثم الخصم من المحفظة."
+        }
+      },
+      "unitsLabel": "التوكنز المجانية (الوحدات)",
+      "unitsHint": "0 تعني لا توجد توكنز مجانية — كل توكن يتم احتسابه.",
+      "durationLabel": "مدة الصلاحية (بالأيام)",
+      "durationPlaceholder": "فارغ = بدون انتهاء",
+      "durationHint": "عدد الأيام منذ إنشاء الحساب التي تبقى فيها التوكنز المجانية صالحة. فارغ يعني بدون انتهاء.",
+      "unlimitedNote": "تم اختيار الوضع غير المحدود: الاستخدام مجاني بالكامل ولا يتم حجز أي مبلغ من المحفظة."
+    },
     "socials": {
       "facebook": "فيسبوك",
       "instagram": "إنستغرام",
@@ -11942,7 +11967,9 @@
       "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح.",
       "emailRequired": "البريد الإلكتروني مطلوب.",
       "whatsappRequired": "رقم الواتساب مطلوب.",
-      "invalidUrl": "يرجى إدخال رابط صحيح (مثال: https://...)"
+      "invalidUrl": "يرجى إدخال رابط صحيح (مثال: https://...)",
+      "invalidNumber": "يرجى إدخال رقم صحيح غير سالب.",
+      "invalidInteger": "يرجى إدخال عدد صحيح صالح (0 أو أكثر)."
     },
     "toast": {
       "saveSuccess": "تم تحديث الإعدادات بنجاح.",
@@ -13418,7 +13445,8 @@
         },
         "conditionTypes": {
           "order_check": "فحص بيانات الطلب",
-          "quick_order_status": "فحص سريع للحالة"
+          "quick_order_status": "فحص سريع للحالة",
+          "ai_address_completeness": "التحقق من اكتمال ووضوح عنوان التوصيل"
         },
         "operators": {
           "equal": "يساوي",
@@ -13462,6 +13490,9 @@
             "addressCorrected": "تم التعديل",
             "addressNotCorrected": "لم يثم التعديل",
             "addressIncomplete": "العنوان غير مكتمل",
+            "addressValid": "صالح",
+            "addressNotValid": "غير صالح",
+            "addressNotSure": "غير متأكد",
             "distributed": "تم التوزيع",
             "failedToDistribute": "فشل التوزيع",
             "sent": "تم الارسال",
@@ -13486,7 +13517,8 @@
           "minutes": "دقيقة",
           "noResponseAfter": "لا رد بعد",
           "noTitle": "بدون عنوان",
-          "priority": "الأولوية"
+          "priority": "الأولوية",
+          "aiAddressCompletenessSubtitle": "باستخدام الذكاء الاصطناعي"
         },
         "sidebar": {
           "title": "بناء الأتمتة",
@@ -13591,6 +13623,25 @@
           "newStatusDesc": "اختر الحالة التي سيتم نقل الطلب إليها",
           "aiAddressCorrectionTitle": "تصحيح العنوان بالذكاء الاصطناعي",
           "aiAddressCorrectionDesc": "يجهّز الذكاء الاصطناعي عنوان الطلب لشركة الشحن (المدينة والمنطقة والحي).",
+          "aiAddressCompletenessTitle": "التحقق من اكتمال ووضوح عنوان التوصيل",
+          "aiAddressCompletenessDesc": "باستخدام الذكاء الاصطناعي",
+          "aiAddressCompletenessCostTitle": "تكلفة المعالجة",
+          "aiAddressCompletenessCostBody": "يتم خصم <price></price> لكل مليون توكن مستخدم من رصيد المحفظة.",
+          "aiAddressCompletenessTokensEstimate": "تقدير استهلاكك لكل طلب: <tokens></tokens> توكن (حسب طول العنوان).",
+          "aiAddressCompletenessHowTitle": "كيف يعمل؟",
+          "aiAddressCompletenessHowBody": "يستخدم الذكاء الاصطناعي لتحليل عنوان العميل والتأكد من أنه مكتمل وواضح وقابل للتوصيل. يقوم بفحص المعلومات المتوفرة ومقارنتها بالمعايير المحددة.",
+          "aiAddressCompletenessCriteriaTitle": "معايير التحقق",
+          "aiAddressCompletenessCriteria": {
+            "cityArea": "المدينة والمنطقة محددتان بوضوح",
+            "street": "الشارع محدد بوضوح",
+            "building": "رقم أو اسم العمارة أو المنزل أو الفيلا، أو مكان واضح",
+            "consistent": "المعلومات متوافقة وواضحة ولا يوجد بها تعارض",
+            "reachable": "العنوان كافٍ للوصول للعميل دون الحاجة للاتصال به",
+            "unitOptional": "رقم الشقة أو الدور اختياري"
+          },
+          "aiAddressCompletenessCalcModeInput": "يتم احتساب توكنز الإدخال فقط. توكنز إخراج النموذج مجانية.",
+          "aiAddressCompletenessCalcModeInputOutput": "يتم احتساب توكنز الإدخال والإخراج معًا.",
+          "aiAddressCompletenessAllowanceDays": "تنتهي صلاحية التوكنز المجانية (إن وجدت) بعد {days} يومًا من إنشاء الحساب.",
           "aiProvider": "مزود الذكاء الاصطناعي",
           "aiProviderDesc": "يتم عرض المزودين المتصلين فقط.",
           "aiProviderOptionalDesc": "اتركه على تلقائي ليُختار أفضل مزود متصل. اختر مزوداً فقط إذا أردت مزوداً محدداً.",

@@ -47,7 +47,7 @@ export function useAutomationConfig() {
           label: t(`sidebar.${category.id === 'LOGIC' ? 'logic' : category.id.toLowerCase()}`),
           items: filterByAllowedEmails(category.items).map(item => ({
             ...item,
-            label: t(`conditionTypes.${item.id}`)
+            label: item.label || t(`conditionTypes.${item.id}`)
           }))
         }))
       }

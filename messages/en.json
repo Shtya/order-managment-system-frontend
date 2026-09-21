@@ -11875,7 +11875,8 @@
     },
     "tabs": {
       "contacts": "Contacts & Socials",
-      "whatsapp": "WhatsApp"
+      "whatsapp": "WhatsApp",
+      "aiDecision": "AI Decision"
     },
     "contacts": {
       "primaryTitle": "Primary Contact Information",
@@ -11903,6 +11904,30 @@
         }
       }
     },
+    "aiDecision": {
+      "pricingTitle": "AI Decision Pricing",
+      "pricingSubtitle": "Single price in US dollars per 1M tokens, always applied to input + output tokens.",
+      "tokenPriceLabel": "Token price / 1M tokens ($)",
+      "tokenPriceHint": "One price billed for both the payload sent and the tokens the model reports back.",
+      "allowanceTitle": "Free Allowance",
+      "allowanceSubtitle": "Free tokens granted per tenant before the wallet is charged.",
+      "modes": {
+        "unlimited": {
+          "name": "Unlimited free",
+          "desc": "All usage is free. Nothing is reserved or charged from wallets."
+        },
+        "limited": {
+          "name": "Limited free allowance",
+          "desc": "Grant a fixed number of free tokens, then charge the wallet."
+        }
+      },
+      "unitsLabel": "Free tokens (units)",
+      "unitsHint": "0 means no free tokens — every token is charged.",
+      "durationLabel": "Validity (days)",
+      "durationPlaceholder": "Empty = no expiry",
+      "durationHint": "Days since account creation the free tokens stay valid. Empty means no expiry.",
+      "unlimitedNote": "Unlimited mode selected: usage is fully free and no wallet reservation happens."
+    },
     "socials": {
       "facebook": "Facebook",
       "instagram": "Instagram",
@@ -11918,7 +11943,9 @@
       "invalidEmail": "Please enter a valid email address.",
       "emailRequired": "Support email is required.",
       "whatsappRequired": "WhatsApp number is required.",
-      "invalidUrl": "Please enter a valid URL (e.g., https://...)"
+      "invalidUrl": "Please enter a valid URL (e.g., https://...)",
+      "invalidNumber": "Please enter a valid non-negative number.",
+      "invalidInteger": "Please enter a valid whole number (0 or more)."
     },
     "toast": {
       "saveSuccess": "Settings updated successfully.",
@@ -13394,7 +13421,8 @@
         },
         "conditionTypes": {
           "order_check": "Check Order Data",
-          "quick_order_status": "Quick Status Check"
+          "quick_order_status": "Quick Status Check",
+          "ai_address_completeness": "Verify delivery address completeness"
         },
         "operators": {
           "equal": "Equal",
@@ -13438,6 +13466,9 @@
             "addressCorrected": "Address Corrected",
             "addressNotCorrected": "Address Not Corrected",
             "addressIncomplete": "Address Incomplete",
+            "addressValid": "Valid",
+            "addressNotValid": "Not valid",
+            "addressNotSure": "Not sure",
             "distributed": "Distributed",
             "failedToDistribute": "Failed to Distribute",
             "sent": "Sent",
@@ -13462,7 +13493,8 @@
           "minutes": "min",
           "noResponseAfter": "No response after",
           "noTitle": "No title",
-          "priority": "Priority"
+          "priority": "Priority",
+          "aiAddressCompletenessSubtitle": "Using artificial intelligence"
         },
         "sidebar": {
           "title": "Build Workflows",
@@ -13567,6 +13599,25 @@
           "newStatusDesc": "Choose the status to move the order to",
           "aiAddressCorrectionTitle": "AI Address Correction",
           "aiAddressCorrectionDesc": "AI prepares the order address for a shipping company (city, zone, and district).",
+          "aiAddressCompletenessTitle": "Verify delivery address completeness",
+          "aiAddressCompletenessDesc": "Using artificial intelligence",
+          "aiAddressCompletenessCostTitle": "Processing cost",
+          "aiAddressCompletenessCostBody": "The wallet is charged <price></price> per 1 million billed tokens.",
+          "aiAddressCompletenessTokensEstimate": "Estimated usage per order: <tokens></tokens> tokens (depends on address length).",
+          "aiAddressCompletenessHowTitle": "How it works?",
+          "aiAddressCompletenessHowBody": "AI analyzes the customer address to check that it is complete, clear, and deliverable. It reviews the available information against the defined criteria.",
+          "aiAddressCompletenessCriteriaTitle": "Verification criteria",
+          "aiAddressCompletenessCriteria": {
+            "cityArea": "City and area are clearly specified",
+            "street": "Street is clearly specified",
+            "building": "Building, house, or villa number or name, or a clear location",
+            "consistent": "Details are consistent, clear, and not contradictory",
+            "reachable": "The address is enough to reach the customer without calling them",
+            "unitOptional": "Apartment or floor number is optional"
+          },
+          "aiAddressCompletenessCalcModeInput": "Only input tokens are billed. Model output tokens are free.",
+          "aiAddressCompletenessCalcModeInputOutput": "Both input and output tokens are billed.",
+          "aiAddressCompletenessAllowanceDays": "Free allowance tokens (if any) expire {days} days after account creation.",
           "aiProvider": "AI Provider",
           "aiProviderDesc": "Only connected AI providers are shown.",
           "aiProviderOptionalDesc": "Leave Automatic to pick the best connected provider. Choose one only if you want a specific provider.",

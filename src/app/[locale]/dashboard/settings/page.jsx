@@ -22,6 +22,7 @@ import {
   Link as LinkIcon,
   Loader2,
   Contact,
+  Brain,
 } from "lucide-react";
 
 import api from "@/utils/api";
@@ -136,6 +137,43 @@ const createContactsSchema = (t) =>
     youtube: yup.string().url(t("validation.invalidUrl")).nullable(),
   });
 
+const createAiDecisionSchema = (t) =>
+  yup.object({
+    tokenPrice: yup
+      .number()
+      .typeError(t("validation.invalidNumber"))
+      .min(0, t("validation.invalidNumber"))
+      .required(t("validation.invalidNumber")),
+    allowanceMode: yup
+      .string()
+      .oneOf(["unlimited", "limited"])
+      .required(),
+    units: yup.number().when("allowanceMode", {
+      is: "limited",
+      then: (schema) =>
+        schema
+          .typeError(t("validation.invalidInteger"))
+          .integer(t("validation.invalidInteger"))
+          .min(0, t("validation.invalidInteger"))
+          .required(t("validation.invalidInteger")),
+      otherwise: (schema) => schema.nullable().notRequired(),
+    }),
+    durationDays: yup.number().when("allowanceMode", {
+      is: "limited",
+      then: (schema) =>
+        schema
+          .transform((value, originalValue) =>
+            originalValue === "" || originalValue == null ? null : value,
+          )
+          .nullable()
+          .notRequired()
+          .typeError(t("validation.invalidInteger"))
+          .integer(t("validation.invalidInteger"))
+          .min(0, t("validation.invalidInteger")),
+      otherwise: (schema) => schema.nullable().notRequired(),
+    }),
+  });
+
 const SOCIAL_PLATFORMS = [
   {
     id: "facebook",
@@ -175,7 +213,7 @@ export default function SuperAdminSettingsPage() {
   const TABS = [
     { id: "contacts", label: t("tabs.contacts"), icon: Contact },
     { id: "whatsapp", label: t("tabs.whatsapp"), icon: FaWhatsapp },
-    // Add more tabs here in the future (e.g., 'billing', 'security')
+    { id: "aiDecision", label: t("tabs.aiDecision"), icon: Brain },
   ];
 
   return (
@@ -218,6 +256,7 @@ export default function SuperAdminSettingsPage() {
             >
               {activeTab === "contacts" && <ContactsTab t={t} />}
               {activeTab === "whatsapp" && <WhatsAppTab t={t} />}
+              {activeTab === "aiDecision" && <AiDecisionTab t={t} />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -515,5 +554,228 @@ function WhatsAppTab({ t }) {
         />
       </SettingCard>
     </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AI DECISION TAB (billing.aiDecision)
+   allowance: null = unlimited free, object = capped free allowance
+═══════════════════════════════════════════════════════════════ */
+function AiDecisionTab({ t }) {
+  const [loading, setLoading] = useState(true);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(createAiDecisionSchema(t)),
+    defaultValues: {
+      tokenPrice: 0.5,
+      allowanceMode: "limited",
+      units: 0,
+      durationDays: "",
+    },
+  });
+
+  const allowanceMode = watch("allowanceMode");
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await api.get("/admin-settings");
+        const ai = res.data?.billing?.aiDecision || {};
+        const allowance = ai.allowance === undefined ? { units: 0, durationDays: null } : ai.allowance;
+        reset({
+          tokenPrice: ai.tokenPrice ?? ai.inputPerMillion ?? 0.5,
+          allowanceMode: allowance === null ? "unlimited" : "limited",
+          units: allowance?.units ?? 0,
+          durationDays:
+            allowance?.durationDays === null ||
+            allowance?.durationDays === undefined
+              ? ""
+              : allowance.durationDays,
+        });
+      } catch (err) {
+        toast.error(t("toast.loadError"));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [reset, t]);
+
+  const onSubmit = async (values) => {
+    try {
+      const durationRaw =
+        values.durationDays === "" ||
+        values.durationDays === null ||
+        values.durationDays === undefined
+          ? null
+          : Number(values.durationDays);
+      const payload = {
+        billing: {
+          aiDecision: {
+            tokenPrice: Number(values.tokenPrice),
+            allowance:
+              values.allowanceMode === "unlimited"
+                ? null
+                : {
+                    units: Number(values.units),
+                    durationDays: durationRaw,
+                  },
+          },
+        },
+      };
+      await api.patch("/admin-settings", payload);
+      toast.success(t("toast.saveSuccess"));
+    } catch (err) {
+      const msg = err.response?.data?.message || t("toast.saveError");
+      toast.error(Array.isArray(msg) ? msg[0] : msg);
+    }
+  };
+
+  if (loading)
+    return (
+      <SettingCard>
+        <FormSkeleton rows={5} />
+      </SettingCard>
+    );
+
+  const MODES = [
+    {
+      id: "unlimited",
+      name: t("aiDecision.modes.unlimited.name"),
+      desc: t("aiDecision.modes.unlimited.desc"),
+    },
+    {
+      id: "limited",
+      name: t("aiDecision.modes.limited.name"),
+      desc: t("aiDecision.modes.limited.desc"),
+    },
+  ];
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Pricing */}
+      <SettingCard className=" border-0 bg-transparent shadow-none">
+        <SectionHead
+          title={t("aiDecision.pricingTitle")}
+          subtitle={t("aiDecision.pricingSubtitle")}
+        />
+        <div className="p-6 main-card rounded-2xl border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+          <Field
+            label={t("aiDecision.tokenPriceLabel")}
+            error={errors.tokenPrice?.message}
+            required
+          >
+            <Input
+              {...register("tokenPrice")}
+              type="number"
+              min={0}
+              step="any"
+              className="h-11"
+              placeholder="0.5"
+              dir="ltr"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              {t("aiDecision.tokenPriceHint")}
+            </p>
+          </Field>
+        </div>
+      </SettingCard>
+
+      {/* Free allowance */}
+      <SettingCard className=" border-0 bg-transparent shadow-none">
+        <SectionHead
+          title={t("aiDecision.allowanceTitle")}
+          subtitle={t("aiDecision.allowanceSubtitle")}
+        />
+        <div className="space-y-3 p-6 main-card rounded-2xl border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+          {MODES.map((mode) => (
+            <div
+              key={mode.id}
+              className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${allowanceMode === mode.id
+                ? "border-primary bg-primary/5"
+                : "border-slate-200 dark:border-slate-700"
+                }`}
+              onClick={() => setValue("allowanceMode", mode.id, { shouldValidate: true })}
+            >
+              <div
+                className="flex items-center justify-center w-5 h-5 rounded-full border-2 mr-2 transition-all"
+                style={{
+                  borderColor: allowanceMode === mode.id ? "#6366f1" : "#d1d5db"
+                }}
+              >
+                {allowanceMode === mode.id && (
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: "#6366f1" }}
+                  />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">{mode.name}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">{mode.desc}</div>
+              </div>
+            </div>
+          ))}
+
+          {allowanceMode === "limited" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <Field
+                label={t("aiDecision.unitsLabel")}
+                error={errors.units?.message}
+                required
+              >
+                <Input
+                  {...register("units")}
+                  type="number"
+                  min={0}
+                  step={1}
+                  className="h-11"
+                  placeholder="0"
+                  dir="ltr"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  {t("aiDecision.unitsHint")}
+                </p>
+              </Field>
+
+              <Field
+                label={t("aiDecision.durationLabel")}
+                error={errors.durationDays?.message}
+              >
+                <Input
+                  {...register("durationDays")}
+                  type="number"
+                  min={0}
+                  step={1}
+                  className="h-11"
+                  placeholder={t("aiDecision.durationPlaceholder")}
+                  dir="ltr"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  {t("aiDecision.durationHint")}
+                </p>
+              </Field>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
+              {t("aiDecision.unlimitedNote")}
+            </p>
+          )}
+        </div>
+
+        <SaveFooter
+          onSave={handleSubmit(onSubmit)}
+          saving={isSubmitting}
+          label={t("common.saveChanges")}
+        />
+      </SettingCard>
+    </form>
   );
 }

@@ -2680,6 +2680,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     const fields = [
         { id: "orderNumber", label: tBuilder('orderProperties.orderNumber'), type: "string", icon: Hash, color: "text-blue-500", bg: "bg-blue-50" },
         { id: "shippingCompany", label: tBuilder('orderProperties.shippingCompany'), type: "select", icon: Truck, color: "text-orange-500", bg: "bg-orange-50", options: shippingCompanies.map(c => ({ id: c.providerId, label: c.name })) },
+        { id: "hasActiveShipment", label: tBuilder('orderProperties.hasActiveShipment'), type: "boolean", icon: Truck, color: "text-sky-600", bg: "bg-sky-50" },
         {
             id: "paymentStatus", label: tBuilder('orderProperties.paymentStatus'), type: "select", icon: CreditCard, color: "text-purple-500", bg: "bg-purple-50", options: [
                 { id: "pending", label: tOrders("paymentStatuses.pending") },

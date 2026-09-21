@@ -13893,6 +13893,7 @@
           "isReplacement": "Is Replacement Order",
           "fromCampaign": "From Campaign",
           "hasEnoughStock": "Has Enough Stock",
+          "hasActiveShipment": "Has Active Shipment",
           "items": "All products",
           "productName": "Product Name",
           "productNameFirst": "Product Name (First)",

@@ -13917,6 +13917,7 @@
           "isReplacement": "طلب استبدال",
           "fromCampaign": "من حملة",
           "hasEnoughStock": "المخزون كافٍ",
+          "hasActiveShipment": "لديه شحنة نشطة",
           "items": "كل المنتجات",
           "productName": "اسم المنتج",
           "productNameFirst": "اسم المنتج (الأول)",

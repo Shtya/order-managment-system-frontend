@@ -11907,7 +11907,7 @@
     "aiDecision": {
       "pricingTitle": "AI Decision Pricing",
       "pricingSubtitle": "Single price in US dollars per 1M tokens, always applied to input + output tokens.",
-      "tokenPriceLabel": "Token price / 1M tokens ($)",
+      "tokenPriceLabel": "Price per 1 Million Tokens ($)",
       "tokenPriceHint": "One price billed for both the payload sent and the tokens the model reports back.",
       "allowanceTitle": "Free Allowance",
       "allowanceSubtitle": "Free tokens granted per tenant before the wallet is charged.",

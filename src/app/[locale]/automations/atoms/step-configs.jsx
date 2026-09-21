@@ -3021,7 +3021,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                                         : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300"
                                                                 )}
                                                             >
-                                                                {o.label} {o.id}
+                                                                {o.label}
                                                             </button>
                                                         );
                                                     })}

@@ -165,7 +165,6 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
           labelKey: "customersSegments",
           href: "/customers/segments",
           permission: "client-segments.read",
-          allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
         },
       ],
     },
@@ -262,7 +261,7 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
           labelKey: "shippingAssigning",
           permission: "shipping-assigning.read",
           href: "/shipping-assigning",
-          allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
+          allowedEmails: testEmails,
         },
         {
           icon: Store,
@@ -324,7 +323,6 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
       labelKey: "campaigns",
       href: "/campaigns/whatsapp",
       permission: "campaigns.read",
-      allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
       children: [
         {
           icon: Megaphone,
@@ -411,7 +409,7 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
       labelKey: "ai",
       href: "/ai",
       permission: "ai.chat",
-      allowedEmails: ["fohas49541@luckfeed.com", "am2592379@gmail.com", "admin@gmail.com"],
+      allowedEmails: testEmails,
     },
     {
       icon: BarChart3,

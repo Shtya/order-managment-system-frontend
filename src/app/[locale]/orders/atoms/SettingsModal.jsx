@@ -1201,6 +1201,15 @@ export function CampaignOrderPageTab({ settings, patch, t }) {
             </p>
           </div>
 
+          <div className="sm:col-span-2">
+            <ToggleRow
+              label={t("retrySettings.campaignOrderPage.collectCityArea")}
+              description={t("retrySettings.campaignOrderPage.collectCityAreaHint")}
+              checked={branding.collectCityArea !== false}
+              onCheckedChange={(v) => updateBranding({ collectCityArea: v })}
+            />
+          </div>
+
           <div className="space-y-1.5">
             <Label className="text-xs font-bold text-muted-foreground">
               {t("retrySettings.campaignOrderPage.logo")}

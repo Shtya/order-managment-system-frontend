@@ -69,6 +69,7 @@ const defaultSettings =  {
     campaignOrderPage: {
       pageTitle: "",
       logoUrl: "",
+      collectCityArea: true,
       favicon: {
         icon: "",
       },
@@ -137,6 +138,10 @@ const buildSettingsObject = (data, prevSettings) => ({
       data.campaignOrderPage?.pageTitle ??
       prevSettings.campaignOrderPage?.pageTitle ??
       "",
+    collectCityArea:
+      data.campaignOrderPage?.collectCityArea ??
+      prevSettings.campaignOrderPage?.collectCityArea ??
+      true,
     logoUrl:
       data.campaignOrderPage?.logoUrl ??
       prevSettings.campaignOrderPage?.logoUrl ??

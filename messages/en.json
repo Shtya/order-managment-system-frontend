@@ -8005,7 +8005,9 @@
         "remove": "Remove",
         "defaultPreviewTitle": "Current default title",
         "previewHint": "Open a mocked page to see what customers will see.",
-        "openPreview": "Preview page"
+        "openPreview": "Preview page",
+        "collectCityArea": "Collect city & area",
+        "collectCityAreaHint": "When off, the public order page hides city and area and they are not required."
       },
       "sync": {
         "skuFallbackTitle": "Match products by SKU when not linked",

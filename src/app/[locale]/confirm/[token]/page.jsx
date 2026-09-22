@@ -347,7 +347,8 @@ export default function PublicCampaignOrderPage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    if (!form.cityId) return;
+    const collect = data?.branding?.collectCityArea !== false;
+    if (collect && !form.cityId) return;
     setSubmitting(true);
     setError("");
     try {
@@ -358,10 +359,10 @@ export default function PublicCampaignOrderPage() {
           customerName: form.customerName,
           address: form.address,
           landmark: form.landmark || undefined,
-          city: locName(selectedCity, locale) || data?.city,
-          cityId: form.cityId,
-          area: locName(selectedArea, locale) || undefined,
-          areaId: form.areaId || undefined,
+          city: collect ? locName(selectedCity, locale) || data?.city : "",
+          cityId: collect ? form.cityId : undefined,
+          area: collect ? locName(selectedArea, locale) || undefined : undefined,
+          areaId: collect ? form.areaId || undefined : undefined,
           customerNotes: form.customerNotes || undefined,
         }),
       });
@@ -408,6 +409,7 @@ export default function PublicCampaignOrderPage() {
 
   const receipt = data.alreadyOrdered;
   const currency = String(data.currency || t("currency")).trim();
+  const collectCityArea = data?.branding?.collectCityArea !== false;
 
   return (
     <div className="min-h-screen bg-card">
@@ -484,6 +486,7 @@ export default function PublicCampaignOrderPage() {
               <div className="mt-5 border-t border-border pt-5">
                 <SectionTitle icon={MapPin}>{t("addressSection")}</SectionTitle>
                 <div className="grid gap-3.5 sm:grid-cols-2">
+                  {collectCityArea && (
                   <Field label={t("city")}>
                     <Select
                       value={form.cityId || undefined}
@@ -505,6 +508,8 @@ export default function PublicCampaignOrderPage() {
                     </Select>
                     <input required tabIndex={-1} className="sr-only" value={form.cityId} onChange={() => { }} />
                   </Field>
+                  )}
+                  {collectCityArea && (
                   <Field label={t("area")}>
                     <Select
                       key={`${form.cityId}-${areas.map((a) => a.id).join(",")}`}
@@ -530,6 +535,7 @@ export default function PublicCampaignOrderPage() {
                       <input required tabIndex={-1} className="sr-only" value={form.areaId} onChange={() => { }} />
                     )}
                   </Field>
+                  )}
                   <Field label={t("address")} className="sm:col-span-2">
                     <Textarea
                       required
@@ -607,14 +613,18 @@ export default function PublicCampaignOrderPage() {
                 <div className="rounded-[14px] border border-border bg-white p-5">
                   <h3 className="mb-3 text-base font-bold">{t("shippingAddress")}</h3>
                   <dl className="space-y-2 text-sm">
+                    {collectCityArea && (
                     <div className="flex justify-between gap-3">
                       <dt className="text-muted-foreground">{t("city")}</dt>
                       <dd className="font-medium text-end">{locName(selectedCity, locale) || data.city}</dd>
                     </div>
+                    )}
+                    {collectCityArea && (
                     <div className="flex justify-between gap-3">
                       <dt className="text-muted-foreground">{t("area")}</dt>
                       <dd className="font-medium text-end">{locName(selectedArea, locale) || data.area}</dd>
                     </div>
+                    )}
                     <div className="flex justify-between gap-3">
                       <dt className="text-muted-foreground">{t("address")}</dt>
                       <dd className="font-medium text-end whitespace-pre-wrap">{data.address}</dd>

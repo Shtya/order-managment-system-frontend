@@ -123,6 +123,14 @@ export const BASE_CONFIG = {
                         className: 'max-w-xl!'
                     },
                     {
+                        id: 'assign_order_to_employee',
+                        icon: Users,
+                        type: 'action',
+                        configComponent: 'AssignOrderToEmployeeConfig',
+                        className: 'max-w-xl!',
+                        hasCustom: true
+                    },
+                    {
                         id: 'ai_address_correction',
                         icon: Bot,
                         type: 'action',
@@ -157,21 +165,6 @@ export const BASE_CONFIG = {
                         hasCustom: true
                     },
                     {
-                        id: 'send_upsell',
-                        icon: Zap,
-                        type: 'action',
-                        configComponent: 'SendUpsellConfig',
-                        className: 'max-w-xl!'
-                    },
-                    {
-                        id: 'assign_order_to_employee',
-                        icon: Users,
-                        type: 'action',
-                        configComponent: 'AssignOrderToEmployeeConfig',
-                        className: 'max-w-xl!',
-                        hasCustom: true
-                    },
-                    {
                         id: 'assign_order_to_client',
                         icon: UserPlus,
                         type: 'action',
@@ -188,10 +181,10 @@ export const BASE_CONFIG = {
                         hasCustom: true
                     },
                     {
-                        id: 'wait',
-                        icon: Hourglass,
+                        id: 'send_upsell',
+                        icon: Zap,
                         type: 'action',
-                        configComponent: 'WaitConfig',
+                        configComponent: 'SendUpsellConfig',
                         className: 'max-w-xl!'
                     },
                     {
@@ -201,6 +194,13 @@ export const BASE_CONFIG = {
                         configComponent: 'CreateIssueConfig',
                         className: 'max-w-4xl!',
                         hasCustom: true
+                    },
+                    {
+                        id: 'wait',
+                        icon: Hourglass,
+                        type: 'action',
+                        configComponent: 'WaitConfig',
+                        className: 'max-w-xl!'
                     }
                 ]
             }

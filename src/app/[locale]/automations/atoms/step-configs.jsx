@@ -33,6 +33,7 @@ import { BusinessMessageForm } from "./BusinessMessageForm";
 import { businessMessageDefinitions, businessMessageTypes } from "./businessMessages";
 import Button_ from "@/components/atoms/Button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { SendSmsModal } from "../../sms/atoms/SendSmsModal";
 import IssueFormDialog from "../../issues/atoms/IssueFormDialog";
 import { CLIENT_CONDITION_FIELDS, CLIENT_PERCENT_FROM, PERCENT_FIELDS } from "../../tags/atoms/condition-fields";
@@ -71,7 +72,7 @@ function normalizeAxiosError(err) {
 function FormGroup({ label, description, children, error }) {
     return (
         <div className="space-y-2">
-            <Label className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">{label}</Label>
+            <Label classN={"text-foreground"}>{label}</Label>
             {description && <p className="text-[11px] text-slate-400 mb-2">{description}</p>}
             {children}
             {error && <p className="text-[10px] text-rose-500 font-bold mt-1">{error}</p>}
@@ -586,17 +587,34 @@ const getConnectedAiProviders = (providers) => {
     });
 };
 
+const addressFieldTitleClass = "block text-[13px] font-bold text-foreground";
+const addressFieldHelpClass = "text-[11px] leading-relaxed text-muted-foreground";
+const assigningRulesLinkClass = "mt-2 inline-flex w-fit items-center gap-2 rounded-full border border-border bg-white px-3.5 py-2 text-xs text-[#57539b] transition-colors hover:border-[#dddafe] hover:bg-[#f2f1ff] dark:border-primary/30 dark:bg-slate-950 dark:text-primary dark:hover:bg-primary/10";
+
+const addressStepRich = {
+    hl: (chunks) => <span className="font-bold text-primary">{chunks}</span>,
+    step: (chunks) => <span className="font-bold text-primary">{chunks}</span>,
+    b: (chunks) => <strong className="font-bold">{chunks}</strong>,
+};
+
 /**
  * Action: AI Address Correction
  */
 const AI_PROVIDER_AUTO = "__auto__";
 const SHIPPING_COMPANY_AUTO = "__auto__";
+const ADDRESS_CORRECTION_FLOW_KEYS = [
+    "aiAddressCorrectionFlow1",
+    "aiAddressCorrectionFlow2",
+    "aiAddressCorrectionFlow3",
+    "aiAddressCorrectionFlow4",
+];
 
 export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
     const tConfig = useTranslations("whatsApp.automations.builder.config");
     const tNodes = useTranslations("whatsApp.automations.builder.nodes");
     const tCommon = useTranslations("common");
     const tShipping = useTranslations("shipping");
+    const locale = useLocale();
     const [providers, setProviders] = useState([]);
     const [shippingCompanies, setShippingCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -695,15 +713,16 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="sm:max-w-[560px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+            <DialogContent className="sm:max-w-[640px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
                             <Bot size={20} />
                         </div>
                         <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="truncate">{tConfig("aiAddressCorrectionTitle")}</span>
-                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                            {/* <span className="text-xs font-normal text-muted-foreground">{tConfig("aiAddressCorrectionEyebrow")}</span> */}
+                            <span className="leading-snug">{tConfig("aiAddressCorrectionTitle")}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal leading-relaxed">
                                 {tConfig("aiAddressCorrectionDesc")}
                             </DialogDescription>
                         </div>
@@ -711,7 +730,14 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
-                    <FormGroup label={tConfig("aiProvider")} description={tConfig("aiProviderOptionalDesc")} error={errors.provider}>
+                    <div className="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                        <Info size={18} className="mt-0.5 shrink-0 text-primary" />
+                        <p className="m-0">{tConfig("aiAddressCorrectionPurposeNote")}</p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <Label classN={"text-foreground!"}>{tConfig("aiProvider")}</Label>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{tConfig("aiProviderOptionalDesc")}</p>
                         <Select value={tempValue.providerId || AI_PROVIDER_AUTO} onValueChange={handleProviderChange}>
                             <SelectTrigger className="">
                                 {loading ? (
@@ -730,9 +756,12 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                                 ))}
                             </SelectContent>
                         </Select>
-                    </FormGroup>
+                        {errors.provider && <p className="text-[10px] text-rose-500 font-bold">{errors.provider}</p>}
+                    </div>
 
-                    <FormGroup label={tConfig("shippingCompany")} description={tConfig("aiAddressShippingCompanyDesc")} error={errors.shippingCompany}>
+                    <div className="space-y-1.5">
+                        <Label classN={"text-foreground"}>{tConfig("aiAddressShippingCompanyLabel")}</Label>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{tConfig("aiAddressShippingCompanyDesc")}</p>
                         <Select value={tempValue.shippingCompanyId || SHIPPING_COMPANY_AUTO} onValueChange={handleShippingCompanyChange}>
                             <SelectTrigger className="">
                                 {loading ? (
@@ -757,34 +786,51 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                             href="/shipping-assigning"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-2 inline-flex items-center gap-2 rounded-xl border border-border/70 bg-slate-50 dark:bg-slate-800/70 px-3 py-2 text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-colors"
+                            className={assigningRulesLinkClass}
                         >
-                            <Scale size={14} className="shrink-0 text-primary" />
+                            <Scale size={14} className="shrink-0" />
                             <span>{tConfig("editAssigningRules")}</span>
-                            <ExternalLink size={12} className="opacity-60" />
                         </LocaleLink>
-                    </FormGroup>
+                        {errors.shippingCompany && <p className="text-[10px] text-rose-500 font-bold">{errors.shippingCompany}</p>}
+                    </div>
 
-                    <FormGroup label={tConfig("updateWrittenAddress")} description={tConfig("updateWrittenAddressDesc")}>
-                        <div className="flex items-center gap-3 rounded-2xl bg-slate-50 dark:bg-slate-800 px-4 h-12">
-                            <Checkbox
-                                id="updateWrittenAddress"
-                                checked={tempValue.updateWrittenAddress !== false}
-                                onCheckedChange={(checked) => {
-                                    setTempValue((prev) => ({
-                                        ...prev,
-                                        updateWrittenAddress: checked === true,
-                                    }));
-                                }}
-                            />
-                            <label
-                                htmlFor="updateWrittenAddress"
-                                className="text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer"
-                            >
+
+                    <div className="flex items-start justify-between gap-4 border-t border-border pt-4">
+                        <div className="min-w-0">
+                            <Label classN={"text-foreground"} htmlFor="updateWrittenAddress" >
                                 {tConfig("updateWrittenAddress")}
-                            </label>
+                            </Label>
+                            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{tConfig("updateWrittenAddressDesc")}</p>
                         </div>
-                    </FormGroup>
+                        <Switch
+                            id="updateWrittenAddress"
+                            checked={tempValue.updateWrittenAddress !== false}
+                            onCheckedChange={(checked) => {
+                                setTempValue((prev) => ({
+                                    ...prev,
+                                    updateWrittenAddress: checked === true,
+                                }));
+                            }}
+                        />
+                    </div>
+
+                    
+                    <div className="overflow-hidden rounded-2xl border border-border bg-slate-50 dark:bg-slate-800">
+                        <p className="border-b border-border px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-100">
+                            {tConfig("aiAddressCorrectionFlowTitle")}
+                        </p>
+                        <div className="divide-y divide-border">
+                            {ADDRESS_CORRECTION_FLOW_KEYS.map((key, index) => (
+                                <div key={key} className="flex items-start gap-3 px-4 py-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                                    <span className="mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-[11px] font-bold text-primary">
+                                        {new Intl.NumberFormat(locale).format(index + 1)}
+                                    </span>
+                                    <span>{tConfig.rich(key, addressStepRich)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                 </div>
 
                 <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-card shrink-0">
@@ -957,15 +1003,16 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="sm:max-w-[560px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+            <DialogContent className="sm:max-w-[640px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
                             <Truck size={20} />
                         </div>
                         <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="truncate">{tConfig("assignShippingProviderTitle")}</span>
-                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                            {/* <span className="text-xs font-normal text-muted-foreground">{tConfig("assignShippingProviderEyebrow")}</span> */}
+                            <span className="leading-snug">{tConfig("assignShippingProviderTitle")}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal leading-relaxed">
                                 {tConfig("assignShippingProviderDesc")}
                             </DialogDescription>
                         </div>
@@ -973,31 +1020,45 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card space-y-4">
-                    <FormGroup label={tConfig("useShippingCompany")} description={tConfig("useSpecialShippingCompanyDesc")}>
-                        <div className="flex items-center gap-3 rounded-2xl bg-slate-50 dark:bg-slate-800 px-4 h-12">
-                            <Checkbox
-                                id="useSpecialShippingCompany"
-                                checked={tempValue.useSpecialShippingCompany === true}
-                                onCheckedChange={(checked) => {
-                                    const enabled = checked === true;
-                                    setTempValue((prev) => ({
-                                        ...prev,
-                                        useSpecialShippingCompany: enabled,
-                                        ...(!enabled ? { shippingCompanyId: "", shippingCompany: "", provider: "" } : {}),
-                                    }));
-                                }}
-                            />
-                            <label
-                                htmlFor="useSpecialShippingCompany"
-                                className="text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer"
-                            >
-                                {tConfig("useSpecialShippingCompany")}
-                            </label>
+                    <div className="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                        <Info size={18} className="mt-0.5 shrink-0 text-primary" />
+                        <p className="m-0">{tConfig("assignShippingAfterCorrectionNote")}</p>
+                    </div>
+                    <div className="overflow-hidden rounded-2xl border border-primary/20 bg-primary/5">
+                        <div className="flex items-start gap-3 px-4 py-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                            <Info size={18} className="mt-0.5 shrink-0 text-primary" />
+                            <p className="m-0">{tConfig.rich("assignShippingDefaultCallout", addressStepRich)}</p>
                         </div>
-                    </FormGroup>
+                        <p className="m-0 border-t border-primary/15 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+                            {tConfig("assignShippingDefaultAdvice")}
+                        </p>
+                    </div>
+
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                            <Label classN={"text-foreground"} htmlFor="useSpecialShippingCompany" >
+                                {tConfig("useSpecialShippingCompany")}
+                            </Label>
+                            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{tConfig("useSpecialShippingCompanyDesc")}</p>
+                        </div>
+                        <Switch
+                            id="useSpecialShippingCompany"
+                            checked={tempValue.useSpecialShippingCompany === true}
+                            onCheckedChange={(checked) => {
+                                const enabled = checked === true;
+                                setTempValue((prev) => ({
+                                    ...prev,
+                                    useSpecialShippingCompany: enabled,
+                                    ...(!enabled ? { shippingCompanyId: "", shippingCompany: "", provider: "" } : {}),
+                                }));
+                            }}
+                        />
+                    </div>
 
                     {tempValue.useSpecialShippingCompany && (
-                    <FormGroup label={tConfig("shippingCompany")} description={tConfig("shippingCompanyAssignDesc")} error={errors.shippingCompany}>
+                    <div className="space-y-1.5">
+                        <Label classN={"text-foreground"}>{tConfig("shippingCompany")}</Label>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{tConfig("shippingCompanyAssignDesc")}</p>
                         <Select value={tempValue.shippingCompanyId || ""} onValueChange={handleShippingCompanyChange}>
                             <SelectTrigger className="">
                                 {loading ? (
@@ -1017,7 +1078,17 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
                                 ))}
                             </SelectContent>
                         </Select>
-                    </FormGroup>
+                        <LocaleLink
+                            href="/shipping-assigning"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={assigningRulesLinkClass}
+                        >
+                            <Scale size={14} className="shrink-0" />
+                            <span>{tConfig("editAssigningRules")}</span>
+                        </LocaleLink>
+                        {errors.shippingCompany && <p className="text-[10px] text-rose-500 font-bold">{errors.shippingCompany}</p>}
+                    </div>
                     )}
                 </div>
 
@@ -1136,7 +1207,7 @@ export function NoResponseConfig({ value, onChange }) {
     return (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 p-4 space-y-3 mt-3">
             <div>
-                <Label className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">
+                <Label classN={"text-foreground"}>
                     {tConfig('noResponseTitle')}
                 </Label>
                 <p className="text-[11px] text-slate-400 mt-1">{tConfig('noResponseDesc')}</p>
@@ -3136,9 +3207,9 @@ const ADDRESS_COMPLETENESS_CRITERIA_KEYS = [
     "cityArea",
     "street",
     "building",
+    "unitOptional",
     "consistent",
     "reachable",
-    "unitOptional",
 ];
 
 function getAddressCompletenessBranches(tNodes) {
@@ -3176,15 +3247,16 @@ export function AiAddressCompletenessConfig({ isOpen, value, onChange, errors, s
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="sm:max-w-[550px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+            <DialogContent className="sm:max-w-[640px] w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
                 <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
                             <MapPin size={20} />
                         </div>
                         <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="truncate">{tConfig("aiAddressCompletenessTitle")}</span>
-                            <DialogDescription className="text-xs text-muted-foreground font-normal">
+                            {/* <span className="text-xs font-normal text-muted-foreground">{tConfig("aiAddressCompletenessEyebrow")}</span> */}
+                            <span className="leading-snug">{tConfig("aiAddressCompletenessTitle")}</span>
+                            <DialogDescription className="text-xs text-muted-foreground font-normal leading-relaxed">
                                 {tConfig("aiAddressCompletenessDesc")}
                             </DialogDescription>
                         </div>
@@ -3193,53 +3265,61 @@ export function AiAddressCompletenessConfig({ isOpen, value, onChange, errors, s
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
                     <div className="space-y-4">
-                        <FormGroup label={tConfig("aiAddressCompletenessCostTitle")}>
-                            <div className="rounded-2xl border border-border bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed space-y-2">
-                                <p className="m-0">
-                                    {tConfig.rich("aiAddressCompletenessCostBody", {
-                                        price: () => (
-                                            <strong className="font-semibold text-slate-700 dark:text-slate-200">
-                                                ${tokenPrice}
-                                            </strong>
-                                        ),
-                                    })}
-                                </p>
-                                <p className="m-0">
-                                    {tConfig.rich("aiAddressCompletenessTokensEstimate", {
-                                        tokens: () => (
-                                            <strong className="font-semibold text-slate-700 dark:text-slate-200">
-                                                {ADDRESS_COMPLETENESS_TOKEN_MIN} - {ADDRESS_COMPLETENESS_TOKEN_MAX}
-                                            </strong>
-                                        ),
-                                    })}
-                                </p>
-                                {durationDays != null && Number(durationDays) > 0 && (
-                                    <p className="m-0 text-xs text-muted-foreground">
-                                        {tConfig("aiAddressCompletenessAllowanceDays", { days: durationDays })}
-                                    </p>
-                                )}
-                            </div>
-                        </FormGroup>
 
-                        <FormGroup label={tConfig("aiAddressCompletenessHowTitle")}>
-                            <div className="rounded-2xl border border-border bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                                {tConfig("aiAddressCompletenessHowBody")}
-                            </div>
-                        </FormGroup>
 
-                        <FormGroup label={tConfig("aiAddressCompletenessCriteriaTitle")} error={errors?.address}>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                            <Info size={18} className="mt-0.5 shrink-0 text-primary" />
+                            <p className="m-0">{tConfig.rich("aiAddressCompletenessWarning", addressStepRich)}</p>
+                        </div>
+
+                        <div>
+                            <p className="mb-2.5 text-sm font-bold text-slate-800 dark:text-slate-100">
+                                {tConfig("aiAddressCompletenessCriteriaTitle")}
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                 {ADDRESS_COMPLETENESS_CRITERIA_KEYS.map((key) => (
                                     <div
                                         key={key}
-                                        className="min-h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 px-4 py-2 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"
+                                        className="flex min-h-11 items-center justify-between gap-2 rounded-xl border border-border bg-muted px-3.5 py-2.5 text-sm text-slate-700 dark:text-slate-200"
                                     >
-                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" />
-                                        {tConfig(`aiAddressCompletenessCriteria.${key}`)}
+                                        <span>{tConfig(`aiAddressCompletenessCriteria.${key}`)}</span>
+                                        <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600">
+                                            <Check size={11} strokeWidth={3} />
+                                        </span>
                                     </div>
                                 ))}
                             </div>
-                        </FormGroup>
+                            {errors?.address && <p className="text-[10px] text-rose-500 font-bold mt-1">{errors.address}</p>}
+                        </div>
+
+                        <div className="rounded-xl border border-border bg-muted px-4 py-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed space-y-2">
+                            <p className="m-0 text-sm font-bold text-slate-800 dark:text-slate-100">
+                                {tConfig("aiAddressCompletenessCostTitle")}
+                            </p>
+                            <p className="m-0">
+                                {tConfig.rich("aiAddressCompletenessCostBody", {
+                                    price: () => (
+                                        <strong className="font-semibold text-slate-700 dark:text-slate-200">
+                                            ${tokenPrice}
+                                        </strong>
+                                    ),
+                                })}
+                            </p>
+                            <p className="m-0">
+                                {tConfig.rich("aiAddressCompletenessTokensEstimate", {
+                                    tokens: () => (
+                                        <strong className="font-semibold text-slate-700 dark:text-slate-200">
+                                            {ADDRESS_COMPLETENESS_TOKEN_MIN} - {ADDRESS_COMPLETENESS_TOKEN_MAX}
+                                        </strong>
+                                    ),
+                                })}
+                            </p>
+                            {durationDays != null && Number(durationDays) > 0 && (
+                                <p className="m-0 text-xs text-muted-foreground">
+                                    {tConfig("aiAddressCompletenessAllowanceDays", { days: durationDays })}
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </div>
 

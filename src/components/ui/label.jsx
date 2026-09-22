@@ -8,6 +8,7 @@ import { FieldTooltip } from "@/components/ui/field-tooltip"
 
 function Label({
   className,
+  classN,
   description,
   children,
   ...props
@@ -17,7 +18,7 @@ function Label({
       data-slot="label"
       className={cn(
         "flex text-[11px] font-medium text-muted-foreground items-center gap-2 text-sm leading-none  peer-disabled:opacity-50",
-        // className
+        classN
       )}
       {...props}>
       {children}

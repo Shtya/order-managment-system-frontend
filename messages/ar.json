@@ -8556,6 +8556,8 @@
       "selectZone": "اختر المنطقة",
       "pickupLocation": "موقع الاستلام",
       "selectPickupLocation": "اختر موقع الاستلام",
+      "search": "بحث...",
+      "noResults": "لا توجد نتائج",
       "optional": "اختياري",
       "defaultLocation": "الموقع الافتراضي",
       "pickupLocationNote": "إذا لم تختر موقعاً، سيُستخدم موقع الاستلام الافتراضي المُعيَّن في بوسطة تلقائياً."

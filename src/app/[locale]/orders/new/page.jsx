@@ -113,6 +113,35 @@ function SectionCard({ title, badge, children, delay = 0 }) {
 function GeoSelect({ label, required, value, onValueChange, items, isLoading, placeholder, disabled, hint, nameKey = "nameEn" }) {
 
 	const t = useTranslations("createOrder");
+	const [open, setOpen] = useState(false);
+	const [searchTerm, setSearchTerm] = useState("");
+	const inputRef = useRef(null);
+
+	useEffect(() => {
+		if (!open) {
+			setSearchTerm("");
+			return;
+		}
+		const timer = setTimeout(() => {
+			const input = inputRef.current;
+			if (!input) return;
+			const position = input.selectionStart ?? input.value.length;
+			input.focus();
+			input.setSelectionRange(position, position);
+		}, 0);
+		return () => clearTimeout(timer);
+	}, [open, searchTerm]);
+
+	const itemLabel = (item) => String(item[nameKey] || item.nameEn || item.nameAr || item.id || "");
+
+	const filteredItems = useMemo(() => {
+		const query = searchTerm.trim().toLowerCase();
+		if (!query) return items;
+		return items.filter((item) => itemLabel(item).toLowerCase().includes(query));
+	}, [items, searchTerm, nameKey]);
+
+	const selectedItem = items.find((item) => String(item.id) === String(value));
+	const selectedIsVisible = filteredItems.some((item) => String(item.id) === String(value));
 
 	return (
 		<div className="space-y-2">
@@ -126,6 +155,8 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 				value={value || ""}
 				onValueChange={onValueChange}
 				disabled={disabled || isLoading}
+				open={open}
+				onOpenChange={setOpen}
 			>
 				<SelectTrigger >
 					{isLoading ? (
@@ -137,12 +168,39 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 						<SelectValue placeholder={placeholder} />
 					)}
 				</SelectTrigger>
-				<SelectContent>
-					{items.map((item) => (
+				<SelectContent
+					onOpenAutoFocus={(e) => {
+						e.preventDefault();
+						inputRef.current?.focus();
+					}}
+				>
+					<div
+						className="px-2 py-2 sticky top-0 bg-white z-10 border-b border-border"
+						onPointerDown={(e) => e.stopPropagation()}
+					>
+						<input
+							type="text"
+							ref={inputRef}
+							placeholder={t("bosta.search")}
+							className="w-full rounded-md border border-input bg-transparent px-3 py-1 rtl:text-end text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+							onKeyDown={(e) => e.stopPropagation()}
+						/>
+					</div>
+					{selectedItem && !selectedIsVisible && (
+						<SelectItem value={String(selectedItem.id)} className="hidden">
+							{itemLabel(selectedItem)}
+						</SelectItem>
+					)}
+					{filteredItems.map((item) => (
 						<SelectItem key={item.id} value={String(item.id)}>
-							{item[nameKey] || item.nameEn || item.id}
+							{itemLabel(item)}
 						</SelectItem>
 					))}
+					{!isLoading && filteredItems.length === 0 && (
+						<div className="py-4 text-center text-sm text-muted-foreground">{t("bosta.noResults")}</div>
+					)}
 				</SelectContent>
 			</Select>
 			{hint && <p className="text-[11px] text-muted-foreground leading-snug">{hint}</p>}
@@ -577,7 +635,7 @@ export function AddressSection({
 						required
 						nameKey={nameKey}
 						value={currentCityId}
-						onValueChange={(cityId) => handleCityChange(cityId, false)}
+						onValueChange={(cityId) => handleCityChange(cityId, true)}
 						items={providerCities ?? []}
 						isLoading={citiesLoading}
 						placeholder={t("placeholders.city")}

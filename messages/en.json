@@ -8568,6 +8568,8 @@
       "selectZone": "Select Zone",
       "pickupLocation": "Pickup Location",
       "selectPickupLocation": "Select Pickup Location",
+      "search": "Search...",
+      "noResults": "No results found",
       "optional": "Optional",
       "defaultLocation": "Default Location",
       "pickupLocationNote": "If you do not select a location, the default pickup location assigned in Bosta will be used automatically."

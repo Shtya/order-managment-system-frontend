@@ -3201,8 +3201,8 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     );
 }
 
-const ADDRESS_COMPLETENESS_TOKEN_MIN = 6500;
-const ADDRESS_COMPLETENESS_TOKEN_MAX = 8000;
+const ADDRESS_COMPLETENESS_TOKEN_MIN = 8500;
+const ADDRESS_COMPLETENESS_TOKEN_MAX = 1000;
 const ADDRESS_COMPLETENESS_CRITERIA_KEYS = [
     "city",
     "area",

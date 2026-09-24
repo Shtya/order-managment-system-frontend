@@ -13649,14 +13649,13 @@
           "aiAddressCompletenessTokensEstimate": "تقدير استهلاكك لكل طلب: <tokens></tokens> توكن (حسب طول العنوان).",
           "aiAddressCompletenessHowTitle": "كيف يعمل؟",
           "aiAddressCompletenessHowBody": "يستخدم الذكاء الاصطناعي لتحليل عنوان العميل والتأكد من أنه مكتمل وواضح وقابل للتوصيل. يقوم بفحص المعلومات المتوفرة ومقارنتها بالمعايير المحددة.",
-          "aiAddressCompletenessCriteriaTitle": "معايير التحقق الستة",
+          "aiAddressCompletenessCriteriaTitle": "معايير التحقق الخمسة",
           "aiAddressCompletenessCriteria": {
-            "cityArea": "المدينة والمنطقة محددتان بوضوح",
-            "street": "الشارع مذكور بوضوح",
-            "building": "رقم أو اسم العمارة أو الفيلا واضح",
-            "consistent": "البيانات متوافقة ولا يوجد تعارض",
-            "reachable": "العنوان كافٍ للوصول دون الحاجة إلى الاتصال",
-            "unitOptional": "رقم الشقة أو الدور (اختياري)"
+            "city": "المدينة مطلوبة",
+            "area": "المنطقة مطلوبة. ",
+            "reference": "شارع أو كمبوند أو معلم باسمه يكفي. رقم العمارة أو «بجوار» اختياري",
+            "unitOptional": "رقم الشقة أو الدور (اختياري)",
+            "consistent": "المنطق والتبيعة للمدينة والعنوان لا يحتوي على تعارضات."
           },
           "aiAddressCompletenessCalcModeInput": "يتم احتساب توكنز الإدخال فقط. توكنز إخراج النموذج مجانية.",
           "aiAddressCompletenessCalcModeInputOutput": "يتم احتساب توكنز الإدخال والإخراج معًا.",

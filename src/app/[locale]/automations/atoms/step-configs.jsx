@@ -3201,15 +3201,14 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     );
 }
 
-const ADDRESS_COMPLETENESS_TOKEN_MIN = 4500;
-const ADDRESS_COMPLETENESS_TOKEN_MAX = 6000;
+const ADDRESS_COMPLETENESS_TOKEN_MIN = 6500;
+const ADDRESS_COMPLETENESS_TOKEN_MAX = 8000;
 const ADDRESS_COMPLETENESS_CRITERIA_KEYS = [
-    "cityArea",
-    "street",
-    "building",
+    "city",
+    "area",
+    "reference",
     "unitOptional",
     "consistent",
-    "reachable",
 ];
 
 function getAddressCompletenessBranches(tNodes) {

@@ -13625,14 +13625,14 @@
           "aiAddressCompletenessTokensEstimate": "Estimated usage per order: <tokens></tokens> tokens (depends on address length).",
           "aiAddressCompletenessHowTitle": "How it works?",
           "aiAddressCompletenessHowBody": "AI analyzes the customer address to check that it is complete, clear, and deliverable. It reviews the available information against the defined criteria.",
-          "aiAddressCompletenessCriteriaTitle": "The six verification criteria",
+          "aiAddressCompletenessCriteriaTitle": "The five verification criteria",
           "aiAddressCompletenessCriteria": {
-            "cityArea": "City and area are clearly specified",
-            "street": "The street is clearly stated",
-            "building": "Building or villa number or name is clear",
-            "consistent": "The details are consistent and do not conflict",
-            "reachable": "The address is enough to deliver without calling",
-            "unitOptional": "Apartment or floor number (optional)"
+         "city": "City is required",
+          "area": "Area is required",
+          "reference": "A named street, compound, or landmark is enough. A building number or \"beside\" is optional",
+          "unitOptional": "Apartment or floor number (optional)",
+          "consistent": "The city and address are consistent and contain no contradictions."
+
           },
           "aiAddressCompletenessCalcModeInput": "Only input tokens are billed. Model output tokens are free.",
           "aiAddressCompletenessCalcModeInputOutput": "Both input and output tokens are billed.",

@@ -143,7 +143,6 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
             onSend({
                 type: "text",
                 text: text.trim(),
-                accountId: selectedAccount?.id,
                 replyToId: replyTo?.id
             });
             setText("");

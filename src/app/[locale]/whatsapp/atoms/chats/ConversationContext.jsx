@@ -159,15 +159,54 @@ export const ConversationProvider = ({ children }) => {
         fetchAccounts();
     }, [fetchAccounts]);
 
+    const accountsRef = useRef(accounts);
+    accountsRef.current = accounts;
+
+    const applyAccountFromMessage = useCallback((message) => {
+        const accountId = message?.accountId;
+        if (!accountId || message?.messageType === "reaction") return;
+        const account = accountsRef.current.find((item) => item.id === accountId);
+        if (!account) return;
+        setSelectedAccount((prev) => (prev?.id === account.id ? prev : account));
+    }, []);
+
     useEffect(() => {
-        if (accounts.length > 0 && !selectedAccount) {
-            const defaultId = settings?.defaultWhatsAppAccountId;
-            const defaultAcc = accounts.find(a => a.id === defaultId);
-            if (defaultAcc) {
-                setSelectedAccount(defaultAcc);
-            }
+        if (!accounts.length) return;
+
+        const defaultAcc =
+            accounts.find((item) => item.id === settings?.defaultWhatsAppAccountId) ||
+            accounts[0];
+
+        if (!selectedConversation?.id) {
+            setSelectedAccount((prev) => prev || defaultAcc || null);
+            return;
         }
-    }, [accounts, settings?.defaultWhatsAppAccountId, selectedAccount]);
+
+        if (initialMessagesLoading) return;
+
+        const latestInThread = [...messages]
+            .reverse()
+            .find(
+                (item) =>
+                    item?.conversationId === selectedConversation.id &&
+                    item?.accountId &&
+                    item.messageType !== "reaction",
+            );
+        const latest = latestInThread || selectedConversation.lastMessage;
+
+        if (latest?.accountId && latest.messageType !== "reaction") {
+            applyAccountFromMessage(latest);
+            return;
+        }
+
+        if (defaultAcc) setSelectedAccount(defaultAcc);
+    }, [
+        selectedConversation?.id,
+        accounts,
+        initialMessagesLoading,
+        settings?.defaultWhatsAppAccountId,
+        applyAccountFromMessage,
+    ]);
 
 
 
@@ -227,7 +266,6 @@ export const ConversationProvider = ({ children }) => {
             const { records, hasMore: apiHasMore, nextCursor } = res.data || {};
 
             const newMessages = records.reverse();
-
 
             if (append && scrollRef.current) {
                 prevScrollHeight.current = scrollRef.current.scrollHeight;
@@ -447,6 +485,10 @@ export const ConversationProvider = ({ children }) => {
                     return [...prevMsgs, msg];
                 });
 
+                if (!isReaction) {
+                    applyAccountFromMessage(msg);
+                }
+
                 // HANDLE DOM WRITES (SCROLLING) HERE, outside of state setters
                 if (shouldScrollToBottom && scrollRef.current) {
                     // Using a slight delay allows React to flush the state to the DOM first
@@ -497,7 +539,7 @@ export const ConversationProvider = ({ children }) => {
             unsubMessage?.();
             unsubMessageUpdate?.();
         };
-    }, [subscribe, selectedConversation, markAsRead]);
+    }, [subscribe, selectedConversation, markAsRead, applyAccountFromMessage]);
 
     const loadMoreConversations = useCallback(() => {
         if (!isLoading && !isLoadingMore && hasMore) {
@@ -563,8 +605,10 @@ export const ConversationProvider = ({ children }) => {
         // Check if media upload is needed
         const mediaInfo = checkIfMediaUploadNeeded(msg);
         const needsMediaUpload = !!mediaInfo;
-
+        
         const localId = `local-${Date.now()}`;
+        const currentAccountId = msg.accountId || selectedAccount?.id;
+        applyAccountFromMessage({ accountId: currentAccountId, messageType: msg.type });
         const newMessage = {
             id: localId,
             direction: "outbound",
@@ -573,7 +617,7 @@ export const ConversationProvider = ({ children }) => {
             createdAt: new Date().toISOString(),
             status: needsMediaUpload ? "uploading" : "pending", // Initial status for optimistic UI
             conversationId: selectedConversation.id,
-            accountId: msg.accountId || selectedAccount?.id,
+            accountId: currentAccountId,
             metadata: { localId, ...metadata },
             replyTo: repMsg,
         };
@@ -598,7 +642,6 @@ export const ConversationProvider = ({ children }) => {
         // 2. Send to API
         try {
             let mediaId = null;
-            const currentAccountId = msg.accountId || selectedAccount?.id;
 
             // Handle Media Auto-Upload (from URL or file)
             if (needsMediaUpload) {
@@ -669,7 +712,7 @@ export const ConversationProvider = ({ children }) => {
                 m.id === localId ? { ...m, status: "failed", error: error?.response?.data?.message || error?.message } : m
             ));
         }
-    }, [selectedConversation, replyTo, messages, selectedAccount]);
+    }, [selectedConversation, replyTo, messages, selectedAccount, applyAccountFromMessage]);
 
     const handleRetryMessage = useCallback(async (failedMessage) => {
         // 1. Remove the failed message from UI

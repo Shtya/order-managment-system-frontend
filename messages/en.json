@@ -591,6 +591,7 @@
     "cancelCausesStatistics": "Cancel Causes Statistics",
     "gettingStartedStatistics": "Getting Started Statistics",
     "ai": "AI",
+    "agents": "Agents",
     "platformNumbers": "WhatsApp Numbers",
     "revenueStats": "WhatsApp Revenue",
     "campaigns": "Campaigns",
@@ -17814,6 +17815,94 @@
     "filters": {
       "allProviders": "All Providers",
       "apply": "Apply Filters"
+    }
+  },
+  "agents": {
+    "title": "Agents",
+    "breadcrumb": {
+      "home": "Home",
+      "ai": "AI",
+      "agents": "Agents"
+    },
+    "stats": {
+      "total": "Total agents",
+      "active": "Active agents"
+    },
+    "columns": {
+      "name": "Name",
+      "language": "Language",
+      "provider": "Response provider",
+      "status": "Status",
+      "createdAt": "Created at",
+      "actions": "Actions"
+    },
+    "languages": {
+      "auto": "Automatic",
+      "arabic": "Arabic",
+      "english": "English"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "provider": {
+      "auto": "Automatic"
+    },
+    "filters": {
+      "status": "Status",
+      "language": "Language"
+    },
+    "table": {
+      "searchPlaceholder": "Search agents",
+      "emptyTitle": "No agents yet",
+      "emptySubtitle": "Create an agent to start handling conversations."
+    },
+    "toolbar": {
+      "export": "Export"
+    },
+    "actions": {
+      "new": "Add agent",
+      "edit": "Edit",
+      "enable": "Activate",
+      "disable": "Deactivate",
+      "delete": "Delete"
+    },
+    "form": {
+      "createTitle": "Add agent",
+      "editTitle": "Edit agent",
+      "name": "Name",
+      "language": "Language",
+      "provider": "Response provider",
+      "isActive": "Active",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "languageRequired": "Language is required"
+    },
+    "toast": {
+      "fetchFailed": "Could not load agents",
+      "created": "Agent created",
+      "updated": "Agent updated",
+      "statusUpdated": "Agent status updated",
+      "deleted": "Agent deleted",
+      "deleteFailed": "Could not delete the agent",
+      "saveFailed": "Could not save the agent"
+    },
+    "delete": {
+      "title": "Delete agent",
+      "desc": "Delete {name}? This cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "toggle": {
+      "enableTitle": "Activate agent",
+      "disableTitle": "Deactivate agent",
+      "enableDescription": "Activate {name}?",
+      "disableDescription": "Deactivate {name}?",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
     }
   },
   "selected": "Selected"

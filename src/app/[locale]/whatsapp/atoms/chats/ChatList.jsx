@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useState, useMemo, useLayoutEffect } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { 
     Search, 
     Filter, 
@@ -13,7 +13,7 @@ import {
     X, 
     Loader2
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import { cn } from "@/utils/cn";
 
 import {
@@ -30,8 +30,17 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 import { formatText, formatMessagePreview } from "@/utils/whatsapp-healper";
 import { useAuth } from "@/context/AuthContext";
 
+const formatConversationTime = (date, locale) => {
+    if (!date) return "";
+    const value = new Date(date);
+    if (isToday(value)) return format(value, "hh:mm a");
+    if (isYesterday(value)) return locale === "ar" ? "أمس" : "Yesterday";
+    return format(value, "dd/MM/yyyy");
+};
+
 const ChatListItem = ({ conv, activeId, onSelect }) => {
     const t = useTranslations("chats");
+    const locale = useLocale();
     
     const formattedPreview = useMemo(() => {
         return formatMessagePreview(conv?.lastMessage, t);
@@ -64,8 +73,8 @@ const ChatListItem = ({ conv, activeId, onSelect }) => {
                     <h3 className="font-semibold text-foreground truncate">
                         {conv.customer?.name || conv.phoneNumber}
                     </h3>
-                    <span className="text-[10px] text-muted-foreground/70">
-                        {conv.lastMessageAt ? format(new Date(conv.lastMessageAt), "hh:mm a") : ""}
+                    <span className="text-[10px] text-muted-foreground/70 shrink-0">
+                        {formatConversationTime(conv.lastMessageAt, locale)}
                     </span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
@@ -113,8 +122,11 @@ export default function ChatList() {
     const {
         conversations,
         isLoading,
+        isLoadingMore,
         hasMore,
         loadMoreConversations,
+        listScrollRef,
+        prevListScrollTop,
         setSearch,
         selectedConversation,
         setSelectedConversation,
@@ -130,10 +142,11 @@ export default function ChatList() {
         setMobileView("chat");
     };
 
-    const formatTime = (date) => {
-        if (!date) return "";
-        return format(new Date(date), "hh:mm a");
-    };
+    useLayoutEffect(() => {
+        if (prevListScrollTop.current == null || !listScrollRef.current) return;
+        listScrollRef.current.scrollTop = prevListScrollTop.current;
+        prevListScrollTop.current = null;
+    }, [conversations, listScrollRef, prevListScrollTop]);
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -237,7 +250,7 @@ export default function ChatList() {
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div ref={listScrollRef} className="flex-1 overflow-y-auto custom-scrollbar">
                 {conversations.length === 0 && !isLoading && (
                     <div className="p-8 text-center text-muted-foreground/60 text-sm">
                         {t("noResults")}
@@ -265,10 +278,10 @@ export default function ChatList() {
                 {hasMore && (
                     <button
                         onClick={loadMoreConversations}
-                        disabled={isLoading}
+                        disabled={isLoading || isLoadingMore}
                         className="w-full p-4 text-sm text-primary font-medium hover:bg-muted transition-colors flex items-center justify-center gap-2"
                     >
-                        {isLoading ? (
+                        {isLoadingMore ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                             t("loadMore")

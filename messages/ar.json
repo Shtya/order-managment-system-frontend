@@ -591,6 +591,7 @@
     "cancelCausesStatistics": "إحصائيات أسباب الإلغاء",
     "gettingStartedStatistics": "إحصائيات الاعداد",
     "ai": "الذكاء الاصطناعي",
+    "agents": "الوكلاء",
     "platformNumbers": "أرقام واتساب المنصة",
     "revenueStats": "إيرادات واتساب",
     "campaigns": "الحملات",
@@ -17839,6 +17840,94 @@
     "filters": {
       "allProviders": "جميع المزودين",
       "apply": "تطبيق الفلاتر"
+    }
+  },
+  "agents": {
+    "title": "الوكلاء",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "ai": "الذكاء الاصطناعي",
+      "agents": "الوكلاء"
+    },
+    "stats": {
+      "total": "إجمالي الوكلاء",
+      "active": "الوكلاء النشطون"
+    },
+    "columns": {
+      "name": "الاسم",
+      "language": "اللغة",
+      "provider": "مزود الرد",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "languages": {
+      "auto": "تلقائي",
+      "arabic": "العربية",
+      "english": "الإنجليزية"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "provider": {
+      "auto": "تلقائي"
+    },
+    "filters": {
+      "status": "الحالة",
+      "language": "اللغة"
+    },
+    "table": {
+      "searchPlaceholder": "بحث في الوكلاء",
+      "emptyTitle": "لا يوجد وكلاء بعد",
+      "emptySubtitle": "أنشئ وكيلاً لبدء التعامل مع المحادثات."
+    },
+    "toolbar": {
+      "export": "تصدير"
+    },
+    "actions": {
+      "new": "إضافة وكيل",
+      "edit": "تعديل",
+      "enable": "تفعيل",
+      "disable": "إيقاف",
+      "delete": "حذف"
+    },
+    "form": {
+      "createTitle": "إضافة وكيل",
+      "editTitle": "تعديل الوكيل",
+      "name": "الاسم",
+      "language": "اللغة",
+      "provider": "مزود الرد",
+      "isActive": "نشط",
+      "cancel": "إلغاء",
+      "save": "حفظ"
+    },
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "languageRequired": "اللغة مطلوبة"
+    },
+    "toast": {
+      "fetchFailed": "تعذر تحميل الوكلاء",
+      "created": "تم إنشاء الوكيل",
+      "updated": "تم تحديث الوكيل",
+      "statusUpdated": "تم تحديث حالة الوكيل",
+      "deleted": "تم حذف الوكيل",
+      "deleteFailed": "تعذر حذف الوكيل",
+      "saveFailed": "تعذر حفظ الوكيل"
+    },
+    "delete": {
+      "title": "حذف الوكيل",
+      "desc": "حذف {name}؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "toggle": {
+      "enableTitle": "تفعيل الوكيل",
+      "disableTitle": "إيقاف الوكيل",
+      "enableDescription": "تفعيل {name}؟",
+      "disableDescription": "إيقاف {name}؟",
+      "confirm": "تأكيد",
+      "cancel": "إلغاء"
     }
   },
   "selected": "محدد"

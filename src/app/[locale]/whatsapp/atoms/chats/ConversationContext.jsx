@@ -23,6 +23,8 @@ export const ConversationProvider = ({ children }) => {
     const { settings } = useOrdersSettings();
     const scrollRef = useRef(null);
     const prevScrollHeight = useRef(0);
+    const listScrollRef = useRef(null);
+    const prevListScrollTop = useRef(null);
 
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [accounts, setAccounts] = useState([]);
@@ -123,6 +125,7 @@ export const ConversationProvider = ({ children }) => {
     }, []);
     // Real Data States
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(false);
     const [search, setSearch] = useState("");
     const PAGE_LIMIT = 50;
@@ -169,7 +172,14 @@ export const ConversationProvider = ({ children }) => {
 
 
     const fetchConversations = useCallback(async (searchQuery = "", tab = activeTab, append = false) => {
-        setIsLoading(true);
+        if (append) {
+            if (listScrollRef.current) {
+                prevListScrollTop.current = listScrollRef.current.scrollTop;
+            }
+            setIsLoadingMore(true);
+        } else {
+            setIsLoading(true);
+        }
         try {
             const params = {
                 limit: PAGE_LIMIT,
@@ -188,8 +198,10 @@ export const ConversationProvider = ({ children }) => {
             setCursor(nextCursor);
         } catch (error) {
             console.error("Failed to fetch conversations:", error);
+            prevListScrollTop.current = null;
         } finally {
             setIsLoading(false);
+            setIsLoadingMore(false);
         }
     }, [activeTab, cursor]);
 
@@ -488,10 +500,10 @@ export const ConversationProvider = ({ children }) => {
     }, [subscribe, selectedConversation, markAsRead]);
 
     const loadMoreConversations = useCallback(() => {
-        if (!isLoading && hasMore) {
+        if (!isLoading && !isLoadingMore && hasMore) {
             fetchConversations(search, activeTab, true);
         }
-    }, [isLoading, hasMore, fetchConversations, search, activeTab]);
+    }, [isLoading, isLoadingMore, hasMore, fetchConversations, search, activeTab]);
 
     const loadMoreMessages = useCallback(() => {
         if (!isMessagesLoading && hasMoreMessages && selectedConversation?.id) {
@@ -795,7 +807,10 @@ export const ConversationProvider = ({ children }) => {
             pendingMedia,
             setPendingMedia,
             isLoading,
+            isLoadingMore,
             hasMore,
+            listScrollRef,
+            prevListScrollTop,
             search,
             setSearch,
             loadMoreConversations,

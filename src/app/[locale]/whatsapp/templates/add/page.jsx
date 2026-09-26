@@ -1298,7 +1298,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                         onChange={(e) => setValue("expirationMinutes", e.target.value)}
                                                         className="w-24"
                                                     />
-                                                    <span className="text-xs text-slate-400">{tForm("minutesRange")}</span>
+                                                    <span className="text-xs text-muted-foreground">{tForm("minutesRange")}</span>
                                                 </div>
                                             </motion.div>
                                         )}

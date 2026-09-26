@@ -1169,7 +1169,7 @@ function ReturnsOrdersSlidePanel({ open, onClose, orders, loading, selectedOrder
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-12 space-y-3">
                   <Loader2 className="animate-spin text-primary" size={24} />
-                  <p className="text-xs text-slate-400 font-medium tracking-wide">{t("scan.labels.loading")}</p>
+                  <p className="text-xs text-muted-foreground font-medium tracking-wide">{t("scan.labels.loading")}</p>
                 </div>
               ) : (
                 orders.map((order) => {
@@ -1876,7 +1876,7 @@ export function ScanReturnsSubtab({
                         <span className="text-sm font-bold truncate text-slate-800 dark:text-slate-100">
                           {group.companyName}
                         </span>
-                        <span className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-1">
+                        <span className="text-xs text-muted-foreground dark:text-slate-500 font-medium mt-1">
                           {t("scan.readyToManifest")}
                         </span>
                       </div>

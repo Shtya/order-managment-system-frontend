@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
 import { useSocket } from "@/context/SocketContext";
+import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useTranslations } from "next-intl";
@@ -31,6 +32,7 @@ export const ConversationProvider = ({ children }) => {
     const [accountsLoading, setAccountsLoading] = useState(false);
     const [replyTo, setReplyTo] = useState(null);
     const { subscribe } = useSocket();
+    const { user } = useAuth();
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [mobileView, setMobileView] = useState("list"); // 'list', 'chat', 'details'
     const [showDetails, setShowDetails] = useState(false);
@@ -319,6 +321,18 @@ export const ConversationProvider = ({ children }) => {
         setSelectedConversation(conversation);
         setMessages([]);
     }, [setSelectedConversation]);
+
+    const applyConversationAi = useCallback((id, next) => {
+        setSelectedConversation((prev) => prev?.id === id ? { ...prev, ...next } : prev);
+        setConversations((prev) => prev.map((item) => item.id === id ? { ...item, ...next } : item));
+    }, []);
+
+    const updateConversationAi = useCallback(async (aiMode) => {
+        const id = selectedConversation?.id;
+        if (!id) return;
+        const res = await api.patch(`/conversation/${id}/ai`, { aiMode });
+        applyConversationAi(id, { aiMode: res.data?.aiMode });
+    }, [selectedConversation?.id, applyConversationAi]);
 
     const selectedConversationRef = useRef(selectedConversation);
     selectedConversationRef.current = selectedConversation;
@@ -620,6 +634,9 @@ export const ConversationProvider = ({ children }) => {
             accountId: currentAccountId,
             metadata: { localId, ...metadata },
             replyTo: repMsg,
+            sendSource: "user",
+            sentByUserId: user?.id,
+            sentByUser: user ? { id: user.id, name: user.name, avatarUrl: user.avatarUrl } : null,
         };
 
         // 1. Optimistic UI: Add message and move conversation to top
@@ -712,7 +729,7 @@ export const ConversationProvider = ({ children }) => {
                 m.id === localId ? { ...m, status: "failed", error: error?.response?.data?.message || error?.message } : m
             ));
         }
-    }, [selectedConversation, replyTo, messages, selectedAccount, applyAccountFromMessage]);
+    }, [selectedConversation, replyTo, messages, selectedAccount, applyAccountFromMessage, user]);
 
     const handleRetryMessage = useCallback(async (failedMessage) => {
         // 1. Remove the failed message from UI
@@ -829,6 +846,7 @@ export const ConversationProvider = ({ children }) => {
         <ConversationContext.Provider value={{
             selectedConversation,
             setSelectedConversation: onSelectConversation,
+            updateConversationAi,
             mobileView,
             setMobileView,
             selectedAccount,

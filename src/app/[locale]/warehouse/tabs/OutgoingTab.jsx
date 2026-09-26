@@ -1458,7 +1458,7 @@ export function ScanOutgoingSubtab({
 											<span className={`text-sm font-bold truncate ${hasOrders ? "text-slate-800 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"}`}>
 												{group.name}
 											</span>
-											<span className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-1">
+											<span className="text-xs text-muted-foreground dark:text-slate-500 font-medium mt-1">
 												{hasOrders ? t("scan.readyToManifest") : t("scan.noOrdersSelected")}
 											</span>
 										</div>

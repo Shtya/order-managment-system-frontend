@@ -408,8 +408,21 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
       icon: Bot,
       labelKey: "ai",
       href: "/ai",
-      permission: "ai.chat",
       allowedEmails: testEmails,
+      children: [
+        {
+          icon: Bot,
+          labelKey: "ai",
+          href: "/ai",
+          permission: "ai.chat",
+        },
+        {
+          icon: Bot,
+          labelKey: "agents",
+          href: "/ai/agents",
+          permission: "agents.read",
+        },
+      ],
     },
     {
       icon: BarChart3,

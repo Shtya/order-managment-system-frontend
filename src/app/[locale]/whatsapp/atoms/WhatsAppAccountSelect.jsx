@@ -131,7 +131,7 @@ export default function WhatsAppAccountSelect({
     return (
         <div className="space-y-2 w-full">
             {displayLabel && !noLabel && (
-                <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                <Label classN={"text-foreground!"}>
                     {displayLabel}
                 </Label>
             )}

@@ -2,7 +2,9 @@
 
 import { cn } from "@/utils/cn";
 import { format } from "date-fns";
-import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw, List, MapPin, User, Mail, Calendar, ChevronRight, Save, CheckCircle2 } from "lucide-react";
+import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw, List, MapPin, User, Mail, Calendar, ChevronRight, Save, CheckCircle2, Bot, Cog, Headset } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 import { useState, useRef, useEffect, useMemo, memo } from "react";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
@@ -25,6 +27,17 @@ import { useClipboard } from "@/hook/useClipboard";
 import { useConversation } from "./ConversationContext";
 import toast from "react-hot-toast";
 import { alarmToast } from "@/utils/healpers";
+
+function DefaultProfileIcon({ className }) {
+    return (
+        <svg viewBox="0 0 212 212" className={className} aria-hidden="true">
+            <path
+                fill="currentColor"
+                d="M106 106c18.6 0 33.7-15.1 33.7-33.7S124.6 38.6 106 38.6 72.3 53.7 72.3 72.3 87.4 106 106 106zm0 16.9c-22.5 0-67.4 11.3-67.4 33.7v16.9c0 0 0 0 0 0 17 23 42.5 38.5 67.4 38.5s50.4-15.5 67.4-38.5v-16.9c0-22.4-44.9-33.7-67.4-33.7z"
+            />
+        </svg>
+    );
+}
 
 function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted, onMediaLoad, scrollToMessage }) {
     const {
@@ -495,7 +508,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                                     dynamicExamples[key] = param.text;
                                     headerTextValue = param.text;
                                 } else if (["image", "video", "document"].includes(param.type?.toLowerCase())) {
-                                    headerMediaUrl =  param[param.type]?.id || param[param.type]?.link || headerMediaUrl;
+                                    headerMediaUrl = param[param.type]?.id || param[param.type]?.link || headerMediaUrl;
                                 } else if (param.type === "location") {
                                     locationData = param.location;
                                 }
@@ -827,13 +840,52 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
         if (!message?.replyTo) return "";
         return formatMessagePreview(message?.replyTo, t);
     }, [message?.replyTo, t]);
+
+    const sender = useMemo(() => {
+        if (!isOutbound) return null;
+
+        if (message.sendSource === "user") {
+            const name = message.sentByUser?.name || t("sentBy.user");
+            return { kind: "user", name, label: name, avatarUrl: message.sentByUser?.avatarUrl };
+        }
+        if (message.sendSource === "agent") {
+            const name = message.sentByAgent?.name || t("sentBy.agent");
+            return { kind: "agent", name, label: t("sentBy.agentName", { name }) };
+        }
+        const name = t("sentBy.system");
+        return { kind: "system", name, label: name };
+    }, [isOutbound, message.sendSource, message.sentByUser, message.sentByAgent, t]);
+
     return (
         <div id={id} className={cn(
             "flex w-full mb-4 group transition-colors duration-150",
             isOutbound ? "justify-start" : "justify-end",
             isHighlighted && "bg-whatsapp-message/20 rounded-lg"
         )}>
-            <div className="relative flex items-center">
+            <div className="relative flex items-start gap-2">
+                {sender && (
+                    <div title={sender.name} aria-label={sender.name} className="shrink-0 mt-0.5">
+                        <Avatar className="w-7 h-7 shadow-sm border border-black/5">
+                            {sender.kind === "user" && (
+                                <AvatarImage src={avatarSrc(sender.avatarUrl)} alt={sender.name} />
+                            )}
+
+                            <AvatarFallback className={cn(
+                                "flex items-center justify-center text-[10px] font-bold bg-white",
+                                // Agent: Uses your #6763AF brand color for the icon and a soft matching border
+                                sender.kind === "agent" && "text-primary border border-primary/20",
+                                // System: Uses a soft neutral gray for the icon
+                                sender.kind === "system" && "text-muted-foreground border border-black/5"
+                            )}>
+                                {sender.kind === "user" && (sender.name || "?").slice(0, 2).toUpperCase()}
+
+                                {sender.kind === "agent" && <Bot className="w-4 h-4" />}
+
+                                {sender.kind === "system" && <Cog className="w-4 h-4" />}
+                            </AvatarFallback>
+                        </Avatar>
+                    </div>
+                )}
                 {/* Hover Actions - Positioned absolute to avoid layout shift */}
                 {message.status !== "failed" && (
                     <div className={cn(
@@ -937,6 +989,9 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
                     )}>
                         {isOutbound && <StatusIcon status={message.status} />}
                         <span className="text-[10px]">{time}</span>
+                        {sender && (
+                            <span className="text-[10px] truncate max-w-40">· {sender.label}</span>
+                        )}
                     </div>
 
                     {/* Helper to safely extract emoji across different payload formats */}
@@ -1019,7 +1074,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
 
 
 export default memo(MessageBubble, (prevProps, nextProps) => {
-    
+
     return (
         // Check if it's the exact same message
         prevProps.id === nextProps.id &&
@@ -1035,7 +1090,7 @@ export default memo(MessageBubble, (prevProps, nextProps) => {
         prevProps.isHighlighted === nextProps.isHighlighted &&
 
         // Safety check for outbound status
-        prevProps.isOutbound === nextProps.isOutbound && 
+        prevProps.isOutbound === nextProps.isOutbound &&
 
         prevProps.message.reactions === nextProps.message.reactions
     );

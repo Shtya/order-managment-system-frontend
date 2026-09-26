@@ -40,11 +40,13 @@ import Button_, { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import Table, { FilterField } from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
+import AgentSelect, { AGENT_SELECT_DEFAULT } from "@/components/molecules/AgentSelect";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { WhatsAppTab } from "../../settings/page";
-import { Settings2 } from "lucide-react";
+import { Bot, Settings2 } from "lucide-react";
 import api from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
@@ -1806,7 +1808,7 @@ export default function WhatsAppAccountsPage() {
     setDocumentTitle(t("breadcrumb.accounts"));
   }, [t]);
   const { settings, isSettingsLoading } = usePlatformSettings();
-  const { patch, saveSetting, refreshOrdersSettings } = useOrdersSettings();
+  const { patch, saveSetting, refreshOrdersSettings, settings: clientSettings } = useOrdersSettings();
   const [guideModalOpen, setGuideModalOpen] = useState(false);
   const [manualModalOpen, setManualModalOpen] = useState(false);
 
@@ -1837,6 +1839,8 @@ export default function WhatsAppAccountsPage() {
     open: false,
     row: null,
   });
+  const [aiDialog, setAiDialog] = useState(null);
+  const [aiSaving, setAiSaving] = useState(false);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -2048,6 +2052,19 @@ export default function WhatsAppAccountsPage() {
                 variant: "primary",
                 permission: "whatsapp.manage",
                 hidden: !row?.isCreatedManual,
+              },
+              {
+                icon: <Bot size={16} />,
+                tooltip: t("actions.ai"),
+                onClick: () =>
+                  setAiDialog({
+                    row,
+                    aiResponses: row.aiResponses || "default",
+                    aiAgentSource: row.aiAgentSource || "default",
+                    aiAgentId: row.aiAgentId || null,
+                  }),
+                variant: "primary",
+                permission: "whatsapp.manage",
               },
               // {
               //   icon: <Trash2 size={16} />,
@@ -2337,7 +2354,7 @@ export default function WhatsAppAccountsPage() {
       />
 
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-w-4xl min-w-[1000px] p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
           <DialogHeader className="p-6 border-b dark:border-slate-800">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Settings2 className="text-primary" />
@@ -2345,7 +2362,7 @@ export default function WhatsAppAccountsPage() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="p-6 max-h-[80vh] overflow-y-auto">
+          <div className="p-6 max-h-[70vh] overflow-y-auto">
             <WhatsAppTab hideAccount={false} onSave={() => setSettingsOpen(false)} />
           </div>
         </DialogContent>
@@ -2395,6 +2412,95 @@ export default function WhatsAppAccountsPage() {
         open={guideModalOpen}
         onOpenChange={setGuideModalOpen}
       />
+
+      <Dialog open={!!aiDialog} onOpenChange={(open) => { if (!open) setAiDialog(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("ai.title")}</DialogTitle>
+            <DialogDescription>{t("ai.description")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <div>
+                <Label classN={"text-foreground!"}>{t("ai.responses")}</Label>
+                <p className="text-xs text-muted-foreground mt-1">{t("ai.responsesDescription")}</p>
+              </div>
+              <Select
+                value={aiDialog?.aiResponses || "default"}
+                onValueChange={(value) =>
+                  setAiDialog((current) => current ? {
+                    ...current,
+                    aiResponses: value,
+                    ...(value === "enabled" ? {} : { aiAgentSource: "default", aiAgentId: null }),
+                  } : current)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">
+                    {t("ai.useDefault")}
+                  </SelectItem>
+                  <SelectItem value="enabled">{t("ai.enabled")}</SelectItem>
+                  <SelectItem value="disabled">{t("ai.disabled")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {aiDialog?.aiResponses === "enabled" ? (
+              <div className="space-y-2">
+                <div>
+                  <Label classN={"text-foreground!"}>{t("ai.agent")}</Label>
+                  <p className="text-xs text-muted-foreground mt-1">{t("ai.agentDescription")}</p>
+                </div>
+                <AgentSelect
+                  value={aiDialog.aiAgentSource === "specific" && aiDialog.aiAgentId ? aiDialog.aiAgentId : AGENT_SELECT_DEFAULT}
+                  onValueChange={(value) =>
+                    setAiDialog((current) => current ? {
+                      ...current,
+                      aiAgentSource: value === AGENT_SELECT_DEFAULT ? "default" : "specific",
+                      aiAgentId: value === AGENT_SELECT_DEFAULT ? null : value,
+                    } : current)
+                  }
+                  defaultOptionLabel={(agents) =>
+                    t("ai.useDefault", {
+                      value: agents.find((agent) => agent.id === clientSettings?.whatsappAiAgentId)?.name || t("ai.noAgent"),
+                    })
+                  }
+                />
+              </div>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button_ type="button" variant="ghost" size="sm" onClick={() => setAiDialog(null)} label={tCommon("cancel")} />
+              
+            <Button_
+              type="button"
+              size="sm"
+              loading={aiSaving}
+              label={tCommon("save")}
+              onClick={async () => {
+                if (!aiDialog?.row?.id) return;
+                setAiSaving(true);
+                try {
+                  await api.patch(`/whatsapp-accounts/${aiDialog.row.id}/ai`, {
+                    aiResponses: aiDialog.aiResponses,
+                    aiAgentSource: aiDialog.aiResponses === "enabled" ? aiDialog.aiAgentSource : "default",
+                    aiAgentId: aiDialog.aiResponses === "enabled" && aiDialog.aiAgentSource === "specific" ? aiDialog.aiAgentId : null,
+                  });
+                  toast.success(t("ai.saved"));
+                  setAiDialog(null);
+                  fetchAccounts({ page: pager.current_page, per_page: pager.per_page });
+                } catch (err) {
+                  toast.error(normalizeAxiosError(err));
+                } finally {
+                  setAiSaving(false);
+                }
+              }}
+            />
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

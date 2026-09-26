@@ -406,7 +406,7 @@ export default function WarehouseFlowPage() {
 
   //             <button
   //               onClick={() => router.back()} // سيقوم بالعودة للصحفة السابقة في السجل (History)
-  //               className="text-xs text-slate-400 hover:text-primary transition-colors mt-2 underline flex items-center justify-center gap-1 mx-auto"
+  //               className="text-xs text-muted-foreground hover:text-primary transition-colors mt-2 underline flex items-center justify-center gap-1 mx-auto"
   //             >
   //               <ArrowRight size={12} /> {/* إضافة سهم اختياري لتعزيز الشكل البصري */}
   //               <span>{tWarning("goBack")}</span>

@@ -66,7 +66,7 @@ export default function WhatsAppMessageBodyBuilder({
       <div className="flex justify-between items-center">
         <Label className="text-base font-bold">{displayLabel} <span className="text-red-500">*</span></Label>
         <div className="flex items-center gap-3">
-          {allowVariables && <span className="text-xs text-slate-400">{t("addVariable")} like {'{{1}}'}</span>}
+          {allowVariables && <span className="text-xs text-muted-foreground">{t("addVariable")} like {'{{1}}'}</span>}
           <span className={cn(
             "text-xs font-mono px-2 py-0.5 rounded-full",
             value.length > maxLength * 0.9 ? "bg-red-50 text-red-500" : "bg-slate-100 text-slate-500"

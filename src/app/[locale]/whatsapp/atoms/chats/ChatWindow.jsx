@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } fr
 import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    MoreVertical, Phone, Video,
+    MoreVertical, Phone, Video, Bot,
     Search, Star, Info, MessageCircleOff, X, Edit, UserMinus, UserCheck, Loader2, ChevronLeft, ChevronDown
 } from "lucide-react";
 import MessageBubble from "./MessageBubble";
@@ -16,6 +16,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
     Select,
     SelectContent,
@@ -38,6 +39,7 @@ import { MESSAGE_STATUS_LIST } from "@/utils/whatsapp-healper";
 import { useDebounce } from "@/hook/useDebounce";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
+import toast from "react-hot-toast";
 
 // Skeleton message component with config
 function MessageSkeleton() {
@@ -58,8 +60,11 @@ function MessageSkeleton() {
             {skeletonConfig.map((config, index) => (
                 <div
                     key={index}
-                    className={cn("flex", config.type === "outbound" ? "justify-start" : "justify-end")}
+                    className={cn("flex items-start gap-2", config.type === "outbound" ? "justify-start" : "justify-end")}
                 >
+                    {config.type === "outbound" && (
+                        <div className="w-7 h-7 mt-0.5 shrink-0 rounded-full bg-[#eef3f5] dark:bg-[#6B7C85] animate-pulse" />
+                    )}
                     <div className={cn(
                         "w-fit max-w-[450px] min-w-[100px] px-4 py-3 rounded-2xl shadow-sm animate-pulse",
                         config.type === "outbound"
@@ -118,7 +123,8 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         isNearBottom,
         currentUnreadCount,
         checkIsNearBottom,
-        bottomSentinelRef
+        bottomSentinelRef,
+        updateConversationAi
     } = useConversation();
 
     const [showInteractiveModal, setShowInteractiveModal] = useState(false);
@@ -136,6 +142,10 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const [localSearch, setLocalSearch] = useState("");
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
+    const [aiModeDraft, setAiModeDraft] = useState("inherit");
+    const [aiSaving, setAiSaving] = useState(false);
+    const conversationAiEnabled = selectedConversation?.aiMode !== "disabled";
     // Sync local search with messageSearch when it changes (e.g. when conversation changes)
     useEffect(() => {
         setLocalSearch(messageSearch);
@@ -432,8 +442,18 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             )}
                         </div>
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex items-center gap-2">
                         <h2 className="font-bold text-foreground leading-tight truncate">{customer?.name || customer?.phoneNumber}</h2>
+                        {/* <span
+                            title={conversationAiEnabled ? t("ai.enabledTitle") : t("ai.disabledTitle")}
+                            aria-label={conversationAiEnabled ? t("ai.enabledTitle") : t("ai.disabledTitle")}
+                            className={cn(
+                                "shrink-0",
+                                conversationAiEnabled ? "text-primary" : "text-muted-foreground/35"
+                            )}
+                        >
+                            <Bot className="w-4 h-4" />
+                        </span> */}
                     </div>
                 </div>
 
@@ -470,6 +490,18 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                     <DropdownMenuItem onClick={() => setIsEditModalOpen(true)} className="gap-2 cursor-pointer">
                                         <Edit className="w-4 h-4" />
                                         {t("editContact")}
+                                    </DropdownMenuItem>
+                                )}
+                                {hasPermission("conversation.update") && (
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setAiModeDraft(selectedConversation?.aiMode === "disabled" ? "disabled" : "inherit");
+                                            setAiSettingsOpen(true);
+                                        }}
+                                        className="gap-2 cursor-pointer"
+                                    >
+                                        <Bot className="w-4 h-4" />
+                                        {t("ai.settings")}
                                     </DropdownMenuItem>
                                 )}
                                 {/* <DropdownMenuItem className="gap-2 text-red-600">
@@ -594,6 +626,73 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                 setShowMediaPreview={setShowMediaPreview}
                 setMediaFileType={setMediaFileType}
             />
+
+            <Dialog open={aiSettingsOpen} onOpenChange={setAiSettingsOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-card">
+                    <DialogHeader className="p-6 border-b border-border">
+                        <DialogTitle className="text-xl font-bold">{t("ai.settings")}</DialogTitle>
+                        <DialogDescription className="text-xs leading-relaxed">{t("ai.settingsDescription")}</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-6 space-y-3">
+                        {[
+                            { mode: "inherit", label: t("ai.useDefault") },
+                            { mode: "disabled", label: t("ai.disabledConversation") },
+                        ].map(({ mode, label }) => {
+                            const isActive = aiModeDraft === mode;
+                            return (
+                                <button
+                                    key={mode}
+                                    type="button"
+                                    onClick={() => setAiModeDraft(mode)}
+                                    className={cn(
+                                        "w-full flex items-center gap-3 p-3.5 rounded-lg border text-start transition-all duration-200",
+                                        isActive
+                                            ? "border-[var(--primary)]/40 bg-[var(--primary)]/5"
+                                            : "border-border/60 hover:border-border hover:bg-muted/30",
+                                    )}
+                                >
+                                    <div
+                                        className={cn(
+                                            "flex items-center justify-center w-[18px] h-[18px] rounded-full border-2 shrink-0",
+                                            isActive ? "border-[var(--primary)]" : "border-slate-300 dark:border-slate-600",
+                                        )}
+                                    >
+                                        {isActive && <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />}
+                                    </div>
+                                    <span className="font-semibold text-sm text-foreground">{label}</span>
+                                </button>
+                            );
+                        })}
+                        <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                            <button
+                                type="button"
+                                onClick={() => setAiSettingsOpen(false)}
+                                className="px-4 py-2 rounded-xl border border-border text-sm"
+                            >
+                                {t("cancel")}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={aiSaving}
+                                onClick={async () => {
+                                    setAiSaving(true);
+                                    try {
+                                        await updateConversationAi(aiModeDraft);
+                                        setAiSettingsOpen(false);
+                                    } catch {
+                                        toast.error(t("chatFailed"));
+                                    } finally {
+                                        setAiSaving(false);
+                                    }
+                                }}
+                                className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-sm disabled:opacity-60"
+                            >
+                                {aiSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : t("save")}
+                            </button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <CustomerModal
                 open={isEditModalOpen}

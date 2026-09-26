@@ -694,7 +694,7 @@ function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
                     key={label}
                     className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3"
                   >
-                    <p className="text-xs text-slate-400 mb-1">{label}</p>
+                    <p className="text-xs text-muted-foreground mb-1">{label}</p>
                     <p className="font-semibold text-sm">{value || "—"}</p>
                   </div>
                 ))}
@@ -871,7 +871,7 @@ function OrderLogModal({ open, onClose, op, t }) {
                 key={label}
                 className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3"
               >
-                <p className="text-xs text-slate-400 mb-1">{label}</p>
+                <p className="text-xs text-muted-foreground mb-1">{label}</p>
                 <p className="font-semibold text-sm">{value}</p>
               </div>
             ))}

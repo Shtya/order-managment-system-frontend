@@ -48,6 +48,8 @@ const defaultSettings =  {
     storeOrderSkuFallback: true,
     automationMigrationStrategy: "latest_patch",
     defaultWhatsAppAccountId: "",
+    whatsappAiEnabled: false,
+    whatsappAiAgentId: null,
     shipping: {
       shippingCompanyId: "",
       triggerStatus: "",
@@ -117,6 +119,10 @@ const buildSettingsObject = (data, prevSettings) => ({
     data.automationMigrationStrategy ?? prevSettings.automationMigrationStrategy ?? "latest_patch",
   defaultWhatsAppAccountId:
     data.defaultWhatsAppAccountId ?? prevSettings.defaultWhatsAppAccountId ?? "",
+  whatsappAiEnabled:
+    data.whatsappAiEnabled ?? prevSettings.whatsappAiEnabled ?? false,
+  whatsappAiAgentId:
+    data.whatsappAiAgentId ?? prevSettings.whatsappAiAgentId ?? null,
   orderTagMode: data.orderTagMode ?? prevSettings.orderTagMode ?? "many",
   tagAutomationsEnabled:
     data.tagAutomationsEnabled ?? prevSettings.tagAutomationsEnabled ?? true,

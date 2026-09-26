@@ -11377,7 +11377,16 @@
       "whatsappTab": {
         "accountSettings": "Account Settings",
         "defaultAccountDescription": "Select the default number for sending operations",
-        "defaultAccountLabel": "Default Number for Sending"
+        "defaultAccountLabel": "Default Number for Sending",
+        "aiSettings": "AI auto-reply",
+        "aiSettingsDescription": "Turn on automatic replies to customer WhatsApp messages using an AI agent.",
+        "aiResponses": "Enable AI",
+        "aiResponsesDescription": "Turn automatic replies to customers on or off.",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "agent": "Agent",
+        "agentDescription": "Choose the agent that replies to customers.",
+        "selectAgent": "Select an agent"
       }
     },
     "ttlInput": {
@@ -12852,7 +12861,21 @@
         "syncTemplates": "Sync Templates",
         "edit": "Edit",
         "replaceAccessToken": "Replace Access Token",
-        "detailsUsage": "Details & usage"
+        "detailsUsage": "Details & usage",
+        "ai": "AI agent settings"
+      },
+      "ai": {
+        "title": "AI agent settings",
+        "description": "Control automatic replies to customers on this number. \"Use default\" follows the general settings and updates when they change.",
+        "responses": "Enable AI",
+        "responsesDescription": "Turn automatic replies to customers on or off for this number.",
+        "agent": "Agent",
+        "agentDescription": "Choose the agent that replies to customers on this number.",
+        "useDefault": "Use default",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "noAgent": "no agent",
+        "saved": "AI settings saved"
       },
       "replaceAccessToken": {
         "title": "Replace Access Token",
@@ -13628,12 +13651,11 @@
           "aiAddressCompletenessHowBody": "AI analyzes the customer address to check that it is complete, clear, and deliverable. It reviews the available information against the defined criteria.",
           "aiAddressCompletenessCriteriaTitle": "The five verification criteria",
           "aiAddressCompletenessCriteria": {
-         "city": "City is required",
-          "area": "Area is required",
-          "reference": "A named street, compound, or landmark is enough. A building number or \"beside\" is optional",
-          "unitOptional": "Apartment or floor number (optional)",
-          "consistent": "The city and address are consistent and contain no contradictions."
-
+            "city": "City is required",
+            "area": "Area is required",
+            "reference": "A named street, compound, or landmark is enough. A building number or \"beside\" is optional",
+            "unitOptional": "Apartment or floor number (optional)",
+            "consistent": "The city and address are consistent and contain no contradictions."
           },
           "aiAddressCompletenessCalcModeInput": "Only input tokens are billed. Model output tokens are free.",
           "aiAddressCompletenessCalcModeInputOutput": "Both input and output tokens are billed.",
@@ -15540,6 +15562,23 @@
     "deleteConversation": "Delete Conversation",
     "editClient": "Edit contact",
     "editContact": "Edit contact",
+    "ai": {
+      "useDefault": "Follow the number's settings",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "status": "AI auto-reply",
+      "settings": "AI agent settings",
+      "settingsDescription": "Control automatic replies to this customer. \"Follow the number's settings\" replies based on the number's settings and updates when they change.",
+      "enabledTitle": "AI auto-reply allowed in this conversation (follows the number's settings)",
+      "disabledTitle": "AI auto-reply is turned off for this conversation",
+      "disabledConversation": "Turn off AI auto-reply for this conversation"
+    },
+    "sentBy": {
+      "system": "System",
+      "user": "User",
+      "agent": "AI agent",
+      "agentName": "Agent {name}"
+    },
     "addCustomer": "Add new contact",
     "addContactPerson": "Add new contact",
     "contactName": "Contact name",
@@ -17841,6 +17880,10 @@
       "arabic": "Arabic",
       "english": "English"
     },
+    "genders": {
+      "male": "Male",
+      "female": "Female"
+    },
     "status": {
       "active": "Active",
       "inactive": "Inactive"
@@ -17873,6 +17916,10 @@
       "name": "Name",
       "language": "Language",
       "provider": "Response provider",
+      "gender": "Gender",
+      "genderHint": "How the agent refers to itself (especially in Arabic). Customers are always addressed neutrally.",
+      "customInstructions": "Custom instructions",
+      "customInstructionsPlaceholder": "e.g. Our working hours are 10am–10pm. Always mention free shipping over 1000 EGP.",
       "isActive": "Active",
       "cancel": "Cancel",
       "save": "Save"
@@ -17905,5 +17952,9 @@
       "cancel": "Cancel"
     }
   },
-  "selected": "Selected"
+  "selected": "Selected",
+  "agentSelect": {
+    "addAgent": "Add agent",
+    "placeholder": "Select an agent"
+  }
 }

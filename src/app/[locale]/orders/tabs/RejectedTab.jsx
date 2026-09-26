@@ -193,7 +193,7 @@ function RejectedOrderDetailModal({ open, onClose, order }) {
                     {p.variant?.sku || p.sku}
                   </span>
                   <span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.variant?.product?.name || p.name}</span>
-                  <span className="text-xs text-slate-400 font-mono">×{p.quantity}</span>
+                  <span className="text-xs text-muted-foreground font-mono">×{p.quantity}</span>
                 </motion.div>
               ))}
             </div>

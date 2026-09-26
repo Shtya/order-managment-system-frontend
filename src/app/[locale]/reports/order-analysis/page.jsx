@@ -2006,7 +2006,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-purple-500 dark:text-purple-400 tabular-nums text-sm">
           {fmt(r.correctedOrders)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.totalOrders > 0 ? `(${((r.correctedOrders / r.totalOrders) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>
@@ -2018,7 +2018,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-blue-500 dark:text-blue-400 tabular-nums text-sm">
           {fmt(r.confirmedCount)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.totalOrders > 0 ? `(${((r.confirmedCount / r.totalOrders) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>
@@ -2030,7 +2030,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-cyan-500 dark:text-cyan-400 tabular-nums text-sm">
           {fmt(r.shippedOrders)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.totalOrders > 0 ? `(${((r.shippedOrders / r.totalOrders) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>
@@ -2042,7 +2042,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-emerald-500 dark:text-emerald-400 tabular-nums text-sm">
           {fmt(r.deliveredTotal)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.totalOrders > 0 ? `(${((r.deliveredTotal / r.totalOrders) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>
@@ -2054,7 +2054,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-orange-500 dark:text-orange-400 tabular-nums text-sm">
           {fmt(r.deliveredFromConfirmed)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.confirmedCount > 0 ? `(${((r.deliveredFromConfirmed / r.confirmedCount) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>
@@ -2101,7 +2101,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-purple-500 dark:text-purple-400 tabular-nums text-sm">
           {fmt(r.correctedOrders)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.totalOrders > 0 ? `(${((r.correctedOrders / r.totalOrders) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>
@@ -2113,7 +2113,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-blue-500 dark:text-blue-400 tabular-nums text-sm">
           {fmt(r.confirmedCount)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.totalOrders > 0 ? `(${((r.confirmedCount / r.totalOrders) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>
@@ -2125,7 +2125,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-cyan-500 dark:text-cyan-400 tabular-nums text-sm">
           {fmt(r.shippedOrders)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.totalOrders > 0 ? `(${((r.shippedOrders / r.totalOrders) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>
@@ -2137,7 +2137,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-emerald-500 dark:text-emerald-400 tabular-nums text-sm">
           {fmt(r.deliveredTotal)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.totalOrders > 0 ? `(${((r.deliveredTotal / r.totalOrders) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>
@@ -2149,7 +2149,7 @@ export default function OrdersStatisticsPage() {
       cell: (r) => (
         <span className="font-semibold text-orange-500 dark:text-orange-400 tabular-nums text-sm">
           {fmt(r.deliveredFromConfirmed)}
-          <span className="text-xs text-slate-400 ms-1">
+          <span className="text-xs text-muted-foreground ms-1">
             {r.confirmedCount > 0 ? `(${((r.deliveredFromConfirmed / r.confirmedCount) * 100).toFixed(0)}%)` : ""}
           </span>
         </span>

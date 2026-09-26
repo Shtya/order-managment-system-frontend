@@ -29,6 +29,7 @@ import {
   Hash,
   FileText,
   Phone,
+  Bot,
   Zap,
   Truck,
   Mail,
@@ -65,6 +66,7 @@ import { ActionButtons } from "@/components/atoms/Actions";
 import { Controller } from "react-hook-form";
 
 import api from "@/utils/api";
+import AgentSelect from "@/components/molecules/AgentSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -652,7 +654,6 @@ export function WhatsAppTab({ hideAccount = false, onSave }) {
     saving,
     handleSave,
   } = useOrdersSettings();
-
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -667,7 +668,7 @@ export function WhatsAppTab({ hideAccount = false, onSave }) {
           </div>
           <div>
             <h3 className="text-base font-bold">{t("accountSettings")}</h3>
-            <p className="text-xs text-slate-400">{t("defaultAccountDescription")}</p>
+            <p className="text-xs text-muted-foreground">{t("defaultAccountDescription")}</p>
           </div>
         </div>
 
@@ -676,6 +677,54 @@ export function WhatsAppTab({ hideAccount = false, onSave }) {
           value={tempSettings?.defaultWhatsAppAccountId}
           onChange={(val) => patch({ defaultWhatsAppAccountId: val })}
         />
+      </div>
+
+      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <Bot size={20} />
+          </div>
+          <div>
+            <h3 className="text-base font-bold">{t("aiSettings")}</h3>
+            <p className="text-xs text-muted-foreground">{t("aiSettingsDescription")}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <Label classN="text-sm font-medium text-foreground!">{t("aiResponses")}</Label>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("aiResponsesDescription")}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">
+              {tempSettings?.whatsappAiEnabled ? t("enabled") : t("disabled")}
+            </span>
+            <Switch
+              checked={!!tempSettings?.whatsappAiEnabled}
+              onCheckedChange={(checked) =>
+                patch({
+                  whatsappAiEnabled: checked,
+                  ...(checked ? {} : { whatsappAiAgentId: null }),
+                })
+              }
+            />
+          </div>
+        </div>
+
+        {tempSettings?.whatsappAiEnabled ? (
+          <div className="space-y-2 mt-5">
+            <div>
+              <Label className="text-sm font-medium text-foreground">{t("agent")}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("agentDescription")}</p>
+            </div>
+            <AgentSelect
+              value={tempSettings?.whatsappAiAgentId}
+              onValueChange={(value) => patch({ whatsappAiAgentId: value })}
+              placeholder={t("selectAgent")}
+              triggerClassName="h-[52px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl"
+            />
+          </div>
+        ) : null}
       </div>
 
       {!hideAccount && <SaveFooter onSave={() => handleSave(onSave)} saving={saving} label={tSettings("common.saveChanges")} />}
@@ -707,7 +756,7 @@ export function LanguageTab({ hideAccount = false, onSave }) {
           </div>
           <div>
             <h3 className="text-base font-bold">{t("languageSettings")}</h3>
-            <p className="text-xs text-slate-400">{t("defaultLanguageDescription")}</p>
+            <p className="text-xs text-muted-foreground">{t("defaultLanguageDescription")}</p>
           </div>
         </div>
 
@@ -1174,7 +1223,7 @@ export function AutomationsTab({ hideAccount = false, onSave }) {
           </div>
           <div>
             <h3 className="text-base font-bold">{t("title")}</h3>
-            <p className="text-xs text-slate-400">{t("subtitle")}</p>
+            <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
           </div>
         </div>
 

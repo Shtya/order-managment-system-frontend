@@ -547,7 +547,7 @@ function OrdersSlidePanel({ open, onClose, activeOrderCode, onSelectOrder }) {
 							{loading ? (
 								<div className="flex flex-col items-center justify-center py-12 space-y-3">
 									<Loader2 className="animate-spin text-primary" size={24} />
-									<p className="text-xs text-slate-400 font-medium tracking-wide">{t("panel.loading")}</p>
+									<p className="text-xs text-muted-foreground font-medium tracking-wide">{t("panel.loading")}</p>
 								</div>
 							) : (
 								orders.map((order) => {

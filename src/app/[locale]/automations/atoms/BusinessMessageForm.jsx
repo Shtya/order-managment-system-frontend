@@ -196,7 +196,7 @@ function CancelCausesConfigField({ field, value, onChange, error, t }) {
                     ))}
                 </ul>
             ) : (
-                <p className="text-xs text-slate-400 font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                     {t("businessConfig.cancelCausesEmpty")}
                 </p>
             )}

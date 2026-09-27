@@ -187,7 +187,9 @@ function AgentFormDialog({ open, onOpenChange, agent, onSuccess }) {
         <form onSubmit={handleSubmit(onSubmit)} className="p-4 md:p-6 bg-card">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("form.name")}</Label>
+              <Label className="text-sm font-semibold" description={t("form.nameDescription")}>
+                {t("form.name")}
+              </Label>
               <Input
                 {...register("name")}
                 placeholder={t("form.name")}
@@ -199,7 +201,9 @@ function AgentFormDialog({ open, onOpenChange, agent, onSuccess }) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("form.language")}</Label>
+              <Label className="text-sm font-semibold" description={t("form.languageDescription")}>
+                {t("form.language")}
+              </Label>
               <Controller
                 control={control}
                 name="language"
@@ -224,7 +228,9 @@ function AgentFormDialog({ open, onOpenChange, agent, onSuccess }) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("form.gender")}</Label>
+              <Label className="text-sm font-semibold" description={t("form.genderDescription")}>
+                {t("form.gender")}
+              </Label>
               <Controller
                 control={control}
                 name="gender"
@@ -243,11 +249,12 @@ function AgentFormDialog({ open, onOpenChange, agent, onSuccess }) {
                   </Select>
                 )}
               />
-              <p className="text-xs text-muted-foreground">{t("form.genderHint")}</p>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("form.provider")}</Label>
+              <Label className="text-sm font-semibold" description={t("form.providerDescription")}>
+                {t("form.provider")}
+              </Label>
               <Controller
                 control={control}
                 name="responseProviderId"
@@ -276,7 +283,9 @@ function AgentFormDialog({ open, onOpenChange, agent, onSuccess }) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("form.customInstructions")}</Label>
+              <Label className="text-sm font-semibold" description={t("form.customInstructionsDescription")}>
+                {t("form.customInstructions")}
+              </Label>
               <Textarea
                 {...register("customInstructions")}
                 rows={4}
@@ -300,7 +309,9 @@ function AgentFormDialog({ open, onOpenChange, agent, onSuccess }) {
                   />
                 )}
               />
-              <Label className="text-sm font-semibold">{t("form.isActive")}</Label>
+              <Label className="text-sm font-semibold" description={t("form.isActiveDescription")}>
+                {t("form.isActive")}
+              </Label>
             </div>
           </div>
 

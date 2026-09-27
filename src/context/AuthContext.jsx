@@ -10,6 +10,7 @@ import {
 } from "@/utils/userPreferencesStorage";
 import { getDefaultAppRoute } from "@/utils/sidebarAccess";
 import { normalizeRole, userHasPermission } from "@/utils/userAccess";
+import { testEmails } from "@/config/sidebarMenu";
 
 const AuthContext = createContext();
 
@@ -324,6 +325,7 @@ export function AuthProvider({ children }) {
         roleName: user?.role?.name || "user",
         planName: activeSubscription?.plan?.name || "No Plan",
         accessToken: token,
+        isTestUser: testEmails.includes(user?.email),
     };
 
     return (

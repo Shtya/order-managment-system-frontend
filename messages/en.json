@@ -15571,7 +15571,13 @@
       "settingsDescription": "Control automatic replies to this customer. \"Follow the number's settings\" replies based on the number's settings and updates when they change.",
       "enabledTitle": "AI auto-reply allowed in this conversation (follows the number's settings)",
       "disabledTitle": "AI auto-reply is turned off for this conversation",
-      "disabledConversation": "Turn off AI auto-reply for this conversation"
+      "disabledConversation": "Turn off AI auto-reply for this conversation",
+      "paused": "AI paused",
+      "pausedTitle": "AI is paused",
+      "humanTakeover": "Human takeover",
+      "resumesIn": "Resumes automatically in",
+      "resumeNow": "Resume AI",
+      "resumed": "AI resumed"
     },
     "sentBy": {
       "system": "System",

@@ -648,6 +648,7 @@ function TTLInput({ label, description, defaultValue, min, max }) {
 export function WhatsAppTab({ hideAccount = false, onSave }) {
   const tSettings = useTranslations("settings");
   const t = useTranslations("settings.tabs.whatsappTab");
+  const { isTestUser } = useAuth();
   const {
     tempSettings,
     patch,
@@ -679,6 +680,7 @@ export function WhatsAppTab({ hideAccount = false, onSave }) {
         />
       </div>
 
+      {isTestUser ? (
       <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -726,6 +728,7 @@ export function WhatsAppTab({ hideAccount = false, onSave }) {
           </div>
         ) : null}
       </div>
+      ) : null}
 
       {!hideAccount && <SaveFooter onSave={() => handleSave(onSave)} saving={saving} label={tSettings("common.saveChanges")} />}
     </motion.div>

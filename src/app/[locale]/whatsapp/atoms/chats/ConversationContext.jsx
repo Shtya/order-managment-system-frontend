@@ -334,6 +334,13 @@ export const ConversationProvider = ({ children }) => {
         applyConversationAi(id, { aiMode: res.data?.aiMode });
     }, [selectedConversation?.id, applyConversationAi]);
 
+    const resumeConversationAi = useCallback(async () => {
+        const id = selectedConversation?.id;
+        if (!id) return;
+        const res = await api.patch(`/conversation/${id}/ai/resume`);
+        applyConversationAi(id, { agentPausedUntil: res.data?.agentPausedUntil ?? null });
+    }, [selectedConversation?.id, applyConversationAi]);
+
     const selectedConversationRef = useRef(selectedConversation);
     selectedConversationRef.current = selectedConversation;
 
@@ -397,6 +404,9 @@ export const ConversationProvider = ({ children }) => {
             if (!payload?.message) return;
 
             const msg = payload.message;
+            const agentPausedUntil = Object.prototype.hasOwnProperty.call(payload, "agentPausedUntil")
+                ? payload.agentPausedUntil
+                : undefined;
             const localId = msg.metadata?.localId;
             const isReaction = msg.messageType === "reaction";
 
@@ -446,11 +456,18 @@ export const ConversationProvider = ({ children }) => {
                         : (isReaction ? `Reaction: ${msg.content?.reaction?.emoji}` : `[${msg.messageType.toUpperCase()}]`),
                     unreadCount: shouldIncrementUnread
                         ? (existing.unreadCount || 0) + 1
-                        : (shouldMarkAsRead ? 0 : existing.unreadCount)
+                        : (shouldMarkAsRead ? 0 : existing.unreadCount),
+                    ...(agentPausedUntil !== undefined ? { agentPausedUntil } : {}),
                 };
 
                 return [updated, ...prev.filter(c => c.id !== msg.conversationId)];
             });
+
+            if (agentPausedUntil !== undefined) {
+                setSelectedConversation((prev) =>
+                    prev?.id === msg.conversationId ? { ...prev, agentPausedUntil } : prev
+                );
+            }
 
             // UPDATE 2: UPDATE MESSAGES ONLY IF THIS CONVERSATION IS OPEN
             if (isConversationOpen) {
@@ -847,6 +864,7 @@ export const ConversationProvider = ({ children }) => {
             selectedConversation,
             setSelectedConversation: onSelectConversation,
             updateConversationAi,
+            resumeConversationAi,
             mobileView,
             setMobileView,
             selectedAccount,

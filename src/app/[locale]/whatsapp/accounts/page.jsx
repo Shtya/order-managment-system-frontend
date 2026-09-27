@@ -1804,6 +1804,7 @@ export default function WhatsAppAccountsPage() {
   const tCommon = useTranslations("common");
   const tTutorial = useTranslations("tutorial.whatsapp.accounts");
   const t = useTranslations("whatsApp.accounts");
+  const { isTestUser } = useAuth();
   useEffect(() => {
     setDocumentTitle(t("breadcrumb.accounts"));
   }, [t]);
@@ -2065,6 +2066,7 @@ export default function WhatsAppAccountsPage() {
                   }),
                 variant: "primary",
                 permission: "whatsapp.manage",
+                hidden: !isTestUser,
               },
               // {
               //   icon: <Trash2 size={16} />,
@@ -2077,7 +2079,7 @@ export default function WhatsAppAccountsPage() {
         ),
       },
     ],
-    [t, openToggleConfirm]
+    [t, openToggleConfirm, isTestUser]
   );
 
   const authRef = useRef(null);

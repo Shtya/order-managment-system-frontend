@@ -40,9 +40,11 @@ import { useDebounce } from "@/hook/useDebounce";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
+import AgentPausePill from "./AgentPausePill";
 
 // Skeleton message component with config
 function MessageSkeleton() {
+    const { isTestUser } = useAuth();
     // Array config for skeleton messages
     const skeletonConfig = [
         { type: "outbound", lines: ["w-32", "w-48", "w-24"] },
@@ -62,7 +64,7 @@ function MessageSkeleton() {
                     key={index}
                     className={cn("flex items-start gap-2", config.type === "outbound" ? "justify-start" : "justify-end")}
                 >
-                    {config.type === "outbound" && (
+                    {isTestUser && config.type === "outbound" && (
                         <div className="w-7 h-7 mt-0.5 shrink-0 rounded-full bg-[#eef3f5] dark:bg-[#6B7C85] animate-pulse" />
                     )}
                     <div className={cn(
@@ -94,7 +96,7 @@ function MessageSkeleton() {
 
 export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const t = useTranslations("chats");
-    const { hasPermission } = useAuth();
+    const { hasPermission, isTestUser } = useAuth();
 
     const {
         selectedAccount,
@@ -124,7 +126,8 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         currentUnreadCount,
         checkIsNearBottom,
         bottomSentinelRef,
-        updateConversationAi
+        updateConversationAi,
+        resumeConversationAi
     } = useConversation();
 
     const [showInteractiveModal, setShowInteractiveModal] = useState(false);
@@ -444,16 +447,30 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                     </div>
                     <div className="min-w-0 flex items-center gap-2">
                         <h2 className="font-bold text-foreground leading-tight truncate">{customer?.name || customer?.phoneNumber}</h2>
-                        {/* <span
-                            title={conversationAiEnabled ? t("ai.enabledTitle") : t("ai.disabledTitle")}
-                            aria-label={conversationAiEnabled ? t("ai.enabledTitle") : t("ai.disabledTitle")}
-                            className={cn(
-                                "shrink-0",
-                                conversationAiEnabled ? "text-primary" : "text-muted-foreground/35"
-                            )}
-                        >
-                            <Bot className="w-4 h-4" />
-                        </span> */}
+                        {!conversationAiEnabled && (
+                            <span
+                                title={t("ai.disabledTitle")}
+                                aria-label={t("ai.disabledTitle")}
+                                className="shrink-0 text-muted-foreground/35"
+                            >
+                                <Bot className="w-4 h-4" />
+                            </span>
+                        )}
+                        {conversationAiEnabled && (
+                            <AgentPausePill
+                                key={selectedConversation.id}
+                                pausedUntil={selectedConversation?.agentPausedUntil}
+                                canResume={hasPermission("conversation.update")}
+                                onResume={async () => {
+                                    try {
+                                        await resumeConversationAi();
+                                    } catch {
+                                        toast.error(t("chatFailed"));
+                                        throw new Error("resume failed");
+                                    }
+                                }}
+                            />
+                        )}
                     </div>
                 </div>
 
@@ -492,7 +509,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                         {t("editContact")}
                                     </DropdownMenuItem>
                                 )}
-                                {hasPermission("conversation.update") && (
+                                {isTestUser && hasPermission("conversation.update") && (
                                     <DropdownMenuItem
                                         onClick={() => {
                                             setAiModeDraft(selectedConversation?.aiMode === "disabled" ? "disabled" : "inherit");

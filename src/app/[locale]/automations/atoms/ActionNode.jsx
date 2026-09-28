@@ -116,6 +116,16 @@ export function ActionNode({ id, data, selected }) {
                                         {data.config?.shippingCompany || t('nodes.autoAssign')}
                                     </span>
                                 </div>
+                                <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                    <span className="opacity-50 text-[9px]">{t('nodes.whatsappAgent')}</span>
+                                    <span className="font-mono font-bold text-violet-600 dark:text-violet-400 truncate">
+                                        {data.config?.agentId
+                                            ? (data.config?.agentName || t('nodes.whatsappAgent'))
+                                            : data.config?.useWhatsappAccountAgent
+                                                ? t('nodes.agentDefault')
+                                                : t('nodes.agentNone')}
+                                    </span>
+                                </div>
                             </div>
                         )}
                         {data.type === 'assign_shipping_provider' && (

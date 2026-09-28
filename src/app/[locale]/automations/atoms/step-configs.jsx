@@ -21,6 +21,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import UserSelect from "@/components/atoms/UserSelect";
+import AgentSelect, { AGENT_SELECT_DEFAULT, AGENT_SELECT_NONE } from "@/components/molecules/AgentSelect";
 import { MediaForm, MediaPreviewForm } from "../../whatsapp/atoms/chats/MediaPreviewOverlay";
 import MediaUpload from "../../whatsapp/atoms/MediaUpload";
 import { LocationForm } from "../../whatsapp/atoms/chats/LocationModal";
@@ -72,8 +73,7 @@ function normalizeAxiosError(err) {
 function FormGroup({ label, description, children, error }) {
     return (
         <div className="space-y-2">
-            <Label classN={"text-foreground"}>{label}</Label>
-            {description && <p className="text-[11px] text-slate-400 mb-2">{description}</p>}
+            <Label description={description} classN={"text-foreground"}>{label}</Label>
             {children}
             {error && <p className="text-[10px] text-rose-500 font-bold mt-1">{error}</p>}
         </div>
@@ -180,8 +180,7 @@ export function OrderCreatedConfig({ value, onChange, errors, setDisabled, onClo
     return (
         <div className="space-y-4">
             <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t('store')}</Label>
-                <p className="text-xs text-muted-foreground">{t('storeDesc')}</p>
+                <Label description={t('storeDesc')} className="text-sm font-semibold">{t('store')}</Label>
                 <Select value={value.storeId || (value.store === "all" ? "all" : "")} onValueChange={handleStoreChange}>
                     <SelectTrigger className="h-[50px] rounded-xl">
                         {loading && !isSuperAdmin ? (
@@ -617,6 +616,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
     const locale = useLocale();
     const [providers, setProviders] = useState([]);
     const [shippingCompanies, setShippingCompanies] = useState([]);
+    const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [tempValue, setTempValue] = useState({
         providerId: value?.providerId || "",
@@ -626,6 +626,11 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
         shippingCompany: value?.shippingCompany || "",
         provider: value?.provider || "",
         updateWrittenAddress: value?.updateWrittenAddress !== false,
+        agentId: value?.agentId || "",
+        agentName: value?.agentName || "",
+        useWhatsappAccountAgent: value?.agentId
+            ? false
+            : value?.useWhatsappAccountAgent === true || (mode === "create" && value?.useWhatsappAccountAgent !== false),
         branches: value?.branches || [
             { id: "address_corrected", label: tNodes("branches.addressCorrected"), condition: "address_corrected" },
             { id: "address_not_corrected", label: tNodes("branches.addressNotCorrected"), condition: "address_not_corrected" },
@@ -636,9 +641,10 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
         const fetchAiOptions = async () => {
             try {
                 setLoading(true);
-                const [providersRes, shippingRes] = await Promise.all([
+                const [providersRes, shippingRes, agentsRes] = await Promise.all([
                     api.get("/ai/providers", { params: { scope: "all", isActive: "true" } }),
                     api.get("/shipping/integrations/active"),
+                    api.get("/agents", { params: { limit: 100, isActive: "true" } }),
                 ]);
 
                 const providerRecords = Array.isArray(providersRes.data)
@@ -648,6 +654,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
 
                 const shippingIntegrations = Array.isArray(shippingRes.data?.integrations) ? shippingRes.data.integrations : Array.isArray(shippingRes.data) ? shippingRes.data : [];
                 setShippingCompanies(shippingIntegrations);
+                setAgents(agentsRes.data?.records || []);
             } catch (e) {
                 toast.error(normalizeAxiosError(e));
             } finally {
@@ -700,6 +707,34 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
         }));
     };
 
+    const handleAgentChange = (agentId) => {
+        if (agentId === AGENT_SELECT_DEFAULT) {
+            setTempValue((prev) => ({
+                ...prev,
+                agentId: "",
+                agentName: "",
+                useWhatsappAccountAgent: true,
+            }));
+            return;
+        }
+        if (agentId === AGENT_SELECT_NONE) {
+            setTempValue((prev) => ({
+                ...prev,
+                agentId: "",
+                agentName: "",
+                useWhatsappAccountAgent: false,
+            }));
+            return;
+        }
+        const agent = agents.find((item) => String(item.id) === String(agentId));
+        setTempValue((prev) => ({
+            ...prev,
+            agentId,
+            agentName: agent?.name || "",
+            useWhatsappAccountAgent: false,
+        }));
+    };
+
     const handleSave = () => {
         const nextValue = {
             ...tempValue,
@@ -736,8 +771,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label classN={"text-foreground!"}>{tConfig("aiProvider")}</Label>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{tConfig("aiProviderOptionalDesc")}</p>
+                        <Label description={tConfig("aiProviderOptionalDesc")} classN={"text-foreground!"}>{tConfig("aiProvider")}</Label>
                         <Select value={tempValue.providerId || AI_PROVIDER_AUTO} onValueChange={handleProviderChange}>
                             <SelectTrigger className="">
                                 {loading ? (
@@ -760,8 +794,23 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label classN={"text-foreground"}>{tConfig("aiAddressShippingCompanyLabel")}</Label>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{tConfig("aiAddressShippingCompanyDesc")}</p>
+                        <Label description={tConfig("aiAddressCorrectionAgentDesc")} classN={"text-foreground"}>{tConfig("aiAddressCorrectionAgent")}</Label>
+                        <AgentSelect
+                            value={
+                                tempValue.agentId
+                                    ? tempValue.agentId
+                                    : tempValue.useWhatsappAccountAgent
+                                        ? AGENT_SELECT_DEFAULT
+                                        : AGENT_SELECT_NONE
+                            }
+                            onValueChange={handleAgentChange}
+                            defaultOptionLabel={() => tConfig("aiAddressCorrectionAgentDefault")}
+                            noneOptionLabel={tConfig("aiAddressCorrectionAgentNone")}
+                        />
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <Label description={tConfig("aiAddressShippingCompanyOptionalDesc")} classN={"text-foreground"}>{tConfig("aiAddressShippingCompanyLabel")}</Label>
                         <Select value={tempValue.shippingCompanyId || SHIPPING_COMPANY_AUTO} onValueChange={handleShippingCompanyChange}>
                             <SelectTrigger className="">
                                 {loading ? (
@@ -797,10 +846,9 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
 
                     <div className="flex items-start justify-between gap-4 border-t border-border pt-4">
                         <div className="min-w-0">
-                            <Label classN={"text-foreground"} htmlFor="updateWrittenAddress" >
+                            <Label description={tConfig("updateWrittenAddressOptionalDesc")} classN={"text-foreground"} htmlFor="updateWrittenAddress" >
                                 {tConfig("updateWrittenAddress")}
                             </Label>
-                            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{tConfig("updateWrittenAddressDesc")}</p>
                         </div>
                         <Switch
                             id="updateWrittenAddress"
@@ -1214,7 +1262,7 @@ export function NoResponseConfig({ value, onChange }) {
             </div>
 
 
-            <FormGroup  description={tConfig('noResponseMinutesDesc')} error={error}>
+            <FormGroup error={error}>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {NO_RESPONSE_PRESETS.map((preset) => (
                         <button

@@ -133,17 +133,20 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
             }
 
             case 'ai_address_correction': {
-                if (!config.shippingCompanyId) break;
+                const needProvider = !!(config.providerId || config.providerCode);
+                const needShipping = !!config.shippingCompanyId;
+                const needAgent = !!config.agentId;
 
+                if (needProvider || needShipping) {
                 try {
                     const [aiRes, shippingRes] = await Promise.all([
-                        config.providerId || config.providerCode
+                        needProvider
                             ? api.get("/ai/providers", { params: { scope: "all", isActive:"true" } })
                             : Promise.resolve({ data: { records: [] } }),
                         api.get("/shipping/integrations/active"),
                     ]);
 
-                    if (config.providerId || config.providerCode) {
+                    if (needProvider) {
                     const providers = Array.isArray(aiRes.data) ? aiRes.data : aiRes.data?.records || [];
                     const freshProvider = config.providerCode
                         ? providers.find(p => String(p.code) === String(config.providerCode))
@@ -163,16 +166,14 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                     }
                     }
 
-                    if (config.shippingCompanyId) {
+                    if (needShipping) {
                         const shippingIntegrations = Array.isArray(shippingRes.data?.integrations) ? shippingRes.data.integrations : Array.isArray(shippingRes.data) ? shippingRes.data : [];
                         const freshCompany = shippingIntegrations.find(c => String(c.providerId) === String(config.shippingCompanyId));
 
                         if (!freshCompany) {
                             result.isValid = false;
                             result.error = t("whatsApp.automations.builder.config.hydration.shippingCompanyNotFound", { company: config.shippingCompany || config.shippingCompanyId });
-                            break;
-                        }
-
+                        } else {
                         if (freshCompany.name !== config.shippingCompany) {
                             result.changes.push(t("whatsApp.automations.builder.config.hydration.shippingCompanyUpdated", { fieldName: t("whatsApp.automations.builder.config.hydration.fieldNames.shippingCompany"), oldName: config.shippingCompany, newName: freshCompany.name }));
                             result.newConfig.shippingCompany = freshCompany.name;
@@ -180,12 +181,32 @@ export async function hydrateNodeConfig(type, config, isSuperAdmin, t) {
                         if (freshCompany.provider !== config.provider) {
                             result.newConfig.provider = freshCompany.provider;
                         }
+                        }
                     }
                 } catch (e) {
                     result.isValid = false;
                     result.error = (config.providerId || config.providerCode)
                         ? t("whatsApp.automations.builder.config.hydration.aiProviderNotFound", { provider: config.providerName || config.providerId })
                         : t("whatsApp.automations.builder.config.hydration.shippingCompanyNotFound", { company: config.shippingCompany || config.shippingCompanyId });
+                }
+                }
+
+                if (needAgent && result.isValid !== false) {
+                    try {
+                        const agentsRes = await api.get("/agents", { params: { limit: 100, isActive: "true" } });
+                        const agents = agentsRes.data?.records || [];
+                        const freshAgent = agents.find((agent) => String(agent.id) === String(config.agentId));
+                        if (!freshAgent) {
+                            result.isValid = false;
+                            result.error = t("whatsApp.automations.builder.config.hydration.agentNotFound", { agent: config.agentName || config.agentId });
+                        } else if (freshAgent.name !== config.agentName) {
+                            result.changes.push(t("whatsApp.automations.builder.config.hydration.agentUpdated", { oldName: config.agentName, newName: freshAgent.name }));
+                            result.newConfig.agentName = freshAgent.name;
+                        }
+                    } catch (e) {
+                        result.isValid = false;
+                        result.error = t("whatsApp.automations.builder.config.hydration.agentNotFound", { agent: config.agentName || config.agentId });
+                    }
                 }
                 break;
             }

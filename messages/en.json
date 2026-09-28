@@ -13513,6 +13513,9 @@
           "aiModel": "AI Model",
           "aiProviderAutomatic": "Automatic",
           "shippingCompany": "Shipping Company",
+          "whatsappAgent": "AI agent",
+          "agentNone": "None",
+          "agentDefault": "Default",
           "orderShippingCompany": "Order company",
           "shippingMode": "Shipping mode",
           "autoDistribute": "Auto distribute",
@@ -13670,6 +13673,10 @@
           "selectAiModel": "Select AI model...",
           "aiAddressShippingCompanyLabel": "Restrict the choice to a specific shipping company (optional)",
           "aiAddressShippingCompanyDesc": "Leave Automatic so AI can choose among all available shipping companies, or restrict it to one company if you want.",
+          "aiAddressCorrectionAgent": "AI agent",
+          "aiAddressCorrectionAgentDesc": "Default uses the agent on the WhatsApp Business number. None means do not message the customer. You can also pick a specific agent.",
+          "aiAddressCorrectionAgentNone": "None",
+          "aiAddressCorrectionAgentDefault": "Default",
           "shippingCompanyAutomatic": "Automatic",
           "editAssigningRules": "Edit assigning rules",
           "selectShippingCompany": "Select shipping company...",
@@ -13853,6 +13860,8 @@
             "employeeNameUpdated": "Employee name updated from \"{oldName}\" to \"{newName}\"",
             "employeeEmailUpdated": "Employee email updated from \"{oldEmail}\" to \"{newEmail}\"",
             "employeeNotFound": "The selected employee ({employee}) no longer exists or is inactive.",
+            "agentUpdated": "AI agent name updated from \"{oldName}\" to \"{newName}\"",
+            "agentNotFound": "The selected AI agent ({agent}) no longer exists or is inactive.",
             "templateNameUpdated": "Template name updated from \"{oldName}\" to \"{newName}\"",
             "templateButtonsChanged": "The number of buttons in template ({template}) has changed. Please reconfigure the branching paths.",
             "templateButtonTypeChanged": "Button type of \"{label}\" changed to {type}",
@@ -17864,6 +17873,10 @@
   },
   "agents": {
     "title": "Agents",
+    "tabs": {
+      "agents": "Agents",
+      "knowledge": "Knowledge"
+    },
     "breadcrumb": {
       "home": "Home",
       "ai": "AI",
@@ -17877,6 +17890,7 @@
       "name": "Name",
       "language": "Language",
       "provider": "AI provider",
+      "knowledge": "Knowledge",
       "status": "Status",
       "createdAt": "Created at",
       "actions": "Actions"
@@ -17927,9 +17941,9 @@
       "providerDescription": "Which AI service generates the agent's replies. Automatic uses the store default.",
       "gender": "Gender",
       "genderDescription": "How the agent refers to itself (especially in Arabic). Customers are always addressed neutrally.",
-      "customInstructions": "Custom instructions",
-      "customInstructionsDescription": "Extra store rules the agent follows, such as hours, shipping, discounts, or tone. Must not conflict with security rules.",
-      "customInstructionsPlaceholder": "e.g. Our working hours are 10am–10pm. Always mention free shipping over 1000 EGP.",
+      "customInstructions": "Agent instructions",
+      "customInstructionsDescription": "Define extra rules for how the agent behaves and replies, such as tone of voice, how to handle customers, and what to do or avoid.",
+      "customInstructionsPlaceholder": "e.g. If the customer asks to change the order address after shipping, tell them that changing the address is not available.",
       "isActive": "Active",
       "isActiveDescription": "Inactive agents are not used for conversations.",
       "cancel": "Cancel",
@@ -17937,7 +17951,31 @@
     },
     "validation": {
       "nameRequired": "Name is required",
-      "languageRequired": "Language is required"
+      "nameTooLong": "Name cannot exceed 255 characters",
+      "languageRequired": "Language is required",
+      "genderRequired": "Gender is required",
+      "instructionsTooLong": "Instructions cannot exceed 4000 characters"
+    },
+    "wizard": {
+      "title": "Add agent",
+      "editTitle": "Edit agent",
+      "steps": {
+        "general": "General information",
+        "knowledge": "Knowledge",
+        "capabilities": "Capabilities",
+        "review": "Review"
+      },
+      "back": "Back",
+      "next": "Next",
+      "save": "Save",
+      "fixStepErrors": "Please fix the errors on this step.",
+      "saved": "Agent saved",
+      "saveFailed": "Could not save the agent",
+      "loadFailed": "Could not load the agent",
+      "capabilitiesTitle": "Capabilities are coming soon",
+      "capabilitiesDescription": "This step will control what the agent is allowed to do and what it must never do.",
+      "reviewEmptyKnowledge": "No knowledge linked.",
+      "editSection": "Edit"
     },
     "toast": {
       "fetchFailed": "Could not load agents",
@@ -17961,6 +17999,92 @@
       "disableDescription": "Deactivate {name}?",
       "confirm": "Confirm",
       "cancel": "Cancel"
+    },
+    "knowledge": {
+      "stats": {
+        "total": "Total knowledge",
+        "active": "Active knowledge"
+      },
+      "columns": {
+        "title": "Title",
+        "content": "Content"
+      },
+      "filters": {
+        "status": "Status"
+      },
+      "table": {
+        "searchPlaceholder": "Search knowledge",
+        "emptyTitle": "No knowledge yet",
+        "emptySubtitle": "Create knowledge to give agents reusable answers."
+      },
+      "toolbar": {
+        "export": "Export"
+      },
+      "actions": {
+        "new": "Add knowledge"
+      },
+      "form": {
+        "createTitle": "Add knowledge",
+        "editTitle": "Edit knowledge",
+        "title": "Title",
+        "titleDescription": "A short name so you can find this entry later.",
+        "content": "Content",
+        "contentDescription": "The exact text agents will use when answering.",
+        "contentPlaceholder": "e.g. Our return policy is valid for 14 days with the receipt.",
+        "isActive": "Active",
+        "isActiveDescription": "Inactive knowledge is not used by agents.",
+        "assign": "Assign to agents",
+        "assignDescription": "Automatically link this knowledge to the agents on create. ",
+        "assignNone": "Do not assign",
+        "assignAll": "All agents",
+        "assignSelected": "Selected agents",
+        "assignEmpty": "No agents found.",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "validation": {
+        "titleRequired": "Title is required",
+        "contentRequired": "Content is required"
+      },
+      "toast": {
+        "fetchFailed": "Could not load knowledge",
+        "created": "Knowledge created",
+        "updated": "Knowledge updated",
+        "statusUpdated": "Knowledge status updated",
+        "deleted": "Knowledge deleted",
+        "deleteFailed": "Could not delete the knowledge",
+        "saveFailed": "Could not save the knowledge"
+      },
+      "delete": {
+        "title": "Delete knowledge",
+        "desc": "Delete {title}? This cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "toggle": {
+        "enableTitle": "Activate knowledge",
+        "disableTitle": "Deactivate knowledge",
+        "enableDescription": "Activate {title}?",
+        "disableDescription": "Deactivate {title}?",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+      },
+      "assign": {
+        "action": "Manage knowledge",
+        "title": "Select knowledge",
+        "desc": "Choose the knowledge this agent can access. Search instead of browsing all items.",
+        "searchPlaceholder": "Search knowledge...",
+        "filterAll": "All",
+        "filterSelected": "Selected",
+        "selected": "{count} selected",
+        "selectAll": "Select all",
+        "unselectAll": "Unselect all",
+        "reusable": "Knowledge is reusable across agents.",
+        "cancel": "Cancel",
+        "save": "Save",
+        "empty": "No knowledge found.",
+        "saved": "Agent knowledge updated"
+      }
     }
   },
   "selected": "Selected",

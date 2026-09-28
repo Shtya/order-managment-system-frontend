@@ -13537,6 +13537,9 @@
           "aiModel": "نموذج الذكاء الاصطناعي",
           "aiProviderAutomatic": "تلقائي",
           "shippingCompany": "شركة الشحن",
+          "whatsappAgent": "وكيل الذكاء الاصطناعي",
+          "agentNone": "بدون",
+          "agentDefault": "افتراضي",
           "orderShippingCompany": "شركة الطلب",
           "shippingMode": "طريقة الشحن",
           "autoDistribute": "توزيع تلقائي",
@@ -13694,6 +13697,10 @@
           "selectAiModel": "اختر نموذج الذكاء الاصطناعي...",
           "aiAddressShippingCompanyLabel": "تقييد الاختيار بشركة شحن معينة (اختياري)",
           "aiAddressShippingCompanyDesc": "اتركه على «تلقائي» ليختار الذكاء الاصطناعي من بين جميع شركات الشحن المتاحة، أو قيّده بشركة واحدة إذا أردت.",
+          "aiAddressCorrectionAgent": "وكيل الذكاء الاصطناعي",
+          "aiAddressCorrectionAgentDesc": "الخيار الافتراضي يستخدم وكيل رقم واتساب للأعمال. خيار «بدون» يعني عدم مراسلة العميل. يمكنك أيضاً اختيار وكيل محدد.",
+          "aiAddressCorrectionAgentNone": "بدون",
+          "aiAddressCorrectionAgentDefault": "افتراضي",
           "shippingCompanyAutomatic": "تلقائي",
           "editAssigningRules": "تعديل قواعد الإسناد",
           "selectShippingCompany": "اختر شركة الشحن...",
@@ -13877,6 +13884,8 @@
             "employeeNameUpdated": "تم تحديث اسم الموظف من \"{oldName}\" إلى \"{newName}\"",
             "employeeEmailUpdated": "تم تحديث بريد الموظف من \"{oldEmail}\" إلى \"{newEmail}\"",
             "employeeNotFound": "الموظف المحدد ({employee}) لم يعد موجوداً أو غير نشط.",
+            "agentUpdated": "تم تحديث اسم وكيل الواتساب من \"{oldName}\" إلى \"{newName}\"",
+            "agentNotFound": "وكيل الواتساب المحدد ({agent}) لم يعد موجوداً أو غير نشط.",
             "templateNameUpdated": "تم تحديث اسم القالب من \"{oldName}\" إلى \"{newName}\"",
             "templateButtonsChanged": "تغير عدد الأزرار في القالب ({template}). يرجى إعادة ضبط الأتمتة المتفرعة.",
             "templateButtonTypeChanged": "تم تغيير نوع الزر \"{label}\" إلى {type}",
@@ -17890,6 +17899,10 @@
   },
   "agents": {
     "title": "الوكلاء",
+    "tabs": {
+      "agents": "الوكلاء",
+      "knowledge": "المعرفة"
+    },
     "breadcrumb": {
       "home": "الرئيسية",
       "ai": "الذكاء الاصطناعي",
@@ -17903,6 +17916,7 @@
       "name": "الاسم",
       "language": "اللغة",
       "provider": "مزود الذكاء الاصطناعي",
+      "knowledge": "المعرفة",
       "status": "الحالة",
       "createdAt": "تاريخ الإنشاء",
       "actions": "الإجراءات"
@@ -17953,9 +17967,9 @@
       "providerDescription": "خدمة الذكاء الاصطناعي التي تولّد ردود الوكيل. الوضع التلقائي يستخدم الإعداد الافتراضي للمتجر.",
       "gender": "النوع",
       "genderDescription": "يحدد كيفية إشارة الوكيل إلى نفسه (خاصةً بالعربية). يُخاطَب العميل دائمًا بصيغة محايدة.",
-      "customInstructions": "تعليمات مخصصة",
-      "customInstructionsDescription": "قواعد إضافية للمتجر مثل مواعيد العمل والشحن والخصومات وأسلوب الكلام. يجب ألا تتعارض مع قواعد الأمان.",
-      "customInstructionsPlaceholder": "مثال: مواعيد العمل من ١٠ الصبح لـ ١٠ بالليل. اذكر إن الشحن مجاني فوق ١٠٠٠ جنيه.",
+      "customInstructions": "تعليمات الوكيل",
+      "customInstructionsDescription": "حدد قواعد إضافية لطريقة تصرف الوكيل وردوده، مثل أسلوب الكلام، طريقة التعامل مع العملاء، وما يجب فعله أو تجنبه.",
+      "customInstructionsPlaceholder": "مثال: إذا طلب العميل تغيير عنوان الطلب بعد الشحن، أخبره أن تعديل العنوان غير متاح.",
       "isActive": "نشط",
       "isActiveDescription": "لا يُستخدم الوكيل غير النشط في المحادثات.",
       "cancel": "إلغاء",
@@ -17963,7 +17977,31 @@
     },
     "validation": {
       "nameRequired": "الاسم مطلوب",
-      "languageRequired": "اللغة مطلوبة"
+      "nameTooLong": "لا يمكن أن يتجاوز الاسم 255 حرفًا",
+      "languageRequired": "اللغة مطلوبة",
+      "genderRequired": "النوع مطلوب",
+      "instructionsTooLong": "لا يمكن أن تتجاوز التعليمات 4000 حرف"
+    },
+    "wizard": {
+      "title": "إضافة وكيل",
+      "editTitle": "تعديل الوكيل",
+      "steps": {
+        "general": "معلومات عامة",
+        "knowledge": "المعرفة",
+        "capabilities": "القدرات",
+        "review": "المراجعة"
+      },
+      "back": "رجوع",
+      "next": "التالي",
+      "save": "حفظ",
+      "fixStepErrors": "يرجى تصحيح الأخطاء في هذه الخطوة.",
+      "saved": "تم حفظ الوكيل",
+      "saveFailed": "تعذر حفظ الوكيل",
+      "loadFailed": "تعذر تحميل الوكيل",
+      "capabilitiesTitle": "القدرات ستتوفر قريبًا",
+      "capabilitiesDescription": "ستتحكم هذه الخطوة فيما يُسمح للوكيل بفعله وما يُمنع عليه.",
+      "reviewEmptyKnowledge": "لا توجد معرفة مرتبطة.",
+      "editSection": "تعديل"
     },
     "toast": {
       "fetchFailed": "تعذر تحميل الوكلاء",
@@ -17987,6 +18025,92 @@
       "disableDescription": "إيقاف {name}؟",
       "confirm": "تأكيد",
       "cancel": "إلغاء"
+    },
+    "knowledge": {
+      "stats": {
+        "total": "إجمالي المعرفة",
+        "active": "المعرفة النشطة"
+      },
+      "columns": {
+        "title": "العنوان",
+        "content": "المحتوى"
+      },
+      "filters": {
+        "status": "الحالة"
+      },
+      "table": {
+        "searchPlaceholder": "بحث في المعرفة",
+        "emptyTitle": "لا توجد معرفة بعد",
+        "emptySubtitle": "أنشئ معرفة لمنح الوكلاء إجابات جاهزة."
+      },
+      "toolbar": {
+        "export": "تصدير"
+      },
+      "actions": {
+        "new": "إضافة معرفة"
+      },
+      "form": {
+        "createTitle": "إضافة معرفة",
+        "editTitle": "تعديل المعرفة",
+        "title": "العنوان",
+        "titleDescription": "اسم مختصر لتجد هذا العنصر لاحقًا.",
+        "content": "المحتوى",
+        "contentDescription": "النص الذي سيستخدمه الوكلاء عند الإجابة.",
+        "contentPlaceholder": "مثال: سياسة الاسترجاع سارية لمدة ١٤ يومًا مع الإيصال.",
+        "isActive": "نشط",
+        "isActiveDescription": "المعرفة غير النشطة لا تُستخدم من الوكلاء.",
+        "assign": "إسناد إلى الوكلاء",
+        "assignDescription": "اربط هذه المعرفة تلقائيًا بالوكلاء عند الإنشاء.",
+        "assignNone": "بدون",
+        "assignAll": "كل الوكلاء",
+        "assignSelected": "وكلاء محددون",
+        "assignEmpty": "لا يوجد وكلاء.",
+        "cancel": "إلغاء",
+        "save": "حفظ"
+      },
+      "validation": {
+        "titleRequired": "العنوان مطلوب",
+        "contentRequired": "المحتوى مطلوب"
+      },
+      "toast": {
+        "fetchFailed": "تعذر تحميل المعرفة",
+        "created": "تم إنشاء المعرفة",
+        "updated": "تم تحديث المعرفة",
+        "statusUpdated": "تم تحديث حالة المعرفة",
+        "deleted": "تم حذف المعرفة",
+        "deleteFailed": "تعذر حذف المعرفة",
+        "saveFailed": "تعذر حفظ المعرفة"
+      },
+      "delete": {
+        "title": "حذف المعرفة",
+        "desc": "حذف {title}؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "حذف",
+        "cancel": "إلغاء"
+      },
+      "toggle": {
+        "enableTitle": "تفعيل المعرفة",
+        "disableTitle": "إيقاف المعرفة",
+        "enableDescription": "تفعيل {title}؟",
+        "disableDescription": "إيقاف {title}؟",
+        "confirm": "تأكيد",
+        "cancel": "إلغاء"
+      },
+      "assign": {
+        "action": "إدارة المعرفة",
+        "title": "اختيار المعرفة",
+        "desc": "اختر المعرفة التي يمكن لهذا الوكيل الوصول إليها. ابحث بدلًا من تصفح كل العناصر.",
+        "searchPlaceholder": "ابحث في المعرفة...",
+        "filterAll": "الكل",
+        "filterSelected": "المحدد",
+        "selected": "{count} محدد",
+        "selectAll": "تحديد الكل",
+        "unselectAll": "إلغاء تحديد الكل",
+        "reusable": "المعرفة قابلة لإعادة الاستخدام عبر الوكلاء.",
+        "cancel": "إلغاء",
+        "save": "حفظ",
+        "empty": "لا توجد معرفة.",
+        "saved": "تم تحديث معرفة الوكيل"
+      }
     }
   },
   "selected": "محدد",

@@ -15,6 +15,7 @@ import api from "@/utils/api";
 import { cn } from "@/utils/cn";
 
 export const AGENT_SELECT_DEFAULT = "default";
+export const AGENT_SELECT_NONE = "none";
 
 export default function AgentSelect({
     value,
@@ -22,6 +23,7 @@ export default function AgentSelect({
     placeholder,
     triggerClassName,
     defaultOptionLabel,
+    noneOptionLabel,
 }) {
     const t = useTranslations("agentSelect");
     const [agents, setAgents] = useState([]);
@@ -75,6 +77,11 @@ export default function AgentSelect({
 
                 {defaultOptionLabel ? (
                     <SelectItem value={AGENT_SELECT_DEFAULT}>{defaultOptionLabel(agents)}</SelectItem>
+                ) : null}
+                {noneOptionLabel ? (
+                    <SelectItem value={AGENT_SELECT_NONE}>
+                        {typeof noneOptionLabel === "function" ? noneOptionLabel(agents) : noneOptionLabel}
+                    </SelectItem>
                 ) : null}
                 {agents.map((agent) => (
                     <SelectItem key={agent.id} value={agent.id}>

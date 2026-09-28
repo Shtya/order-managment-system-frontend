@@ -1,12 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import {
+  BookOpen,
   Bot,
   Edit,
   FileDown,
@@ -37,139 +43,139 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import { useExport } from "@/hook/useExport";
 import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
+import { useRouter } from "@/i18n/navigation";
 
 const DEFAULT_FILTERS = { status: "all", language: "all" };
-const PROVIDER_AUTO = "auto";
+const DEFAULT_KNOWLEDGE_FILTERS = { status: "all" };
 const LANGUAGES = ["auto", "arabic", "english"];
-const GENDERS = ["male", "female"];
-
-const getConnectedAiProviders = (providers) => {
-  return providers.filter((provider) => {
-    const integration = provider.integration;
-    return !!(
-      provider.isActive !== false &&
-      integration &&
-      (integration.credentials?.apiKey || integration.credentials)
-    );
-  });
-};
 
 const STAT_CARDS = [
   { key: "total", icon: Bot, sortOrder: 0 },
   { key: "active", icon: UserCheck, sortOrder: 1 },
 ];
 
-const agentSchema = (t) =>
-  yup.object({
-    name: yup.string().trim().required(t("validation.nameRequired")).max(255),
-    language: yup
-      .string()
-      .oneOf(LANGUAGES)
-      .required(t("validation.languageRequired")),
-    gender: yup.string().oneOf(GENDERS).required(),
-    customInstructions: yup.string().max(4000).nullable(),
-    responseProviderId: yup.string().required(),
-    isActive: yup.boolean().default(true),
-  });
+const KNOWLEDGE_STAT_CARDS = [
+  { key: "total", icon: BookOpen, sortOrder: 0 },
+  { key: "active", icon: UserCheck, sortOrder: 1 },
+];
 
-function AgentFormDialog({ open, onOpenChange, agent, onSuccess }) {
+import KnowledgeFormDialog from "./atoms/KnowledgeFormDialog";
+
+const ASSIGN_LIST_LIMIT = 100;
+
+function KnowledgeAssignDialog({ open, onOpenChange, agent, onSuccess }) {
   const t = useTranslations("agents");
-  const schema = useMemo(() => agentSchema(t), [t]);
-  const [providers, setProviders] = useState([]);
-  const [providersLoading, setProvidersLoading] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      name: "",
-      language: "auto",
-      gender: "male",
-      customInstructions: "",
-      responseProviderId: PROVIDER_AUTO,
-      isActive: true,
-    },
-  });
+  const [items, setItems] = useState([]);
+  const [selected, setSelected] = useState([]);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const searchTimer = useRef(null);
 
   useEffect(() => {
-    if (!open) return;
-    reset({
-      name: agent?.name || "",
-      language: agent?.language || "auto",
-      gender: agent?.gender || "male",
-      customInstructions: agent?.customInstructions || "",
-      responseProviderId: agent?.responseProviderId || PROVIDER_AUTO,
-      isActive: agent?.isActive ?? true,
-    });
-  }, [open, agent, reset]);
+    if (!open || !agent?.id) return;
+    setSearch("");
+    setDebouncedSearch("");
+    setFilter("all");
+    setSelected([]);
+    setItems([]);
+    let cancelled = false;
+    const loadAgent = async () => {
+      try {
+        const res = await api.get(`/agents/${agent.id}`);
+        if (!cancelled) setSelected(res.data?.knowledgeIds || []);
+      } catch (error) {
+        if (!cancelled) {
+          toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
+        }
+      }
+    };
+    loadAgent();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, agent?.id, t]);
+
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 350);
+    return () => clearTimeout(searchTimer.current);
+  }, [search]);
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-
-    const fetchProviders = async () => {
+    const fetchList = async () => {
+      setLoading(true);
       try {
-        setProvidersLoading(true);
-        const providersRes = await api.get("/ai/providers", {
-          params: { scope: "all", isActive: "true" },
-        });
-        if (cancelled) return;
-        const providerRecords = Array.isArray(providersRes.data)
-          ? providersRes.data
-          : providersRes.data?.records || [];
-        setProviders(getConnectedAiProviders(providerRecords));
+        const params = { limit: ASSIGN_LIST_LIMIT };
+        if (debouncedSearch?.trim()) params.search = debouncedSearch.trim();
+        const res = await api.get("/agents/knowledge", { params });
+        if (!cancelled) {
+          setItems(Array.isArray(res.data?.records) ? res.data.records : []);
+        }
       } catch (error) {
         if (!cancelled) {
-          setProviders([]);
-          toast.error(normalizeAxiosError(error));
+          toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
         }
       } finally {
-        if (!cancelled) setProvidersLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
-    fetchProviders();
+    fetchList();
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, debouncedSearch, t]);
 
-  const onSubmit = async (values) => {
-    const payload = {
-      name: values.name.trim(),
-      language: values.language,
-      gender: values.gender,
-      customInstructions: values.customInstructions?.trim() || null,
-      responseProviderId:
-        values.responseProviderId === PROVIDER_AUTO
-          ? null
-          : values.responseProviderId,
-      isActive: values.isActive,
-    };
-    try {
-      if (agent?.id) {
-        await api.patch(`/agents/${agent.id}`, payload);
-        toast.success(t("toast.updated"));
-      } else {
-        await api.post("/agents", payload);
-        toast.success(t("toast.created"));
+  const visible = items.filter(
+    (item) => filter === "all" || selected.includes(item.id),
+  );
+
+  const allSelected = items.length > 0 && items.every((item) => selected.includes(item.id));
+
+  const toggle = (id, checked) => {
+    setSelected((prev) => {
+      if (checked) {
+        if (prev.includes(id) || prev.length >= ASSIGN_LIST_LIMIT) return prev;
+        return [...prev, id];
       }
+      return prev.filter((itemId) => itemId !== id);
+    });
+  };
+
+  const selectAll = () => {
+    setSelected(items.map((item) => item.id).slice(0, ASSIGN_LIST_LIMIT));
+  };
+
+  const unselectAll = () => {
+    setSelected([]);
+  };
+
+  const onSave = async () => {
+    if (!agent?.id) return;
+    setSaving(true);
+    try {
+      await api.post(`/agents/${agent.id}/knowledge/reset`, {
+        knowledgeIds: selected,
+      });
+      toast.success(t("knowledge.assign.saved"));
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.saveFailed"));
+      toast.error(normalizeAxiosError(error) || t("knowledge.toast.saveFailed"));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -179,169 +185,130 @@ function AgentFormDialog({ open, onOpenChange, agent, onSuccess }) {
         <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card">
           <DialogTitle className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
-              {agent ? <Edit size={20} /> : <Bot size={20} />}
+              <BookOpen size={20} />
             </div>
-            {agent ? t("form.editTitle") : t("form.createTitle")}
+            {t("knowledge.assign.title")}
           </DialogTitle>
+          <p className="text-sm text-muted-foreground pt-1">
+            {t("knowledge.assign.desc")}
+          </p>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-4 md:p-6 bg-card">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold" description={t("form.nameDescription")}>
-                {t("form.name")}
-              </Label>
-              <Input
-                {...register("name")}
-                placeholder={t("form.name")}
-                className="rounded-xl h-[50px]"
-              />
-              {errors.name ? (
-                <p className="text-xs text-red-600">{errors.name.message}</p>
-              ) : null}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold" description={t("form.languageDescription")}>
-                {t("form.language")}
-              </Label>
-              <Controller
-                control={control}
-                name="language"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="h-[50px] rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGES.map((language) => (
-                        <SelectItem key={language} value={language}>
-                          {t(`languages.${language}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.language ? (
-                <p className="text-xs text-red-600">{errors.language.message}</p>
-              ) : null}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold" description={t("form.genderDescription")}>
-                {t("form.gender")}
-              </Label>
-              <Controller
-                control={control}
-                name="gender"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="h-[50px] rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {GENDERS.map((gender) => (
-                        <SelectItem key={gender} value={gender}>
-                          {t(`genders.${gender}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold" description={t("form.providerDescription")}>
-                {t("form.provider")}
-              </Label>
-              <Controller
-                control={control}
-                name="responseProviderId"
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={providersLoading}
-                  >
-                    <SelectTrigger className="h-[50px] rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={PROVIDER_AUTO}>
-                        {t("provider.auto")}
-                      </SelectItem>
-                      {providers.map((provider) => (
-                        <SelectItem key={provider.id} value={provider.id}>
-                          {provider.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold" description={t("form.customInstructionsDescription")}>
-                {t("form.customInstructions")}
-              </Label>
-              <Textarea
-                {...register("customInstructions")}
-                rows={4}
-                maxLength={4000}
-                placeholder={t("form.customInstructionsPlaceholder")}
-                className="rounded-xl"
-              />
-              {errors.customInstructions ? (
-                <p className="text-xs text-red-600">{errors.customInstructions.message}</p>
-              ) : null}
-            </div>
-
-            <div className="flex items-center gap-3 py-2">
-              <Controller
-                control={control}
-                name="isActive"
-                render={({ field }) => (
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-              <Label className="text-sm font-semibold" description={t("form.isActiveDescription")}>
-                {t("form.isActive")}
-              </Label>
+        <div className="p-4 md:p-6 bg-card space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t("knowledge.assign.searchPlaceholder")}
+              className="rounded-xl h-[46px] flex-1"
+            />
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="h-[46px] rounded-xl sm:w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("knowledge.assign.filterAll")}</SelectItem>
+                <SelectItem value="selected">{t("knowledge.assign.filterSelected")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              {t("knowledge.assign.selected", { count: selected.length })}
+            </p>
+            <div className="flex items-center gap-3 shrink-0">
+              {!allSelected && items.length > 0 && (
+                <button
+                  type="button"
+                  onClick={selectAll}
+                  className="text-xs font-semibold text-primary hover:underline"
+                >
+                  {t("knowledge.assign.selectAll")}
+                </button>
+              )}
+              {allSelected && (
+                <button
+                  type="button"
+                  onClick={unselectAll}
+                  className="text-xs font-semibold text-primary hover:underline"
+                >
+                  {t("knowledge.assign.unselectAll")}
+                </button>
+              )}
             </div>
           </div>
-
-          <div className="flex items-center justify-end gap-3 pt-4 border-t mt-4">
+          <div className="border border-border rounded-sm max-h-[320px] overflow-y-auto divide-y divide-border">
+            {loading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : visible.length ? (
+              visible.map((item) => (
+                <label
+                  key={item.id}
+                  className="flex items-start gap-3 p-3 cursor-pointer hover:bg-muted/50"
+                >
+                  <Checkbox
+                    checked={selected.includes(item.id)}
+                    onCheckedChange={(checked) => toggle(item.id, checked === true)}
+                    className="mt-1"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {item.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {item.content}
+                    </p>
+                  </div>
+                  {!item.isActive && (
+                    <Badge variant="outline" className="shrink-0">
+                      {t("status.inactive")}
+                    </Badge>
+                  )}
+                </label>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-10">
+                {t("knowledge.assign.empty")}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-3 px-4 md:px-6 py-4 border-t border-border bg-card">
+          <span className="text-xs text-muted-foreground">
+            {t("knowledge.assign.reusable")}
+          </span>
+          <div className="flex items-center gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
+              disabled={saving}
             >
-              {t("form.cancel")}
+              {t("knowledge.assign.cancel")}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
+            <Button type="button" onClick={onSave} disabled={saving || loading}>
+              {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                t("form.save")
+                t("knowledge.assign.save")
               )}
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-export default function AgentsPage() {
+const AgentsTab = forwardRef(function AgentsTab(
+  { activeTab, onTabChange, tabItems },
+  ref,
+) {
   const tc = useTranslations("common");
   const t = useTranslations("agents");
   const format = useFormatter();
+  const router = useRouter();
   const { handleExport, exportLoading } = useExport();
 
   const [records, setRecords] = useState([]);
@@ -355,8 +322,6 @@ export default function AgentsPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(12);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingAgent, setEditingAgent] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingAgent, setDeletingAgent] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -364,10 +329,8 @@ export default function AgentsPage() {
   const [togglingAgent, setTogglingAgent] = useState(null);
   const [toggleLoading, setToggleLoading] = useState(false);
   const searchTimer = useRef(null);
-
-  useEffect(() => {
-    setDocumentTitle(t("title"));
-  }, [t]);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assigningAgent, setAssigningAgent] = useState(null);
 
   useEffect(() => {
     clearTimeout(searchTimer.current);
@@ -490,13 +453,16 @@ export default function AgentsPage() {
   }, [fetchAgents, fetchStats, limit, page]);
 
   const openCreate = () => {
-    setEditingAgent(null);
-    setFormOpen(true);
+    router.push("/ai/agents/new");
   };
 
   const openEdit = (agent) => {
-    setEditingAgent(agent);
-    setFormOpen(true);
+    router.push(`/ai/agents/${agent.id}/edit`);
+  };
+
+  const openAssign = (agent) => {
+    setAssigningAgent(agent);
+    setAssignOpen(true);
   };
 
   const handleToggleStatus = async () => {
@@ -539,9 +505,16 @@ export default function AgentsPage() {
     {
       icon: <Edit />,
       tooltip: t("actions.edit"),
-      variant: "blue",
+      variant: "primary",
       permission: "agents.update",
       onClick: () => openEdit(row),
+    },
+    {
+      icon: <BookOpen size={16} />,
+      tooltip: t("knowledge.assign.action"),
+      variant: "primary",
+      permission: "agents.update",
+      onClick: () => openAssign(row),
     },
     {
       icon: <Power size={16} />,
@@ -595,6 +568,15 @@ export default function AgentsPage() {
       ),
     },
     {
+      key: "knowledge",
+      header: t("columns.knowledge"),
+      cell: (row) => (
+        <span className="text-sm tabular-nums">
+          {row.knowledgeCount ?? "—"}
+        </span>
+      ),
+    },
+    {
       key: "status",
       header: t("columns.status"),
       cell: (row) => (
@@ -620,14 +602,27 @@ export default function AgentsPage() {
     },
   ];
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      onEnter: () => {
+        refresh();
+      },
+    }),
+    [refresh],
+  );
+
   return (
-    <div className="min-h-screen p-5">
+    <>
       <PageHeader
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.ai"), href: "/ai" },
           { name: t("breadcrumb.agents") },
         ]}
+        items={tabItems}
+        active={activeTab}
+        setActive={onTabChange}
         stats={statsCards}
         statsLoading={statsLoading}
         buttons={
@@ -730,13 +725,13 @@ export default function AgentsPage() {
         striped
       />
 
-      <AgentFormDialog
-        open={formOpen}
+      <KnowledgeAssignDialog
+        open={assignOpen}
         onOpenChange={(open) => {
-          setFormOpen(open);
-          if (!open) setEditingAgent(null);
+          setAssignOpen(open);
+          if (!open) setAssigningAgent(null);
         }}
-        agent={editingAgent}
+        agent={assigningAgent}
         onSuccess={refresh}
       />
 
@@ -779,6 +774,483 @@ export default function AgentsPage() {
         loading={toggleLoading}
         onConfirm={handleToggleStatus}
       />
+    </>
+  );
+});
+
+const KnowledgeTab = forwardRef(function KnowledgeTab(
+  { activeTab, onTabChange, tabItems },
+  ref,
+) {
+  const tc = useTranslations("common");
+  const t = useTranslations("agents");
+  const format = useFormatter();
+  const { handleExport, exportLoading } = useExport();
+
+  const [kRecords, setKRecords] = useState([]);
+  const [kStats, setKStats] = useState(null);
+  const [kLoading, setKLoading] = useState(false);
+  const [kStatsLoading, setKStatsLoading] = useState(false);
+  const [kSearch, setKSearch] = useState("");
+  const [kDebouncedSearch, setKDebouncedSearch] = useState("");
+  const [kFilters, setKFilters] = useState(DEFAULT_KNOWLEDGE_FILTERS);
+  const [kAppliedFilters, setKAppliedFilters] = useState(DEFAULT_KNOWLEDGE_FILTERS);
+  const [kPage, setKPage] = useState(1);
+  const [kLimit, setKLimit] = useState(12);
+  const [kTotalRecords, setKTotalRecords] = useState(0);
+  const [kFormOpen, setKFormOpen] = useState(false);
+  const [kEditing, setKEditing] = useState(null);
+  const [kDeleteOpen, setKDeleteOpen] = useState(false);
+  const [kDeleting, setKDeleting] = useState(null);
+  const [kDeleteLoading, setKDeleteLoading] = useState(false);
+  const [kToggleOpen, setKToggleOpen] = useState(false);
+  const [kToggling, setKToggling] = useState(null);
+  const [kToggleLoading, setKToggleLoading] = useState(false);
+  const kSearchTimer = useRef(null);
+
+  const fetchKnowledgeStats = useCallback(async () => {
+    setKStatsLoading(true);
+    try {
+      const res = await api.get("/agents/knowledge/stats");
+      setKStats(res.data || {});
+    } catch (error) {
+      console.error("Failed to fetch knowledge stats:", error);
+    } finally {
+      setKStatsLoading(false);
+    }
+  }, []);
+
+  const buildKnowledgeParams = useCallback(
+    (p, l, filterState = kAppliedFilters, searchValue = kDebouncedSearch) => {
+      const params = { page: p, limit: l };
+      if (searchValue?.trim()) params.search = searchValue.trim();
+      if (filterState.status === "active") params.isActive = "true";
+      if (filterState.status === "inactive") params.isActive = "false";
+      return params;
+    },
+    [kAppliedFilters, kDebouncedSearch],
+  );
+
+  const fetchKnowledge = useCallback(
+    async ({
+      page: p = kPage,
+      limit: l = kLimit,
+      filterState = kAppliedFilters,
+      searchValue = kDebouncedSearch,
+    } = {}) => {
+      setKLoading(true);
+      try {
+        const res = await api.get("/agents/knowledge", {
+          params: buildKnowledgeParams(p, l, filterState, searchValue),
+        });
+        setKRecords(res.data?.records || []);
+        setKTotalRecords(Number(res.data?.total_records || 0));
+        setKPage(Number(res.data?.current_page || p));
+        setKLimit(Number(res.data?.per_page || l));
+      } catch (error) {
+        toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
+      } finally {
+        setKLoading(false);
+      }
+    },
+    [kAppliedFilters, buildKnowledgeParams, kDebouncedSearch, kLimit, kPage, t],
+  );
+
+  useEffect(() => {
+    clearTimeout(kSearchTimer.current);
+    kSearchTimer.current = setTimeout(() => {
+      setKDebouncedSearch(kSearch);
+      setKPage(1);
+    }, 350);
+    return () => clearTimeout(kSearchTimer.current);
+  }, [kSearch]);
+
+  useEffect(() => {
+    if (activeTab !== "knowledge") return;
+    fetchKnowledge({ page: 1, limit: kLimit });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kDebouncedSearch, activeTab]);
+
+  const applyKnowledgeFilters = () => {
+    setKPage(1);
+    setKAppliedFilters(kFilters);
+    fetchKnowledge({ page: 1, limit: kLimit, filterState: kFilters });
+  };
+
+  const kHasActiveFilters = useMemo(
+    () => kAppliedFilters.status !== "all",
+    [kAppliedFilters],
+  );
+
+  const kStatCards = useMemo(
+    () =>
+      KNOWLEDGE_STAT_CARDS.map(({ key, icon, sortOrder }) => ({
+        key,
+        name: t(`knowledge.stats.${key}`),
+        value: kStats?.[key] ?? 0,
+        icon,
+        sortOrder,
+      })),
+    [kStats, t],
+  );
+
+  const kPagination = useMemo(
+    () => ({
+      total_records: kTotalRecords,
+      current_page: kPage,
+      per_page: kLimit,
+    }),
+    [kTotalRecords, kPage, kLimit],
+  );
+
+  const formatDate = (value) => {
+    if (!value) return "—";
+    return format.dateTime(new Date(value), {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  };
+
+  const handleKnowledgePageChange = ({ page: p, per_page: l }) => {
+    setKPage(p);
+    setKLimit(l);
+    fetchKnowledge({ page: p, limit: l });
+  };
+
+  const refreshKnowledge = useCallback(() => {
+    fetchKnowledge({ page: kPage, limit: kLimit });
+    fetchKnowledgeStats();
+  }, [fetchKnowledge, fetchKnowledgeStats, kLimit, kPage]);
+
+  const openCreateKnowledge = () => {
+    setKEditing(null);
+    setKFormOpen(true);
+  };
+
+  const openEditKnowledge = (knowledge) => {
+    setKEditing(knowledge);
+    setKFormOpen(true);
+  };
+
+  const handleKnowledgeToggle = async () => {
+    if (!kToggling) return;
+    setKToggleLoading(true);
+    try {
+      await api.patch(`/agents/knowledge/${kToggling.id}`, {
+        isActive: !kToggling.isActive,
+      });
+      toast.success(t("knowledge.toast.statusUpdated"));
+      setKToggleOpen(false);
+      setKToggling(null);
+      refreshKnowledge();
+    } catch (error) {
+      toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
+    } finally {
+      setKToggleLoading(false);
+    }
+  };
+
+  const handleKnowledgeDelete = async () => {
+    if (!kDeleting) return;
+    setKDeleteLoading(true);
+    try {
+      await api.delete(`/agents/knowledge/${kDeleting.id}`);
+      toast.success(t("knowledge.toast.deleted"));
+      setKDeleteOpen(false);
+      setKDeleting(null);
+      refreshKnowledge();
+    } catch (error) {
+      toast.error(normalizeAxiosError(error) || t("knowledge.toast.deleteFailed"));
+    } finally {
+      setKDeleteLoading(false);
+    }
+  };
+
+  const kExportParams = buildKnowledgeParams(1, 10000);
+  delete kExportParams.page;
+  delete kExportParams.limit;
+
+  const kRowActions = (row) => [
+    {
+      icon: <Edit />,
+      tooltip: t("actions.edit"),
+      variant: "primary",
+      permission: "agents.update",
+      onClick: () => openEditKnowledge(row),
+    },
+    {
+      icon: <Power size={16} />,
+      tooltip: row.isActive ? t("actions.disable") : t("actions.enable"),
+      variant: row.isActive ? "orange" : "emerald",
+      permission: "agents.update",
+      onClick: () => {
+        setKToggling(row);
+        setKToggleOpen(true);
+      },
+    },
+    {
+      icon: <Trash2 />,
+      tooltip: t("actions.delete"),
+      variant: "red",
+      permission: "agents.delete",
+      onClick: () => {
+        setKDeleting(row);
+        setKDeleteOpen(true);
+      },
+    },
+  ];
+
+  const knowledgeColumns = [
+    {
+      key: "title",
+      header: t("knowledge.columns.title"),
+      className: "min-w-[180px]",
+      cell: (row) => (
+        <span className="block text-sm font-semibold text-foreground truncate">
+          {row.title || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "content",
+      header: t("knowledge.columns.content"),
+      className: "min-w-[240px]",
+      cell: (row) => (
+        <span className="block text-sm text-muted-foreground truncate max-w-[420px]">
+          {row.content || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: t("columns.status"),
+      cell: (row) => (
+        <Badge variant={row.isActive ? "secondary" : "outline"}>
+          {t(`status.${row.isActive ? "active" : "inactive"}`)}
+        </Badge>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: t("columns.createdAt"),
+      cell: (row) => (
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {formatDate(row.createdAt)}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: t("columns.actions"),
+      className: "md:sticky md:z-20",
+      cell: (row) => <ActionButtons row={row} actions={kRowActions(row)} />,
+    },
+  ];
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      onEnter: () => {
+        setKSearch("");
+        setKDebouncedSearch("");
+        setKFilters(DEFAULT_KNOWLEDGE_FILTERS);
+        setKAppliedFilters(DEFAULT_KNOWLEDGE_FILTERS);
+        setKPage(1);
+        fetchKnowledgeStats();
+      },
+    }),
+    [fetchKnowledgeStats],
+  );
+
+  return (
+    <>
+      <PageHeader
+        breadcrumbs={[
+          { name: t("breadcrumb.home"), href: "/dashboard" },
+          { name: t("breadcrumb.ai"), href: "/ai" },
+          { name: t("breadcrumb.agents") },
+        ]}
+        items={tabItems}
+        active={activeTab}
+        setActive={onTabChange}
+        stats={kStatCards}
+        statsLoading={kStatsLoading}
+        buttons={
+          <Button_
+            size="sm"
+            label={t("knowledge.actions.new")}
+            variant="solid"
+            icon={<Plus size={18} />}
+            permission="agents.create"
+            onClick={openCreateKnowledge}
+          />
+        }
+      />
+
+      <Table
+        tableKey="agents-knowledge"
+        searchValue={kSearch}
+        onSearchChange={setKSearch}
+        onSearch={() => {
+          setKPage(1);
+          setKDebouncedSearch(kSearch);
+        }}
+        actions={[
+          {
+            key: "exportKnowledge",
+            label: t("knowledge.toolbar.export"),
+            icon: exportLoading ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <FileDown size={14} />
+            ),
+            color: "primary",
+            disabled: exportLoading,
+            permission: "agents.read",
+            onClick: () =>
+              handleExport({
+                endpoint: "/agents/knowledge/export",
+                params: kExportParams,
+                filename: "knowledge.xlsx",
+              }),
+          },
+        ]}
+        filters={
+          <FilterField label={t("knowledge.filters.status")}>
+            <Select
+              value={kFilters.status}
+              onValueChange={(value) =>
+                setKFilters((current) => ({ ...current, status: value }))
+              }
+            >
+              <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                <SelectValue placeholder={t("knowledge.filters.status")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tc("all")}</SelectItem>
+                <SelectItem value="active">{t("status.active")}</SelectItem>
+                <SelectItem value="inactive">{t("status.inactive")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </FilterField>
+        }
+        hasActiveFilters={kHasActiveFilters}
+        onApplyFilters={applyKnowledgeFilters}
+        labels={{
+          searchPlaceholder: t("knowledge.table.searchPlaceholder"),
+          filter: tc("filter"),
+          apply: tc("apply"),
+          emptyTitle: t("knowledge.table.emptyTitle"),
+          emptySubtitle: t("knowledge.table.emptySubtitle"),
+        }}
+        columns={knowledgeColumns}
+        data={kRecords}
+        isLoading={kLoading}
+        rowKey={(row) => row.id}
+        pagination={kPagination}
+        onPageChange={handleKnowledgePageChange}
+        compact
+        striped
+      />
+
+      <KnowledgeFormDialog
+        open={kFormOpen}
+        onOpenChange={(open) => {
+          setKFormOpen(open);
+          if (!open) setKEditing(null);
+        }}
+        knowledge={kEditing}
+        onSuccess={refreshKnowledge}
+      />
+
+      <ConfirmDialog
+        open={kDeleteOpen}
+        onOpenChange={(open) => {
+          setKDeleteOpen(open);
+          if (!open) setKDeleting(null);
+        }}
+        title={t("knowledge.delete.title")}
+        description={t("knowledge.delete.desc", { title: kDeleting?.title || "—" })}
+        confirmText={t("knowledge.delete.confirm")}
+        cancelText={t("knowledge.delete.cancel")}
+        loading={kDeleteLoading}
+        onConfirm={handleKnowledgeDelete}
+      />
+
+      <ConfirmDialog
+        open={kToggleOpen}
+        onOpenChange={(open) => {
+          setKToggleOpen(open);
+          if (!open) setKToggling(null);
+        }}
+        title={
+          kToggling?.isActive
+            ? t("knowledge.toggle.disableTitle")
+            : t("knowledge.toggle.enableTitle")
+        }
+        description={
+          kToggling?.isActive
+            ? t("knowledge.toggle.disableDescription", {
+                title: kToggling?.title || "—",
+              })
+            : t("knowledge.toggle.enableDescription", {
+                title: kToggling?.title || "—",
+              })
+        }
+        confirmText={t("knowledge.toggle.confirm")}
+        cancelText={t("knowledge.toggle.cancel")}
+        loading={kToggleLoading}
+        onConfirm={handleKnowledgeToggle}
+      />
+    </>
+  );
+});
+
+export default function AgentsPage() {
+  const t = useTranslations("agents");
+  const [activeTab, setActiveTab] = useState("agents");
+  const agentsTabRef = useRef(null);
+  const knowledgeTabRef = useRef(null);
+
+  const tabItems = useMemo(
+    () => [
+      { id: "agents", label: t("tabs.agents"), icon: Bot },
+      { id: "knowledge", label: t("tabs.knowledge"), icon: BookOpen },
+    ],
+    [t],
+  );
+
+  useEffect(() => {
+    setDocumentTitle(t("title"));
+  }, [t]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === "knowledge") {
+      knowledgeTabRef.current?.onEnter();
+    } else {
+      agentsTabRef.current?.onEnter();
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-5">
+      <div className={activeTab === "agents" ? "" : "hidden"}>
+        <AgentsTab
+          ref={agentsTabRef}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          tabItems={tabItems}
+        />
+      </div>
+      <div className={activeTab === "knowledge" ? "" : "hidden"}>
+        <KnowledgeTab
+          ref={knowledgeTabRef}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          tabItems={tabItems}
+        />
+      </div>
     </div>
   );
 }

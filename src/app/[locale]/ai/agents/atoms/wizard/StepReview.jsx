@@ -9,6 +9,7 @@ export default function StepReview({ getValues, onEditStep }) {
   const t = useTranslations("agents");
   const v = getValues();
   const selectedIds = Array.isArray(v.knowledgeIds) ? v.knowledgeIds : [];
+  const enabledCapabilities = Array.isArray(v.capabilities) ? v.capabilities : [];
   const [titles, setTitles] = useState([]);
   const [providerName, setProviderName] = useState(null);
 
@@ -91,7 +92,11 @@ export default function StepReview({ getValues, onEditStep }) {
       step: 2,
       title: t("wizard.steps.capabilities"),
       custom: (
-        <span className="text-muted-foreground">{t("wizard.capabilitiesDescription")}</span>
+        <ul className="list-disc ps-5 space-y-1">
+          {enabledCapabilities.map((id) => (
+            <li key={id}>{t(`wizard.capabilities.${id}.title`)}</li>
+          ))}
+        </ul>
       ),
     },
   ];

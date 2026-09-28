@@ -1,5 +1,15 @@
 export const AGENT_WIZARD_STEPS = ["general", "knowledge", "capabilities", "review"];
 
+/** User-toggleable capabilities (addressFix is automatic, never stored). */
+export const AGENT_CAPABILITIES = [
+  "createOrders",
+  "campaignOrders",
+  "orderLookup",
+  "location",
+  "reactions",
+  "templates",
+];
+
 export const AGENT_PROVIDER_AUTO = "auto";
 export const AGENT_LANGUAGES = ["auto", "arabic", "english"];
 export const AGENT_GENDERS = ["male", "female"];
@@ -12,6 +22,7 @@ export const initialAgentWizardData = {
   customInstructions: "",
   isActive: true,
   knowledgeIds: [],
+  capabilities: [...AGENT_CAPABILITIES],
 };
 
 export function validateStepGeneral(values) {
@@ -45,6 +56,9 @@ export function buildAgentPayload(values) {
         : values.responseProviderId,
     isActive: values.isActive ?? true,
     knowledgeIds: Array.isArray(values.knowledgeIds) ? values.knowledgeIds : [],
+    capabilities: Array.isArray(values.capabilities)
+      ? values.capabilities.filter((c) => AGENT_CAPABILITIES.includes(c))
+      : [...AGENT_CAPABILITIES],
   };
 }
 
@@ -58,5 +72,9 @@ export function mapAgentToForm(agent) {
     customInstructions: agent?.customInstructions || "",
     isActive: agent?.isActive ?? true,
     knowledgeIds: Array.isArray(agent?.knowledgeIds) ? agent.knowledgeIds : [],
+    capabilities:
+      Array.isArray(agent?.capabilities) && agent.capabilities.length
+        ? agent.capabilities.filter((c) => AGENT_CAPABILITIES.includes(c))
+        : [...AGENT_CAPABILITIES],
   };
 }

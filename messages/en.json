@@ -17974,6 +17974,38 @@
       "loadFailed": "Could not load the agent",
       "capabilitiesTitle": "Capabilities are coming soon",
       "capabilitiesDescription": "This step will control what the agent is allowed to do and what it must never do.",
+      "capabilitiesAutomatic": "Added automatically when an address task is open.",
+      "capabilitiesAutomaticShort": "automatic",
+      "capabilities": {
+        "createOrders": {
+          "title": "Create orders",
+          "desc": "Help the customer find the products and bundles they want, choose a delivery address, and complete and create the order."
+        },
+        "campaignOrders": {
+          "title": "Campaign orders",
+          "desc": "Help the customer confirm and create campaign-related orders."
+        },
+        "orderLookup": {
+          "title": "Order inquiry",
+          "desc": "Let the customer know any information about their orders, such as order details, status, and delivery information."
+        },
+        "addressFix": {
+          "title": "Update address",
+          "desc": "Complete or update delivery address details when needed."
+        },
+        "location": {
+          "title": "Request location",
+          "desc": "Ask the customer to share their location to help pinpoint the delivery address accurately."
+        },
+        "reactions": {
+          "title": "Interact with messages",
+          "desc": "Interact with customer messages using expressive reactions."
+        },
+        "templates": {
+          "title": "Search and approved messages",
+          "desc": "Search approved messages and templates and send the suitable template to the customer."
+        }
+      },
       "reviewEmptyKnowledge": "No knowledge linked.",
       "editSection": "Edit"
     },

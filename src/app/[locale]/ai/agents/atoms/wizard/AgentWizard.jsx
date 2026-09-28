@@ -170,7 +170,7 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
         <CardContent className="pt-6">
           {step === 0 && <StepGeneral control={control} errors={errors} />}
           {step === 1 && <StepKnowledge watch={watch} setValue={setValue} />}
-          {step === 2 && <StepCapabilities />}
+          {step === 2 && <StepCapabilities watch={watch} setValue={setValue} />}
           {step === 3 && <StepReview getValues={getValues} onEditStep={setStep} />}
         </CardContent>
         <CardFooter className="justify-between gap-3 border-t mt-5!">

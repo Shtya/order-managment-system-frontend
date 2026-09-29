@@ -84,7 +84,7 @@ const makeSchema = (t) =>
 		description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 		aiEnabled: yup.boolean().default(true),
 		aiDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
-		aiKeywords: yup.array().of(yup.string().trim().max(120)).max(50).default([]),
+		aiKeywords: yup.array().of(yup.string().trim().max(120)).max(20).default([]),
 		storeId: yup.string().nullable(),
 		categoryId: yup.string().nullable(),
 		variant: yup.mixed().nullable(),
@@ -713,6 +713,8 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 													value={field.value || []}
 													onChange={field.onChange}
 													placeholder={t('bundlesAi.keywordsPlaceholder')}
+													maxItems={20}
+													maxLength={120}
 												/>
 											)}
 										/>

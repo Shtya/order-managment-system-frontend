@@ -5775,7 +5775,7 @@
       "aiDescriptionDescription": "Extra details that help the AI present this product to customers",
       "aiDescriptionPlaceholder": "e.g. Lightweight summer shirt, best for hot weather",
       "keywords": "Product keywords for AI",
-      "keywordsDescription": "Press Enter or + to add a keyword",
+      "keywordsDescription": "Press Enter or + to add a keyword. Separate multiple keywords with commas (max 50, 120 characters each).",
       "keywordsPlaceholder": "Type a keyword..."
     },
     "bundlesAi": {
@@ -5891,7 +5891,12 @@
       "noItems": "No items found.",
       "store": "Store",
       "variant": "Variant",
-      "category": "Category"
+      "category": "Category",
+      "ai": {
+        "title": "AI",
+        "description": "Description for AI",
+        "keywords": "Keywords for AI"
+      }
     },
     "productModal": {
       "title": "Product Details",
@@ -5908,7 +5913,12 @@
       "upsellingEmpty": "No upselling products.",
       "salePrice": "Sale Price",
       "sku": "SKU",
-      "unitCost": "selling price"
+      "unitCost": "selling price",
+      "ai": {
+        "title": "AI",
+        "description": "Description for AI",
+        "keywords": "Keywords for AI"
+      }
     },
     "breadcrumb": {
       "home": "Home",

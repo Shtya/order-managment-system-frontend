@@ -7,19 +7,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 // One-line keywords input: type + Enter or + adds, X on each badge removes.
-// Duplicates and blank entries are ignored.
-export function AiKeywordsInput({ value = [], onChange, placeholder = "" }) {
+// Comma-separated input is split into multiple keywords.
+// Duplicates, blank entries, over-long entries and anything past maxItems are ignored.
+export function AiKeywordsInput({ value = [], onChange, placeholder = "", maxItems = 50, maxLength = 120 }) {
 	const [draft, setDraft] = useState("");
+	const current = value || [];
 
 	const add = (raw) => {
-		const keyword = (raw ?? "").toString().trim();
-		if (!keyword) return;
-		if ((value || []).includes(keyword)) {
-			setDraft("");
+		const room = Math.max(0, maxItems - current.length);
+		if (!room) {
+			setDraft('');
 			return;
 		}
-		onChange([...(value || []), keyword]);
-		setDraft("");
+		const parts = (raw ?? '')
+			.toString()
+			.split(/[,،]/)
+			.map((part) => part.trim())
+			.filter((part) => part && part.length <= maxLength);
+		const fresh = parts.filter((part) => !current.includes(part)).slice(0, room);
+		if (fresh.length) {
+			onChange([...current, ...fresh]);
+		}
+		setDraft('');
 	};
 
 	return (
@@ -40,7 +49,7 @@ export function AiKeywordsInput({ value = [], onChange, placeholder = "" }) {
 				<Button
 					type="button"
 					onClick={() => add(draft)}
-					disabled={!draft.trim()}
+					disabled={!draft.trim() || current.length >= maxItems}
 					className="h-[36px] w-[46px] shrink-0"
 					aria-label="Add keyword"
 				>

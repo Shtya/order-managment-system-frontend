@@ -202,7 +202,7 @@ const makeSchema = (t, tValidation) =>
 		callCenterProductDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 		aiEnabled: yup.boolean().default(true),
 		aiDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
-		aiKeywords: yup.array().of(yup.string().trim().max(120)).max(50).default([]),
+		aiKeywords: yup.array().of(yup.string().trim().max(120)).max(20).default([]),
 		upsellingEnabled: yup.boolean().default(false),
 		upsellingProducts: yup.array().of(yup.object({ productId: yup.string().trim().required(t('validation.upsellProductRequired')), label: yup.string().nullable(), callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })) })).default([]),
 		attributes: yup.array().of(yup.object({
@@ -1922,6 +1922,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 													value={field.value || []}
 													onChange={(next) => field.onChange(next)}
 													placeholder={t('ai.keywordsPlaceholder')}
+													maxItems={20}
+													maxLength={120}
 												/>
 											)}
 										/>

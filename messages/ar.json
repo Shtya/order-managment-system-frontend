@@ -5773,7 +5773,7 @@
       "aiDescriptionDescription": "تفاصيل إضافية تساعد الذكاء الاصطناعي على عرض هذا المنتج للعملاء",
       "aiDescriptionPlaceholder": "مثال: قميص صيفي خفيف، مناسب للجو الحار",
       "keywords": "كلمات مفتاحية للذكاء الاصطناعي",
-      "keywordsDescription": "اضغط Enter أو + لإضافة كلمة",
+      "keywordsDescription": "اضغط Enter أو + لإضافة كلمة. افصل الكلمات المتعددة بفاصلة (بحد أقصى 50 كلمة، 120 حرفًا لكل كلمة).",
       "keywordsPlaceholder": "اكتب كلمة مفتاحية..."
     },
     "bundlesAi": {
@@ -5889,7 +5889,12 @@
       "noItems": "لا يوجد عناصر.",
       "store": "المتجر",
       "variant": "المتغير",
-      "category": "الفئة"
+      "category": "الفئة",
+      "ai": {
+        "title": "الذكاء الاصطناعي",
+        "description": "الوصف للذكاء الاصطناعي",
+        "keywords": "كلمات مفتاحية للذكاء الاصطناعي"
+      }
     },
     "productModal": {
       "title": "تفاصيل المنتج",
@@ -5906,7 +5911,12 @@
       "skusEmpty": "لا يوجد SKUs.",
       "upsellingEmpty": "لا يوجد Upselling.",
       "sku": "SKU",
-      "unitCost": "سعر التكلفة"
+      "unitCost": "سعر التكلفة",
+      "ai": {
+        "title": "الذكاء الاصطناعي",
+        "description": "الوصف للذكاء الاصطناعي",
+        "keywords": "كلمات مفتاحية للذكاء الاصطناعي"
+      }
     },
     "breadcrumb": {
       "home": "الرئيسية",

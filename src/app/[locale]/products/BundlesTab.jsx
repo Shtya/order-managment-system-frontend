@@ -410,6 +410,32 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                     <SafeHtmlRenderer html={bundle.description} />
                   </div>
                 )}
+
+                {bundle.aiEnabled ? (
+                  <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/40">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                      {t("bundleModal.ai.title")}
+                    </div>
+                    {bundle.aiDescription ? (
+                      <div className="mb-2">
+                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("bundleModal.ai.description")}</div>
+                        <div className="text-sm text-slate-700 dark:text-slate-200">{bundle.aiDescription}</div>
+                      </div>
+                    ) : null}
+                    {Array.isArray(bundle.aiKeywords) && bundle.aiKeywords.length > 0 ? (
+                      <div>
+                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("bundleModal.ai.keywords")}</div>
+                        <div className="flex flex-wrap gap-2">
+                          {bundle.aiKeywords.map((keyword) => (
+                            <Badge key={keyword} variant="outline" className="rounded-full px-3 py-1 text-[13px] bg-primary/10 text-primary border-primary/20">
+                              {keyword}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               <Separator />

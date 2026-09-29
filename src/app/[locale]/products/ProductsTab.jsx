@@ -1379,6 +1379,30 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 								</div>
 							) : null}
 
+							{product.aiEnabled ? (
+								<div className="rounded-xl border p-4 bg-white dark:bg-slate-900">
+									<div className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">{t("productModal.ai.title")}</div>
+									{product.aiDescription ? (
+										<div className="mb-2">
+											<div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("productModal.ai.description")}</div>
+											<div className="text-sm text-slate-600 dark:text-slate-300">{product.aiDescription}</div>
+										</div>
+									) : null}
+									{Array.isArray(product.aiKeywords) && product.aiKeywords.length > 0 ? (
+										<div>
+											<div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{t("productModal.ai.keywords")}</div>
+											<div className="flex flex-wrap gap-2">
+												{product.aiKeywords.map((keyword) => (
+													<Badge key={keyword} variant="outline" className="rounded-full px-3 py-1 text-[13px] bg-primary/10 text-primary border-primary/20">
+														{keyword}
+													</Badge>
+												))}
+											</div>
+										</div>
+									) : null}
+								</div>
+							) : null}
+
 							<Separator />
 
 							<div className="space-y-3">

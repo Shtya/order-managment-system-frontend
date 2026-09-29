@@ -500,7 +500,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
                             className={cn(
                                 "p-2 hover:bg-accent/50 rounded-md transition-all text-muted-foreground",
-                                isFilterOpen && "bg-primary/10 text-primary"
+                                isFilterOpen && "bg-wa-green/10 text-wa-green"
                             )}
                         >
                             <Search className="w-5 h-5" />
@@ -630,7 +630,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                     setMessageStatus("all");
                                     setMessageAccount("all");
                                 }}
-                                className="mt-2 text-xs text-primary hover:underline font-medium"
+                                className="mt-2 text-xs text-wa-green hover:underline font-medium"
                             >
                                 {t("clearFilters")}
                             </button>
@@ -769,7 +769,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                         whileTap={{ scale: 0.95 }}
                     >
                         {currentUnreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-green-500 px-1 text-[10px] font-bold leading-none text-white dark:border-slate-800">
+                            <span className="absolute -top-1 -right-1 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-wa-green px-1 text-[10px] font-bold leading-none text-white dark:border-slate-800">
                                 {currentUnreadCount > 99 ? "99+" : currentUnreadCount}
                             </span>
                         )}

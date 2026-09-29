@@ -84,7 +84,9 @@
   /* ── Gradient primitives (used by .btn-solid etc.) ── */
   --primary-from: 103 99 175;
   --primary-to: 118 114 185;
-  --primary-shadow: 118 114 185 / 0.32; 
+  --primary-shadow: 118 114 185 / 0.32;
+  /* ── WhatsApp accent (chats only: filters, tabs, unread, selected) ── */
+  --wa-green: #179F61;
   --muted: #F3F4F6;
   /* ── Radius scale ── */
   --radius: 0.75rem; /* 12 px — single source of truth */
@@ -140,6 +142,9 @@
    --primary: #6763AF;
   --secondary: #5750a0;
   --third: #7672B9;
+
+  /* ── WhatsApp accent (chats only) ── */
+  --wa-green: #2BCB7A;
 
   --sidebar: #13161f;
   --sideIcon: #13161f;
@@ -218,6 +223,7 @@
   --color-template-btn-hover: var(--template-btn-hover);
   --color-whatsapp-button-border: var(--whatsapp-button-border);
   --color-whatsapp-time: var(--whatsapp-time);
+  --color-wa-green: var(--wa-green);
 }
 
 /* ═══════════════════════════════════════════════════════════════

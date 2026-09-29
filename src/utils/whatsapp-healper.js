@@ -289,31 +289,31 @@ export const formatMessagePreview = (message, t = (key) => key) => {
     switch (type) {
         case "image":
             return (
-                <div className="flex items-center gap-1.5">
-                    <ImageIcon size={14} className="text-muted-foreground" />
-                    <span>{t("messageTypes.image") || "Image"}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <ImageIcon size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{t("messageTypes.image") || "Image"}</span>
                 </div>
             );
         case "video":
             return (
-                <div className="flex items-center gap-1.5">
-                    <VideoIcon size={14} className="text-muted-foreground" />
-                    <span>{t("messageTypes.video") || "Video"}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <VideoIcon size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{t("messageTypes.video") || "Video"}</span>
                 </div>
             );
         case "sticker":
             return (
-                <div className="flex items-center gap-1.5">
-                    <Sticker size={14} className="text-muted-foreground" />
-                    <span>{t("messageTypes.sticker") || "Sticker"}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <Sticker size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{t("messageTypes.sticker") || "Sticker"}</span>
                 </div>
             );
         case "document":
             const docName = content?.document?.filename || content?.document?.name || t("document") || "Document";
             return (
-                <div className="flex items-center gap-1.5">
-                    <FileText size={14} className="text-muted-foreground" />
-                    <span>{removeNewlines(docName)}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <FileText size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{removeNewlines(docName)}</span>
                 </div>
             );
         case "location":
@@ -321,70 +321,92 @@ export const formatMessagePreview = (message, t = (key) => key) => {
             const locAddress = content?.location?.address;
             const locationText = removeNewlines(locName || locAddress || t("messageTypes.location") || "Location");
             return (
-                <div className="flex items-center gap-1.5">
-                    <MapPin size={14} className="text-muted-foreground" />
-                    <span>{locationText}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <MapPin size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{locationText}</span>
                 </div>
             );
         case "location_request_message":
             return (
-                <div className="flex items-center gap-1.5">
-                    <MapIcon size={14} className="text-muted-foreground" />
-                    <span>{bodyText || t("messageTypes.location_request") || "Location request"}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <MapIcon size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{bodyText || t("messageTypes.location_request") || "Location request"}</span>
                 </div>
             );
         case "template":
             return (
-                <div className="flex items-center gap-1.5">
-                    <LayoutTemplate size={14} className="text-muted-foreground" />
-                    <span>{removeNewlines(content?.template?.name || t("messageTypes.template") || "Template")}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <LayoutTemplate size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{removeNewlines(content?.template?.name || t("messageTypes.template") || "Template")}</span>
                 </div>
             );
 
         case "text":
-            return <span>{formatText(removeNewlines(rawBodyText || ""))}</span>;
+            return <span className="block truncate">{formatText(removeNewlines(rawBodyText || ""))}</span>;
+
         case "contacts":
             const contactName = content?.contacts?.[0]?.name?.formatted_name || t("messageTypes.contact") || "Contact";
             return (
-                <div className="flex items-center gap-1.5">
-                    <User size={14} className="text-muted-foreground" />
-                    <span>{removeNewlines(contactName)}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <User size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{removeNewlines(contactName)}</span>
                 </div>
             );
+
         case "list":
-            const interactiveBody = removeNewlines(content?.interactive?.body?.text || rawBodyText || t("messageTypes.interactive") || "Interactive");
+            const interactiveBody = removeNewlines(
+                content?.interactive?.body?.text ||
+                rawBodyText ||
+                t("messageTypes.interactive") ||
+                "Interactive"
+            );
             return (
-                <div className="flex items-center gap-1.5">
-                    <ListIcon size={14} className="text-muted-foreground" />
-                    <span>{formatText(interactiveBody)}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <ListIcon size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{formatText(interactiveBody)}</span>
                 </div>
             );
+
         case "list_reply":
         case "button_reply":
-            const listReplyBody = removeNewlines(content?.interactive?.list_reply?.title || content?.interactive?.button_reply?.title || rawBodyText || t("messageTypes.interactive") || "Interactive");
+            const listReplyBody = removeNewlines(
+                content?.interactive?.list_reply?.title ||
+                content?.interactive?.button_reply?.title ||
+                rawBodyText ||
+                t("messageTypes.interactive") ||
+                "Interactive"
+            );
             return (
-                <div className="flex items-center gap-1.5">
-                    <Reply size={14} className="text-muted-foreground" />
-                    <span>{listReplyBody}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <Reply size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{listReplyBody}</span>
                 </div>
             );
+
         case "button":
-            const buttonText = removeNewlines(content?.button?.text || rawBodyText || t("messageTypes.button") || "Button");
+            const buttonText = removeNewlines(
+                content?.button?.text ||
+                rawBodyText ||
+                t("messageTypes.button") ||
+                "Button"
+            );
             return (
-                <div className="flex items-center gap-1.5">
-                    <MessageSquare size={14} className="text-muted-foreground" />
-                    <span>{buttonText}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <MessageSquare size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{buttonText}</span>
                 </div>
             );
+
         case "unsupported":
             return (
-                <div className='flex items-center gap-1.5 text-yellow-600 dark:text-yellow-400'>
-                    <AlertCircle size={14} className="text-yellow-600 dark:text-yellow-400" />
-                    <span>{t("unsupportedMessage") || "Unsupported message"}</span>
+                <div className="flex min-w-0 items-center gap-1.5 text-yellow-600 dark:text-yellow-400">
+                    <AlertCircle size={14} className="shrink-0 text-yellow-600 dark:text-yellow-400" />
+                    <span className="truncate">{t("unsupportedMessage") || "Unsupported message"}</span>
                 </div>
-            )
+            );
+
         default:
-            return <span>{formatText(removeNewlines(rawBodyText || ""))}</span>;
+            return <span className="block truncate">{formatText(removeNewlines(rawBodyText || ""))}</span>;
     }
 };
 

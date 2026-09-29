@@ -292,7 +292,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                                             className={cn("p-2 hover:bg-accent/50 rounded-full transition-colors group", isDisabled && "opacity-50 cursor-not-allowed")}
                                             disabled={isDisabled}
                                         >
-                                            <Plus className="w-6 h-6 text-muted-foreground/60 transition-transform group-data-[state=open]:rotate-45 group-data-[state=open]:text-primary" />
+                                            <Plus className="w-6 h-6 text-muted-foreground/60 transition-transform group-data-[state=open]:rotate-45 group-data-[state=open]:text-wa-green" />
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="start" side="top" className="w-64 mb-2 rounded-xl! p-2 shadow-xl border border-border bg-card">

@@ -51,7 +51,7 @@ const ChatListItem = ({ conv, activeId, onSelect }) => {
             onClick={() => onSelect(conv)}
             className={cn(
                 "w-full p-4 flex gap-3 hover:bg-accent/50 transition-colors text-start relative group",
-                activeId === conv.id && "bg-primary/5"
+                activeId === conv.id && "bg-wa-green/10"
             )}
         >
             {/* Avatar */}
@@ -82,7 +82,7 @@ const ChatListItem = ({ conv, activeId, onSelect }) => {
                         {formattedPreview}
                     </div>
                     {conv.unreadCount > 0 && (
-                        <span className="bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                        <span className="bg-wa-green text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
                             {conv.unreadCount}
                         </span>
                     )}
@@ -207,7 +207,7 @@ export default function ChatList() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder={t("search")}
-                                    className="w-full pl-9 pr-4 py-2 bg-muted border-none rounded-full text-sm focus:ring-2 focus:ring-primary transition-all focus-visible:outline-none! text-foreground placeholder:text-muted-foreground/50"
+                                    className="w-full pl-9 pr-4 py-2 bg-muted border-none rounded-full text-sm focus:ring-2 focus:ring-wa-green transition-all focus-visible:outline-none! text-foreground placeholder:text-muted-foreground/50"
                                 />
                             </div>
                             <button
@@ -232,7 +232,7 @@ export default function ChatList() {
                             className={cn(
                                 "pb-2 text-sm font-medium transition-all relative",
                                 activeTab === tab.id
-                                    ? "text-primary border-b-2 border-primary"
+                                    ? "text-wa-green border-b-2 border-wa-green"
                                     : "text-muted-foreground hover:text-foreground"
                             )}
                         >
@@ -279,7 +279,7 @@ export default function ChatList() {
                     <button
                         onClick={loadMoreConversations}
                         disabled={isLoading || isLoadingMore}
-                        className="w-full p-4 text-sm text-primary font-medium hover:bg-muted transition-colors flex items-center justify-center gap-2"
+                        className="w-full p-4 text-sm text-wa-green font-medium hover:bg-muted transition-colors flex items-center justify-center gap-2"
                     >
                         {isLoadingMore ? (
                             <Loader2 className="w-4 h-4 animate-spin" />

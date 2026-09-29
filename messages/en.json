@@ -5775,7 +5775,7 @@
       "aiDescriptionDescription": "Extra details that help the AI present this product to customers",
       "aiDescriptionPlaceholder": "e.g. Lightweight summer shirt, best for hot weather",
       "keywords": "Product keywords for AI",
-      "keywordsDescription": "Press Enter or + to add a keyword. Separate multiple keywords with commas (max 50, 120 characters each).",
+      "keywordsDescription": "**Press Enter or + to add a keyword. You can add multiple keywords separated by commas, with a maximum of 20 keywords and 120 characters per keyword.**",
       "keywordsPlaceholder": "Type a keyword..."
     },
     "bundlesAi": {
@@ -5787,7 +5787,7 @@
       "aiDescriptionDescription": "Extra details that help the AI present this product bundle to customers",
       "aiDescriptionPlaceholder": "e.g. Lightweight summer shirt, best for hot weather",
       "keywords": "Product bundle keywords for AI",
-      "keywordsDescription": "Press Enter or + to add a keyword",
+      "keywordsDescription": "**Press Enter or + to add a keyword. You can add multiple keywords separated by commas, with a maximum of 20 keywords and 120 characters per keyword.**",
       "keywordsPlaceholder": "Type a keyword..."
     },
     "uploads": {

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 // Duplicates, blank entries, over-long entries and anything past maxItems are ignored.
 export function AiKeywordsInput({ value = [], onChange, placeholder = "", maxItems = 50, maxLength = 120 }) {
 	const [draft, setDraft] = useState("");
-	const current = value || [];
+	const current = value || [];	
 
 	const add = (raw) => {
 		const room = Math.max(0, maxItems - current.length);

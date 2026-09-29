@@ -18010,6 +18010,7 @@
       "back": "Back",
       "next": "Next",
       "save": "Save",
+      "saving": "Saving...",
       "fixStepErrors": "Please fix the errors on this step.",
       "saved": "Agent saved",
       "saveFailed": "Could not save the agent",

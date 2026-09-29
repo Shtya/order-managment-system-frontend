@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
+import { Loader2, Save } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_, { PrimaryBtn } from "@/components/atoms/Button";
@@ -142,7 +143,7 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
   if (pageLoading) {
     return (
       <div className="min-h-screen p-5 space-y-4">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        <PageHeader breadcrumbs={breadcrumbs} stacky />
         <Card>
           <CardContent className="space-y-3 pt-6">
             <Bone className="h-6 w-48" />
@@ -156,7 +157,20 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
 
   return (
     <div className="min-h-screen p-5 space-y-4">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      <PageHeader
+        breadcrumbs={breadcrumbs}
+        stacky
+        buttons={
+          <Button_
+            onClick={handleSave}
+            size="sm"
+            icon={saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={18} />}
+            label={saving ? t("wizard.saving") : t("wizard.save")}
+            disabled={saving || pageLoading}
+            permission={isEdit ? "agents.update" : "agents.create"}
+          />
+        }
+      />
 
       <SectionCard stepKey="general" index={0}>
         <StepGeneral control={control} errors={errors} />

@@ -43,6 +43,7 @@ export function AiKeywordsInput({ value = [], onChange, placeholder = "", maxIte
 							add(draft);
 						}
 					}}
+					maxLength={maxLength}
 					placeholder={placeholder}
 					className="flex-1 h-[46px]"
 				/>

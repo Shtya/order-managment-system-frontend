@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { AiKeywordsInput } from '@/components/atoms/AiKeywordsInput';
+import { AiKeywordsErrors } from '@/components/atoms/AiKeywordsErrors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Button_ from '@/components/atoms/Button';
 import { useRouter } from '@/i18n/navigation';
@@ -84,7 +85,7 @@ const makeSchema = (t) =>
 		description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 		aiEnabled: yup.boolean().default(true),
 		aiDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
-		aiKeywords: yup.array().of(yup.string().trim().max(120)).max(20).default([]),
+		aiKeywords: yup.array().of(yup.string().trim().max(120, t('validation.keywordTooLong', { max: 120 }))).max(20, t('validation.keywordsTooMany', { max: 20 })).default([]),
 		storeId: yup.string().nullable(),
 		categoryId: yup.string().nullable(),
 		variant: yup.mixed().nullable(),
@@ -700,11 +701,11 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 										{errors?.aiDescription?.message && (
 											<div className="text-xs text-red-600">{errors.aiDescription.message}</div>
 										)}
+										<AiKeywordsErrors errors={errors?.aiKeywords} t={t} errorKey="bundlesAi.keywordError" />
 									</div>
 
 									<div className="space-y-2">
-										<Label>{t('bundlesAi.keywords')}</Label>
-										<p className="text-xs text-muted-foreground">{t('bundlesAi.keywordsDescription')}</p>
+										<Label description={t('bundlesAi.keywordsDescription')}>{t('bundlesAi.keywords')}</Label>
 										<Controller
 											control={control}
 											name="aiKeywords"

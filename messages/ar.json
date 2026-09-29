@@ -5665,7 +5665,9 @@
       "mainVariantInItems": "المتغير الأساسي لا يمكن أن يكون ضمن عناصر الباندل",
       "duplicateItems": "الباندل لا يمكن أن يحتوي على عناصر مكررة",
       "singleSkuRequired": "رمز SKU مطلوب للمنتج المفرد.",
-      "totalQuantityRequired": "إجمالي الكمية يجب أن يكون أكبر من 0."
+      "totalQuantityRequired": "إجمالي الكمية يجب أن يكون أكبر من 0.",
+      "keywordTooLong": "الكلمة طويلة جداً (الحد الأقصى {max} حرف)",
+      "keywordsTooMany": "يمكنك إضافة حتى {max} كلمة"
     },
     "attributes": {
       "title": "الخصائص والمتغيرات",
@@ -5774,7 +5776,8 @@
       "aiDescriptionPlaceholder": "مثال: قميص صيفي خفيف، مناسب للجو الحار",
       "keywords": "كلمات مفتاحية للذكاء الاصطناعي",
       "keywordsDescription": "اضغط Enter أو + لإضافة كلمة مفتاحية. يمكنك إضافة عدة كلمات مع فصلها بفاصلة، بحد أقصى 20 كلمة وبطول 120 حرفًا لكل كلمة.",
-      "keywordsPlaceholder": "اكتب كلمة مفتاحية..."
+      "keywordsPlaceholder": "اكتب كلمة مفتاحية...",
+      "keywordError": "الكلمة {index}"
     },
     "bundlesAi": {
       "title": "الذكاء الاصطناعي",
@@ -5786,7 +5789,8 @@
       "aiDescriptionPlaceholder": "مثال: قميص صيفي خفيف، مناسب للجو الحار",
       "keywords": "كلمات مفتاحية لبندل المنتجات للذكاء الاصطناعي",
       "keywordsDescription": "اضغط Enter أو + لإضافة كلمة مفتاحية. يمكنك إضافة عدة كلمات مع فصلها بفاصلة، بحد أقصى 20 كلمة وبطول 120 حرفًا لكل كلمة.",
-      "keywordsPlaceholder": "اكتب كلمة مفتاحية..."
+      "keywordsPlaceholder": "اكتب كلمة مفتاحية...",
+      "keywordError": "الكلمة {index}"
     },
     "uploads": {
       "mainImage": "الصورة الرئيسية",

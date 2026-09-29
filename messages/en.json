@@ -5667,7 +5667,9 @@
       "mainVariantInItems": "Main variant cannot be part of the bundle items",
       "duplicateItems": "Bundle cannot contain duplicate items",
       "singleSkuRequired": "SKU is required for single product.",
-      "totalQuantityRequired": "Total quantity must be greater than 0."
+      "totalQuantityRequired": "Total quantity must be greater than 0.",
+      "keywordTooLong": "Keyword is too long (maximum {max} characters)",
+      "keywordsTooMany": "You can add up to {max} keywords"
     },
     "attributes": {
       "title": "Attributes and Variants",
@@ -5776,7 +5778,8 @@
       "aiDescriptionPlaceholder": "e.g. Lightweight summer shirt, best for hot weather",
       "keywords": "Product keywords for AI",
       "keywordsDescription": "**Press Enter or + to add a keyword. You can add multiple keywords separated by commas, with a maximum of 20 keywords and 120 characters per keyword.**",
-      "keywordsPlaceholder": "Type a keyword..."
+      "keywordsPlaceholder": "Type a keyword...",
+      "keywordError": "Keyword {index}"
     },
     "bundlesAi": {
       "title": "AI",
@@ -5788,7 +5791,8 @@
       "aiDescriptionPlaceholder": "e.g. Lightweight summer shirt, best for hot weather",
       "keywords": "Product bundle keywords for AI",
       "keywordsDescription": "**Press Enter or + to add a keyword. You can add multiple keywords separated by commas, with a maximum of 20 keywords and 120 characters per keyword.**",
-      "keywordsPlaceholder": "Type a keyword..."
+      "keywordsPlaceholder": "Type a keyword...",
+      "keywordError": "Keyword {index}"
     },
     "uploads": {
       "mainImage": "Main Image",

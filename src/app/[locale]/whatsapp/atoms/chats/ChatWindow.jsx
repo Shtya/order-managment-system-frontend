@@ -41,6 +41,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
 import AgentPausePill from "./AgentPausePill";
+import api from "@/utils/api";
 
 // Skeleton message component with config
 function MessageSkeleton() {
@@ -149,6 +150,25 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const [aiModeDraft, setAiModeDraft] = useState("inherit");
     const [aiSaving, setAiSaving] = useState(false);
     const conversationAiEnabled = selectedConversation?.aiMode !== "disabled";
+    const [hasActiveAgent, setHasActiveAgent] = useState(true);
+
+    // Hide the AI pause countdown when the tenant has no active agent.
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await api.get("/agents", { params: { limit: 1, isActive: "true" } });
+                if (cancelled) return;
+                const total = Number(res.data?.total_records ?? res.data?.records?.length ?? 0);
+                setHasActiveAgent(total > 0);
+            } catch {
+                if (!cancelled) setHasActiveAgent(true);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
     // Sync local search with messageSearch when it changes (e.g. when conversation changes)
     useEffect(() => {
         setLocalSearch(messageSearch);
@@ -456,7 +476,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                 <Bot className="w-4 h-4" />
                             </span>
                         )}
-                        {conversationAiEnabled && (
+                        {conversationAiEnabled && hasActiveAgent && (
                             <AgentPausePill
                                 key={selectedConversation.id}
                                 pausedUntil={selectedConversation?.agentPausedUntil}

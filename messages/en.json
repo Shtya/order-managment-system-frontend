@@ -3230,7 +3230,11 @@
       "ai_tools_shipping_read": "AI read shipping",
       "ai_tools_shipping_write": "AI write shipping",
       "ai_tools_whatsapp_read": "AI read WhatsApp",
-      "ai_tools_whatsapp_write": "AI write WhatsApp"
+      "ai_tools_whatsapp_write": "AI write WhatsApp",
+      "agents_read": "View AI agents",
+      "agents_create": "Create AI agents",
+      "agents_update": "Edit AI agents",
+      "agents_delete": "Delete AI agents"
     },
     "group": {
       "accounting": "Accounting",
@@ -5761,6 +5765,30 @@
       "loading": "Loading...",
       "noResults": "No results found",
       "tryDifferent": "Try a different search term"
+    },
+    "ai": {
+      "title": "AI",
+      "description": "Control how the AI assistant uses this product",
+      "enableAi": "Enable product for AI",
+      "enableAiDescription": "When disabled, the AI will not suggest or mention this product",
+      "aiDescription": "Product description for AI",
+      "aiDescriptionDescription": "Extra details that help the AI present this product to customers",
+      "aiDescriptionPlaceholder": "e.g. Lightweight summer shirt, best for hot weather",
+      "keywords": "Product keywords for AI",
+      "keywordsDescription": "Press Enter or + to add a keyword",
+      "keywordsPlaceholder": "Type a keyword..."
+    },
+    "bundlesAi": {
+      "title": "AI",
+      "description": "Control how the AI assistant uses this product bundle",
+      "enableAi": "Enable product bundle for AI",
+      "enableAiDescription": "When disabled, the AI will not suggest or mention this product bundle",
+      "aiDescription": "Product bundle description for AI",
+      "aiDescriptionDescription": "Extra details that help the AI present this product bundle to customers",
+      "aiDescriptionPlaceholder": "e.g. Lightweight summer shirt, best for hot weather",
+      "keywords": "Product bundle keywords for AI",
+      "keywordsDescription": "Press Enter or + to add a keyword",
+      "keywordsPlaceholder": "Type a keyword..."
     },
     "uploads": {
       "mainImage": "Main Image",

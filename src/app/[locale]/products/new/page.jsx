@@ -44,6 +44,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Textarea } from '../../../../components/ui/textarea';
 import { ImageUploadBox } from '@/components/atoms/ImageUploadBox';
 import { TagInput } from '@/components/atoms/TagInput';
+import { AiKeywordsInput } from '@/components/atoms/AiKeywordsInput';
 import LANG from '@/components/atoms/LANG';
 import { baseImg } from '@/utils/axios';
 import { useAutoTranslate } from '@/utils/autoTranslate';
@@ -58,6 +59,7 @@ import { useOrdersSettings } from '@/hook/useOrdersSettings';
 import { avatarSrc } from '@/components/atoms/UserSelect';
 import RichTextEditor from '@/components/atoms/RichTextEditor';
 import { setDocumentTitle } from '@/utils/documentTitle';
+import { useAuth } from '@/context/AuthContext';
 
 const MAX_RECEIPT_MB = 5;
 const ALLOWED_RECEIPT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -198,6 +200,9 @@ const makeSchema = (t, tValidation) =>
 		warehouseId: yup.string().nullable(),
 		description: yup.string().nullable().max(7000, t('validation.descriptionTooLong', { max: 7000 })),
 		callCenterProductDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
+		aiEnabled: yup.boolean().default(true),
+		aiDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
+		aiKeywords: yup.array().of(yup.string().trim().max(120)).max(50).default([]),
 		upsellingEnabled: yup.boolean().default(false),
 		upsellingProducts: yup.array().of(yup.object({ productId: yup.string().trim().required(t('validation.upsellProductRequired')), label: yup.string().nullable(), callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })) })).default([]),
 		attributes: yup.array().of(yup.object({
@@ -346,6 +351,7 @@ function getDefaultValues() {
 		name: '', slug: '', wholesalePrice: '', salePrice: '', lowestPrice: '', storageLocationId: 'none',
 		categoryId: '', storeId: '', warehouseId: 'none', description: '',
 		callCenterProductDescription: '', upsellingEnabled: false,
+		aiEnabled: true, aiDescription: '', aiKeywords: [],
 		upsellingProducts: [], attributes: [], combinations: [],
 		purchase: {
 			supplierId: '',
@@ -641,15 +647,15 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const combinationsSectionRef = useRef(null);
 	const tPurchase = useTranslations("purchaseInvoice");
 	const tValidation = useTranslations('validation');
-	const t = useTranslations('addProduct');
 	const tc = useTranslations('common');
 	const tw = useTranslations('warehousesManagement');
+	const t = useTranslations('addProduct');
 	const locale = useLocale();
 	const [imageErrors, setImageErrors] = useState({
 		main: { general: '', specific: {} },
 		other: { general: '', specific: {} }
 	});
-
+	const { isTestUser } = useAuth();
 	const navigate = useRouter();
 	const [categories, setCategories] = useState([]);
 	const [stores, setStores] = useState([]);
@@ -1024,6 +1030,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (data.warehouseId && data.warehouseId != 'none') fd.append('warehouseId', data.warehouseId);
 			if ((data.description ?? '').trim()) fd.append('description', data.description.trim());
 			if ((data.callCenterProductDescription ?? '').trim()) fd.append('callCenterProductDescription', data.callCenterProductDescription.trim());
+			fd.append('aiEnabled', data.aiEnabled ? 'true' : 'false');
+			if ((data.aiDescription ?? '').trim()) fd.append('aiDescription', data.aiDescription.trim());
+			fd.append('aiKeywords', JSON.stringify(data.aiKeywords || []));
 			fd.append('upsellingEnabled', data.upsellingEnabled ? 'true' : 'false');
 			const upsellingProducts = (data.upsellingProducts ?? []).filter((x) => x?.productId).map((x) => ({ productId: String(x.productId), label: (x.label ?? '').toString().trim() || undefined, callCenterDescription: (x.callCenterDescription ?? '').toString().trim() || undefined }));
 			fd.append('upsellingProducts', JSON.stringify(upsellingProducts));
@@ -1148,6 +1157,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			storeId: (existingProduct.storeId || existingProduct.store?.id) ? String(existingProduct.storeId || existingProduct.store?.id) : 'none',
 			warehouseId: (existingProduct.warehouseId || existingProduct.warehouse?.id) ? String(existingProduct.warehouseId || existingProduct.warehouse?.id) : 'none', description: existingProduct.description || '',
 			callCenterProductDescription: existingProduct.callCenterProductDescription || '', upsellingEnabled: existingProduct.upsellingEnabled || false,
+			aiEnabled: existingProduct.aiEnabled ?? true, aiDescription: existingProduct.aiDescription || '', aiKeywords: existingProduct.aiKeywords || [],
 			upsellingProducts: existingProduct.upsellingProducts || [], attributes: extractedAttributes, combinations: combinations
 		});
 
@@ -1875,6 +1885,50 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 								</div>
 							</Card>
 						</motion.div>
+
+						{isTestUser && (<motion.div variants={fadeUp}>
+							<Card>
+								<SectionHeader title={t('ai.title')} description={t('ai.description')} />
+								<div className="space-y-4">
+									<Controller
+										control={control}
+										name="aiEnabled"
+										render={({ field }) => (
+											<label className="flex items-center gap-2.5 cursor-pointer group w-fit">
+												<Checkbox
+													checked={field.value}
+													onCheckedChange={field.onChange}
+													id="ai-enabled"
+													className="rounded-md"
+												/>
+												<span className="text-[13px] font-medium text-slate-600 dark:text-slate-300 select-none group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors flex items-center gap-1.5">
+													{t('ai.enableAi')}
+													<FieldTooltip description={t('ai.enableAiDescription')} />
+												</span>
+											</label>
+										)}
+									/>
+
+									<Field label={t('ai.aiDescription')} description={t('ai.aiDescriptionDescription')} error={errors?.aiDescription?.message}>
+										<Textarea {...register('aiDescription')} placeholder={t('ai.aiDescriptionPlaceholder')} className="bg-white dark:bg-slate-900 !min-h-[120px]" />
+									</Field>
+
+									<Field label={t('ai.keywords')} description={t('ai.keywordsDescription')} error={errors?.aiKeywords?.message}>
+										<Controller
+											control={control}
+											name="aiKeywords"
+											render={({ field }) => (
+												<AiKeywordsInput
+													value={field.value || []}
+													onChange={(next) => field.onChange(next)}
+													placeholder={t('ai.keywordsPlaceholder')}
+												/>
+											)}
+										/>
+									</Field>
+								</div>
+							</Card>
+						</motion.div>)}
 
 						<button type="submit" className="hidden" />
 					</div>

@@ -16,6 +16,9 @@ import { setDocumentTitle } from '@/utils/documentTitle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { AiKeywordsInput } from '@/components/atoms/AiKeywordsInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Button_ from '@/components/atoms/Button';
 import { useRouter } from '@/i18n/navigation';
@@ -26,6 +29,7 @@ import SlugInput, { FieldStatusInfo } from '@/components/atoms/SlugInput';
 import { ImageUploadBox } from '@/components/atoms/ImageUploadBox';
 import RichTextEditor from '@/components/atoms/RichTextEditor';
 import { cn } from '@/utils/cn';
+import { useAuth } from '@/context/AuthContext';
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
@@ -78,6 +82,9 @@ const makeSchema = (t) =>
 			.required(t('bundles.totalPriceRequired'))
 			.min(1, t('validation.priceMin', { min: 1 })),
 		description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
+		aiEnabled: yup.boolean().default(true),
+		aiDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
+		aiKeywords: yup.array().of(yup.string().trim().max(120)).max(50).default([]),
 		storeId: yup.string().nullable(),
 		categoryId: yup.string().nullable(),
 		variant: yup.mixed().nullable(),
@@ -106,6 +113,9 @@ function defaultValues() {
 		sku: '',
 		wholesalePrice: '',
 		description: '',
+		aiEnabled: true,
+		aiDescription: '',
+		aiKeywords: [],
 		storeId: 'none',
 		categoryId: 'none',
 		variant: null,
@@ -118,7 +128,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 	const t = useTranslations('addProduct');
 	const navigate = useRouter();
 	const locale = useLocale();
-
+	const { isTestUser } = useAuth();
 	const [stores, setStores] = useState([]);
 	const [categories, setCategories] = useState([]);
 	const [storeProviders, setStoreProviders] = useState([]);
@@ -248,6 +258,9 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 			sku: existingBundle.sku || '',
 			wholesalePrice: existingBundle.price || 0,
 			description: existingBundle.description || '',
+			aiEnabled: existingBundle.aiEnabled ?? true,
+			aiDescription: existingBundle.aiDescription || '',
+			aiKeywords: existingBundle.aiKeywords || [],
 			storeId: existingBundle.storeId ? String(existingBundle.storeId) : 'none',
 			categoryId: (existingBundle.categoryId || existingBundle.category?.id) ? String(existingBundle.categoryId || existingBundle.category?.id) : 'none',
 			variant: existingBundle.variant || null,
@@ -317,6 +330,9 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 				...(data.slug ? { slug: data.slug.trim() } : {}),
 				price: data.wholesalePrice,
 				description: data.description,
+				aiEnabled: data.aiEnabled ?? true,
+				aiDescription: (data.aiDescription ?? '').trim() || null,
+				aiKeywords: data.aiKeywords || [],
 				...(isEditMode ? {} : { sku: data.sku.trim().toUpperCase() }),
 				storeId: data.storeId === 'none' ? null : data.storeId,
 				categoryId: data.categoryId === 'none' ? null : data.categoryId,
@@ -459,7 +475,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 											t={t}
 										/>
 									</Field>
-									
+
 									<SlugInput
 										errors={errors}
 										register={register}
@@ -538,17 +554,17 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 										/>
 									</Field>
 
-								<Field label={t('fields.description')} error={errors?.description?.message} className="col-span-full">
-									<RichTextEditor
-										value={description}
-										onChange={(html) =>
-											setValue("description", html, {
-												shouldDirty: true,
-												shouldValidate: true,
-											})
-										}
-									/>
-								</Field>
+									<Field label={t('fields.description')} error={errors?.description?.message} className="col-span-full">
+										<RichTextEditor
+											value={description}
+											onChange={(html) =>
+												setValue("description", html, {
+													shouldDirty: true,
+													shouldValidate: true,
+												})
+											}
+										/>
+									</Field>
 								</div>
 							</div>
 						</motion.div>
@@ -643,6 +659,70 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 								)}
 							</div>
 						</motion.div>
+
+						{/* AI Card */}
+						{isTestUser && (<motion.div variants={fadeUp}>
+							<div className="bg-card rounded-2xl border border-slate-100 dark:border-slate-800 p-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+								<div className="mb-6">
+									<h3 className="text-[15px] font-semibold text-gray-800 dark:text-slate-100 flex items-center gap-3">
+										<span className="w-[3px] h-5 bg-primary rounded-full block shrink-0" />
+										{t('bundlesAi.title')}
+									</h3>
+									<p className="text-sm text-muted-foreground mt-1">{t('bundlesAi.description')}</p>
+								</div>
+								<div className="space-y-4">
+									<Controller
+										control={control}
+										name="aiEnabled"
+										render={({ field }) => (
+											<label className="flex items-center gap-2.5 cursor-pointer group w-fit">
+												<Checkbox
+													checked={!!field.value}
+													onCheckedChange={field.onChange}
+													id="ai-enabled"
+													className="rounded-md"
+												/>
+												<span className="text-[13px] font-medium text-slate-600 dark:text-slate-300 select-none group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors flex items-center gap-1.5">
+													{t('bundlesAi.enableAi')}
+												</span>
+											</label>
+										)}
+									/>
+
+									<div className="space-y-2">
+										<Label>{t('bundlesAi.aiDescription')}</Label>
+										<Textarea
+											{...register('aiDescription')}
+											rows={3}
+											maxLength={2000}
+											placeholder={t('bundlesAi.aiDescriptionPlaceholder')}
+										/>
+										{errors?.aiDescription?.message && (
+											<div className="text-xs text-red-600">{errors.aiDescription.message}</div>
+										)}
+									</div>
+
+									<div className="space-y-2">
+										<Label>{t('bundlesAi.keywords')}</Label>
+										<p className="text-xs text-muted-foreground">{t('bundlesAi.keywordsDescription')}</p>
+										<Controller
+											control={control}
+											name="aiKeywords"
+											render={({ field }) => (
+												<AiKeywordsInput
+													value={field.value || []}
+													onChange={field.onChange}
+													placeholder={t('bundlesAi.keywordsPlaceholder')}
+												/>
+											)}
+										/>
+										{errors?.aiKeywords?.message && (
+											<div className="text-xs text-red-600">{errors.aiKeywords.message}</div>
+										)}
+									</div>
+								</div>
+							</div>
+						</motion.div>)}
 					</div>
 
 					{/* ── Right Column (Media) ── */}

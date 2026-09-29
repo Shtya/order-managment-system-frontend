@@ -1,64 +1,146 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
-  Lock,
+  CalendarClock,
+  CheckCircle2,
+  FolderTree,
+  ListOrdered,
+  Mail,
   Map,
   MapPin,
   Megaphone,
   MessageSquareText,
+  Package,
+  Pencil,
+  Plus,
+  Repeat,
   Search,
   ShoppingCart,
+  Star,
   ThumbsUp,
+  Trash2,
+  User,
+  XCircle,
 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { AGENT_CAPABILITIES } from "./agentWizardSchema";
+import { Switch } from "@/components/ui/switch";
+import { cn } from "@/utils/cn";
+import {
+  AGENT_CAPABILITIES,
+  capabilityClosure,
+  requiredByCapabilities,
+} from "./agentWizardSchema";
 
 const CAPABILITY_ICONS = {
-  createOrders: ShoppingCart,
+  searchProducts: Search,
+  getProductDetails: Package,
+  searchBundles: Search,
+  getBundleDetails: Package,
+  listCategories: FolderTree,
+  createOrder: ShoppingCart,
   campaignOrders: Megaphone,
-  orderLookup: Search,
+  getMyOrders: ListOrdered,
+  getOrderDetails: ListOrdered,
+  addOrderItems: Plus,
+  replaceOrderItems: Repeat,
+  updateOrderItems: Pencil,
+  updateOrderInfo: Pencil,
+  cancelOrder: XCircle,
+  postponeOrder: CalendarClock,
+  confirmOrder: CheckCircle2,
+  addCustomerAddress: Plus,
+  updateCustomerAddress: Pencil,
+  removeCustomerAddress: Trash2,
+  setDefaultAddress: Star,
+  getMyAddresses: MapPin,
+  getCities: Map,
+  getAreasByCity: MapPin,
+  updateCustomer: User,
   location: Map,
   reactions: ThumbsUp,
   templates: MessageSquareText,
 };
 
+const TINTS = [
+  "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+  "bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400",
+  "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+  "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+  "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400",
+  "bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400",
+  "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
+];
+
+function sameCapabilitySet(a, b) {
+  if (a.length !== b.length) return false;
+  const set = new Set(a);
+  return b.every((id) => set.has(id));
+}
+
 export default function StepCapabilities({ watch, setValue }) {
   const t = useTranslations("agents");
-  const selected = Array.isArray(watch("capabilities")) ? watch("capabilities") : [];
+  const raw = Array.isArray(watch("capabilities")) ? watch("capabilities") : [];
+  const selected = capabilityClosure(raw);
 
-  const toggle = (id, checked) => {
+  useEffect(() => {
+    if (sameCapabilitySet(raw, selected)) return;
+    setValue("capabilities", selected, { shouldDirty: false });
+  }, [raw, selected, setValue]);
+
+  const toggle = (id, checked, locked) => {
+    if (locked && !checked) return;
     const next = checked
-      ? [...new Set([...selected, id])]
+      ? capabilityClosure([...selected, id])
       : selected.filter((capability) => capability !== id);
     setValue("capabilities", next, { shouldDirty: true });
   };
 
   return (
-    <div className="space-y-2">
-      {AGENT_CAPABILITIES.map((id) => {
-        const Icon = CAPABILITY_ICONS[id] ?? Lock;
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+      {AGENT_CAPABILITIES.map((id, index) => {
+        const Icon = CAPABILITY_ICONS[id] ?? Mail;
+        const checked = selected.includes(id);
+        const requiredBy = requiredByCapabilities(id, selected);
+        const locked = requiredBy.length > 0;
+        const requiredTitles = requiredBy
+          .map((cap) => t(`wizard.capabilities.${cap}.title`))
+          .join(t("wizard.capabilityRequiredJoin"));
         return (
           <label
             key={id}
-            className="flex items-start gap-3 p-3 cursor-pointer border border-border rounded-xl hover:bg-muted/50"
+            className={cn(
+              "border rounded-lg p-3 transition-colors",
+              locked ? "cursor-not-allowed bg-muted/40" : "cursor-pointer hover:bg-muted/50",
+              checked ? "border-border" : "border-border opacity-80",
+            )}
           >
-            <Checkbox
-              checked={selected.includes(id)}
-              onCheckedChange={(checked) => toggle(id, checked === true)}
-              className="mt-1"
-            />
-            <div className="w-9 h-9 rounded-[10px] bg-primary/10 flex items-center justify-center text-primary shrink-0">
-              <Icon size={18} />
+            <div className="flex items-start justify-between gap-2">
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                  TINTS[index % TINTS.length],
+                )}
+              >
+                <Icon size={16} />
+              </div>
+              <Switch
+                checked={checked}
+                disabled={locked}
+                onCheckedChange={(value) => toggle(id, value === true, locked)}
+              />
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground">
-                {t(`wizard.capabilities.${id}.title`)}
+            <p className="mt-3 text-sm font-bold text-foreground">
+              {t(`wizard.capabilities.${id}.title`)}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground line-clamp-3">
+              {t(`wizard.capabilities.${id}.desc`)}
+            </p>
+            {locked ? (
+              <p className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-400">
+                {t("wizard.capabilityRequiredFor", { titles: requiredTitles })}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {t(`wizard.capabilities.${id}.desc`)}
-              </p>
-            </div>
+            ) : null}
           </label>
         );
       })}

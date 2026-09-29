@@ -18,22 +18,50 @@ import StepKnowledge from "./StepKnowledge";
 import StepCapabilities from "./StepCapabilities";
 import StepReview from "./StepReview";
 import {
-  AGENT_WIZARD_STEPS,
   buildAgentPayload,
   initialAgentWizardData,
   mapAgentToForm,
   validateStepGeneral,
 } from "./agentWizardSchema";
 
-const STEPS = AGENT_WIZARD_STEPS;
 const LIST_HREF = "/ai/agents";
+
+const SECTION_IDS = {
+  general: "agent-section-general",
+  knowledge: "agent-section-knowledge",
+  capabilities: "agent-section-capabilities",
+  review: "agent-section-review",
+};
+
+function SectionCard({ stepKey, index, children }) {
+  const t = useTranslations("agents");
+  return (
+    <Card id={SECTION_IDS[stepKey]}>
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div
+            className={cn(
+              "grid h-8 w-8 shrink-0 place-items-center rounded-full border text-sm font-bold",
+              "border-primary bg-primary text-white",
+            )}
+          >
+            {index + 1}
+          </div>
+          <div className="text-sm font-bold text-foreground">
+            {t(`wizard.steps.${stepKey}`)}
+          </div>
+        </div>
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function AgentWizard({ mode = "create", agentId = null }) {
   const isEdit = mode === "edit";
   const t = useTranslations("agents");
   const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [stepError, setStepError] = useState("");
+  const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
   const [pageLoading, setPageLoading] = useState(isEdit);
 
@@ -77,28 +105,23 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
     [t, isEdit],
   );
 
-  const goNext = async () => {
-    setStepError("");
-    const values = getValues();
-    if (step === 0) {
-      const errs = validateStepGeneral(values);
-      clearErrors();
-      Object.entries(errs).forEach(([k, v]) => setError(k, { type: "manual", message: v }));
-      if (Object.keys(errs).length) {
-        setStepError(t("wizard.fixStepErrors"));
-        return;
-      }
-    }
-    setStep((s) => Math.min(STEPS.length - 1, s + 1));
+  const scrollToSection = (stepKey) => {
+    document
+      .getElementById(SECTION_IDS[stepKey])
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleSave = async () => {
     const values = getValues();
     const g = validateStepGeneral(values);
+    clearErrors();
+    Object.entries(g).forEach(([k, v]) => setError(k, { type: "manual", message: v }));
     if (Object.keys(g).length) {
-      setStepError(t("wizard.fixStepErrors"));
+      setFormError(t("wizard.fixStepErrors"));
+      scrollToSection("general");
       return;
     }
+    setFormError("");
     setSaving(true);
     try {
       const payload = buildAgentPayload(values);
@@ -135,62 +158,21 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
     <div className="min-h-screen p-5 space-y-4">
       <PageHeader breadcrumbs={breadcrumbs} />
 
-      <Card>
-        <CardContent>
-          <div className="flex items-center gap-0">
-            {STEPS.map((key, index) => (
-              <div key={key} className="flex items-center flex-1 min-w-0">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div
-                    className={cn(
-                      "grid h-8 w-8 shrink-0 place-items-center rounded-full border text-sm font-bold",
-                      index === step
-                        ? "border-primary bg-primary text-white"
-                        : index < step
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground",
-                    )}
-                  >
-                    {index < step ? "✓" : index + 1}
-                  </div>
-                  <div className={cn("text-xs truncate", index === step ? "font-bold text-foreground" : "text-muted-foreground")}>
-                    {t(`wizard.steps.${key}`)}
-                  </div>
-                </div>
-                {index < STEPS.length - 1 && (
-                  <div className={cn("h-0.5 flex-1 mx-2", index < step ? "bg-primary" : "bg-border")} />
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <SectionCard stepKey="general" index={0}>
+        <StepGeneral control={control} errors={errors} />
+      </SectionCard>
 
-      <Card>
-        <CardContent className="pt-6">
-          {step === 0 && <StepGeneral control={control} errors={errors} />}
-          {step === 1 && <StepKnowledge watch={watch} setValue={setValue} />}
-          {step === 2 && <StepCapabilities watch={watch} setValue={setValue} />}
-          {step === 3 && <StepReview getValues={getValues} onEditStep={setStep} />}
-        </CardContent>
-        <CardFooter className="justify-between gap-3 border-t mt-5!">
-          <p className="text-xs text-red-500">{stepError}</p>
-          <div className="flex items-center gap-2 ms-auto">
-            {step > 0 && (
-              <Button_ type="button" size="sm" variant="outline" label={t("wizard.back")} onClick={() => setStep((s) => s - 1)} />
-            )}
-            {step < STEPS.length - 1 ? (
-              <PrimaryBtn key="next" type="button" onClick={goNext}>
-                {t("wizard.next")}
-              </PrimaryBtn>
-            ) : (
-              <PrimaryBtn key="save" type="button" loading={saving} permission={isEdit ? "agents.update" : "agents.create"} onClick={handleSave}>
-                {t("wizard.save")}
-              </PrimaryBtn>
-            )}
-          </div>
-        </CardFooter>
-      </Card>
+      <SectionCard stepKey="knowledge" index={1}>
+        <StepKnowledge watch={watch} setValue={setValue} />
+      </SectionCard>
+
+      <SectionCard stepKey="capabilities" index={2}>
+        <StepCapabilities watch={watch} setValue={setValue} />
+      </SectionCard>
+
+      {/* <SectionCard stepKey="review" index={3}>
+        <StepReview control={control} onEditSection={scrollToSection} />
+      </SectionCard> */}
     </div>
   );
 }

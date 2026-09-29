@@ -2,16 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useWatch } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import api from "@/utils/api";
 
-export default function StepReview({ getValues, onEditStep }) {
+export default function StepReview({ control, onEditSection }) {
   const t = useTranslations("agents");
-  const v = getValues();
+  const v = useWatch({ control }) || {};
   const selectedIds = Array.isArray(v.knowledgeIds) ? v.knowledgeIds : [];
   const enabledCapabilities = Array.isArray(v.capabilities) ? v.capabilities : [];
   const [titles, setTitles] = useState([]);
   const [providerName, setProviderName] = useState(null);
+
+  const selectedKey = selectedIds.join(",");
+  const providerId = v.responseProviderId;
 
   useEffect(() => {
     let cancelled = false;
@@ -21,7 +25,7 @@ export default function StepReview({ getValues, onEditStep }) {
           selectedIds.length
             ? api.get("/agents/knowledge", { params: { limit: 100 } })
             : Promise.resolve(null),
-          v.responseProviderId && v.responseProviderId !== "auto"
+          providerId && providerId !== "auto"
             ? api.get("/ai/providers", { params: { scope: "all", isActive: "true" } })
             : Promise.resolve(null),
         ]);
@@ -38,7 +42,7 @@ export default function StepReview({ getValues, onEditStep }) {
           ? providersRes.data
           : providersRes?.data?.records || [];
         setProviderName(
-          providerRecords.find((provider) => provider.id === v.responseProviderId)?.name || null,
+          providerRecords.find((provider) => provider.id === providerId)?.name || null,
         );
       } catch {
         if (!cancelled) {
@@ -51,11 +55,11 @@ export default function StepReview({ getValues, onEditStep }) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedKey, providerId]);
 
   const sections = [
     {
-      step: 0,
+      stepKey: "general",
       title: t("wizard.steps.general"),
       rows: [
         [t("form.name"), v.name || "—"],
@@ -75,7 +79,7 @@ export default function StepReview({ getValues, onEditStep }) {
       ],
     },
     {
-      step: 1,
+      stepKey: "knowledge",
       title: t("wizard.steps.knowledge"),
       custom: selectedIds.length ? (
         <ul className="list-disc ps-5 space-y-1">
@@ -89,7 +93,7 @@ export default function StepReview({ getValues, onEditStep }) {
       footnote: t("knowledge.assign.selected", { count: selectedIds.length }),
     },
     {
-      step: 2,
+      stepKey: "capabilities",
       title: t("wizard.steps.capabilities"),
       custom: (
         <ul className="list-disc ps-5 space-y-1">
@@ -109,7 +113,7 @@ export default function StepReview({ getValues, onEditStep }) {
             <p className="text-sm font-semibold text-foreground">{section.title}</p>
             <button
               type="button"
-              onClick={() => onEditStep(section.step)}
+              onClick={() => onEditSection(section.stepKey)}
               className="text-xs font-semibold text-primary hover:underline"
             >
               {t("wizard.editSection")}

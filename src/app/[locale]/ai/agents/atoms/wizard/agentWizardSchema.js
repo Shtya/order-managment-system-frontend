@@ -2,13 +2,134 @@ export const AGENT_WIZARD_STEPS = ["general", "knowledge", "capabilities", "revi
 
 /** User-toggleable capabilities (addressFix is automatic, never stored). */
 export const AGENT_CAPABILITIES = [
-  "createOrders",
+  "searchProducts",
+  "getProductDetails",
+  "searchBundles",
+  "getBundleDetails",
+  "listCategories",
+  "createOrder",
   "campaignOrders",
-  "orderLookup",
+  "getMyOrders",
+  "getOrderDetails",
+  "addOrderItems",
+  "replaceOrderItems",
+  "updateOrderItems",
+  "updateOrderInfo",
+  "cancelOrder",
+  "postponeOrder",
+  "confirmOrder",
+  "addCustomerAddress",
+  "updateCustomerAddress",
+  "removeCustomerAddress",
+  "setDefaultAddress",
+  "getMyAddresses",
+  "getCities",
+  "getAreasByCity",
+  "updateCustomer",
   "location",
   "reactions",
   "templates",
 ];
+
+const CATALOG_READ = [
+  "searchProducts",
+  "getProductDetails",
+  "searchBundles",
+  "getBundleDetails",
+];
+const GEO_READ = ["getCities", "getAreasByCity"];
+const ADDRESS_READ = ["getMyAddresses", ...GEO_READ];
+const ORDER_READ = ["getMyOrders", "getOrderDetails"];
+
+/** Direct deps; expandAgentCapabilities walks them transitively. */
+export const AGENT_CAPABILITY_DEPENDENCIES = {
+  getProductDetails: [],
+  getBundleDetails: [],
+  getAreasByCity: [],
+  getOrderDetails: [],
+  createOrder: [...CATALOG_READ, "listCategories", ...ADDRESS_READ],
+  campaignOrders: [...ADDRESS_READ],
+  addOrderItems: [...ORDER_READ, ...CATALOG_READ],
+  replaceOrderItems: [...ORDER_READ, ...CATALOG_READ],
+  updateOrderItems: [...ORDER_READ, ...CATALOG_READ],
+  updateOrderInfo: [...ORDER_READ, ...ADDRESS_READ],
+  cancelOrder: [...ORDER_READ],
+  postponeOrder: [...ORDER_READ],
+  confirmOrder: [...ORDER_READ],
+  addCustomerAddress: [...ADDRESS_READ],
+  updateCustomerAddress: [...ADDRESS_READ],
+  removeCustomerAddress: ["getMyAddresses"],
+  setDefaultAddress: ["getMyAddresses"],
+};
+
+export function capabilityClosure(list) {
+  const valid = new Set(AGENT_CAPABILITIES);
+  const out = new Set();
+  const visit = (id) => {
+    if (!valid.has(id) || out.has(id)) return;
+    out.add(id);
+    (AGENT_CAPABILITY_DEPENDENCIES[id] || []).forEach(visit);
+  };
+  (Array.isArray(list) ? list : []).forEach(visit);
+  return AGENT_CAPABILITIES.filter((id) => out.has(id));
+}
+
+export function requiredByCapabilities(id, selected) {
+  const requiredBy = (Array.isArray(selected) ? selected : []).filter(
+    (other) => other !== id && capabilityClosure([other]).includes(id),
+  );
+  return requiredBy.filter(
+    (parent) => !requiredBy.some((other) => other !== parent && capabilityClosure([other]).includes(parent)),
+  );
+}
+
+const LEGACY_CAPABILITIES = {
+  createOrders: [
+    "searchProducts",
+    "getProductDetails",
+    "searchBundles",
+    "getBundleDetails",
+    "listCategories",
+    "createOrder",
+    "getMyAddresses",
+    "getCities",
+    "getAreasByCity",
+  ],
+  orderLookup: ["getMyOrders", "getOrderDetails"],
+  editOrders: [
+    "addOrderItems",
+    "replaceOrderItems",
+    "updateOrderItems",
+    "updateOrderInfo",
+    "cancelOrder",
+    "postponeOrder",
+    "confirmOrder",
+    "addCustomerAddress",
+    "updateCustomerAddress",
+    "removeCustomerAddress",
+    "setDefaultAddress",
+    "updateCustomer",
+    "getMyOrders",
+    "getOrderDetails",
+    "searchProducts",
+    "getProductDetails",
+    "searchBundles",
+    "getBundleDetails",
+    "getMyAddresses",
+    "getCities",
+    "getAreasByCity",
+  ],
+};
+
+export function expandAgentCapabilities(list) {
+  const out = new Set();
+  for (const cap of Array.isArray(list) ? list : []) {
+    const mapped = LEGACY_CAPABILITIES[cap];
+    if (mapped) mapped.forEach((id) => out.add(id));
+    else out.add(cap);
+  }
+  return capabilityClosure([...out]);
+}
 
 export const AGENT_PROVIDER_AUTO = "auto";
 export const AGENT_LANGUAGES = ["auto", "arabic", "english"];
@@ -56,9 +177,7 @@ export function buildAgentPayload(values) {
         : values.responseProviderId,
     isActive: values.isActive ?? true,
     knowledgeIds: Array.isArray(values.knowledgeIds) ? values.knowledgeIds : [],
-    capabilities: Array.isArray(values.capabilities)
-      ? values.capabilities.filter((c) => AGENT_CAPABILITIES.includes(c))
-      : [...AGENT_CAPABILITIES],
+    capabilities: expandAgentCapabilities(values.capabilities),
   };
 }
 
@@ -74,7 +193,7 @@ export function mapAgentToForm(agent) {
     knowledgeIds: Array.isArray(agent?.knowledgeIds) ? agent.knowledgeIds : [],
     capabilities:
       Array.isArray(agent?.capabilities) && agent.capabilities.length
-        ? agent.capabilities.filter((c) => AGENT_CAPABILITIES.includes(c))
+        ? expandAgentCapabilities(agent.capabilities)
         : [...AGENT_CAPABILITIES],
   };
 }

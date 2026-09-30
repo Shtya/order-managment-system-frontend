@@ -23,6 +23,7 @@ import {
   Loader2,
   Contact,
   Brain,
+  Image as ImageIcon,
 } from "lucide-react";
 
 import api from "@/utils/api";
@@ -174,6 +175,17 @@ const createAiDecisionSchema = (t) =>
     }),
   });
 
+const createAiMediaSchema = (t) =>
+  createAiDecisionSchema(t).concat(
+    yup.object({
+      audioMinutePrice: yup
+        .number()
+        .typeError(t("validation.invalidNumber"))
+        .min(0, t("validation.invalidNumber"))
+        .required(t("validation.invalidNumber")),
+    }),
+  );
+
 const SOCIAL_PLATFORMS = [
   {
     id: "facebook",
@@ -214,6 +226,7 @@ export default function SuperAdminSettingsPage() {
     { id: "contacts", label: t("tabs.contacts"), icon: Contact },
     { id: "whatsapp", label: t("tabs.whatsapp"), icon: FaWhatsapp },
     { id: "aiDecision", label: t("tabs.aiDecision"), icon: Brain },
+    { id: "aiMedia", label: t("tabs.aiMedia"), icon: ImageIcon },
   ];
 
   return (
@@ -257,6 +270,7 @@ export default function SuperAdminSettingsPage() {
               {activeTab === "contacts" && <ContactsTab t={t} />}
               {activeTab === "whatsapp" && <WhatsAppTab t={t} />}
               {activeTab === "aiDecision" && <AiDecisionTab t={t} />}
+              {activeTab === "aiMedia" && <AiMediaTab t={t} />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -775,6 +789,140 @@ function AiDecisionTab({ t }) {
           saving={isSubmitting}
           label={t("common.saveChanges")}
         />
+      </SettingCard>
+    </form>
+  );
+}
+
+function AiMediaTab({ t }) {
+  const [loading, setLoading] = useState(true);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(createAiMediaSchema(t)),
+    defaultValues: {
+      tokenPrice: 0.5,
+      audioMinutePrice: 0.006,
+      allowanceMode: "limited",
+      units: 0,
+      durationDays: "",
+    },
+  });
+  const allowanceMode = watch("allowanceMode");
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await api.get("/admin-settings");
+        const ai = res.data?.billing?.aiMedia || {};
+        const allowance = ai.allowance === undefined ? { units: 0, durationDays: null } : ai.allowance;
+        reset({
+          tokenPrice: ai.tokenPrice ?? 0.5,
+          audioMinutePrice: ai.audioMinutePrice ?? 0.006,
+          allowanceMode: allowance === null ? "unlimited" : "limited",
+          units: allowance?.units ?? 0,
+          durationDays:
+            allowance?.durationDays === null || allowance?.durationDays === undefined
+              ? ""
+              : allowance.durationDays,
+        });
+      } catch (err) {
+        toast.error(t("toast.loadError"));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [reset, t]);
+
+  const onSubmit = async (values) => {
+    try {
+      const durationRaw =
+        values.durationDays === "" || values.durationDays === null || values.durationDays === undefined
+          ? null
+          : Number(values.durationDays);
+      await api.patch("/admin-settings", {
+        billing: {
+          aiMedia: {
+            tokenPrice: Number(values.tokenPrice),
+            audioMinutePrice: Number(values.audioMinutePrice),
+            allowance:
+              values.allowanceMode === "unlimited"
+                ? null
+                : { units: Number(values.units), durationDays: durationRaw },
+          },
+        },
+      });
+      toast.success(t("toast.saveSuccess"));
+    } catch (err) {
+      const msg = err.response?.data?.message || t("toast.saveError");
+      toast.error(Array.isArray(msg) ? msg[0] : msg);
+    }
+  };
+
+  if (loading)
+    return (
+      <SettingCard>
+        <FormSkeleton rows={5} />
+      </SettingCard>
+    );
+
+  const MODES = [
+    { id: "unlimited", name: t("aiMedia.modes.unlimited.name"), desc: t("aiMedia.modes.unlimited.desc") },
+    { id: "limited", name: t("aiMedia.modes.limited.name"), desc: t("aiMedia.modes.limited.desc") },
+  ];
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <SettingCard className=" border-0 bg-transparent shadow-none">
+        <SectionHead title={t("aiMedia.pricingTitle")} subtitle={t("aiMedia.pricingSubtitle")} />
+        <div className="p-6 main-card rounded-2xl border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05)] space-y-4">
+          <Field label={t("aiMedia.tokenPriceLabel")} error={errors.tokenPrice?.message}>
+            <Input {...register("tokenPrice")} type="number" min={0} step="0.0001" className="h-11" dir="ltr" />
+            <p className="text-[11px] text-muted-foreground">{t("aiMedia.tokenPriceHint")}</p>
+          </Field>
+          <Field label={t("aiMedia.audioMinutePriceLabel")} error={errors.audioMinutePrice?.message}>
+            <Input {...register("audioMinutePrice")} type="number" min={0} step="0.0001" className="h-11" dir="ltr" />
+            <p className="text-[11px] text-muted-foreground">{t("aiMedia.audioMinutePriceHint")}</p>
+          </Field>
+        </div>
+      </SettingCard>
+      <SettingCard className=" border-0 bg-transparent shadow-none">
+        <SectionHead title={t("aiMedia.allowanceTitle")} subtitle={t("aiMedia.allowanceSubtitle")} />
+        <div className="p-6 main-card rounded-2xl border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05)] space-y-3">
+          {MODES.map((mode) => (
+            <div
+              key={mode.id}
+              className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                allowanceMode === mode.id ? "border-primary bg-primary/5" : "border-slate-200 dark:border-slate-700"
+              }`}
+              onClick={() => setValue("allowanceMode", mode.id, { shouldValidate: true })}
+            >
+              <div className="flex-1">
+                <div className="font-medium">{mode.name}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">{mode.desc}</div>
+              </div>
+            </div>
+          ))}
+          {allowanceMode === "limited" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <Field label={t("aiMedia.unitsLabel")} error={errors.units?.message} required>
+                <Input {...register("units")} type="number" min={0} step={1} className="h-11" dir="ltr" />
+              </Field>
+              <Field label={t("aiMedia.durationLabel")} error={errors.durationDays?.message}>
+                <Input {...register("durationDays")} type="number" min={0} step={1} className="h-11" dir="ltr" />
+              </Field>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">{t("aiMedia.unlimitedNote")}</p>
+          )}
+        </div>
+        <SaveFooter onSave={handleSubmit(onSubmit)} saving={isSubmitting} label={t("common.saveChanges")} />
       </SettingCard>
     </form>
   );

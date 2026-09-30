@@ -131,6 +131,8 @@ export function expandAgentCapabilities(list) {
   return capabilityClosure([...out]);
 }
 
+export const AGENT_MEDIA_INPUTS = ["acceptImage", "acceptVideo", "acceptDocument", "acceptAudio"];
+
 export const AGENT_PROVIDER_AUTO = "auto";
 export const AGENT_LANGUAGES = ["auto", "arabic", "english"];
 export const AGENT_GENDERS = ["male", "female"];
@@ -144,6 +146,10 @@ export const initialAgentWizardData = {
   isActive: true,
   knowledgeIds: [],
   capabilities: [...AGENT_CAPABILITIES],
+  acceptImage: false,
+  acceptVideo: false,
+  acceptDocument: false,
+  acceptAudio: false,
 };
 
 export function validateStepGeneral(values) {
@@ -178,6 +184,10 @@ export function buildAgentPayload(values) {
     isActive: values.isActive ?? true,
     knowledgeIds: Array.isArray(values.knowledgeIds) ? values.knowledgeIds : [],
     capabilities: expandAgentCapabilities(values.capabilities),
+    acceptImage: values.acceptImage === true,
+    acceptVideo: values.acceptVideo === true,
+    acceptDocument: values.acceptDocument === true,
+    acceptAudio: values.acceptAudio === true,
   };
 }
 
@@ -195,5 +205,9 @@ export function mapAgentToForm(agent) {
       Array.isArray(agent?.capabilities) && agent.capabilities.length
         ? expandAgentCapabilities(agent.capabilities)
         : [...AGENT_CAPABILITIES],
+    acceptImage: agent?.acceptImage === true,
+    acceptVideo: agent?.acceptVideo === true,
+    acceptDocument: agent?.acceptDocument === true,
+    acceptAudio: agent?.acceptAudio === true,
   };
 }

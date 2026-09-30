@@ -11932,7 +11932,8 @@
     "tabs": {
       "contacts": "Contacts & Socials",
       "whatsapp": "WhatsApp",
-      "aiDecision": "AI Decision"
+      "aiDecision": "AI Decision",
+      "aiMedia": "AI Media"
     },
     "contacts": {
       "primaryTitle": "Primary Contact Information",
@@ -11983,6 +11984,29 @@
       "durationPlaceholder": "Empty = no expiry",
       "durationHint": "Days since account creation the free tokens stay valid. Empty means no expiry.",
       "unlimitedNote": "Unlimited mode selected: usage is fully free and no wallet reservation happens."
+    },
+    "aiMedia": {
+      "pricingTitle": "AI Media Pricing",
+      "pricingSubtitle": "Token price for image, video frames, and documents. Separate price per minute of speech-to-text.",
+      "tokenPriceLabel": "Price per 1 Million Tokens ($)",
+      "tokenPriceHint": "Billed for vision and document tokens (input + output).",
+      "audioMinutePriceLabel": "Price per audio minute ($)",
+      "audioMinutePriceHint": "Billed for voice notes and video speech transcription.",
+      "allowanceTitle": "Free Allowance",
+      "allowanceSubtitle": "Free tokens granted per tenant before the wallet is charged. Audio minutes are charged unless unlimited free is selected.",
+      "modes": {
+        "unlimited": {
+          "name": "Unlimited free",
+          "desc": "All media processing is free."
+        },
+        "limited": {
+          "name": "Limited free allowance",
+          "desc": "Grant free tokens, then charge the wallet. Audio minutes are always charged after free tokens."
+        }
+      },
+      "unitsLabel": "Free tokens (units)",
+      "durationLabel": "Validity (days)",
+      "unlimitedNote": "Unlimited mode selected: usage is fully free."
     },
     "socials": {
       "facebook": "Facebook",
@@ -18021,6 +18045,33 @@
       "capabilitiesAutomaticShort": "automatic",
       "capabilityRequiredFor": "Enabled because it is required for {titles}.",
       "capabilityRequiredJoin": ", ",
+      "mediaInputsTitle": "Media handling",
+      "mediaInputsDescription": "You can enable or disable the agent's ability to process the different types of media customers send. Each media processing operation is paid and deducted from the customer's wallet.",
+      "mediaPricingLabel": "Media pricing",
+      "mediaPricingCurrent": "Current price:",
+      "mediaPricingUnit": "per million tokens",
+      "mediaAudioPricingUnit": "per audio minute",
+      "mediaInputsFooter": "When any media type is turned off, those files are not processed, the AI model is not called, and nothing is charged to your wallet.",
+      "mediaEnabled": "On",
+      "mediaDisabled": "Off",
+      "mediaInputs": {
+        "acceptImage": {
+          "title": "Images",
+          "desc": "The agent can analyze images and understand their content."
+        },
+        "acceptVideo": {
+          "title": "Videos",
+          "desc": "The agent can analyze video clips and extract important information from them."
+        },
+        "acceptDocument": {
+          "title": "Documents",
+          "desc": "The agent can read and analyze PDF files and other documents and extract important information from them."
+        },
+        "acceptAudio": {
+          "title": "Voice notes",
+          "desc": "The agent can convert voice notes to text, then understand and analyze their content in the conversation."
+        }
+      },
 "capabilities": {
   "searchProducts": {
     "title": "Search Products",

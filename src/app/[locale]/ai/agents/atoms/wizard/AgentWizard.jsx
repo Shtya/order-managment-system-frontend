@@ -173,7 +173,7 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
       />
 
       <SectionCard stepKey="general" index={0}>
-        <StepGeneral control={control} errors={errors} />
+        <StepGeneral control={control} errors={errors} watch={watch} setValue={setValue} />
       </SectionCard>
 
       <SectionCard stepKey="knowledge" index={1}>

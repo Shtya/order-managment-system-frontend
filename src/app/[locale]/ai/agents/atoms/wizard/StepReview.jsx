@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useWatch } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import api from "@/utils/api";
+import { AGENT_MEDIA_INPUTS } from "./agentWizardSchema";
 
 export default function StepReview({ control, onEditSection }) {
   const t = useTranslations("agents");
@@ -76,6 +77,10 @@ export default function StepReview({ control, onEditSection }) {
             {t(`status.${v.isActive ? "active" : "inactive"}`)}
           </Badge>,
         ],
+        ...AGENT_MEDIA_INPUTS.map((id) => [
+          t(`wizard.mediaInputs.${id}.title`),
+          v[id] ? t("wizard.mediaEnabled") : t("wizard.mediaDisabled"),
+        ]),
       ],
     },
     {

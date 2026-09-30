@@ -18069,7 +18069,7 @@
         },
         "acceptAudio": {
           "title": "Voice notes",
-          "desc": "The agent can convert voice notes to text, then understand and analyze their content in the conversation."
+          "desc": "The agent can understand and analyze voice messages within the conversation."
         }
       },
 "capabilities": {

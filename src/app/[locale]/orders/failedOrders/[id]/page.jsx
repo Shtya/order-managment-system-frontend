@@ -131,7 +131,7 @@ export function ExternalProductModal({ isOpen, onClose, remoteId, storeId, provi
                         <div className="space-y-6">
                             <div className="flex flex-col md:flex-row items-start gap-6">
                                 <div className="w-32 h-32 rounded-xl overflow-hidden border shrink-0 bg-muted">
-                                    <img src={cache.data.thumb || '/placeholder.png'} alt={cache.data.name} className="w-full h-full object-cover" />
+                                    {cache.data.thumb && <img src={cache.data.thumb || '/placeholder.png'} alt={cache.data.name} className="w-full h-full object-cover" />}
                                 </div>
                                 <div className="flex-1 space-y-3">
                                     <h4 className="text-lg font-bold">{cache.data.name}</h4>

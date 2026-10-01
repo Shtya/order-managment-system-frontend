@@ -348,7 +348,7 @@ export function FailedOrderDetailsModal({
                                                 {/* Header with Image & Basic Info */}
                                                 <div className="flex items-start gap-6">
                                                     {/* Product Image */}
-                                                    <div className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-border shrink-0 bg-muted">
+                                                    {cache.data.thumb && (<div className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-border shrink-0 bg-muted">
                                                         <img
                                                             src={cache.data.thumb || '/placeholder.png'}
                                                             alt={cache.data.name}
@@ -357,7 +357,7 @@ export function FailedOrderDetailsModal({
                                                                 e.currentTarget.src = '/placeholder.png';
                                                             }}
                                                         />
-                                                    </div>
+                                                    </div>)}
 
                                                     {/* Product Info */}
                                                     <div className="flex-1 space-y-3">

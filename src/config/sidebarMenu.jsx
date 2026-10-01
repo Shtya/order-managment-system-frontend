@@ -46,6 +46,7 @@ import {
   Megaphone,
   ArrowLeftRight,
   Globe,
+  Sparkles,
 } from "lucide-react";
 import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { FaBolt, FaBug, FaChartPie, FaClock, FaListAlt, FaPlus, FaRegFileAlt, FaWhatsapp } from "react-icons/fa";
@@ -440,6 +441,13 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
           labelKey: "employee-performance-analysis",
           href: "/reports/employee-performance-analysis",
           permission: "dashboard.read",
+        },
+        {
+          icon: Sparkles,
+          labelKey: "ai-reports",
+          href: "/reports/ai-reports",
+          permission: "dashboard.read",
+          allowedEmails: testEmails,
         },
         {
           icon: Truck,

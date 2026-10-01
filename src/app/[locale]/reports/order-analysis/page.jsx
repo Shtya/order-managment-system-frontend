@@ -355,7 +355,7 @@ const OrderAnalysisPDF = ({
           </Text>
           <View style={pdfStyles.statsGrid}>
             {statsData.map((stat, index) => (
-              <View key={index} style={pdfStyles.statBox}  wrap={false}>
+              <View key={index} style={pdfStyles.statBox} wrap={false}>
                 <Text style={pdfStyles.statTitle}>{stat.name}</Text>
                 <Text style={pdfStyles.statValue}>{stat.value}</Text>
                 {stat.trend.showArrow && (
@@ -398,7 +398,7 @@ const OrderAnalysisPDF = ({
 
       {/* Weekly Trend Chart */}
       {weeklyTrendChartUrl && (
-        <View style={pdfStyles.chartContainer}  wrap={false}>
+        <View style={pdfStyles.chartContainer} wrap={false}>
           <Text style={pdfStyles.chartTitle}>{t("charts.ordersPercent")}</Text>
           <PdfImage src={weeklyTrendChartUrl} style={pdfStyles.chartImage} />
         </View>
@@ -406,7 +406,7 @@ const OrderAnalysisPDF = ({
 
       {/* Status Donut Chart */}
       {statusDonutChartUrl && (
-        <View style={pdfStyles.chartContainer}  wrap={false}>
+        <View style={pdfStyles.chartContainer} wrap={false}>
           <Text style={pdfStyles.chartTitle}>{t("charts.perStatus")}</Text>
           <PdfImage src={statusDonutChartUrl} style={pdfStyles.chartImage} />
         </View>
@@ -557,7 +557,7 @@ const OrderAnalysisPDF = ({
 
               {/* Table Rows */}
               {topProductsStats.map((row, index) => (
-                <View key={index} style={[{ flexDirection: isArabic ? "row-reverse" : "row" }]}  wrap={false}>
+                <View key={index} style={[{ flexDirection: isArabic ? "row-reverse" : "row" }]} wrap={false}>
                   <Text style={[pdfStyles.tableCell, locale === "ar" && { textAlign: isArabic ? "right" : "left" }]}>
                     {row.name}
                   </Text>
@@ -846,7 +846,9 @@ export function StatusDonut({
   const total = hasData
     ? data.reduce((s, d) => s + (Number(d[config.key]) ?? 0), 0)
     : 0;
-  const centerValue = !!config.centerValue ? config.centerValue : total;
+  const roundedTotal = Number(total.toFixed(2));
+
+  const centerValue = !!config.centerValue ? config.centerValue : roundedTotal;
   const centerLabel = !!config.centerLabel ? config.centerLabel : t("common.totalLabel");
 
   if (loading)
@@ -2196,23 +2198,23 @@ export default function OrdersStatisticsPage() {
         }
 
         return {
-        id: card.key,
-        name: card.title,
-        description: card.description,
-        example: card.example,
-        value: val,
-        icon: card.icon,
-        color: card.color,
-        sortOrder: i,
-        onClick: () => { },
-        trend: {
-          label: hasComparison ? comparisonLabel : t("dashboard.common.noComparisonData"),
-          value: hasComparison ? `${Math.abs(Math.round(change))}%` : "",
-          isUp: isPositiveChange,
-          isGood: isGood,
-          showArrow: hasComparison && Math.round(change) !== 0,
-        },
-      };
+          id: card.key,
+          name: card.title,
+          description: card.description,
+          example: card.example,
+          value: val,
+          icon: card.icon,
+          color: card.color,
+          sortOrder: i,
+          onClick: () => { },
+          trend: {
+            label: hasComparison ? comparisonLabel : t("dashboard.common.noComparisonData"),
+            value: hasComparison ? `${Math.abs(Math.round(change))}%` : "",
+            isUp: isPositiveChange,
+            isGood: isGood,
+            showArrow: hasComparison && Math.round(change) !== 0,
+          },
+        };
       });
     },
     [advancedStats, KPI, formatCurrency, quickRange, t],

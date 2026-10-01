@@ -539,6 +539,7 @@
     "purchases": "Purchases",
     "purchasesReturn": "Purchase Returns",
     "order-analysis": "Order Analysis",
+    "ai-reports": "AI Reports",
     "shippingReport": "Shipping Report",
     "employee-performance-analysis": "Employee Performance Analysis",
     "sales": "Sales",
@@ -11987,7 +11988,7 @@
     },
     "aiMedia": {
       "pricingTitle": "AI Media Pricing",
-      "pricingSubtitle": "Token price for image, video frames, and documents. Separate price per minute of speech-to-text.",
+      "pricingSubtitle": "Token price for image, video frames, and documents. Separate price per minute of audio processing.",
       "tokenPriceLabel": "Price per 1 Million Tokens ($)",
       "tokenPriceHint": "Billed for vision and document tokens (input + output).",
       "audioMinutePriceLabel": "Price per audio minute ($)",
@@ -15992,6 +15993,102 @@
     "title": "Tutorial mode enabled",
     "description": "Learn about every element in the system and how it works",
     "exit": "Exit tutorial mode",
+    "aiReports": {
+      "kpi": {
+        "cost": {
+          "description": "The amount actually deducted from your wallet, in USD, for AI services in the period you selected. This includes services billed through Madar (such as address checks and processing photos, files, audio, and video). It does not include usage on your own account, because that is not deducted from the wallet.",
+          "example": "If $4.02 was deducted this month for address checks and photo processing, this card shows $4.02."
+        },
+        "tokens": {
+          "description": "How much AI was used in the period: what was sent to the model (input) and what the model wrote (output). This includes every type: WhatsApp replies, address correction, address check, file processing, testing from the dashboard, and conversation summaries. Usage still appears if it ran on your own account, even when the wallet charged $0.",
+          "example": "120,000 units this week: 90,000 on your account (wallet cost $0) and 30,000 on Madar services."
+        },
+        "sessions": {
+          "description": "How many WhatsApp conversations the agent started with customers in this period. This is a count of conversations, not money.",
+          "example": "If 40 customers chatted with the agent this week, this shows 40."
+        },
+        "agents": {
+          "description": "How many agents had at least one customer conversation in this period. Agents that did not work are not counted.",
+          "example": "You have 5 agents, but only Sales and Support talked to customers — this shows 2."
+        },
+        "media": {
+          "description": "How many files were processed successfully: photos, videos, documents, and voice notes. Failed files are not counted here.",
+          "example": "80 photos and 20 voice notes processed successfully — this shows 100."
+        },
+        "todayCost": {
+          "description": "The amount deducted from the wallet today (calendar day) for AI services. This is today's spending, not the money still left in the wallet.",
+          "example": "If $0.31 was deducted today, this shows $0.31."
+        },
+        "monthCost": {
+          "description": "The amount deducted from the wallet since the first day of this calendar month, for AI services.",
+          "example": "If $4.02 has been deducted so far this month, this shows $4.02."
+        },
+        "paidBalance": {
+          "description": "The wallet balance currently available to use AI services, in USD. This is the money in the wallet now, not what was used in the selected period.",
+          "example": "If the wallet holds $86.41, this card shows $86.41."
+        }
+      },
+      "credits": {
+        "description": "The free amount Madar gives you before deducting from the wallet: one grant for AI replies and one for processing photos and files. Unlimited means there is no cap. Remaining is what you can still use for free. Expired unused is what was lost after the grant ended.",
+        "example": "AI replies grant 2,000,000 units, 1,500,000 used, 500,000 still free."
+      },
+      "charts": {
+        "tokensOverTime": {
+          "description": "AI usage day by day or month by month, split into input (what is sent to the model) and output (what the model writes). This is usage, not a dollar amount.",
+          "example": "Monday: 30,000 input and 8,000 output."
+        },
+        "costOverTime": {
+          "description": "The amount deducted from the wallet over time (USD), plus the amount that was reserved as an estimate before the job finished. A difference means the estimate was higher or lower than the final deduction.",
+          "example": "Tuesday reserved $0.45, then actually deducted $0.42."
+        },
+        "tokensByAgent": {
+          "description": "AI usage per WhatsApp agent (input + output). The agents that used the most appear first. This is not wallet cost.",
+          "example": "Sales agent 90,000 units, Support 40,000 units."
+        },
+        "tokensByModel": {
+          "description": "AI usage by the model that did the work. This shows which model was used the most.",
+          "example": "One model processed 1.2 million units."
+        },
+        "costByAgent": {
+          "description": "The amount deducted from the wallet for each agent, in USD. Only wallet-billed usage appears (such as file processing through Madar). Usage on your own account shows $0 here.",
+          "example": "Sales agent: $3.21 this month."
+        },
+        "costByModel": {
+          "description": "The amount deducted from the wallet by model, in USD. Models running on your own account do not appear as a cost here.",
+          "example": "Photo model $0.44, audio processing $0.16."
+        },
+        "costByMedia": {
+          "description": "How wallet cost for file processing is split across photos, video, audio, and documents, in USD.",
+          "example": "Photos $0.18, documents $0.31."
+        },
+        "mediaOverTime": {
+          "description": "How many files were processed successfully each day or month. This is a file count, not money and not usage size.",
+          "example": "4 files on 1 Sep, 12 files on 2 Sep."
+        }
+      },
+      "tables": {
+        "breakdown": {
+          "description": "A dollar breakdown: what was deducted from the wallet, what free usage covered, input vs output vs audio processing cost, and the reserved estimate versus the actual total.",
+          "example": "Total $12.47: $5.90 covered by free usage and $6.57 deducted from the wallet."
+        },
+        "agents": {
+          "description": "One row per agent that worked in the period: conversations and replies, usage size, wallet deduction if any, and the model used most.",
+          "example": "Sara · Sales: 120 conversations, 912,000 usage units, $3.21 from the wallet."
+        },
+        "tools": {
+          "description": "The tools the agent actually used during chat (for example looking up a city). Usage here comes from the conversation. If the tool runs on your account, cost shows $0 because the wallet is not deducted.",
+          "example": "City lookup: 210 times, 8.7% of all tool uses."
+        },
+        "customers": {
+          "description": "Customers whose conversations caused the largest wallet deductions (USD), with their conversation count and usage size.",
+          "example": "Ahmed Hassan: 14 conversations and $0.31 from the wallet."
+        },
+        "sessions": {
+          "description": "Each WhatsApp agent conversation: start time, customer, usage size (input and output), wallet deduction if any (usually from file processing), duration, and status (completed, failed, or in progress).",
+          "example": "Conversation started at 14:02, usage 3,200, deducted $0.0012, completed."
+        }
+      }
+    },
     "dashboard": {
       "generalReports": {
         "title": "General Reports Chart",
@@ -18297,6 +18394,192 @@
         "empty": "No knowledge found.",
         "saved": "Agent knowledge updated"
       }
+    }
+  },
+  "aiReports": {
+    "breadcrumb": {
+      "home": "Home",
+      "title": "AI Reports"
+    },
+    "title": "AI Reports",
+    "howToUse": "Usage guide",
+    "loading": "Loading AI reports…",
+    "error": "Could not load AI reports. Try again.",
+    "empty": "No data for the selected filters",
+    "exporting": "Preparing export…",
+    "exportSuccess": "Conversations exported",
+    "exportFailed": "Export failed",
+    "exportSessions": "Export conversations",
+    "apply": "Apply",
+    "all": "All",
+    "unlimited": "Unlimited",
+    "usd": "USD",
+    "vsPrevious": "{sign}{value}% vs previous period",
+    "ranges": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "this_week": "This week",
+      "last_week": "Last week",
+      "this_month": "This month",
+      "last_month": "Last month",
+      "this_year": "This year"
+    },
+    "filters": {
+      "dateRange": "Date range",
+      "dateRangePlaceholder": "Select a date range",
+      "agent": "Agent",
+      "model": "Model",
+      "mediaType": "File type",
+      "status": "Conversation status",
+      "source": "Usage type",
+      "billedBy": "Who pays",
+      "searchSessions": "Search by customer, phone, or agent"
+    },
+    "sources": {
+      "whatsapp_agent": "WhatsApp agent replies",
+      "address_correction": "Order address correction",
+      "address_check": "Address verification",
+      "media": "Photo and file processing",
+      "playground": "Testing from the dashboard",
+      "compaction": "Agent conversation summary"
+    },
+    "billedBy": {
+      "madar": "Madar (deducted from wallet)",
+      "merchant": "Your account (no Madar deduction)"
+    },
+    "kpi": {
+      "cost": "Deducted from wallet",
+      "tokens": "Usage size",
+      "inputTokens": "Input",
+      "outputTokens": "Output",
+      "sessions": "WhatsApp conversations",
+      "agents": "Active agents",
+      "media": "Processed files",
+      "todayCost": "Deducted today from wallet",
+      "monthCost": "Deducted this month from wallet",
+      "paidBalance": "Available AI wallet balance"
+    },
+    "credits": {
+      "title": "Free usage",
+      "aiDecision": "AI replies through Madar",
+      "aiMedia": "Photo and file processing",
+      "initial": "Free amount",
+      "used": "Used",
+      "remaining": "Still free",
+      "expired": "Expired unused",
+      "expiryDate": "Expiry date",
+      "usagePercent": "Share of the grant used"
+    },
+    "charts": {
+      "tokensOverTime": "Usage over time",
+      "costOverTime": "Wallet deductions over time",
+      "tokensByAgent": "Usage by agent",
+      "tokensByModel": "Usage by model",
+      "costByAgent": "Wallet cost by agent",
+      "costByModel": "Wallet cost by model",
+      "costByMedia": "Wallet cost by file type",
+      "mediaOverTime": "Processed files over time",
+      "mediaMix": "File type mix",
+      "toolGroups": "Tool use by group",
+      "input": "Input (sent to the model)",
+      "output": "Output (written by the model)",
+      "cost": "Deducted from wallet",
+      "estimated": "Reserved estimate",
+      "count": "Files",
+      "calls": "Times used"
+    },
+    "breakdown": {
+      "title": "Wallet deduction breakdown",
+      "total": "Deducted in the period",
+      "today": "Deducted today",
+      "month": "Deducted this month",
+      "inputCost": "Cost of sending to the model",
+      "outputCost": "Cost of the model reply",
+      "transcriptionCost": "Audio Processing Cost",
+      "estimated": "Reserved estimate",
+      "actual": "Total before free usage",
+      "freeValue": "Covered by free usage",
+      "paidValue": "Deducted from wallet balance"
+    },
+    "media": {
+      "title": "Photo and file processing",
+      "kind": "Type",
+      "count": "Files",
+      "tokens": "Usage size",
+      "cost": "Deducted from wallet",
+      "topModel": "Most used model"
+    },
+    "mediaTypes": {
+      "image": "Images",
+      "video": "Video",
+      "audio": "Audio",
+      "document": "Documents"
+    },
+    "statuses": {
+      "completed": "Completed",
+      "failed": "Failed",
+      "processing": "Processing"
+    },
+    "toolGroups": {
+      "Messaging": "Messaging",
+      "Agent Chat": "Agent chat",
+      "AI Address": "Address",
+      "AI Design": "Design",
+      "Media Processing": "Media processing"
+    },
+    "tools": {
+      "title": "Tools the agent used",
+      "totalsTitle": "Tool activity",
+      "calls": "Times used",
+      "topTool": "Most used",
+      "avgTokensPerCall": "Average usage per time",
+      "errorRate": "Error rate",
+      "label": "Tool",
+      "group": "Group",
+      "share": "Share",
+      "input": "Input",
+      "output": "Output",
+      "total": "Usage size",
+      "errors": "Errors",
+      "cost": "Wallet cost",
+      "toolsInGroup": "Tools"
+    },
+    "agents": {
+      "title": "Agents",
+      "agent": "Agent",
+      "sessions": "Conversations",
+      "messages": "Replies",
+      "tokens": "Usage size",
+      "cost": "Deducted from wallet",
+      "avgTokens": "Avg. usage / conversation",
+      "avgCost": "Avg. cost / conversation",
+      "topModel": "Most used model",
+      "todayTokens": "Today's usage",
+      "monthTokens": "This month's usage",
+      "media": "Files"
+    },
+    "customers": {
+      "title": "Customers with the highest wallet deductions",
+      "customer": "Customer",
+      "phone": "Phone",
+      "sessions": "Conversations",
+      "tokens": "Usage size",
+      "cost": "Deducted from wallet"
+    },
+    "sessions": {
+      "title": "WhatsApp conversations",
+      "date": "Started",
+      "agent": "Agent",
+      "customer": "Customer",
+      "phone": "Phone",
+      "model": "Model",
+      "input": "Input",
+      "output": "Output",
+      "total": "Usage size",
+      "cost": "Deducted from wallet",
+      "duration": "Duration",
+      "media": "Files",
+      "status": "Status"
     }
   },
   "selected": "Selected",

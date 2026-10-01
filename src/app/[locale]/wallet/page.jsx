@@ -120,7 +120,7 @@ export default function WalletPage() {
       icon: WalletIcon,
       color: "#8b5cf6",
     },
-    ...(isTestUser ? [] : [{
+    ...(!isTestUser ? [] : [{
       id: "aiBalance",
       name: t("stats.aiBalance"),
       value: formatCurrency(wallet?.aiBalance || 0, dollor, dollorSign),

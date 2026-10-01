@@ -46,6 +46,7 @@ import {
   TableFilters,
   TrendChart,
 } from "@/app/[locale]/reports/order-analysis/page";
+import { useAuth } from "@/context/AuthContext";
 
 const COLORS = [PRIMARY, "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#0ea5e9"];
 
@@ -60,12 +61,10 @@ function recordsOf(res) {
 }
 
 function formatUsd(value, locale) {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "USD",
+  return `${new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 4,
-  }).format(Number(value) || 0);
+  }).format(Number(value) || 0)} $`;
 }
 
 function formatInt(value, locale) {
@@ -112,7 +111,7 @@ export default function AiReportsPage() {
   const locale = useLocale();
   const { toggleTutorialMode } = useTutorial();
   const { formatTrendLabel } = useTrendLabelFormatter();
-
+  
   useEffect(() => {
     setDocumentTitle(t("title"));
   }, [t]);

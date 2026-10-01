@@ -9521,7 +9521,9 @@
       "wallet_top_up": "Wallet top-up",
       "subscription_payment": "Subscription payment",
       "feature_purchase": "Feature purchase",
-      "wallet_withdrawal": "Wallet withdrawal"
+      "wallet_withdrawal": "Wallet withdrawal",
+      "wallet_to_ai": "Transfer to AI wallet",
+      "ai_to_wallet": "Transfer to main wallet"
     },
     "actions": {
       "addSubscription": "Add Subscription",
@@ -10995,6 +10997,17 @@
       "convertedInfo": "You will pay {{mount} {currency} ({result} {targetCurrency} based on current rate)",
       "cta": "Deposit Now"
     },
+    "transfer": {
+      "toAiTitle": "Transfer to AI wallet",
+      "toAiSubtitle": "Transfer an amount from your main wallet to your AI wallet with no fees.",
+      "toWalletTitle": "Transfer to main wallet",
+      "toWalletSubtitle": "Move money back from the AI wallet. Held funds cannot be moved.",
+      "amountLabel": "Amount (USD)",
+      "amountPlaceholder": "Enter amount in USD",
+      "available": "Available",
+      "info": "AI usage is billed from the AI wallet first. Held money cannot be transferred.",
+      "success": "Transfer completed"
+    },
     "errors": {
       "fetchWalletFailed": "Failed to load wallet data",
       "depositFailed": "Failed to start deposit",
@@ -11002,7 +11015,11 @@
       "withdrawFailed": "Withdrawal failed",
       "adjustBalanceFailed": "Error adjusting balance",
       "minAmountRequired": "Minimum amount is {amount}",
-      "wholeNumberRequired": "Amount must be a whole number without decimals"
+      "wholeNumberRequired": "Amount must be a whole number without decimals",
+      "insufficientMain": "Not enough money in the main wallet",
+      "insufficientAi": "Not enough money in the AI wallet",
+      "duplicateTransfer": "This move was already completed with a different amount",
+      "transferFailed": "Transfer failed"
     },
     "messages": {
       "depositSuccess": "Deposit started successfully",
@@ -11032,6 +11049,7 @@
       "available": "Available Balance",
       "pendingCOD": "Pending Cash on Delivery",
       "currentBalance": "Current balance",
+      "aiBalance": "AI wallet",
       "totalCharged": "Total deposits",
       "totalWithdrawn": "Total withdrawal"
     },
@@ -11047,7 +11065,10 @@
       "export": "Export",
       "cancel": "Cancel",
       "topUp": "Top up wallet",
-      "processing": "Processing..."
+      "transferToAi": "Confirm",
+      "transferToWallet": "Transfer to wallet",
+      "processing": "Processing...",
+      "transferToAiTitle": "Transfer to Ai wallet"
     },
     "methods": {
       "vodafoneCash": "Vodafone Cash",
@@ -18169,120 +18190,120 @@
           "desc": "The agent can understand and analyze voice messages within the conversation."
         }
       },
-"capabilities": {
-  "searchProducts": {
-    "title": "Search Products",
-    "desc": "Search for products in the store catalog."
-  },
-  "getProductDetails": {
-    "title": "Product Details",
-    "desc": "View a product's options, prices, stock, and images."
-  },
-  "searchBundles": {
-    "title": "Search Product Bundles",
-    "desc": "Search for product bundles."
-  },
-  "getBundleDetails": {
-    "title": "Product Bundle Details",
-    "desc": "View a product bundle's price, contents, and stock."
-  },
-  "listCategories": {
-    "title": "Product Categories",
-    "desc": "View the product categories available in the store."
-  },
-  "createOrder": {
-    "title": "Create Order",
-    "desc": "Create a new order after selecting the products and address."
-  },
-  "campaignOrders": {
-    "title": "Confirm Campaign Order",
-    "desc": "Confirm an order associated with a campaign received by the customer."
-  },
-  "getMyOrders": {
-    "title": "Order List",
-    "desc": "View the customer's orders."
-  },
-  "getOrderDetails": {
-    "title": "Order Details",
-    "desc": "View an order's products, status, shipping, and tracking information."
-  },
-  "addOrderItems": {
-    "title": "Add Products to Order",
-    "desc": "Add products or product bundles to an order before it reaches the warehouse."
-  },
-  "replaceOrderItems": {
-    "title": "Replace Order Product",
-    "desc": "Replace a product in an order before it reaches the warehouse."
-  },
-  "updateOrderItems": {
-    "title": "Update Order Products",
-    "desc": "Replace the entire product list in an order before it reaches the warehouse."
-  },
-  "updateOrderInfo": {
-    "title": "Update Order Details",
-    "desc": "Update the customer's name, address, or order notes before it reaches the warehouse."
-  },
-  "cancelOrder": {
-    "title": "Cancel Order",
-    "desc": "Cancel an order before it reaches the warehouse or shipping company."
-  },
-  "postponeOrder": {
-    "title": "Postpone Order",
-    "desc": "Postpone an order to a later date before it reaches the warehouse."
-  },
-  "confirmOrder": {
-    "title": "Confirm Order",
-    "desc": "Confirm an order before it reaches the warehouse."
-  },
-  "addCustomerAddress": {
-    "title": "Add Address",
-    "desc": "Add a new address to the customer's information."
-  },
-  "updateCustomerAddress": {
-    "title": "Update Address",
-    "desc": "Update an address in the customer's information."
-  },
-  "removeCustomerAddress": {
-    "title": "Remove Address",
-    "desc": "Remove an address from the customer's information."
-  },
-  "setDefaultAddress": {
-    "title": "Set Default Address",
-    "desc": "Set one of the customer's addresses as the default."
-  },
-  "getMyAddresses": {
-    "title": "Customer Addresses",
-    "desc": "View the customer's saved addresses."
-  },
-  "getCities": {
-    "title": "List Cities",
-    "desc": "Search for a city and match its name to its ID."
-  },
-  "getAreasByCity": {
-    "title": "List Areas",
-    "desc": "Search for areas in a city and match their names to their IDs."
-  },
-  "updateCustomer": {
-    "title": "Update Customer Details",
-    "desc": "Update the customer's name or email address."
-  },
-  "addressFix": {
-    "title": "Update Address",
-    "desc": "Complete or update delivery address details when needed."
-  },
-  "location": {
-    "title": "Request Location",
-    "desc": "Request the customer's location to help identify the delivery address accurately."
-  },
-  "reactions": {
-    "title": "React to Messages",
-    "desc": "React to customer messages using emoji reactions."
-  },
-  "templates": {
-    "title": "WhatsApp Templates",
-    "desc": "Search approved WhatsApp templates and send the appropriate template to the customer."
-  }
-},
+      "capabilities": {
+        "searchProducts": {
+          "title": "Search Products",
+          "desc": "Search for products in the store catalog."
+        },
+        "getProductDetails": {
+          "title": "Product Details",
+          "desc": "View a product's options, prices, stock, and images."
+        },
+        "searchBundles": {
+          "title": "Search Product Bundles",
+          "desc": "Search for product bundles."
+        },
+        "getBundleDetails": {
+          "title": "Product Bundle Details",
+          "desc": "View a product bundle's price, contents, and stock."
+        },
+        "listCategories": {
+          "title": "Product Categories",
+          "desc": "View the product categories available in the store."
+        },
+        "createOrder": {
+          "title": "Create Order",
+          "desc": "Create a new order after selecting the products and address."
+        },
+        "campaignOrders": {
+          "title": "Confirm Campaign Order",
+          "desc": "Confirm an order associated with a campaign received by the customer."
+        },
+        "getMyOrders": {
+          "title": "Order List",
+          "desc": "View the customer's orders."
+        },
+        "getOrderDetails": {
+          "title": "Order Details",
+          "desc": "View an order's products, status, shipping, and tracking information."
+        },
+        "addOrderItems": {
+          "title": "Add Products to Order",
+          "desc": "Add products or product bundles to an order before it reaches the warehouse."
+        },
+        "replaceOrderItems": {
+          "title": "Replace Order Product",
+          "desc": "Replace a product in an order before it reaches the warehouse."
+        },
+        "updateOrderItems": {
+          "title": "Update Order Products",
+          "desc": "Replace the entire product list in an order before it reaches the warehouse."
+        },
+        "updateOrderInfo": {
+          "title": "Update Order Details",
+          "desc": "Update the customer's name, address, or order notes before it reaches the warehouse."
+        },
+        "cancelOrder": {
+          "title": "Cancel Order",
+          "desc": "Cancel an order before it reaches the warehouse or shipping company."
+        },
+        "postponeOrder": {
+          "title": "Postpone Order",
+          "desc": "Postpone an order to a later date before it reaches the warehouse."
+        },
+        "confirmOrder": {
+          "title": "Confirm Order",
+          "desc": "Confirm an order before it reaches the warehouse."
+        },
+        "addCustomerAddress": {
+          "title": "Add Address",
+          "desc": "Add a new address to the customer's information."
+        },
+        "updateCustomerAddress": {
+          "title": "Update Address",
+          "desc": "Update an address in the customer's information."
+        },
+        "removeCustomerAddress": {
+          "title": "Remove Address",
+          "desc": "Remove an address from the customer's information."
+        },
+        "setDefaultAddress": {
+          "title": "Set Default Address",
+          "desc": "Set one of the customer's addresses as the default."
+        },
+        "getMyAddresses": {
+          "title": "Customer Addresses",
+          "desc": "View the customer's saved addresses."
+        },
+        "getCities": {
+          "title": "List Cities",
+          "desc": "Search for a city and match its name to its ID."
+        },
+        "getAreasByCity": {
+          "title": "List Areas",
+          "desc": "Search for areas in a city and match their names to their IDs."
+        },
+        "updateCustomer": {
+          "title": "Update Customer Details",
+          "desc": "Update the customer's name or email address."
+        },
+        "addressFix": {
+          "title": "Update Address",
+          "desc": "Complete or update delivery address details when needed."
+        },
+        "location": {
+          "title": "Request Location",
+          "desc": "Request the customer's location to help identify the delivery address accurately."
+        },
+        "reactions": {
+          "title": "React to Messages",
+          "desc": "React to customer messages using emoji reactions."
+        },
+        "templates": {
+          "title": "WhatsApp Templates",
+          "desc": "Search approved WhatsApp templates and send the appropriate template to the customer."
+        }
+      },
       "reviewEmptyKnowledge": "No knowledge linked.",
       "editSection": "Edit"
     },

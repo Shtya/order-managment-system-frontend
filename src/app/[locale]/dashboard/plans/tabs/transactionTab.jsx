@@ -70,6 +70,8 @@ export const TransactionStatus = Object.freeze({
 export const PaymentPurposeEnum = {
     WALLET_TOP_UP: 'wallet_top_up',
     WALLET_WITHDRAWAL: 'wallet_withdrawal',
+    WALLET_TO_AI: 'wallet_to_ai',
+    AI_TO_WALLET: 'ai_to_wallet',
     SUBSCRIPTION_PAYMENT: 'subscription_payment',
     FEATURE_PURCHASE: 'feature_purchase'
 };
@@ -220,6 +222,8 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
                 const purposeColors = {
                     wallet_withdrawal: "bg-rose-50 text-rose-700 border-rose-100",
                     wallet_top_up: "bg-blue-50 text-blue-700 border-blue-100",
+                    wallet_to_ai: "bg-sky-50 text-sky-700 border-sky-100",
+                    ai_to_wallet: "bg-indigo-50 text-indigo-700 border-indigo-100",
                     subscription_payment: "bg-purple-50 text-purple-700 border-purple-100",
                     feature_purchase: "bg-amber-50 text-amber-700 border-amber-100",
                 };

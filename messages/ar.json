@@ -9508,7 +9508,9 @@
       "wallet_top_up": "شحن محفظة",
       "subscription_payment": "دفع اشتراك",
       "feature_purchase": "شراء مميزات",
-      "wallet_withdrawal": "سحب من المحفظة"
+      "wallet_withdrawal": "سحب من المحفظة",
+      "wallet_to_ai": "تحويل إلى محفظة الذكاء الاصطناعي",
+      "ai_to_wallet": "تحويل إلى المحفظة الرئيسية"
     },
     "actions": {
       "addSubscription": "إضافة اشتراك",
@@ -10982,6 +10984,17 @@
       "convertedInfo": "سوف تدفع {amount} {currency} ({result} {targetCurrency} بناءً على سعر الصرف الحالي)",
       "cta": "إيداع الآن"
     },
+    "transfer": {
+      "toAiTitle": "تحويل إلى محفظة الذكاء الاصطناعي",
+      "toAiSubtitle": "انقل مبلغ من محفظتك الرئيسية إلى محفظة الذكاء الصناعي بدون أي رسوم.",
+      "toWalletTitle": "تحويل إلى المحفظة الرئيسية",
+      "toWalletSubtitle": "أعد المبلغ من محفظة الذكاء الاصطناعي. لا يمكن نقل المبالغ المحجوزة.",
+      "amountLabel": "المبلغ (بالدولار)",
+      "amountPlaceholder": "أدخل المبلغ بالدولار",
+      "available": "المتاح",
+      "info": "تُحسب استخدامات الذكاء الاصطناعي من محفظة الذكاء الاصطناعي أولاً. لا يمكن تحويل المبالغ المحجوزة.",
+      "success": "تم التحويل بنجاح"
+    },
     "errors": {
       "fetchWalletFailed": "فشل في تحميل بيانات المحفظة",
       "depositFailed": "فشل في بدء عملية الشحن",
@@ -10989,7 +11002,11 @@
       "withdrawFailed": "فشل في عملية السحب",
       "adjustBalanceFailed": "فشل تحديث الرصيد",
       "minAmountRequired": "الحد الأدنى للمبلغ هو {amount}",
-      "wholeNumberRequired": "يجب أن يكون المبلغ رقماً صحيحاً بدون أرقام عشرية"
+      "wholeNumberRequired": "يجب أن يكون المبلغ رقماً صحيحاً بدون أرقام عشرية",
+      "insufficientMain": "لا يوجد رصيد كافٍ في المحفظة الرئيسية",
+      "insufficientAi": "لا يوجد رصيد كافٍ في محفظة الذكاء الاصطناعي",
+      "duplicateTransfer": "تم تنفيذ هذا التحويل مسبقاً بمبلغ مختلف",
+      "transferFailed": "فشل التحويل"
     },
     "messages": {
       "depositSuccess": "تم بدء عملية الشحن بنجاح",
@@ -11019,6 +11036,7 @@
       "available": "الرصيد المتاح",
       "pendingCOD": "الدفع عند الاستلام المعلق",
       "currentBalance": "الرصيد الحالي",
+      "aiBalance": "محفظة الذكاء الاصطناعي",
       "totalCharged": "إجمالي الإيداعات",
       "totalWithdrawn": "إجمالي الخصومات"
     },
@@ -11034,7 +11052,10 @@
       "export": "تصدير",
       "cancel": "إلغاء",
       "topUp": "شحن المحفظة",
-      "processing": "جارٍ المعالجة..."
+      "transferToAi": "تأكيد",
+      "transferToWallet": "تحويل إلى المحفظة",
+      "processing": "جارٍ المعالجة...",
+      "transferToAiTitle": "تحويل إلى محفظة الذكاء الاصطناعي"
     },
     "methods": {
       "vodafoneCash": "فودافون كاش",

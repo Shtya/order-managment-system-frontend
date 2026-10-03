@@ -12,6 +12,7 @@ import {
   MapPin,
   Megaphone,
   MessageSquareText,
+  Headphones,
   Package,
   Pencil,
   Plus,
@@ -60,6 +61,7 @@ const CAPABILITY_ICONS = {
   location: Map,
   reactions: ThumbsUp,
   templates: MessageSquareText,
+  humanHandoff: Headphones,
 };
 
 const TINTS = [

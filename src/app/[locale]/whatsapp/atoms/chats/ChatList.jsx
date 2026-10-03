@@ -38,7 +38,7 @@ const formatConversationTime = (date, locale) => {
     return format(value, "dd/MM/yyyy");
 };
 
-const ChatListItem = ({ conv, activeId, onSelect }) => {
+const ChatListItem = ({ conv, activeId, onSelect, showHandoffBadge }) => {
     const t = useTranslations("chats");
     const locale = useLocale();
     
@@ -73,9 +73,16 @@ const ChatListItem = ({ conv, activeId, onSelect }) => {
                     <h3 className="font-semibold text-foreground truncate">
                         {conv.customer?.name || conv.phoneNumber}
                     </h3>
-                    <span className="text-[10px] text-muted-foreground/70 shrink-0">
-                        {formatConversationTime(conv.lastMessageAt, locale)}
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                        {showHandoffBadge && conv.humanHandoff && (
+                            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold leading-none text-amber-800 dark:bg-amber-900/60 dark:text-amber-300">
+                                {t("ai.handoffBadge")}
+                            </span>
+                        )}
+                        <span className="text-[10px] text-muted-foreground/70">
+                            {formatConversationTime(conv.lastMessageAt, locale)}
+                        </span>
+                    </div>
                 </div>
                 <div className="flex items-center justify-between gap-2">
                     <div className="text-xs text-muted-foreground truncate flex-1 whitespace-pre-wrap">
@@ -118,7 +125,7 @@ const ChatListItemSkeleton = () => {
 
 export default function ChatList() {
     const t = useTranslations("chats");
-    const { hasPermission } = useAuth();
+    const { hasPermission, isTestUser } = useAuth();
     const {
         conversations,
         isLoading,
@@ -132,7 +139,9 @@ export default function ChatList() {
         setSelectedConversation,
         setMobileView,
         activeTab,
-        setActiveTab
+        setActiveTab,
+        unreadCount,
+        humanHandoffCount,
     } = useConversation();
 
     const activeId = selectedConversation?.id;
@@ -160,7 +169,8 @@ export default function ChatList() {
 
     const tabs = [
         { id: "all", label: t("tabs.all") },
-        { id: "unread", label: t("tabs.unread") },
+        { id: "unread", label: t("tabs.unread"), count: unreadCount },
+        ...(isTestUser ? [{ id: "humanHandoff", label: t("tabs.humanHandoff"), count: humanHandoffCount }] : []),
     ];
 
     return (
@@ -264,6 +274,7 @@ export default function ChatList() {
                             conv={conv}
                             activeId={activeId}
                             onSelect={onSelect}
+                            showHandoffBadge={isTestUser}
                         />
                     ))
                 ) : (

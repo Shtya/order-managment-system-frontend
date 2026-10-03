@@ -29,6 +29,7 @@ export const AGENT_CAPABILITIES = [
   "location",
   "reactions",
   "templates",
+  "humanHandoff",
 ];
 
 const CATALOG_READ = [

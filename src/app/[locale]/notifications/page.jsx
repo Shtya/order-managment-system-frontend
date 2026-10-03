@@ -70,6 +70,7 @@ export const NotificationType = Object.freeze({
   AUTOMATION_RUN_RESUMED: 'automation_run_resumed',
   CAMPAIGN_COMPLETED: 'campaign_completed',
   CAMPAIGN_FAILED: 'campaign_failed',
+  HUMAN_HANDOFF: 'human_handoff',
 });
 
 // ─────────────────────────────────────────────
@@ -91,6 +92,10 @@ export function getNotificationLink(entity, id, type) {
 
   if (type === NotificationType.ORDER_CREATTION_FAILED) {
     return id ? `/orders/failedOrders/${id}` : "/orders?tab=failedOrders";
+  }
+
+  if (entity === "conversation" || type === NotificationType.HUMAN_HANDOFF) {
+    return id ? `/whatsapp/chats?customerId=${id}` : "/whatsapp/chats";
   }
 
   if (

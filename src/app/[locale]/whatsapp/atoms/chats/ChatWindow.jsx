@@ -41,6 +41,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
 import AgentPausePill from "./AgentPausePill";
+import AgentHandoffPill from "./AgentHandoffPill";
 import api from "@/utils/api";
 
 // Skeleton message component with config
@@ -128,7 +129,8 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         checkIsNearBottom,
         bottomSentinelRef,
         updateConversationAi,
-        resumeConversationAi
+        resumeConversationAi,
+        cancelConversationHandoff
     } = useConversation();
 
     const [showInteractiveModal, setShowInteractiveModal] = useState(false);
@@ -477,19 +479,34 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             </span>
                         )}
                         {conversationAiEnabled && hasActiveAgent && (
-                            <AgentPausePill
-                                key={selectedConversation.id}
-                                pausedUntil={selectedConversation?.agentPausedUntil}
-                                canResume={hasPermission("conversation.update")}
-                                onResume={async () => {
-                                    try {
-                                        await resumeConversationAi();
-                                    } catch {
-                                        toast.error(t("chatFailed"));
-                                        throw new Error("resume failed");
-                                    }
-                                }}
-                            />
+                            selectedConversation?.humanHandoff ? (
+                                <AgentHandoffPill
+                                    key={`${selectedConversation.id}-handoff`}
+                                    canCancel={hasPermission("conversation.update")}
+                                    onCancel={async () => {
+                                        try {
+                                            await cancelConversationHandoff();
+                                        } catch {
+                                            toast.error(t("chatFailed"));
+                                            throw new Error("cancel handoff failed");
+                                        }
+                                    }}
+                                />
+                            ) : (
+                                <AgentPausePill
+                                    key={selectedConversation.id}
+                                    pausedUntil={selectedConversation?.agentPausedUntil}
+                                    canResume={hasPermission("conversation.update")}
+                                    onResume={async () => {
+                                        try {
+                                            await resumeConversationAi();
+                                        } catch {
+                                            toast.error(t("chatFailed"));
+                                            throw new Error("resume failed");
+                                        }
+                                    }}
+                                />
+                            )
                         )}
                     </div>
                 </div>

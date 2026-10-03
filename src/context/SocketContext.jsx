@@ -221,6 +221,20 @@ export const SocketProvider = ({ children }) => {
       });
     });
 
+    socket.on("whatsapp:conversation-ai", (payload) => {
+      publish({
+        type: "WHATSAPP_CONVERSATION_AI",
+        payload,
+      });
+    });
+
+    socket.on("whatsapp:conversation-read", (payload) => {
+      publish({
+        type: "WHATSAPP_CONVERSATION_READ",
+        payload,
+      });
+    });
+
     socket.on("whatsapp:customer-new", (payload) => {
       publish({
         type: "WHATSAPP_CUSTOMER_NEW",
@@ -311,6 +325,8 @@ export const SocketProvider = ({ children }) => {
       socket.off("whatsapp:message-new");
       socket.off("whatsapp:message-updated");
       socket.off("whatsapp:conversation-new");
+      socket.off("whatsapp:conversation-ai");
+      socket.off("whatsapp:conversation-read");
       socket.off("whatsapp:customer-new");
       socket.off("whatsapp:signup-status");
       socket.off("support_ticket:created");

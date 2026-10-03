@@ -15641,13 +15641,15 @@
       "all": "All",
       "unread": "Unread",
       "open": "Open",
-      "closed": "Closed"
+      "closed": "Closed",
+      "humanHandoff": "Needs human"
     },
     "loadMore": "Load more",
     "online": "Online",
     "offline": "Offline",
     "closeChat": "Close Chat",
     "chatFailed": "Failed to open chat",
+    "reactionFailed": "Failed to send reaction",
     "customerDetails": "Contact details",
     "conversationDetails": "Conversation Details",
     "notes": "Notes",
@@ -15674,7 +15676,12 @@
       "humanTakeover": "Human takeover",
       "resumesIn": "Resumes automatically in",
       "resumeNow": "Resume AI",
-      "resumed": "AI resumed"
+      "resumed": "AI resumed",
+      "handoffBadge": "Need human",
+      "handedOff": "Needs human",
+      "handedOffTitle": "Handed off to the team",
+      "handedOffHint": "The AI will not reply until you return this chat to it.",
+      "returnToAi": "Return to AI"
     },
     "sentBy": {
       "system": "System",
@@ -18302,6 +18309,10 @@
         "templates": {
           "title": "WhatsApp Templates",
           "desc": "Search approved WhatsApp templates and send the appropriate template to the customer."
+        },
+        "humanHandoff": {
+          "title": "Human Intervention",
+          "desc": "Stop the assistant from continuing the conversation, mark it for human intervention."
         }
       },
       "reviewEmptyKnowledge": "No knowledge linked.",

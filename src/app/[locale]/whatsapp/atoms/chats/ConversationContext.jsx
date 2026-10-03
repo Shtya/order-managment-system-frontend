@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
 import { useSocket } from "@/context/SocketContext";
@@ -31,8 +31,8 @@ export const ConversationProvider = ({ children }) => {
     const [accounts, setAccounts] = useState([]);
     const [accountsLoading, setAccountsLoading] = useState(false);
     const [replyTo, setReplyTo] = useState(null);
-    const { subscribe } = useSocket();
-    const { user } = useAuth();
+    const { subscribe, isConnected } = useSocket();
+    const { user, isTestUser } = useAuth();
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [mobileView, setMobileView] = useState("list"); // 'list', 'chat', 'details'
     const [showDetails, setShowDetails] = useState(false);
@@ -43,7 +43,32 @@ export const ConversationProvider = ({ children }) => {
     const [cursor, setCursor] = useState(null);
     const [isNearBottom, setIsNearBottom] = useState(true);
 
-    const [currentUnreadCount, setCurrentUnreadCount] = useState(0);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [humanHandoffCount, setHumanHandoffCount] = useState(0);
+    const lastUnreadRef = useRef(new Map());
+    const lastHandoffRef = useRef(new Map());
+
+    const rememberUnread = useCallback((id, nextUnread) => {
+        if (!id) return;
+        const next = Math.max(0, Number(nextUnread) || 0);
+        const prev = lastUnreadRef.current.has(id)
+            ? lastUnreadRef.current.get(id)
+            : 0;
+        lastUnreadRef.current.set(id, next);
+        if (prev === 0 && next > 0) setUnreadCount((n) => n + 1);
+        else if (prev > 0 && next === 0) setUnreadCount((n) => Math.max(0, n - 1));
+    }, []);
+
+    const rememberHandoff = useCallback((id, nextHandoff) => {
+        if (!id) return;
+        const next = !!nextHandoff;
+        const prev = lastHandoffRef.current.has(id)
+            ? !!lastHandoffRef.current.get(id)
+            : false;
+        lastHandoffRef.current.set(id, next);
+        if (!prev && next) setHumanHandoffCount((n) => n + 1);
+        else if (prev && !next) setHumanHandoffCount((n) => Math.max(0, n - 1));
+    }, []);
 
     // Unified function to check isNearBottom
     const checkIsNearBottom = useCallback(() => {
@@ -54,8 +79,9 @@ export const ConversationProvider = ({ children }) => {
     const markAsRead = useCallback(async (conversationId, onFailIncreaseOne = false) => {
         if (!conversationId) return;
 
-        // Optimistic update for unread count in the list
-        let previousUnreadCount = 0;
+        let previousUnreadCount = lastUnreadRef.current.has(conversationId)
+            ? lastUnreadRef.current.get(conversationId)
+            : 0;
         setConversations(prev => prev.map(c => {
             if (c.id === conversationId) {
                 previousUnreadCount = c.unreadCount || 0;
@@ -63,56 +89,42 @@ export const ConversationProvider = ({ children }) => {
             }
             return c;
         }));
+        rememberUnread(conversationId, 0);
 
         try {
             await api.post("/whatsapp/messages/mark-as-read", { conversationId });
         } catch (error) {
             console.error("Failed to mark as read:", error);
-            // On fail increase the one (as requested by user)
+            const restored = previousUnreadCount ? previousUnreadCount : onFailIncreaseOne ? 1 : 0;
+            rememberUnread(conversationId, restored);
             setConversations(prev => prev.map(c =>
-                c.id === conversationId ? { ...c, unreadCount: previousUnreadCount ? previousUnreadCount : onFailIncreaseOne ? 1 : 0 } : c
+                c.id === conversationId ? { ...c, unreadCount: restored } : c
             ));
         }
-    }, []);
+    }, [rememberUnread]);
 
     const bottomSentinelRef = useRef(null);
+    const convId = selectedConversation?.id;
     useEffect(() => {
-        // Make sure both the container and the sentinel exist
-        if (!scrollRef.current || !bottomSentinelRef.current) return;
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                const nearBottom = entry.isIntersecting;
-                // entry.isIntersecting is true when within 200px of the bottom
-                setIsNearBottom(nearBottom);
-
-                const currentConversation = conversations.find(c => c.id === selectedConversation.id);
-
-                if (nearBottom && currentConversation && (currentConversation.unreadCount || 0) > 0) {
-                    markAsRead(selectedConversation.id);
-                }
-            },
-            {
-                root: scrollRef.current, // The scrollable container
-                rootMargin: "0px 0px 200px 0px", // Expands the detection zone 200px downwards
-                threshold: 0, // Trigger as soon as 1px of that expanded margin hits
+        if (!convId || !scrollRef.current || !bottomSentinelRef.current) return;
+        const observer = new IntersectionObserver(([entry]) => {
+            setIsNearBottom(entry.isIntersecting);
+            if (entry.isIntersecting
+                && (lastUnreadRef.current.get(convId) || 0) > 0
+                && document.visibilityState === "visible") {
+                markAsRead(convId);
             }
-        );
-
+        }, { root: scrollRef.current, rootMargin: "0px 0px 200px 0px", threshold: 0 });
         observer.observe(bottomSentinelRef.current);
+        return () => observer.disconnect();
+    }, [convId, markAsRead]);
 
-        return () => {
-            observer.disconnect();
-        };
-    }, [conversations, selectedConversation]); // Empty dependency array, sets up once on mount
-
-    useEffect(() => {
-        if (!selectedConversation) {
-            setCurrentUnreadCount(0);
-            return;
-        }
-        const conv = conversations.find(c => c.id === selectedConversation.id);
-        setCurrentUnreadCount(conv?.unreadCount || 0);
+    const currentUnreadCount = useMemo(() => {
+        const id = selectedConversation?.id;
+        if (!id) return 0;
+        const conv = conversations.find((c) => c.id === id);
+        if (conv) return conv.unreadCount || 0;
+        return lastUnreadRef.current.get(id) || 0;
     }, [selectedConversation?.id, conversations]);
 
     const scrollToBottom = useCallback((behavior = "smooth") => {
@@ -144,6 +156,17 @@ export const ConversationProvider = ({ children }) => {
     const MESSAGES_LIMIT = 50;
     const previousConversationId = useRef(null);
     const isAutoScrolling = useRef(false);
+    const listFetchGen = useRef(0);
+    const selectedConversationRef = useRef(selectedConversation);
+    selectedConversationRef.current = selectedConversation;
+    const activeConvIdRef = useRef(selectedConversation?.id);
+    activeConvIdRef.current = selectedConversation?.id;
+    const activeTabRef = useRef(activeTab);
+    activeTabRef.current = activeTab;
+    const messagesRef = useRef(messages);
+    messagesRef.current = messages;
+    const conversationsRef = useRef(conversations);
+    conversationsRef.current = conversations;
     const fetchAccounts = useCallback(async () => {
         setAccountsLoading(true);
         try {
@@ -221,30 +244,53 @@ export const ConversationProvider = ({ children }) => {
         } else {
             setIsLoading(true);
         }
+        const gen = ++listFetchGen.current;
         try {
+            const effectiveTab = tab === "humanHandoff" && !isTestUser ? "all" : tab;
             const params = {
                 limit: PAGE_LIMIT,
                 search: searchQuery,
-                unreadOnly: tab === "unread" ? true : undefined,
-                status: tab === "all" || tab === "unread" ? undefined : tab.toUpperCase(),
+                unreadOnly: effectiveTab === "unread" ? true : undefined,
+                humanHandoffOnly: effectiveTab === "humanHandoff" ? true : undefined,
+                status: effectiveTab === "all" || effectiveTab === "unread" || effectiveTab === "humanHandoff" ? undefined : effectiveTab.toUpperCase(),
                 sortBy: SORT_BY,
                 cursor: append ? cursor : undefined
             };
 
             const res = await api.get("/conversation", { params });
+            if (gen !== listFetchGen.current) return;
             const { records, hasMore: apiHasMore, nextCursor } = res.data || {};
+            const list = Array.isArray(records) ? records : [];
+            list.forEach((conv) => {
+                if (!conv?.id) return;
+                lastUnreadRef.current.set(conv.id, conv.unreadCount || 0);
+                lastHandoffRef.current.set(conv.id, !!conv.humanHandoff);
+            });
 
-            setConversations(prev => append ? [...prev, ...records] : records);
+            setConversations(prev => append ? [...prev, ...list] : list);
             setHasMore(!!apiHasMore);
             setCursor(nextCursor);
         } catch (error) {
+            if (gen !== listFetchGen.current) return;
             console.error("Failed to fetch conversations:", error);
             prevListScrollTop.current = null;
         } finally {
-            setIsLoading(false);
-            setIsLoadingMore(false);
+            if (gen === listFetchGen.current) {
+                setIsLoading(false);
+                setIsLoadingMore(false);
+            }
         }
-    }, [activeTab, cursor]);
+    }, [activeTab, cursor, isTestUser]);
+
+    const fetchTabCounts = useCallback(async () => {
+        try {
+            const res = await api.get("/conversation/counts");
+            setUnreadCount(typeof res.data?.unread === "number" ? res.data.unread : 0);
+            setHumanHandoffCount(typeof res.data?.humanHandoff === "number" ? res.data.humanHandoff : 0);
+        } catch (error) {
+            console.error("Failed to fetch conversation tab counts:", error);
+        }
+    }, []);
 
     const fetchMessages = useCallback(async (conversationId, cursor, append = false) => {
         if (!conversationId) return;
@@ -265,9 +311,10 @@ export const ConversationProvider = ({ children }) => {
             };
 
             const res = await api.get("/whatsapp/messages", { params });
+            if (activeConvIdRef.current !== conversationId) return;
             const { records, hasMore: apiHasMore, nextCursor } = res.data || {};
 
-            const newMessages = records.reverse();
+            const newMessages = (records ?? []).reverse();
 
             if (append && scrollRef.current) {
                 prevScrollHeight.current = scrollRef.current.scrollHeight;
@@ -277,11 +324,14 @@ export const ConversationProvider = ({ children }) => {
             setHasMoreMessages(!!apiHasMore);
             setMessagesCursor(nextCursor);
         } catch (error) {
+            if (activeConvIdRef.current !== conversationId) return;
             console.error("Failed to fetch messages:", error);
         } finally {
-            setIsMessagesLoading(false);
-            if (!append) {
-                setInitialMessagesLoading(false);
+            if (activeConvIdRef.current === conversationId) {
+                setIsMessagesLoading(false);
+                if (!append) {
+                    setInitialMessagesLoading(false);
+                }
             }
         }
     }, [messageSearch, messageAccount, messageStatus]);
@@ -291,7 +341,24 @@ export const ConversationProvider = ({ children }) => {
     }, [activeTab, search]); // Re-fetch on tab or search change
 
     useEffect(() => {
+        fetchTabCounts();
+    }, [fetchTabCounts]);
+
+    useEffect(() => {
+        const onVisibility = () => {
+            if (document.visibilityState === "visible") fetchTabCounts();
+        };
+        document.addEventListener("visibilitychange", onVisibility);
+        return () => document.removeEventListener("visibilitychange", onVisibility);
+    }, [fetchTabCounts]);
+
+    useEffect(() => {
+        if (isConnected) fetchTabCounts();
+    }, [isConnected, fetchTabCounts]);
+
+    useEffect(() => {
         if (!selectedConversation?.id) {
+            previousConversationId.current = null;
             setMessages([]);
             setHasMoreMessages(false);
             setMessagesCursor(null);
@@ -317,15 +384,54 @@ export const ConversationProvider = ({ children }) => {
         messageStatus,
         messageAccount,
     ]);
+
+    useEffect(() => {
+        if (activeTab !== "humanHandoff") return;
+        const openId = selectedConversation?.id;
+        setConversations((prev) => prev.filter((c) => c.id === openId || !!c.humanHandoff));
+    }, [selectedConversation?.id, activeTab]);
     const onSelectConversation = useCallback((conversation) => {
+        const same = conversation?.id && conversation.id === selectedConversationRef.current?.id;
         setSelectedConversation(conversation);
-        setMessages([]);
-    }, [setSelectedConversation]);
+        if (!same) setMessages([]);
+    }, []);
+
+    const ensureHandoffRow = useCallback(async (id) => {
+        if (!id || activeTabRef.current !== "humanHandoff") return;
+        if (conversationsRef.current.some((c) => c.id === id)) return;
+        try {
+            const res = await api.get(`/conversation/${id}`);
+            const conv = res.data;
+            if (!conv?.id || activeTabRef.current !== "humanHandoff") return;
+            lastUnreadRef.current.set(conv.id, conv.unreadCount || 0);
+            lastHandoffRef.current.set(conv.id, !!conv.humanHandoff);
+            setConversations((prev) => {
+                if (prev.some((c) => c.id === conv.id)) {
+                    return prev.map((c) => (c.id === conv.id ? { ...c, ...conv } : c));
+                }
+                return [conv, ...prev];
+            });
+        } catch (error) {
+            console.error("Failed to load handed-off conversation:", error);
+        }
+    }, []);
 
     const applyConversationAi = useCallback((id, next) => {
+        if (Object.prototype.hasOwnProperty.call(next, "humanHandoff")) {
+            rememberHandoff(id, !!next.humanHandoff);
+            if (next.humanHandoff) void ensureHandoffRow(id);
+        }
         setSelectedConversation((prev) => prev?.id === id ? { ...prev, ...next } : prev);
-        setConversations((prev) => prev.map((item) => item.id === id ? { ...item, ...next } : item));
-    }, []);
+        setConversations((prev) => {
+            const mapped = prev.map((item) => item.id === id ? { ...item, ...next } : item);
+            const shouldDrop =
+                Object.prototype.hasOwnProperty.call(next, "humanHandoff") &&
+                !next.humanHandoff &&
+                activeTabRef.current === "humanHandoff" &&
+                activeConvIdRef.current !== id;
+            return shouldDrop ? mapped.filter((item) => item.id !== id) : mapped;
+        });
+    }, [rememberHandoff, ensureHandoffRow]);
 
     const updateConversationAi = useCallback(async (aiMode) => {
         const id = selectedConversation?.id;
@@ -337,15 +443,29 @@ export const ConversationProvider = ({ children }) => {
     const resumeConversationAi = useCallback(async () => {
         const id = selectedConversation?.id;
         if (!id) return;
-        const res = await api.patch(`/conversation/${id}/ai/resume`);
-        applyConversationAi(id, { agentPausedUntil: res.data?.agentPausedUntil ?? null });
-    }, [selectedConversation?.id, applyConversationAi]);
+        try {
+            const res = await api.patch(`/conversation/${id}/ai/resume`);
+            applyConversationAi(id, { agentPausedUntil: res.data?.agentPausedUntil ?? null });
+        } catch (error) {
+            toast.error(t("chatFailed"));
+        }
+    }, [selectedConversation?.id, applyConversationAi, t]);
 
-    const selectedConversationRef = useRef(selectedConversation);
-    selectedConversationRef.current = selectedConversation;
+    const cancelConversationHandoff = useCallback(async () => {
+        const id = selectedConversation?.id;
+        if (!id) return;
+        try {
+            const res = await api.patch(`/conversation/${id}/ai/handoff`, { humanHandoff: false });
+            applyConversationAi(id, {
+                humanHandoff: res.data?.humanHandoff ?? false,
+                agentPausedUntil: res.data?.agentPausedUntil ?? null,
+            });
+        } catch (error) {
+            toast.error(t("chatFailed"));
+        }
+    }, [selectedConversation?.id, applyConversationAi, t]);
 
     useEffect(() => {
-        console.log("customerIdFromUrl: ", customerIdFromUrl)
         if (!customerIdFromUrl) return;
 
         const selected = selectedConversationRef.current;
@@ -383,20 +503,47 @@ export const ConversationProvider = ({ children }) => {
         };
     }, [customerIdFromUrl, onSelectConversation, pathname, router, t]);
 
-    const activeConvIdRef = useRef(selectedConversation?.id);
-    useEffect(() => {
-        activeConvIdRef.current = selectedConversation?.id;
-    }, [selectedConversation?.id]);
     useEffect(() => {
         const unsubConversation = subscribe("WHATSAPP_CONVERSATION_NEW", (payload) => {
             if (!payload?.conversation) return;
             const newConv = payload.conversation;
+            if (!lastUnreadRef.current.has(newConv.id)) {
+                lastUnreadRef.current.set(newConv.id, 0);
+            }
+            if (!lastHandoffRef.current.has(newConv.id)) {
+                lastHandoffRef.current.set(newConv.id, false);
+            }
+            rememberUnread(newConv.id, newConv.unreadCount || 0);
+            rememberHandoff(newConv.id, !!newConv.humanHandoff);
 
             setConversations(prev => {
                 // Check if already exists to avoid duplicates
                 if (prev.find(c => c.id === newConv.id)) return prev;
                 return [newConv, ...prev];
             });
+        });
+
+        const unsubConversationAi = subscribe("WHATSAPP_CONVERSATION_AI", (payload) => {
+            const conversationId = payload?.conversationId;
+            if (!conversationId) return;
+            applyConversationAi(conversationId, {
+                ...(Object.prototype.hasOwnProperty.call(payload, "humanHandoff")
+                    ? { humanHandoff: payload.humanHandoff }
+                    : {}),
+                ...(Object.prototype.hasOwnProperty.call(payload, "agentPausedUntil")
+                    ? { agentPausedUntil: payload.agentPausedUntil ?? null }
+                    : {}),
+            });
+        });
+
+        const unsubConversationRead = subscribe("WHATSAPP_CONVERSATION_READ", (payload) => {
+            const conversationId = payload?.conversationId;
+            if (!conversationId) return;
+            const nextUnread = payload?.unreadCount ?? 0;
+            rememberUnread(conversationId, nextUnread);
+            setConversations((prev) => prev.map((c) =>
+                c.id === conversationId ? { ...c, unreadCount: nextUnread } : c
+            ));
         });
 
         const unsubMessage = subscribe("WHATSAPP_MESSAGE_NEW", (payload) => {
@@ -406,6 +553,9 @@ export const ConversationProvider = ({ children }) => {
             const msg = payload.message;
             const agentPausedUntil = Object.prototype.hasOwnProperty.call(payload, "agentPausedUntil")
                 ? payload.agentPausedUntil
+                : undefined;
+            const humanHandoff = Object.prototype.hasOwnProperty.call(payload, "humanHandoff")
+                ? payload.humanHandoff
                 : undefined;
             const localId = msg.metadata?.localId;
             const isReaction = msg.messageType === "reaction";
@@ -441,11 +591,32 @@ export const ConversationProvider = ({ children }) => {
                 }
             }
 
+            const extrasUnread = payload.unreadCount;
+            if (shouldIncrementUnread) {
+                const prevUnread = lastUnreadRef.current.has(msg.conversationId)
+                    ? lastUnreadRef.current.get(msg.conversationId)
+                    : 0;
+                rememberUnread(
+                    msg.conversationId,
+                    extrasUnread != null ? extrasUnread : prevUnread + 1,
+                );
+            } else if (extrasUnread != null) {
+                rememberUnread(msg.conversationId, extrasUnread);
+            }
+            if (humanHandoff !== undefined && humanHandoff !== null) {
+                rememberHandoff(msg.conversationId, !!humanHandoff);
+                if (humanHandoff) void ensureHandoffRow(msg.conversationId);
+            }
+
             // UPDATE 1: PURE STATE UPDATE FOR CONVERSATIONS
             setConversations(prev => {
                 const existing = prev.find(c => c.id === msg.conversationId);
 
                 if (!existing) return prev;
+
+                const nextUnread = shouldIncrementUnread
+                    ? (extrasUnread != null ? extrasUnread : (existing.unreadCount || 0) + 1)
+                    : (shouldMarkAsRead ? 0 : existing.unreadCount);
 
                 const updated = {
                     ...existing,
@@ -454,18 +625,29 @@ export const ConversationProvider = ({ children }) => {
                     lastMessagePreview: msg.messageType === "text"
                         ? msg.content?.text?.body
                         : (isReaction ? `Reaction: ${msg.content?.reaction?.emoji}` : `[${msg.messageType.toUpperCase()}]`),
-                    unreadCount: shouldIncrementUnread
-                        ? (existing.unreadCount || 0) + 1
-                        : (shouldMarkAsRead ? 0 : existing.unreadCount),
+                    unreadCount: nextUnread,
                     ...(agentPausedUntil !== undefined ? { agentPausedUntil } : {}),
+                    ...(humanHandoff !== undefined && humanHandoff !== null ? { humanHandoff } : {}),
                 };
 
-                return [updated, ...prev.filter(c => c.id !== msg.conversationId)];
+                const nextList = [updated, ...prev.filter(c => c.id !== msg.conversationId)];
+                const shouldDrop =
+                    humanHandoff === false &&
+                    activeTabRef.current === "humanHandoff" &&
+                    activeConvIdRef.current !== msg.conversationId;
+                return shouldDrop
+                    ? nextList.filter((c) => c.id !== msg.conversationId)
+                    : nextList;
             });
 
             if (agentPausedUntil !== undefined) {
                 setSelectedConversation((prev) =>
                     prev?.id === msg.conversationId ? { ...prev, agentPausedUntil } : prev
+                );
+            }
+            if (humanHandoff !== undefined && humanHandoff !== null) {
+                setSelectedConversation((prev) =>
+                    prev?.id === msg.conversationId ? { ...prev, humanHandoff } : prev
                 );
             }
 
@@ -567,10 +749,12 @@ export const ConversationProvider = ({ children }) => {
 
         return () => {
             unsubConversation?.();
+            unsubConversationAi?.();
+            unsubConversationRead?.();
             unsubMessage?.();
             unsubMessageUpdate?.();
         };
-    }, [subscribe, selectedConversation, markAsRead, applyAccountFromMessage]);
+    }, [subscribe, markAsRead, applyAccountFromMessage, applyConversationAi, rememberUnread, rememberHandoff, ensureHandoffRow]);
 
     const loadMoreConversations = useCallback(() => {
         if (!isLoading && !isLoadingMore && hasMore) {
@@ -627,17 +811,18 @@ export const ConversationProvider = ({ children }) => {
 
         let replyToWamid = null;
         let repMsg = null;
+        const replySource = msg.replyTo || replyTo;
         // Template messages do not support 'context' (replying to a message) in Meta API
-        if (replyTo && msg.type !== "template") {
-            repMsg = messages.find(m => m.id === replyTo.id);
+        if (replySource && msg.type !== "template") {
+            repMsg = messagesRef.current.find((m) => m.id === replySource.id) || replySource;
             replyToWamid = repMsg?.messageId || repMsg?.id;
         }
 
         // Check if media upload is needed
         const mediaInfo = checkIfMediaUploadNeeded(msg);
         const needsMediaUpload = !!mediaInfo;
-        
-        const localId = `local-${Date.now()}`;
+
+        const localId = crypto.randomUUID();
         const currentAccountId = msg.accountId || selectedAccount?.id;
         applyAccountFromMessage({ accountId: currentAccountId, messageType: msg.type });
         const newMessage = {
@@ -675,7 +860,7 @@ export const ConversationProvider = ({ children }) => {
 
         // 2. Send to API
         try {
-            let mediaId = null;
+            let mediaId = msg.mediaId ?? msg[msg.type]?.id ?? null;
 
             // Handle Media Auto-Upload (from URL or file)
             if (needsMediaUpload) {
@@ -722,11 +907,12 @@ export const ConversationProvider = ({ children }) => {
                 messaging_product: "whatsapp",
                 recipient_type: "individual",
                 to: selectedConversation.customer?.phoneNumber,
+                conversationId: selectedConversation.id,
                 type: msg.type,
                 [msg.type]: msg.type === "text"
                     ? { body: msg.text }
                     : isMedia
-                        ? { id: mediaId, caption: msg.caption, ...(isDoc ? { filename: msg.file?.name } : {}) }
+                        ? { id: mediaId, caption: msg.caption, ...(isDoc ? { filename: msg.file?.name || msg.document?.filename } : {}) }
                         : content[msg.type],
                 context: replyToWamid ? { message_id: replyToWamid } : undefined,
                 metadata: { ...metadata }
@@ -746,31 +932,31 @@ export const ConversationProvider = ({ children }) => {
                 m.id === localId ? { ...m, status: "failed", error: error?.response?.data?.message || error?.message } : m
             ));
         }
-    }, [selectedConversation, replyTo, messages, selectedAccount, applyAccountFromMessage, user]);
+    }, [selectedConversation, replyTo, selectedAccount, applyAccountFromMessage, user]);
 
     const handleRetryMessage = useCallback(async (failedMessage) => {
-        // 1. Remove the failed message from UI
         setMessages(prev => prev.filter(m => m.id !== failedMessage.id));
 
-        // 2. Re-send using handleSendMessage
         const msgType = failedMessage.messageType;
+        const mediaBody = failedMessage.content?.[msgType];
         const msgPayload = {
             type: msgType,
             accountId: failedMessage.accountId,
+            caption: failedMessage.content?.caption,
+            replyTo: failedMessage.replyTo,
+            mediaId: failedMessage.mediaId ?? mediaBody?.id,
         };
 
         if (msgType === "text") {
             msgPayload.text = failedMessage.content?.text?.body || failedMessage.content?.body;
         } else {
-            msgPayload[msgType] = failedMessage.content[msgType];
+            msgPayload[msgType] = mediaBody
+                ? { ...mediaBody, id: failedMessage.mediaId ?? mediaBody.id }
+                : mediaBody;
         }
 
         await handleSendMessage(msgPayload, failedMessage.metadata);
     }, [handleSendMessage]);
-    const messagesRef = useRef(messages);
-    useEffect(() => {
-        messagesRef.current = messages;
-    }, [messages]);
 
 
     const handleReaction = useCallback(async (messageId, emoji) => {
@@ -783,7 +969,7 @@ export const ConversationProvider = ({ children }) => {
             return;
         }
 
-        const localId = `react-local-${Date.now()}`;
+        const localId = crypto.randomUUID();
         const isRemoving = !emoji; // WhatsApp sends empty string "" or null to remove a reaction
 
         let rollbackReactions = [];
@@ -823,6 +1009,7 @@ export const ConversationProvider = ({ children }) => {
                 messaging_product: "whatsapp",
                 recipient_type: "individual",
                 to: selectedConversation.customer?.phoneNumber,
+                conversationId: selectedConversation.id,
                 type: "reaction",
                 reaction: {
                     message_id: targetMsg.messageId,
@@ -830,16 +1017,12 @@ export const ConversationProvider = ({ children }) => {
                 }
             };
 
-            console.log("[Reaction] Sending payload to API:", payload);
-
-            const res = await api.post("/whatsapp/messages/send", payload, {
+            await api.post("/whatsapp/messages/send", payload, {
                 params: {
                     accountId: targetMsg.accountId || selectedAccount?.id,
                     localId: localId
                 }
             });
-
-            console.log("[Reaction] API Success:", res.data);
         } catch (error) {
             console.error("[Reaction] API Failure - Rolling back:", error);
 
@@ -850,71 +1033,113 @@ export const ConversationProvider = ({ children }) => {
                     : m
             ));
 
-            toast.error("Failed to send reaction");
+            toast.error(t("reactionFailed"));
         }
-    }, [selectedConversation, selectedAccount]);
+    }, [selectedConversation, selectedAccount, t]);
 
     const toggleDetails = useCallback(() => {
         setShowDetails(!showDetails)
     }, [showDetails]);
 
+    const contextValue = useMemo(() => ({
+        selectedConversation,
+        setSelectedConversation: onSelectConversation,
+        updateConversationAi,
+        resumeConversationAi,
+        cancelConversationHandoff,
+        mobileView,
+        setMobileView,
+        selectedAccount,
+        setSelectedAccount,
+        accounts,
+        accountsLoading,
+        showDetails,
+        setShowDetails,
+        toggleDetails,
+        activeTab,
+        setActiveTab,
+        conversations,
+        setConversations,
+        messages,
+        setMessages,
+        handleSendMessage,
+        handleRetryMessage,
+        handleReaction,
+        pendingMedia,
+        setPendingMedia,
+        isLoading,
+        isLoadingMore,
+        hasMore,
+        listScrollRef,
+        prevListScrollTop,
+        search,
+        setSearch,
+        loadMoreConversations,
+        isMessagesLoading,
+        hasMoreMessages,
+        initialMessagesLoading,
+        setInitialMessagesLoading,
+        loadMoreMessages,
+        messageSearch,
+        setMessageSearch,
+        messageStatus,
+        setMessageStatus,
+        messageAccount,
+        setMessageAccount,
+        replyTo,
+        setReplyTo,
+        prevScrollHeight,
+        scrollRef,
+        scrollToBottom,
+        isNearBottom,
+        currentUnreadCount,
+        unreadCount,
+        humanHandoffCount,
+        isAutoScrolling,
+        checkIsNearBottom,
+        bottomSentinelRef
+    }), [
+        selectedConversation,
+        onSelectConversation,
+        updateConversationAi,
+        resumeConversationAi,
+        cancelConversationHandoff,
+        mobileView,
+        selectedAccount,
+        accounts,
+        accountsLoading,
+        showDetails,
+        toggleDetails,
+        activeTab,
+        conversations,
+        messages,
+        handleSendMessage,
+        handleRetryMessage,
+        handleReaction,
+        pendingMedia,
+        isLoading,
+        isLoadingMore,
+        hasMore,
+        search,
+        loadMoreConversations,
+        isMessagesLoading,
+        hasMoreMessages,
+        initialMessagesLoading,
+        loadMoreMessages,
+        messageSearch,
+        messageStatus,
+        messageAccount,
+        replyTo,
+        isNearBottom,
+        currentUnreadCount,
+        unreadCount,
+        humanHandoffCount,
+        checkIsNearBottom,
+        scrollToBottom,
+    ]);
 
     return (
-        <ConversationContext.Provider value={{
-            selectedConversation,
-            setSelectedConversation: onSelectConversation,
-            updateConversationAi,
-            resumeConversationAi,
-            mobileView,
-            setMobileView,
-            selectedAccount,
-            setSelectedAccount,
-            accounts,
-            accountsLoading,
-            showDetails,
-            setShowDetails,
-            toggleDetails,
-            activeTab,
-            setActiveTab,
-            conversations,
-            setConversations,
-            messages,
-            setMessages,
-            handleSendMessage,
-            handleRetryMessage,
-            handleReaction,
-            pendingMedia,
-            setPendingMedia,
-            isLoading,
-            isLoadingMore,
-            hasMore,
-            listScrollRef,
-            prevListScrollTop,
-            search,
-            setSearch,
-            loadMoreConversations,
-            isMessagesLoading,
-            hasMoreMessages,
-            initialMessagesLoading,
-            setInitialMessagesLoading,
-            loadMoreMessages,
-            messageSearch,
-            setMessageSearch,
-            messageStatus,
-            setMessageStatus,
-            messageAccount,
-            setMessageAccount,
-            replyTo,
-            setReplyTo,
-            prevScrollHeight,
-            scrollRef,
-            scrollToBottom,
-            isNearBottom,
-            currentUnreadCount,
-            isAutoScrolling,
-            checkIsNearBottom,
-            bottomSentinelRef
-        }}>
+        <ConversationContext.Provider value={contextValue}>
             {children}
         </ConversationContext.Provider>
     );

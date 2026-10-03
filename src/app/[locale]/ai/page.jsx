@@ -852,7 +852,7 @@ function ConfigurationsTab({ provider, integration, loading, saving, onSave, onT
 // ─────────────────────────────────────────────────────────────
 // MODELS TAB
 // ─────────────────────────────────────────────────────────────
-function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSetDefault, onToggleModelActive, defaultModelId, settingDefaultId, hasPermission, locale, providerConnected, togglingId }) {
+function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSetDefault, onClearDefault, onToggleModelActive, defaultModelId, settingDefaultId, hasPermission, locale, providerConnected, togglingId }) {
     const t = useTranslations("ai");
     const [search, setSearch] = useState("");
 
@@ -944,7 +944,16 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                     const actions = [];
                     if (hasPermission("ai.manage")) {
                         const isSettingDefault = settingDefaultId === model.id;
-                        if (!isDefault) {
+                        if (isDefault) {
+                            actions.push({
+                                key: "clear-default",
+                                icon: isSettingDefault ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5 fill-current" />,
+                                tooltip: t("actions.cancelDefaultModel"),
+                                onClick: !isSettingDefault ? () => onClearDefault?.(model) : undefined,
+                                variant: "amber",
+                                disabled: isSettingDefault,
+                            });
+                        } else {
                             actions.push({
                                 key: "default",
                                 icon: isSettingDefault ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5" />,
@@ -990,6 +999,12 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
                                     <div className="text-xs font-bold text-foreground">{model.name}</div>
+                                    {model.isRecommended && (
+                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold text-primary bg-primary/10 shrink-0">{t("status.recommended")}</span>
+                                    )}
+                                    {isDefault && (
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-amber-700 bg-amber-100 shrink-0">{t("status.default")}</span>
+                                    )}
                                     {/* {model.toolsCalling === false && (
                                         <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-destructive bg-destructive/10 shrink-0">{t("capability.unsupported")}</span>
                                     )} */}
@@ -1036,9 +1051,6 @@ function ModelsTab({ models, loading, provider, onEditModel, onDeleteModel, onSe
                                             onCheckedChange={(val) => onToggleModelActive?.(model, val)}
                                         />
                                     </div>
-                                )}
-                                {isDefault && (
-                                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
                                 )}
                                 {actions.length > 0 && (
                                     <ActionButtons actions={actions} />
@@ -1380,7 +1392,7 @@ function ProviderSidebarSkeleton({ count = 5 }) {
 // ─────────────────────────────────────────────────────────────
 // ALL MODELS TAB
 // ─────────────────────────────────────────────────────────────
-function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchChange, providers, providerFilter, onProviderFilterChange, onEditModel, onDeleteModel, onSetDefault, onToggleModelActive, defaultModelId, settingDefaultId, hasPermission, locale, togglingId }) {
+function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchChange, providers, providerFilter, onProviderFilterChange, onEditModel, onDeleteModel, onSetDefault, onClearDefault, onToggleModelActive, defaultModelId, settingDefaultId, hasPermission, locale, togglingId }) {
     const t = useTranslations("ai");
 
     const getProviderConnected = (model) => {
@@ -1471,7 +1483,16 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
 
                                 const modelActions = [];
                                 if (hasPermission("ai.manage")) {
-                                    if (connected && !isDefault) {
+                                    if (isDefault) {
+                                        modelActions.push({
+                                            key: "clear-default",
+                                            icon: settingDefaultId === model.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5 fill-current" />,
+                                            tooltip: t("actions.cancelDefaultModel"),
+                                            onClick: settingDefaultId === model.id ? undefined : () => onClearDefault?.(model),
+                                            variant: "amber",
+                                            disabled: settingDefaultId === model.id,
+                                        });
+                                    } else if (connected) {
                                         modelActions.push({
                                             key: "default",
                                             icon: <Star className={cn("w-3.5 h-3.5")} />,
@@ -1526,7 +1547,12 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
                                                  <div className="min-w-0">
                                                       <div className="flex items-center gap-1.5">
                                                           <span className="text-[14px] font-bold text-foreground truncate" dir="ltr">{model.name || model.modelCode}</span>
-                                                          {isDefault && <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500 flex-none" />}
+                                                          {model.isRecommended && (
+                                                              <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold text-primary bg-primary/10 flex-none">{t("status.recommended")}</span>
+                                                          )}
+                                                          {isDefault && (
+                                                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-amber-700 bg-amber-100 flex-none">{t("status.default")}</span>
+                                                          )}
                                                           {model.isAvailable === false && (
                                                               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-destructive bg-destructive/10 flex-none">{t("scope.unavailable")}</span>
                                                           )}
@@ -1684,6 +1710,7 @@ export default function AiPage() {
                 p.code?.toLowerCase().includes(q)
         );
     }, [providers, providerSearch]);
+    
 
     // ── Data Loaders ──────────────────────────────────────────
     const loadProviders = useCallback(async () => {
@@ -1940,6 +1967,7 @@ export default function AiPage() {
             loadIntegration(selectedProviderId);
             loadProviders();
             loadModels(selectedProviderId);
+            loadDefaultModel();
         } catch (e) {
             toast.error(normalizeAxiosError(e), { id: tid });
         } finally {
@@ -1969,6 +1997,21 @@ export default function AiPage() {
             setSettingDefaultId(model.id);
             await api.put("/ai/default-model", { modelId: model.id });
             toast.success(t("messages.defaultModelSet"), { id: tid });
+            loadDefaultModel();
+        } catch (e) {
+            toast.error(normalizeAxiosError(e), { id: tid });
+        } finally {
+            setSettingDefaultId(null);
+        }
+    };
+
+    const handleClearDefaultModel = async (model) => {
+        if (!hasPermission("ai.manage")) return;
+        const tid = toast.loading(t("loading.clearingDefault"));
+        try {
+            setSettingDefaultId(model.id);
+            await api.delete("/ai/default-model");
+            toast.success(t("messages.defaultModelCleared"), { id: tid });
             loadDefaultModel();
         } catch (e) {
             toast.error(normalizeAxiosError(e), { id: tid });
@@ -2145,6 +2188,11 @@ export default function AiPage() {
                                                         ) : (
                                                             <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-primary bg-primary/10">
                                                                 {t("scope.system")}
+                                                            </span>
+                                                        )}
+                                                        {provider.recommendedModel?.name && (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-sm text-[10px] font-bold text-primary bg-primary/10">
+                                                                {t("providers.recommended", { name: provider.recommendedModel.name })}
                                                             </span>
                                                         )}
                                                         <div className="ms-auto flex items-center gap-1 shrink-0">
@@ -2381,6 +2429,7 @@ export default function AiPage() {
                                                 onEditModel={handleEditModel}
                                                 onDeleteModel={handleDeleteModel}
                                                 onSetDefault={handleSetDefaultModel}
+                                                onClearDefault={handleClearDefaultModel}
                                                 onToggleModelActive={handleToggleModelActive}
                                                 defaultModelId={defaultModel}
                                                 settingDefaultId={settingDefaultId}
@@ -2416,6 +2465,7 @@ export default function AiPage() {
                         onEditModel={handleEditModel}
                         onDeleteModel={handleDeleteModel}
                         onSetDefault={handleSetDefaultModel}
+                        onClearDefault={handleClearDefaultModel}
                         onToggleModelActive={handleToggleModelActive}
                         defaultModelId={defaultModel}
                         settingDefaultId={settingDefaultId}

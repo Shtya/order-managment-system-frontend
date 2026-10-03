@@ -17766,6 +17766,7 @@
       "deleteProvider": "حذف المزود",
       "setDefaultModel": "تعيين كافتراضي",
       "setDefaultModelDisabled": "قم بتهيئة المزود أولاً",
+      "cancelDefaultModel": "إلغاء الافتراضي",
       "testConnection": "اختبار الاتصال",
       "viewModels": "عرض النماذج",
       "editModel": "تعديل النموذج",
@@ -17789,7 +17790,8 @@
       "integrations": "التكاملات"
     },
     "providers": {
-      "available": "مزود متاح"
+      "available": "مزود متاح",
+      "recommended": "موصى به: {name}"
     },
     "provider": {
       "code": "رمز المزود",
@@ -17906,6 +17908,7 @@
       "active": "نشط",
       "inactive": "غير نشط",
       "default": "افتراضي",
+      "recommended": "موصى به",
       "label": "الحالة"
     },
     "capability": {
@@ -17952,7 +17955,8 @@
       "deactivating": "جارٍ التعطيل...",
       "saving": "جارٍ الحفظ...",
       "testing": "جارٍ اختبار الاتصال...",
-      "settingDefault": "جارٍ تعيين النموذج الافتراضي..."
+      "settingDefault": "جارٍ تعيين النموذج الافتراضي...",
+      "clearingDefault": "جارٍ إلغاء النموذج الافتراضي..."
     },
     "error": {
       "loadProvidersFailed": "فشل تحميل مزودي الخدمة",
@@ -18032,6 +18036,7 @@
       "modelUpdated": "تم تحديث النموذج المخصص بنجاح",
       "modelDeleted": "تم حذف النموذج بنجاح",
       "defaultModelSet": "تم تحديث النموذج الافتراضي بنجاح",
+      "defaultModelCleared": "تم إلغاء النموذج الافتراضي بنجاح",
       "integrationSaved": "تم حفظ بيانات اعتماد التكامل بنجاح",
       "integrationToggled": "تم تحديث حالة التكامل",
       "connectionTestSuccess": "نجح اختبار الاتصال",

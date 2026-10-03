@@ -17740,6 +17740,7 @@
       "deleteProvider": "Delete Provider",
       "setDefaultModel": "Set as Default",
       "setDefaultModelDisabled": "Configure provider first",
+      "cancelDefaultModel": "Cancel default",
       "testConnection": "Test Connection",
       "viewModels": "View Models",
       "editModel": "Edit Model",
@@ -17763,7 +17764,8 @@
       "integrations": "Integrations"
     },
     "providers": {
-      "available": "providers available"
+      "available": "providers available",
+      "recommended": "Recommended: {name}"
     },
     "provider": {
       "code": "Provider Code",
@@ -17880,6 +17882,7 @@
       "active": "Active",
       "inactive": "Inactive",
       "default": "Default",
+      "recommended": "Recommended",
       "label": "Status"
     },
     "capability": {
@@ -17926,7 +17929,8 @@
       "deactivating": "Deactivating...",
       "saving": "Saving...",
       "testing": "Testing connection...",
-      "settingDefault": "Setting default model..."
+      "settingDefault": "Setting default model...",
+      "clearingDefault": "Clearing default model..."
     },
     "error": {
       "loadProvidersFailed": "Failed to load providers",
@@ -18006,6 +18010,7 @@
       "modelUpdated": "Custom model updated successfully",
       "modelDeleted": "Model deleted successfully",
       "defaultModelSet": "Default model updated successfully",
+      "defaultModelCleared": "Default model cleared successfully",
       "integrationSaved": "Integration credentials saved successfully",
       "integrationToggled": "Integration status updated",
       "connectionTestSuccess": "Connection test passed",

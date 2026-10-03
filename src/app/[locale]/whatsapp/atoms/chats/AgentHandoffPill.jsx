@@ -17,7 +17,6 @@ export default function AgentHandoffPill({ onClick, canCancel }) {
                 canCancel && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             )}
         >
-            <Undo2 className="h-3 w-3 shrink-0 text-amber-700/70 dark:text-amber-300/70" />
             <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-amber-100/70 text-amber-700/80 dark:bg-amber-900/50 dark:text-amber-300/80">
                 <Headphones className="h-3 w-3" />
             </span>

@@ -156,6 +156,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const [handoffSaving, setHandoffSaving] = useState(false);
     const [pauseSaving, setPauseSaving] = useState(false);
     const [pauseNow, setPauseNow] = useState(() => Date.now());
+    const [hasActiveAgent, setHasActiveAgent] = useState(true);
     const conversationAiEnabled = selectedConversation?.aiMode !== "disabled";
     const canUpdateConversation = hasPermission("conversation.update");
     const isHandoffActive = !!selectedConversation?.humanHandoff;
@@ -164,13 +165,14 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         : 0;
     const pauseRemainingMs = pauseUntilMs ? pauseUntilMs - pauseNow : 0;
     const isPauseActive = pauseRemainingMs > 0;
+    const showHandoffTag = conversationAiEnabled && hasActiveAgent && isHandoffActive;
+    const showPauseTag = conversationAiEnabled && hasActiveAgent && !isHandoffActive && isPauseActive;
 
     useEffect(() => {
         if (!pauseUntilMs || pauseUntilMs <= Date.now()) return undefined;
         const id = setInterval(() => setPauseNow(Date.now()), 1000);
         return () => clearInterval(id);
     }, [pauseUntilMs, pauseDialogOpen]);
-    const [hasActiveAgent, setHasActiveAgent] = useState(true);
 
     // Hide the AI pause countdown when the tenant has no active agent.
     useEffect(() => {
@@ -496,22 +498,20 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                 <Bot className="w-4 h-4" />
                             </span>
                         )}
-                        {conversationAiEnabled && hasActiveAgent && (
-                            selectedConversation?.humanHandoff ? (
+                        {showHandoffTag ? (
                                 <AgentHandoffPill
                                     key={`${selectedConversation.id}-handoff`}
                                     canCancel={canUpdateConversation}
                                     onClick={() => setHandoffDialogOpen(true)}
                                 />
-                            ) : (
+                            ) : showPauseTag ? (
                                 <AgentPausePill
                                     key={selectedConversation.id}
                                     pausedUntil={selectedConversation?.agentPausedUntil}
                                     canResume={canUpdateConversation}
                                     onClick={() => setPauseDialogOpen(true)}
                                 />
-                            )
-                        )}
+                            ) : null}
                     </div>
                 </div>
 
@@ -550,7 +550,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                         {t("editContact")}
                                     </DropdownMenuItem>
                                 )}
-                                {canUpdateConversation && conversationAiEnabled && hasActiveAgent && isHandoffActive && (
+                                {canUpdateConversation && showHandoffTag && (
                                     <DropdownMenuItem
                                         onClick={() => setHandoffDialogOpen(true)}
                                         className="gap-2 cursor-pointer"
@@ -559,7 +559,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                         {t("ai.returnToAgent")}
                                     </DropdownMenuItem>
                                 )}
-                                {canUpdateConversation && conversationAiEnabled && hasActiveAgent && isPauseActive && (
+                                {canUpdateConversation && showPauseTag && (
                                     <DropdownMenuItem
                                         onClick={() => setPauseDialogOpen(true)}
                                         className="gap-2 cursor-pointer"

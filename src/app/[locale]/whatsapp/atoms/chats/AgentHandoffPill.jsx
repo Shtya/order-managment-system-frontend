@@ -1,78 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { Headphones, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Headphones, Check, Loader2 } from "lucide-react";
 import { cn } from "@/utils/cn";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export default function AgentHandoffPill({ onCancel, canCancel }) {
+export default function AgentHandoffPill({ onClick, canCancel }) {
     const t = useTranslations("chats");
-    const [open, setOpen] = useState(false);
-    const [cancelling, setCancelling] = useState(false);
-    const [justReturned, setJustReturned] = useState(false);
 
-    if (justReturned) {
-        return (
-            <span
-                className="inline-flex h-[30px] shrink-0 items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 text-[12px] font-medium text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300"
-            >
-                <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/80 dark:text-emerald-300">
-                    <Check className="h-3 w-3" />
-                </span>
-                {t("ai.resumed")}
+    const pill = (
+        <span
+            className={cn(
+                "inline-flex h-[30px] shrink-0 items-center gap-1.5 rounded-full border border-amber-200/80 bg-amber-50/40 px-2.5 text-[12px] font-medium text-amber-800/90",
+                "dark:border-amber-800/40 dark:bg-amber-950/25 dark:text-amber-200/90",
+                canCancel && "cursor-pointer hover:bg-amber-50/80 dark:hover:bg-amber-950/40",
+                canCancel && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            )}
+        >
+            <Undo2 className="h-3 w-3 shrink-0 text-amber-700/70 dark:text-amber-300/70" />
+            <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-amber-100/70 text-amber-700/80 dark:bg-amber-900/50 dark:text-amber-300/80">
+                <Headphones className="h-3 w-3" />
             </span>
-        );
-    }
+            <span className="whitespace-nowrap">{t("ai.handedOff")}</span>
+        </span>
+    );
+
+    if (!canCancel) return pill;
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
+        <Tooltip>
+            <TooltipTrigger asChild>
                 <button
                     type="button"
-                    aria-expanded={open}
-                    aria-haspopup="dialog"
-                    className={cn(
-                        "inline-flex h-[30px] shrink-0 items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 text-[12px] font-medium text-amber-800",
-                        "dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300",
-                        "hover:bg-amber-100/80 dark:hover:bg-amber-900/50",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    )}
+                    onClick={onClick}
+                    aria-label={t("ai.returnToAgent")}
+                    className="shrink-0 rounded-full"
                 >
-                    <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/80 dark:text-amber-300">
-                        <Headphones className="h-3 w-3" />
-                    </span>
-                    <span>{t("ai.handedOff")}</span>
+                    {pill}
                 </button>
-            </PopoverTrigger>
-            <PopoverContent align="center" sideOffset={6} className="w-[230px] p-3.5">
-                <div className="text-[13px] font-semibold text-foreground">{t("ai.handedOffTitle")}</div>
-                <div className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-                    {t("ai.handedOffHint")}
-                </div>
-                {canCancel && (
-                    <button
-                        type="button"
-                        disabled={cancelling}
-                        onClick={async () => {
-                            setCancelling(true);
-                            try {
-                                await onCancel();
-                                setOpen(false);
-                                setJustReturned(true);
-                                setTimeout(() => setJustReturned(false), 1800);
-                            } catch {
-                                setCancelling(false);
-                            } finally {
-                                setCancelling(false);
-                            }
-                        }}
-                        className="mt-3 flex h-8 w-full items-center justify-center rounded-[7px] bg-primary text-[12px] font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
-                    >
-                        {cancelling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("ai.returnToAi")}
-                    </button>
-                )}
-            </PopoverContent>
-        </Popover>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={6} className="max-w-[220px] text-center font-normal">
+                <div className="font-semibold">{t("ai.returnToAgent")}</div>
+                <div className="mt-0.5 font-normal opacity-90">{t("ai.returnToAiTooltip")}</div>
+            </TooltipContent>
+        </Tooltip>
     );
 }

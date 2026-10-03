@@ -15676,12 +15676,17 @@
       "humanTakeover": "Human takeover",
       "resumesIn": "Resumes automatically in",
       "resumeNow": "Resume AI",
+      "resumeNowBody": "AI auto-reply is paused while you talk to this customer. Confirming resumes it now instead of waiting for the timer. If the customer already sent a message that still needs a reply, the agent will answer it. If not, it waits for the next customer message.",
+      "resumeAiTooltip": "Click to resume the AI in this conversation",
       "resumed": "AI resumed",
       "handoffBadge": "Need human",
       "handedOff": "Needs human",
       "handedOffTitle": "Handed off to the team",
       "handedOffHint": "The AI will not reply until you return this chat to it.",
-      "returnToAi": "Return to AI"
+      "returnToAi": "Return to AI",
+      "returnToAgent": "Return chat to the agent",
+      "returnToAgentBody": "Your team is handling this conversation, so the AI is not answering. Confirming hands the chat back to the agent. It will not send a message now. It waits for a new message from the customer, then replies.",
+      "returnToAiTooltip": "Click to return this conversation to the agent"
     },
     "sentBy": {
       "system": "System",

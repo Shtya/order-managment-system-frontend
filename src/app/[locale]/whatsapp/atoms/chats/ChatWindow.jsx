@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } fr
 import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    MoreVertical, Phone, Video, Bot,
+    MoreVertical, Phone, Video, Bot, Headphones, Undo2,
     Search, Star, Info, MessageCircleOff, X, Edit, UserMinus, UserCheck, Loader2, ChevronLeft, ChevronDown
 } from "lucide-react";
 import MessageBubble from "./MessageBubble";
@@ -40,7 +40,7 @@ import { useDebounce } from "@/hook/useDebounce";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
-import AgentPausePill from "./AgentPausePill";
+import AgentPausePill, { formatCountdown } from "./AgentPausePill";
 import AgentHandoffPill from "./AgentHandoffPill";
 import api from "@/utils/api";
 
@@ -151,7 +151,25 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
     const [aiModeDraft, setAiModeDraft] = useState("inherit");
     const [aiSaving, setAiSaving] = useState(false);
+    const [handoffDialogOpen, setHandoffDialogOpen] = useState(false);
+    const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
+    const [handoffSaving, setHandoffSaving] = useState(false);
+    const [pauseSaving, setPauseSaving] = useState(false);
+    const [pauseNow, setPauseNow] = useState(() => Date.now());
     const conversationAiEnabled = selectedConversation?.aiMode !== "disabled";
+    const canUpdateConversation = hasPermission("conversation.update");
+    const isHandoffActive = !!selectedConversation?.humanHandoff;
+    const pauseUntilMs = selectedConversation?.agentPausedUntil
+        ? new Date(selectedConversation.agentPausedUntil).getTime()
+        : 0;
+    const pauseRemainingMs = pauseUntilMs ? pauseUntilMs - pauseNow : 0;
+    const isPauseActive = pauseRemainingMs > 0;
+
+    useEffect(() => {
+        if (!pauseUntilMs || pauseUntilMs <= Date.now()) return undefined;
+        const id = setInterval(() => setPauseNow(Date.now()), 1000);
+        return () => clearInterval(id);
+    }, [pauseUntilMs, pauseDialogOpen]);
     const [hasActiveAgent, setHasActiveAgent] = useState(true);
 
     // Hide the AI pause countdown when the tenant has no active agent.
@@ -482,29 +500,15 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             selectedConversation?.humanHandoff ? (
                                 <AgentHandoffPill
                                     key={`${selectedConversation.id}-handoff`}
-                                    canCancel={hasPermission("conversation.update")}
-                                    onCancel={async () => {
-                                        try {
-                                            await cancelConversationHandoff();
-                                        } catch {
-                                            toast.error(t("chatFailed"));
-                                            throw new Error("cancel handoff failed");
-                                        }
-                                    }}
+                                    canCancel={canUpdateConversation}
+                                    onClick={() => setHandoffDialogOpen(true)}
                                 />
                             ) : (
                                 <AgentPausePill
                                     key={selectedConversation.id}
                                     pausedUntil={selectedConversation?.agentPausedUntil}
-                                    canResume={hasPermission("conversation.update")}
-                                    onResume={async () => {
-                                        try {
-                                            await resumeConversationAi();
-                                        } catch {
-                                            toast.error(t("chatFailed"));
-                                            throw new Error("resume failed");
-                                        }
-                                    }}
+                                    canResume={canUpdateConversation}
+                                    onClick={() => setPauseDialogOpen(true)}
                                 />
                             )
                         )}
@@ -546,7 +550,25 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                         {t("editContact")}
                                     </DropdownMenuItem>
                                 )}
-                                {isTestUser && hasPermission("conversation.update") && (
+                                {canUpdateConversation && conversationAiEnabled && hasActiveAgent && isHandoffActive && (
+                                    <DropdownMenuItem
+                                        onClick={() => setHandoffDialogOpen(true)}
+                                        className="gap-2 cursor-pointer"
+                                    >
+                                        <Headphones className="w-4 h-4" />
+                                        {t("ai.returnToAgent")}
+                                    </DropdownMenuItem>
+                                )}
+                                {canUpdateConversation && conversationAiEnabled && hasActiveAgent && isPauseActive && (
+                                    <DropdownMenuItem
+                                        onClick={() => setPauseDialogOpen(true)}
+                                        className="gap-2 cursor-pointer"
+                                    >
+                                        <Undo2 className="w-4 h-4" />
+                                        {t("ai.resumeNow")}
+                                    </DropdownMenuItem>
+                                )}
+                                {isTestUser && canUpdateConversation && (
                                     <DropdownMenuItem
                                         onClick={() => {
                                             setAiModeDraft(selectedConversation?.aiMode === "disabled" ? "disabled" : "inherit");
@@ -680,6 +702,96 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                 setShowMediaPreview={setShowMediaPreview}
                 setMediaFileType={setMediaFileType}
             />
+
+            <Dialog open={handoffDialogOpen} onOpenChange={setHandoffDialogOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-card">
+                    <DialogHeader className="p-6 border-b border-border">
+                        <DialogTitle className="text-xl font-bold">{t("ai.returnToAgent")}</DialogTitle>
+                        <DialogDescription className="sr-only">{t("ai.returnToAgentBody")}</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-6 space-y-6">
+                        <p className="text-sm leading-relaxed text-muted-foreground">{t("ai.returnToAgentBody")}</p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setHandoffDialogOpen(false)}
+                                className="px-4 py-2 rounded-xl border border-border text-sm"
+                            >
+                                {t("cancel")}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={handoffSaving}
+                                onClick={async () => {
+                                    setHandoffSaving(true);
+                                    try {
+                                        await cancelConversationHandoff();
+                                        setHandoffDialogOpen(false);
+                                    } catch {
+                                        toast.error(t("chatFailed"));
+                                    } finally {
+                                        setHandoffSaving(false);
+                                    }
+                                }}
+                                className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-sm disabled:opacity-60"
+                            >
+                                {handoffSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : t("ai.returnToAgent")}
+                            </button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={pauseDialogOpen} onOpenChange={setPauseDialogOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-card">
+                    <DialogHeader className="p-6 border-b border-border">
+                        <DialogTitle className="text-xl font-bold">{t("ai.resumeNow")}</DialogTitle>
+                        <DialogDescription className="sr-only">{t("ai.resumeNowBody")}</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-6 space-y-6">
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                            {t("ai.resumeNowBody")}
+                            {isPauseActive ? (
+                                <>
+                                    {" "}
+                                    {t("ai.resumesIn")}{" "}
+                                    <strong className="font-semibold tabular-nums text-foreground">
+                                        {formatCountdown(pauseRemainingMs)}
+                                    </strong>
+                                    .
+                                </>
+                            ) : null}
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setPauseDialogOpen(false)}
+                                className="px-4 py-2 rounded-xl border border-border text-sm"
+                            >
+                                {t("cancel")}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={pauseSaving}
+                                onClick={async () => {
+                                    setPauseSaving(true);
+                                    try {
+                                        await resumeConversationAi();
+                                        setPauseDialogOpen(false);
+                                    } catch {
+                                        toast.error(t("chatFailed"));
+                                    } finally {
+                                        setPauseSaving(false);
+                                    }
+                                }}
+                                className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-sm disabled:opacity-60"
+                            >
+                                {pauseSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : t("ai.resumeNow")}
+                            </button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={aiSettingsOpen} onOpenChange={setAiSettingsOpen}>
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-card">

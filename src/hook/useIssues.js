@@ -18,6 +18,29 @@ function clean(obj = {}) {
   return out;
 }
 
+export function useIssueAssignmentOptions() {
+  const [roles, setRoles] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+
+  useEffect(() => {
+    api
+      .get("/roles")
+      .then((res) => setRoles(res.data || []))
+      .catch(() => {});
+    api
+      .get("/users", { params: { limit: 100 } })
+      .then((res) => setUsers(res.data?.records || res.data || []))
+      .catch(() => {});
+    api
+      .get(`${BASE}/statuses`)
+      .then((res) => setStatuses(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {});
+  }, []);
+
+  return { roles, users, statuses };
+}
+
 /* ============================================================
    Main hook (scope-less — always tenant issues via /issues)
 ============================================================ */

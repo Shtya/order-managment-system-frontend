@@ -15683,10 +15683,10 @@
       "handedOff": "Needs human",
       "handedOffTitle": "Handed off to the team",
       "handedOffHint": "The AI will not reply until you return this chat to it.",
-      "returnToAi": "Return to AI",
-      "returnToAgent": "Return chat to the agent",
-      "returnToAgentBody": "Your team is handling this conversation, so the AI is not answering. Confirming hands the chat back to the agent. It will not send a message now. It waits for a new message from the customer, then replies.",
-      "returnToAiTooltip": "Click to return this conversation to the agent"
+      "returnToAi": "The problem solved",
+      "returnToAgent": "The problem solved",
+      "returnToAgentBody": "Your team is handling this conversation, so the AI is not answering. Confirming marks the issue as solved and hands the chat back to the agent. It will not send a message now. It waits for a new message from the customer, then replies. All non-closed issues related to this customer's number will be marked as solved.",
+      "returnToAiTooltip": "Click to mark the problem as solved and return this conversation to the agent"
     },
     "sentBy": {
       "system": "System",
@@ -18155,7 +18155,8 @@
       "nameTooLong": "Name cannot exceed 255 characters",
       "languageRequired": "Language is required",
       "genderRequired": "Gender is required",
-      "instructionsTooLong": "Instructions cannot exceed 4000 characters"
+      "instructionsTooLong": "Instructions cannot exceed 4000 characters",
+      "handoffRoleRequired": "Choose a team before enabling human intervention"
     },
     "wizard": {
       "title": "Add agent",
@@ -18180,6 +18181,7 @@
       "capabilitiesAutomaticShort": "automatic",
       "capabilityRequiredFor": "Enabled because it is required for {titles}.",
       "capabilityRequiredJoin": ", ",
+      "handoffConfigHint": "These defaults are used every time this agent creates an issue for human intervention. Status defaults to Open. Title, description, cause, and order are filled in Arabic when the customer asks for a person.",
       "mediaInputsTitle": "Media handling",
       "mediaInputsDescription": "You can enable or disable the agent's ability to process the different types of media customers send. Each media processing operation is paid and deducted from the customer's wallet.",
       "mediaPricingLabel": "Media pricing",
@@ -18322,7 +18324,7 @@
         },
         "humanHandoff": {
           "title": "Human Intervention",
-          "desc": "Stop the assistant from continuing the conversation, mark it for human intervention."
+          "desc": "Create an issue and stop the assistant while a person handles this chat. Requires listing the customer's orders so the agent can attach the right order when there is one."
         }
       },
       "reviewEmptyKnowledge": "No knowledge linked.",

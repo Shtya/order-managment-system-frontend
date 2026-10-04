@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { AlertCircle, Loader2, Tag } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -13,7 +13,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -23,12 +22,10 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import OrderSearchSection from "@/components/molecules/OrderSearchSection";
 import { VariableInput } from "@/components/ui/VariableInput";
-
-const PRIORITIES = ["low", "medium", "high", "urgent"];
+import IssueAssignmentFields from "./IssueAssignmentFields";
 
 /**
  * IssueFormDialog — create a new issue, or edit an existing one when
@@ -101,7 +98,7 @@ export default function IssueFormDialog({
         .trim()
         .required(t("validation.titleRequired"))
         .max(250, t("validation.titleMax")),
-      orderId: yup.string().required(t("validation.orderRequired")),
+      orderId: yup.string().nullable().optional(),
       description: yup.string().trim().nullable().optional(),
     });
   }, [t, hideOrderSection]);
@@ -167,11 +164,6 @@ export default function IssueFormDialog({
     );
 
   const watchedRoleId = useWatch({ control, name: "assignedRoleId" });
-
-  const visibleUsers = useMemo(() => {
-    if (!watchedRoleId) return users;
-    return users.filter((u) => u.roleId === watchedRoleId);
-  }, [users, watchedRoleId]);
 
   useEffect(() => {
     if (!watchedRoleId) return;
@@ -247,7 +239,7 @@ export default function IssueFormDialog({
           {!hideOrderSection && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold">
-                {t("form.fields.order")} <span className="text-red-500">*</span>
+                {t("form.fields.order")}
               </Label>
               <OrderSearchSection
                 errors={errors.orderId?.message ? { order: errors.orderId.message } : {}}
@@ -255,8 +247,8 @@ export default function IssueFormDialog({
                 onSelect={setSelectedOrder}
                 formatCurrency={formatCurrency}
                 isEditMode={isEdit || Boolean(order)}
-                status={undefined}
-                hasReplacement={undefined}
+                status={null}
+                hasReplacement={null}
                 showOrderLink={true}
               />
             </div>
@@ -315,8 +307,15 @@ export default function IssueFormDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Cause */}
+
+          <IssueAssignmentFields
+            control={control}
+            errors={errors}
+            options={{ statuses: options.statuses || [], roles, users }}
+            employeeIds={employeeIds}
+            onToggleEmployee={toggleEmployee}
+            requiredRole
+          >
             <div className="space-y-2">
               <Label className="text-sm font-semibold">
                 {t("form.fields.cause")}
@@ -349,167 +348,7 @@ export default function IssueFormDialog({
                 <p className="text-xs text-red-600">{errors.causeId.message}</p>
               )}
             </div>
-
-            {/* Status */}
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">
-                {t("form.fields.status")}
-              </Label>
-              <Controller
-                name="statusId"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value || "__none"}
-                    onValueChange={(v) =>
-                      field.onChange(v === "__none" ? "" : v)
-                    }
-                  >
-                    <SelectTrigger className="h-[50px] rounded-xl">
-                      <SelectValue placeholder={t("form.fields.selectStatus")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none">
-                        {t("form.fields.selectStatus")}
-                      </SelectItem>
-                      {options.statuses.map((s) => (
-                        <SelectItem key={s.id} value={String(s.id)}>
-                          {labelOf(s)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.statusId?.message && (
-                <p className="text-xs text-red-600">{errors.statusId.message}</p>
-              )}
-            </div>
-
-            {/* Priority */}
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">
-                {t("form.fields.priority")}
-              </Label>
-              <Controller
-                name="priority"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value || "medium"}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger className="h-[50px] rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRIORITIES.map((p) => (
-                        <SelectItem key={p} value={p}>
-                          {t(`priority.${p}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.priority?.message && (
-                <p className="text-xs text-red-600">{errors.priority.message}</p>
-              )}
-            </div>
-
-            {/* Estimated minutes */}
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">
-                {t("form.fields.estimatedMinutes")}
-              </Label>
-              <Controller
-                name="estimatedMinutes"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    type="number"
-                    min={1}
-                    {...field}
-                    placeholder={t("form.fields.estimatedMinutesPlaceholder")}
-                    className="rounded-xl h-[50px]"
-                    error={Boolean(errors.estimatedMinutes)}
-                  />
-                )}
-              />
-              {errors.estimatedMinutes?.message && (
-                <p className="text-xs text-red-600">
-                  {errors.estimatedMinutes.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Assigned role */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">
-              {t("form.fields.assignedRole")}
-            </Label>
-            <Controller
-              name="assignedRoleId"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value || ""}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger className="h-[50px] rounded-xl">
-                    <SelectValue placeholder={t("form.fields.selectRole")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.map((r) => (
-                      <SelectItem key={r.id} value={String(r.id)}>
-                        {labelOf(r)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.assignedRoleId?.message && (
-              <p className="text-xs text-red-600">
-                {errors.assignedRoleId.message}
-              </p>
-            )}
-          </div>
-
-          {/* Employees */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">
-              {t("form.fields.employees")}
-            </Label>
-            {visibleUsers.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
-                {t("filters.noEmployees")}
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-1.5">
-                {visibleUsers.map((u) => {
-                  const active = employeeIds.includes(u.id);
-                  return (
-                    <button
-                      key={u.id}
-                      type="button"
-                      onClick={() => toggleEmployee(u.id)}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium transition-colors",
-                        active
-                          ? "border-primary/40 bg-primary/10 text-primary"
-                          : "border-border/70 bg-background text-muted-foreground hover:border-primary/30"
-                      )}
-                    >
-                      <Tag size={11} />
-                      {labelOf(u)}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          </IssueAssignmentFields>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t mt-4">
             <Button

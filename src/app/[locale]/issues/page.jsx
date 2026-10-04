@@ -15,7 +15,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
 import { useExport } from "@/hook/useExport";
-import { useIssues } from "@/hook/useIssues";
+import { useIssues, useIssueAssignmentOptions } from "@/hook/useIssues";
 import PageHeader from "@/components/atoms/Pageheader";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
@@ -129,9 +129,7 @@ export default function ManageIssuesPage() {
   const [liveFilters, setLiveFilters] = useState(DEFAULT_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS);
 
-  // --- roles / users for filter + create-issue options ---
-  const [roles, setRoles] = useState([]);
-  const [users, setUsers] = useState([]);
+  const { roles, users } = useIssueAssignmentOptions();
 
   // --- statuses dialog state ---
   const [statusDialog, setStatusDialog] = useState({
@@ -151,18 +149,6 @@ export default function ManageIssuesPage() {
     statusId: "",
   });
   const [editIssue, setEditIssue] = useState(null);
-
-  /* ── Roles & users for filter/assign options ────────────── */
-  useEffect(() => {
-    api
-      .get("/roles")
-      .then((res) => setRoles(res.data || []))
-      .catch(() => { });
-    api
-      .get("/users", { params: { limit: 1000 } })
-      .then((res) => setUsers(res.data?.records || res.data || []))
-      .catch(() => { });
-  }, []);
 
   /* ── Open sheet from ?id= search param on initial load ─── */
   const didInitFromUrlRef = useRef(false);

@@ -22,6 +22,7 @@ import {
   buildAgentPayload,
   initialAgentWizardData,
   mapAgentToForm,
+  validateStepCapabilities,
   validateStepGeneral,
 } from "./agentWizardSchema";
 
@@ -115,11 +116,17 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
   const handleSave = async () => {
     const values = getValues();
     const g = validateStepGeneral(values);
+    const c = validateStepCapabilities(values);
     clearErrors();
-    Object.entries(g).forEach(([k, v]) => setError(k, { type: "manual", message: v }));
+    Object.entries({ ...g, ...c }).forEach(([k, v]) => setError(k, { type: "manual", message: v }));
     if (Object.keys(g).length) {
       setFormError(t("wizard.fixStepErrors"));
       scrollToSection("general");
+      return;
+    }
+    if (Object.keys(c).length) {
+      setFormError(t("wizard.fixStepErrors"));
+      scrollToSection("capabilities");
       return;
     }
     setFormError("");
@@ -181,7 +188,7 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
       </SectionCard>
 
       <SectionCard stepKey="capabilities" index={2}>
-        <StepCapabilities watch={watch} setValue={setValue} />
+        <StepCapabilities control={control} watch={watch} setValue={setValue} errors={errors} />
       </SectionCard>
 
       {/* <SectionCard stepKey="review" index={3}>

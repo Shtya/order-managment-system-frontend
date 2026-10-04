@@ -61,6 +61,7 @@ export const AGENT_CAPABILITY_DEPENDENCIES = {
   updateCustomerAddress: [...ADDRESS_READ],
   removeCustomerAddress: ["getMyAddresses"],
   setDefaultAddress: ["getMyAddresses"],
+  humanHandoff: ["getMyOrders", "getOrderDetails"],
 };
 
 export function capabilityClosure(list) {
@@ -151,6 +152,11 @@ export const initialAgentWizardData = {
   acceptVideo: false,
   acceptDocument: false,
   acceptAudio: false,
+  handoffAssignedRoleId: "",
+  handoffEmployeeIds: [],
+  handoffEstimatedMinutes: "",
+  handoffPriority: "medium",
+  handoffStatusId: "",
 };
 
 export function validateStepGeneral(values) {
@@ -172,7 +178,17 @@ export function validateStepGeneral(values) {
   return errs;
 }
 
+export function validateStepCapabilities(values) {
+  const errs = {};
+  const caps = expandAgentCapabilities(values?.capabilities);
+  if (caps.includes("humanHandoff") && !String(values?.handoffAssignedRoleId || "").trim()) {
+    errs.handoffAssignedRoleId = "validation.handoffRoleRequired";
+  }
+  return errs;
+}
+
 export function buildAgentPayload(values) {
+  const capabilities = expandAgentCapabilities(values.capabilities);
   return {
     name: String(values.name || "").trim(),
     language: values.language,
@@ -184,11 +200,26 @@ export function buildAgentPayload(values) {
         : values.responseProviderId,
     isActive: values.isActive ?? true,
     knowledgeIds: Array.isArray(values.knowledgeIds) ? values.knowledgeIds : [],
-    capabilities: expandAgentCapabilities(values.capabilities),
+    capabilities,
     acceptImage: values.acceptImage === true,
     acceptVideo: values.acceptVideo === true,
     acceptDocument: values.acceptDocument === true,
     acceptAudio: values.acceptAudio === true,
+    handoffAssignedRoleId: capabilities.includes("humanHandoff")
+      ? values.handoffAssignedRoleId || null
+      : null,
+    handoffEmployeeIds: capabilities.includes("humanHandoff")
+      ? (Array.isArray(values.handoffEmployeeIds) ? values.handoffEmployeeIds : [])
+      : [],
+    handoffEstimatedMinutes: capabilities.includes("humanHandoff")
+      ? (values.handoffEstimatedMinutes ? Number(values.handoffEstimatedMinutes) : null)
+      : null,
+    handoffPriority: capabilities.includes("humanHandoff")
+      ? values.handoffPriority || "medium"
+      : "medium",
+    handoffStatusId: capabilities.includes("humanHandoff")
+      ? values.handoffStatusId || null
+      : null,
   };
 }
 
@@ -210,5 +241,12 @@ export function mapAgentToForm(agent) {
     acceptVideo: agent?.acceptVideo === true,
     acceptDocument: agent?.acceptDocument === true,
     acceptAudio: agent?.acceptAudio === true,
+    handoffAssignedRoleId: agent?.handoffAssignedRoleId || "",
+    handoffEmployeeIds: Array.isArray(agent?.handoffEmployeeIds)
+      ? agent.handoffEmployeeIds
+      : [],
+    handoffEstimatedMinutes: agent?.handoffEstimatedMinutes ?? "",
+    handoffPriority: agent?.handoffPriority || "medium",
+    handoffStatusId: agent?.handoffStatusId || "",
   };
 }

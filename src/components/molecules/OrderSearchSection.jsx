@@ -311,8 +311,9 @@ export function OrderSearchSection({
           limit: 8,
           page: 1,
         };
-        if (hasReplacement !== undefined) params.hasReplacement = hasReplacement;
-        if (status !== undefined) params.status = status;
+        
+        if (hasReplacement !== undefined && hasReplacement !== null) params.hasReplacement = hasReplacement;
+        if (!!status) params.status = status;
         const res = await api.get("/orders", { params });
         setResults(res.data?.records ?? []);
         setShowResults(true);

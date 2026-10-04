@@ -22,6 +22,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogD
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 import UserSelect from "@/components/atoms/UserSelect";
 import AgentSelect, { AGENT_SELECT_DEFAULT, AGENT_SELECT_NONE } from "@/components/molecules/AgentSelect";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { MediaForm, MediaPreviewForm } from "../../whatsapp/atoms/chats/MediaPreviewOverlay";
 import MediaUpload from "../../whatsapp/atoms/MediaUpload";
 import { LocationForm } from "../../whatsapp/atoms/chats/LocationModal";
@@ -614,6 +615,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
     const tCommon = useTranslations("common");
     const tShipping = useTranslations("shipping");
     const locale = useLocale();
+    const { settings } = useOrdersSettings();
     const [providers, setProviders] = useState([]);
     const [shippingCompanies, setShippingCompanies] = useState([]);
     const [agents, setAgents] = useState([]);
@@ -804,7 +806,24 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                                         : AGENT_SELECT_NONE
                             }
                             onValueChange={handleAgentChange}
-                            defaultOptionLabel={() => tConfig("aiAddressCorrectionAgentDefault")}
+                            defaultOptionLabel={(agents) => {
+                                const defaultAgent = agents.find(
+                                    (agent) => agent.id === settings?.whatsappAiAgentId,
+                                );
+                                const agentName = defaultAgent?.name
+                                    || tConfig("aiAddressCorrectionAgentNoAgent");
+                                const aiStatus = settings?.whatsappAiEnabled
+                                    ? tConfig("aiAddressCorrectionAgentEnabled")
+                                    : tConfig("aiAddressCorrectionAgentDisabled");
+                                const agentStatus = defaultAgent
+                                    ? tConfig("aiAddressCorrectionAgentWorking")
+                                    : tConfig("aiAddressCorrectionAgentNotWorking");
+                                return tConfig("aiAddressCorrectionAgentDefault", {
+                                    agentName,
+                                    aiStatus,
+                                    agentStatus,
+                                });
+                            }}
                             noneOptionLabel={tConfig("aiAddressCorrectionAgentNone")}
                         />
                     </div>

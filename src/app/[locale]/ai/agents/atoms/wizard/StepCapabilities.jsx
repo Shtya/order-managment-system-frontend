@@ -152,7 +152,8 @@ export default function StepCapabilities({ control, watch, setValue, errors }) {
             className={cn(
               "border rounded-lg p-3 transition-colors",
               isHandoff && checked ? "sm:col-span-2 xl:col-span-3" : "",
-              locked ? "cursor-not-allowed bg-muted/40" : "cursor-pointer hover:bg-muted/50",
+              !locked && !(isHandoff && checked) && "cursor-pointer",
+              locked ? "cursor-not-allowed bg-muted/40" : " hover:bg-muted/50",
               checked ? "border-border" : "border-border opacity-80",
             )}
           >

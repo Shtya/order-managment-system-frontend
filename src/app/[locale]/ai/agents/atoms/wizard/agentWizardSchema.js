@@ -30,6 +30,7 @@ export const AGENT_CAPABILITIES = [
   "reactions",
   "templates",
   "humanHandoff",
+  "resumeAutomationChoice",
 ];
 
 const CATALOG_READ = [

@@ -18338,6 +18338,10 @@
         "humanHandoff": {
           "title": "Human Intervention",
           "desc": "Create an issue and stop the assistant while a person handles this chat. Requires listing the customer's orders so the agent can attach the right order when there is one."
+        },
+        "resumeAutomationChoice": {
+          "title": "Resume automation from chat",
+          "desc": "When the customer types instead of tapping a button on an automation message (template, buttons, list, or upsell), the agent maps that text to the matching option and continues the automation. The agent does not accept the offer or send its own confirmation."
         }
       },
       "reviewEmptyKnowledge": "No knowledge linked.",

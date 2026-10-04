@@ -24,6 +24,7 @@ import {
   Trash2,
   User,
   XCircle,
+  Play,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils/cn";
@@ -64,6 +65,7 @@ const CAPABILITY_ICONS = {
   reactions: ThumbsUp,
   templates: MessageSquareText,
   humanHandoff: Headphones,
+  resumeAutomationChoice: Play,
 };
 
 const TINTS = [

@@ -71,11 +71,6 @@ function formatInt(value, locale) {
   return new Intl.NumberFormat(locale).format(Number(value) || 0);
 }
 
-function pctDelta(current, previous) {
-  if (previous == null || Number(previous) === 0) return null;
-  return ((Number(current) - Number(previous)) / Number(previous)) * 100;
-}
-
 function GrantCard({ title, grant, t, formatIntFn }) {
   if (!grant) return null;
   const remaining = grant.unlimited ? t("unlimited") : formatIntFn(grant.remaining);
@@ -426,19 +421,8 @@ export default function AiReportsPage() {
   //   fetchSessions(1, sessionsPageRef.current.per_page, debouncedSearch);
   // }, [debouncedSearch, fetchSessions]);
 
-  const withDelta = useCallback(
-    (current, previous, formatted) => {
-      const d = pctDelta(current, previous);
-      if (d == null) return formatted;
-      const sign = d > 0 ? "+" : "";
-      return `${formatted} · ${t("vsPrevious", { sign, value: Math.abs(d).toFixed(1) })}`;
-    },
-    [t],
-  );
-
   const statsCards = useMemo(() => {
     const totals = overview?.totals || {};
-    const prev = overview?.previous || {};
     return [
       {
         id: 8,
@@ -455,35 +439,41 @@ export default function AiReportsPage() {
         name: t("kpi.cost"),
         description: tTutorial("kpi.cost.description"),
         example: tTutorial("kpi.cost.example"),
-        value: withDelta(totals.cost, prev.cost, formatUsd(totals.cost, locale)),
+        value: formatUsd(totals.cost, locale),
         icon: Coins,
         color: PRIMARY,
         sortOrder: 1,
       },
       {
-        id: 2,
-        name: t("kpi.tokens"),
+        id: 9,
+        name: t("kpi.totalTokens"),
         description: tTutorial("kpi.tokens.description"),
         example: tTutorial("kpi.tokens.example"),
-        value: withDelta(
-          totals.tokens,
-          prev.tokens,
-          `${formatInt(totals.tokens, locale)} (${t("kpi.inputTokens")} ${formatInt(totals.inputTokens, locale)} · ${t("kpi.outputTokens")} ${formatInt(totals.outputTokens, locale)})`,
-        ),
+        value: `${formatInt(totals.tokens, locale)} ${t("kpi.tokensUnit")}`,
         icon: Cpu,
-        color: "#3b82f6",
+        color: "#6366f1",
         sortOrder: 2,
       },
-      // {
-      //   id: 3,
-      //   name: t("kpi.sessions"),
-      //   description: tTutorial("kpi.sessions.description"),
-      //   example: tTutorial("kpi.sessions.example"),
-      //   value: withDelta(totals.sessions, prev.sessions, formatInt(totals.sessions, locale)),
-      //   icon: MessageSquare,
-      //   color: "#10b981",
-      //   sortOrder: 3,
-      // },
+      {
+        id: 2,
+        name: t("kpi.inputTokens"),
+        description: tTutorial("kpi.inputTokens.description"),
+        example: tTutorial("kpi.inputTokens.example"),
+        value: `${formatInt(totals.inputTokens, locale)} ${t("kpi.tokensUnit")}`,
+        icon: Cpu,
+        color: "#3b82f6",
+        sortOrder: 3,
+      },
+      {
+        id: 3,
+        name: t("kpi.outputTokens"),
+        description: tTutorial("kpi.outputTokens.description"),
+        example: tTutorial("kpi.outputTokens.example"),
+        value: `${formatInt(totals.outputTokens, locale)} ${t("kpi.tokensUnit")}`,
+        icon: Cpu,
+        color: "#10b981",
+        sortOrder: 4,
+      },
       {
         id: 4,
         name: t("kpi.agents"),
@@ -492,7 +482,7 @@ export default function AiReportsPage() {
         value: formatInt(totals.agents, locale),
         icon: Bot,
         color: "#8b5cf6",
-        sortOrder: 4,
+        sortOrder: 5,
       },
       {
         id: 5,
@@ -502,31 +492,30 @@ export default function AiReportsPage() {
         value: formatInt(totals.media, locale),
         icon: ImageIcon,
         color: "#f59e0b",
-        sortOrder: 5,
+        sortOrder: 6,
       },
       {
         id: 6,
         name: t("kpi.todayCost"),
         description: tTutorial("kpi.todayCost.description"),
         example: tTutorial("kpi.todayCost.example"),
-        value: `${formatUsd(overview?.today?.cost, locale)} · ${formatInt(overview?.today?.tokens, locale)}`,
+        value: `${formatUsd(overview?.today?.cost, locale)} · ${formatInt(overview?.today?.tokens, locale)} ${t("kpi.tokensUnit")}`,
         icon: TrendingUp,
         color: "#0ea5e9",
-        sortOrder: 6,
+        sortOrder: 7,
       },
       {
         id: 7,
         name: t("kpi.monthCost"),
         description: tTutorial("kpi.monthCost.description"),
         example: tTutorial("kpi.monthCost.example"),
-        value: `${formatUsd(overview?.month?.cost, locale)} · ${formatInt(overview?.month?.tokens, locale)}`,
+        value: `${formatUsd(overview?.month?.cost, locale)} · ${formatInt(overview?.month?.tokens, locale)} ${t("kpi.tokensUnit")}`,
         icon: Wallet,
         color: "#14b8a6",
-        sortOrder: 7,
+        sortOrder: 8,
       },
-      
     ];
-  }, [overview, locale, t, tTutorial, withDelta]);
+  }, [overview, locale, t, tTutorial]);
 
   const breakdownRows = useMemo(() => {
     if (!breakdown) return [];
@@ -720,7 +709,7 @@ export default function AiReportsPage() {
             </SelectContent>
           </Select>
         </FilterField>
-        <FilterField label={t("filters.status")}>
+        {/* <FilterField label={t("filters.status")}>
           <Select value={filters.status} onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -730,7 +719,7 @@ export default function AiReportsPage() {
               ))}
             </SelectContent>
           </Select>
-        </FilterField>
+        </FilterField> */}
         <FilterField label={t("filters.source")}>
           <Select value={filters.source} onValueChange={(v) => setFilters((f) => ({ ...f, source: v }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>

@@ -16041,6 +16041,14 @@
           "description": "How much AI was used in the period: what was sent to the model (input) and what the model wrote (output). This includes every type: WhatsApp replies, address correction, address check, file processing, testing from the dashboard, and conversation summaries. Usage still appears if it ran on your own account, even when the wallet charged $0.",
           "example": "120,000 units this week: 90,000 on your account (wallet cost $0) and 30,000 on Madar services."
         },
+        "inputTokens": {
+          "description": "How many tokens were sent to the model in the period (input). This includes WhatsApp replies, address correction, address check, file processing, testing from the dashboard, and conversation summaries. Usage still appears if it ran on your own account, even when the wallet charged $0.",
+          "example": "90,000 input tokens this week."
+        },
+        "outputTokens": {
+          "description": "How many tokens the model wrote in the period (output). This includes WhatsApp replies, address correction, address check, file processing, testing from the dashboard, and conversation summaries. Usage still appears if it ran on your own account, even when the wallet charged $0.",
+          "example": "30,000 output tokens this week."
+        },
         "sessions": {
           "description": "How many WhatsApp conversations the agent started with customers in this period. This is a count of conversations, not money.",
           "example": "If 40 customers chatted with the agent this week, this shows 40."
@@ -18493,14 +18501,16 @@
       "compaction": "Agent conversation summary"
     },
     "billedBy": {
-      "madar": "Madar (deducted from wallet)",
-      "merchant": "Your account (no Madar deduction)"
+      "madar": "deducted from wallet",
+      "merchant": "Your account (no account deduction)"
     },
     "kpi": {
       "cost": "Deducted from wallet",
       "tokens": "Usage size",
-      "inputTokens": "Input",
-      "outputTokens": "Output",
+      "tokensUnit": "tokens",
+      "totalTokens": "Total tokens",
+      "inputTokens": "Input tokens",
+      "outputTokens": "Output tokens",
       "sessions": "WhatsApp conversations",
       "agents": "Active agents",
       "media": "Processed files",

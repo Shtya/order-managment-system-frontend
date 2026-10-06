@@ -18187,6 +18187,7 @@
       "mediaNotAccepted": "This agent does not accept this media type.",
       "sessionFailed": "Could not start Try Me",
       "sessionExpired": "Try Me session expired. Open it again.",
+      "staleAgentTitle": "Agent data changed",
       "staleAgent": "This agent was updated. Refresh Try Me to use the latest version.",
       "refresh": "Refresh",
       "refreshed": "Try Me now uses the latest agent data. Previous messages were cleared.",
@@ -18412,7 +18413,8 @@
         }
       },
       "reviewEmptyKnowledge": "No knowledge linked.",
-      "editSection": "Edit"
+      "editSection": "Edit",
+      "fixTryErrors": "Please fix the errors before trying the agent."
     },
     "toast": {
       "fetchFailed": "Could not load agents",

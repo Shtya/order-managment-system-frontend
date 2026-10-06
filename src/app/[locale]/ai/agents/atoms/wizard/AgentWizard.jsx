@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, MessageCircle, Save } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_, { PrimaryBtn } from "@/components/atoms/Button";
@@ -18,6 +18,8 @@ import StepGeneral from "./StepGeneral";
 import StepKnowledge from "./StepKnowledge";
 import StepCapabilities from "./StepCapabilities";
 import StepReview from "./StepReview";
+import TryMeSidebar from "../try-me/TryMeSidebar";
+import useTryMe, { selectedKnowledgeRecords } from "../try-me/useTryMe";
 import {
   buildAgentPayload,
   initialAgentWizardData,
@@ -66,6 +68,26 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
   const [pageLoading, setPageLoading] = useState(isEdit);
+  const [knowledgeRecords, setKnowledgeRecords] = useState([]);
+  const [knowledgeReady, setKnowledgeReady] = useState(false);
+  const tryMe = useTryMe();
+
+  const upsertKnowledgeRecords = useCallback((records) => {
+    setKnowledgeReady(true);
+    if (!Array.isArray(records) || !records.length) return;
+    setKnowledgeRecords((prev) => {
+      const map = new Map(prev.map((row) => [row.id, row]));
+      for (const row of records) {
+        if (row?.id) map.set(row.id, row);
+      }
+      return [...map.values()];
+    });
+  }, []);
+
+  const removeKnowledgeRecord = useCallback((id) => {
+    if (!id) return;
+    setKnowledgeRecords((prev) => prev.filter((row) => row.id !== id));
+  }, []);
 
   const { control, watch, setValue, getValues, reset, setError, clearErrors, formState: { errors } } = useForm({
     defaultValues: { ...initialAgentWizardData },
@@ -113,7 +135,7 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleSave = async () => {
+  const applySubmitValidation = () => {
     const values = getValues();
     const g = validateStepGeneral(values);
     const c = validateStepCapabilities(values);
@@ -122,14 +144,20 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
     if (Object.keys(g).length) {
       setFormError(t("wizard.fixStepErrors"));
       scrollToSection("general");
-      return;
+      return null;
     }
     if (Object.keys(c).length) {
       setFormError(t("wizard.fixStepErrors"));
       scrollToSection("capabilities");
-      return;
+      return null;
     }
     setFormError("");
+    return values;
+  };
+
+  const handleSave = async () => {
+    const values = applySubmitValidation();
+    if (!values) return;
     setSaving(true);
     try {
       const payload = buildAgentPayload(values);
@@ -146,6 +174,45 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
       setSaving(false);
     }
   };
+
+  const formValues = watch();
+
+  const draftSnapshot = useCallback(
+    (values = getValues()) => ({
+      ...buildAgentPayload(values),
+      ...(agentId ? { id: agentId } : {}),
+      knowledgeRecords: selectedKnowledgeRecords(values.knowledgeIds, knowledgeRecords),
+    }),
+    [agentId, getValues, knowledgeRecords],
+  );
+
+  useEffect(() => {
+    if (!tryMe.hashId) return;
+    tryMe.checkStaleFromDraft(draftSnapshot(formValues));
+  }, [draftSnapshot, formValues, tryMe.hashId, tryMe.checkStaleFromDraft]);
+
+  const handleTryMe = async () => {
+    const values = applySubmitValidation();
+    if (!values) {
+      toast.error(t("wizard.fixTryErrors"));
+      return;
+    }
+    await tryMe.openDraft(draftSnapshot(values));
+  };
+
+  const handleRefreshTryMe = useCallback(async () => {
+    const values = applySubmitValidation();
+    if (!values) {
+      toast.error(t("wizard.fixTryErrors"));
+      return;
+    }
+    await tryMe.refreshWithSnapshot(draftSnapshot(values));
+  }, [draftSnapshot, t, tryMe]);
+
+  useEffect(() => {
+    tryMe.setOnStaleRefresh(handleRefreshTryMe);
+    return () => tryMe.setOnStaleRefresh(null);
+  }, [handleRefreshTryMe, tryMe.setOnStaleRefresh]);
 
   if (pageLoading) {
     return (
@@ -168,14 +235,25 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
         breadcrumbs={breadcrumbs}
         stacky
         buttons={
-          <Button_
-            onClick={handleSave}
-            size="sm"
-            icon={saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={18} />}
-            label={saving ? t("wizard.saving") : t("wizard.save")}
-            disabled={saving || pageLoading}
-            permission={isEdit ? "agents.update" : "agents.create"}
-          />
+          <div className="flex items-center gap-2">
+            <Button_
+              onClick={handleTryMe}
+              size="sm"
+              tone="outline"
+              icon={tryMe.sessionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle size={18} />}
+              label={t("tryMe.title")}
+              disabled={saving || pageLoading || tryMe.sessionLoading || !knowledgeReady}
+              permission="agents.read"
+            />
+            <Button_
+              onClick={handleSave}
+              size="sm"
+              icon={saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={18} />}
+              label={saving ? t("wizard.saving") : t("wizard.save")}
+              disabled={saving || pageLoading}
+              permission={isEdit ? "agents.update" : "agents.create"}
+            />
+          </div>
         }
       />
 
@@ -184,7 +262,12 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
       </SectionCard>
 
       <SectionCard stepKey="knowledge" index={1}>
-        <StepKnowledge watch={watch} setValue={setValue} />
+        <StepKnowledge
+          watch={watch}
+          setValue={setValue}
+          onRecordsChange={upsertKnowledgeRecords}
+          onRecordRemoved={removeKnowledgeRecord}
+        />
       </SectionCard>
 
       <SectionCard stepKey="capabilities" index={2}>
@@ -194,6 +277,7 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
       {/* <SectionCard stepKey="review" index={3}>
         <StepReview control={control} onEditSection={scrollToSection} />
       </SectionCard> */}
+      <TryMeSidebar tryMe={{ ...tryMe, refreshSession: handleRefreshTryMe }} />
     </div>
   );
 }

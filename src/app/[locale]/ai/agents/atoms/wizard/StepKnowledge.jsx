@@ -24,7 +24,7 @@ import KnowledgeFormDialog from "../KnowledgeFormDialog";
 const LIST_LIMIT = 100;
 const SKELETON_ROWS = 3;
 
-export default function StepKnowledge({ watch, setValue }) {
+export default function StepKnowledge({ watch, setValue, onRecordsChange, onRecordRemoved }) {
   const t = useTranslations("agents");
   const selectedIds = watch("knowledgeIds") || [];
 
@@ -49,6 +49,7 @@ export default function StepKnowledge({ watch, setValue }) {
       const res = await api.get("/agents/knowledge", { params });
       const records = Array.isArray(res.data?.records) ? res.data.records : [];
       setItems(records);
+      onRecordsChange?.(records);
       return records;
     } catch (error) {
       toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
@@ -134,6 +135,7 @@ export default function StepKnowledge({ watch, setValue }) {
     try {
       await api.delete(`/agents/knowledge/${deleting.id}`);
       setItems((prev) => prev.filter((row) => row.id !== deleting.id));
+      onRecordRemoved?.(deleting.id);
       setValue(
         "knowledgeIds",
         selectedIds.filter((id) => id !== deleting.id),

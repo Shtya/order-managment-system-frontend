@@ -3,9 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
+import { RotateCcw, Sparkles, X } from "lucide-react";
 import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useSocket } from "@/context/SocketContext";
+import Button_ from "@/components/atoms/Button";
+import { cn } from "@/utils/cn";
 
 export const TRY_ME_TEXT_LIMIT = 4096;
 export const TRY_ME_CAPTION_LIMIT = 1024;
@@ -41,6 +44,111 @@ export function buildTryMeSnapshot(agent, customerId) {
     handoffStatusId: agent.handoffStatusId ?? null,
     ...(customerId ? { customerId } : {}),
   };
+}
+
+const TRY_ME_IGNORE_KEYS = new Set(["id", "customerId", "updatedAt"]);
+
+function normalizeTryMeValue(value, ignoreTopLevelKeys = false) {
+  if (value == null) return null;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed === "" ? null : trimmed;
+  }
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => normalizeTryMeValue(item, false))
+      .filter((item) => item != null)
+      .sort((a, b) => {
+        const left = typeof a === "string" ? a : JSON.stringify(a);
+        const right = typeof b === "string" ? b : JSON.stringify(b);
+        return left.localeCompare(right);
+      });
+  }
+  if (typeof value === "object") {
+    const out = {};
+    for (const key of Object.keys(value).sort()) {
+      if (ignoreTopLevelKeys && TRY_ME_IGNORE_KEYS.has(key)) continue;
+      out[key] = normalizeTryMeValue(value[key], false);
+    }
+    return out;
+  }
+  return value;
+}
+
+export function selectedKnowledgeRecords(ids, records) {
+  const selected = new Set(Array.isArray(ids) ? ids : []);
+  return (Array.isArray(records) ? records : [])
+    .filter((row) => selected.has(row.id))
+    .map((row) => ({
+      id: row.id,
+      title: String(row.title ?? ""),
+      content: String(row.content ?? ""),
+      isActive: row.isActive !== false,
+    }));
+}
+
+export function tryMeDraftFingerprint(agent) {
+  if (!agent) return "";
+  const snap = buildTryMeSnapshot(agent, null);
+  return JSON.stringify(
+    normalizeTryMeValue(
+      {
+        ...snap,
+        knowledgeRecords: selectedKnowledgeRecords(
+          agent.knowledgeIds,
+          agent.knowledgeRecords,
+        ),
+      },
+      true,
+    ),
+  );
+}
+
+const TRY_ME_STALE_TOAST_ID = "try-me-stale";
+
+function TryMeStaleToast({ toastItem, t, onRefresh }) {
+  return (
+    <div
+      className={cn(
+        "pointer-events-auto relative flex w-max max-w-[calc(100vw-2rem)] items-center gap-4 rounded-2xl border border-primary/20 bg-white p-3 shadow-xl dark:border-primary/30 dark:bg-slate-900 md:max-w-2xl",
+        toastItem.visible ? "animate-enter" : "animate-leave",
+      )}
+    >
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
+        <Sparkles size={20} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold leading-snug text-slate-800 dark:text-slate-100">
+          {t("tryMe.staleAgentTitle")}
+        </p>
+        <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+          {t("tryMe.staleAgent")}
+        </p>
+      </div>
+      <div className="shrink-0">
+        <Button_
+          size="sm"
+          variant="solid"
+          label={t("tryMe.refresh")}
+          icon={<RotateCcw size={14} />}
+          onClick={() => {
+            toast.dismiss(toastItem.id);
+            onRefresh?.();
+          }}
+        />
+      </div>
+      <button
+        type="button"
+        className="shrink-0 rounded-md p-1 text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+        aria-label={t("tryMe.close")}
+        onClick={() => toast.dismiss(toastItem.id)}
+      >
+        <X size={18} strokeWidth={1.75} />
+      </button>
+    </div>
+  );
 }
 
 function interactiveTypeKey(value) {
@@ -331,7 +439,10 @@ export default function useTryMe() {
   const collapsedRef = useRef(false);
   const staleToastRef = useRef(false);
   const agentUpdatedAtRef = useRef(null);
+  const sessionFingerprintRef = useRef("");
   const sessionGenRef = useRef(0);
+  const staleRefreshOverrideRef = useRef(null);
+  const refreshSessionRef = useRef(null);
 
   useEffect(() => {
     hashIdRef.current = hashId;
@@ -372,8 +483,10 @@ export default function useTryMe() {
       hashIdRef.current = nextHash;
       setAgent(agentRow);
       agentUpdatedAtRef.current = agentRow.updatedAt || null;
+      sessionFingerprintRef.current = tryMeDraftFingerprint(agentRow);
       setStale(false);
       staleToastRef.current = false;
+      toast.dismiss(TRY_ME_STALE_TOAST_ID);
       return nextHash;
     },
     [customerId],
@@ -406,6 +519,91 @@ export default function useTryMe() {
     [agent?.id, endRemoteSession, hashId, startSession, t],
   );
 
+  const markStale = useCallback(() => {
+    if (!hashIdRef.current) return;
+    setStale(true);
+    if (staleToastRef.current) return;
+    staleToastRef.current = true;
+    toast.custom(
+      (toastItem) => (
+        <TryMeStaleToast
+          toastItem={toastItem}
+          t={t}
+          onRefresh={() => {
+            const run = staleRefreshOverrideRef.current || refreshSessionRef.current;
+            run?.();
+          }}
+        />
+      ),
+      {
+        id: TRY_ME_STALE_TOAST_ID,
+        duration: Infinity,
+        style: {
+          background: "transparent",
+          boxShadow: "none",
+          border: "none",
+          padding: 0,
+        },
+      },
+    );
+  }, [t]);
+
+  const checkStaleFromDraft = useCallback(
+    (snapshot) => {
+      if (!hashIdRef.current || !sessionFingerprintRef.current) return;
+      const next = tryMeDraftFingerprint(snapshot);
+      if (next === sessionFingerprintRef.current) {
+        setStale(false);
+        staleToastRef.current = false;
+        toast.dismiss(TRY_ME_STALE_TOAST_ID);
+        return;
+      }
+      markStale();
+    },
+    [markStale],
+  );
+
+  const openDraft = useCallback(
+    async (snapshot) => {
+      if (!snapshot?.name) return;
+      setIsOpen(true);
+      setCollapsed(false);
+      setUnreadCount(0);
+      if (hashId) {
+        checkStaleFromDraft(snapshot);
+        return;
+      }
+      setSessionLoading(true);
+      try {
+        setCustomerId(null);
+        setCustomer(null);
+        await startSession(snapshot, null);
+      } catch (error) {
+        toast.error(normalizeAxiosError(error) || t("tryMe.sessionFailed"));
+        setIsOpen(false);
+      } finally {
+        setSessionLoading(false);
+      }
+    },
+    [checkStaleFromDraft, hashId, startSession, t],
+  );
+
+  const refreshWithSnapshot = useCallback(
+    async (snapshot) => {
+      if (!snapshot) return;
+      setSessionLoading(true);
+      try {
+        await startSession(snapshot, customerId);
+        toast.success(t("tryMe.refreshed"));
+      } catch (error) {
+        toast.error(normalizeAxiosError(error) || t("tryMe.sessionFailed"));
+      } finally {
+        setSessionLoading(false);
+      }
+    },
+    [customerId, startSession, t],
+  );
+
   const close = useCallback(async () => {
       setIsOpen(false);
       setCollapsed(false);
@@ -421,6 +619,8 @@ export default function useTryMe() {
     setStale(false);
     setCustomerId(null);
     setCustomer(null);
+    sessionFingerprintRef.current = "";
+    toast.dismiss(TRY_ME_STALE_TOAST_ID);
   }, [endRemoteSession]);
 
   const shrink = useCallback(() => {
@@ -458,14 +658,11 @@ export default function useTryMe() {
     }
   }, [agent?.id, customerId, startSession, t]);
 
-  const markStale = useCallback(() => {
-    if (!isOpen) return;
-    setStale(true);
-    if (!staleToastRef.current) {
-      staleToastRef.current = true;
-      toast(t("tryMe.staleAgent"), { duration: 5000 });
-    }
-  }, [isOpen, t]);
+  refreshSessionRef.current = refreshSession;
+
+  const setOnStaleRefresh = useCallback((fn) => {
+    staleRefreshOverrideRef.current = typeof fn === "function" ? fn : null;
+  }, []);
 
   const checkStaleFromRow = useCallback(
     (row) => {
@@ -681,6 +878,7 @@ export default function useTryMe() {
     customerId,
     customer,
     open,
+    openDraft,
     close,
     shrink,
     expand,
@@ -689,8 +887,11 @@ export default function useTryMe() {
     markChoice,
     resetSession,
     refreshSession,
+    refreshWithSnapshot,
     markStale,
     checkStaleFromRow,
+    checkStaleFromDraft,
+    setOnStaleRefresh,
     changeCustomer,
   };
 }

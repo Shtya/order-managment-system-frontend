@@ -21,6 +21,7 @@ import {
   Power,
   Trash2,
   UserCheck,
+  MessageCircle,
 } from "lucide-react";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
@@ -66,6 +67,8 @@ const KNOWLEDGE_STAT_CARDS = [
 ];
 
 import KnowledgeFormDialog from "./atoms/KnowledgeFormDialog";
+import TryMeSidebar from "./atoms/try-me/TryMeSidebar";
+import useTryMe from "./atoms/try-me/useTryMe";
 
 const ASSIGN_LIST_LIMIT = 100;
 
@@ -331,6 +334,7 @@ const AgentsTab = forwardRef(function AgentsTab(
   const searchTimer = useRef(null);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assigningAgent, setAssigningAgent] = useState(null);
+  const tryMe = useTryMe();
 
   useEffect(() => {
     clearTimeout(searchTimer.current);
@@ -400,6 +404,12 @@ const AgentsTab = forwardRef(function AgentsTab(
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
+
+  useEffect(() => {
+    if (!tryMe.isOpen || !tryMe.agent?.id) return;
+    const row = records.find((item) => item.id === tryMe.agent.id);
+    if (row) tryMe.checkStaleFromRow(row);
+  }, [records, tryMe.agent?.id, tryMe.checkStaleFromRow, tryMe.isOpen]);
 
   const applyFilters = () => {
     setPage(1);
@@ -502,6 +512,13 @@ const AgentsTab = forwardRef(function AgentsTab(
   delete exportParams.limit;
 
   const rowActions = (row) => [
+    {
+      icon: <MessageCircle size={16} />,
+      tooltip: t("actions.tryMe"),
+      variant: "blue",
+      permission: "agents.read",
+      onClick: () => tryMe.open(row),
+    },
     {
       icon: <Edit />,
       tooltip: t("actions.edit"),
@@ -774,6 +791,8 @@ const AgentsTab = forwardRef(function AgentsTab(
         loading={toggleLoading}
         onConfirm={handleToggleStatus}
       />
+
+      <TryMeSidebar tryMe={tryMe} />
     </>
   );
 });

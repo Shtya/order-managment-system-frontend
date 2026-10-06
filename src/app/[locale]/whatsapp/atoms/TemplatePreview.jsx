@@ -150,6 +150,10 @@ export function WhatsAppButtonMenu({
     seeAllOptionsLabel,
     isPortal = false,
     enableChipReplacer = true,
+    onSelect,
+    accent = "whatsapp",
+    actionsDisabled = false,
+    disabledActionIds = [],
 }) {
     
     const t = useTranslations("whatsApp.templates.preview");
@@ -162,6 +166,21 @@ export function WhatsAppButtonMenu({
     }, []);
 
     const displayTitle = title || t("allOptions");
+    const selectable = typeof onSelect === "function" && !actionsDisabled;
+    const disabledKeys = new Set((disabledActionIds || []).map((id) => String(id)));
+    const isBtnLocked = (btn, label) => {
+        if (actionsDisabled) return true;
+        const keys = [btn?.id, btn?.type, label, btn?.text]
+            .filter((value) => value != null && String(value).trim() !== "")
+            .map((value) => String(value));
+        return keys.some((key) => disabledKeys.has(key));
+    };
+    const accentText = accent === "tryMe" ? "text-[#6763AF]" : "text-[#00a884]";
+    const accentFill = accent === "tryMe" ? "#6763AF" : "#00a884";
+    const accentMenuHover =
+        accent === "tryMe"
+            ? "hover:bg-[#6763AF]/10 dark:hover:bg-[#6763AF]/20"
+            : "hover:bg-[#f7f8f8] dark:hover:bg-[#182229]";
 
     const actionButtons = buttons.filter((btn) => btn.type !== "CUSTOM");
     const customButtons = buttons.filter((btn) => btn.type === "CUSTOM");
@@ -274,9 +293,22 @@ export function WhatsAppButtonMenu({
                                                     (row, rIdx) => (
                                                         <div
                                                             key={rIdx}
+                                                            role={selectable ? "button" : undefined}
+                                                            tabIndex={selectable ? 0 : undefined}
+                                                            onClick={() => {
+                                                                if (!selectable) return;
+                                                                onSelect({
+                                                                    kind: "list",
+                                                                    id: row.id,
+                                                                    title: row.title,
+                                                                    description: row.description,
+                                                                });
+                                                                onClose();
+                                                            }}
                                                             className={cn(
-                                                                "cursor-default px-4 py-3 transition-colors",
-                                                                "hover:bg-[#f7f8f8] dark:hover:bg-[#182229]",
+                                                                "px-4 py-3 transition-colors",
+                                                                selectable ? "cursor-pointer" : "cursor-default",
+                                                                accentMenuHover,
                                                                 rIdx !==
                                                                 section.rows
                                                                     .length -
@@ -313,14 +345,31 @@ export function WhatsAppButtonMenu({
                             ) : type === "BUTTONS" ? (
                                 <div className="flex flex-col">
                                     {/* Action Buttons */}
-                                    {actionButtons.map((btn, idx) => (
+                                    {actionButtons.map((btn, idx) => {
+                                        const locked = isBtnLocked(btn, btn.text);
+                                        return (
                                         <div
                                             key={
                                                 btn.id || `action-${idx}`
                                             }
+                                            role={selectable && !locked ? "button" : undefined}
+                                            onClick={() => {
+                                                if (!selectable || locked) return;
+                                                onSelect({
+                                                    kind: "button",
+                                                    id: btn.id,
+                                                    title: btn.text,
+                                                    type: btn.type,
+                                                });
+                                                onClose();
+                                            }}
                                             className={cn(
-                                                "flex min-h-[58px] cursor-default items-center gap-3 px-4 py-3",
-                                                "transition-colors hover:bg-[#f7f8f8] dark:hover:bg-[#182229]",
+                                                "flex min-h-[58px] items-center gap-3 px-4 py-3",
+                                                selectable && !locked ? "cursor-pointer" : "cursor-default",
+                                                "transition-colors",
+                                                locked
+                                                    ? "opacity-50 pointer-events-none cursor-not-allowed"
+                                                    : accentMenuHover,
                                                 (idx !==
                                                     actionButtons.length - 1 ||
                                                     customButtons.length >
@@ -360,17 +409,35 @@ export function WhatsAppButtonMenu({
                                                 </p>
                                             </div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
 
                                     {/* Custom Buttons */}
-                                    {customButtons.map((btn, idx) => (
+                                    {customButtons.map((btn, idx) => {
+                                        const locked = isBtnLocked(btn, btn.text);
+                                        return (
                                         <div
                                             key={
                                                 btn.id || `custom-${idx}`
                                             }
+                                            role={selectable && !locked ? "button" : undefined}
+                                            onClick={() => {
+                                                if (!selectable || locked) return;
+                                                onSelect({
+                                                    kind: "button",
+                                                    id: btn.id,
+                                                    title: btn.text,
+                                                    type: btn.type || "QUICK_REPLY",
+                                                });
+                                                onClose();
+                                            }}
                                             className={cn(
-                                                "flex min-h-[58px] cursor-default items-center gap-3 px-4 py-3",
-                                                "transition-colors hover:bg-[#f7f8f8] dark:hover:bg-[#182229]",
+                                                "flex min-h-[58px] items-center gap-3 px-4 py-3",
+                                                selectable && !locked ? "cursor-pointer" : "cursor-default",
+                                                "transition-colors",
+                                                locked
+                                                    ? "opacity-50 pointer-events-none cursor-not-allowed"
+                                                    : accentMenuHover,
                                                 idx !==
                                                 customButtons.length - 1 &&
                                                 "border-b border-[#e5e5e5] dark:border-slate-800",
@@ -401,7 +468,8 @@ export function WhatsAppButtonMenu({
                                                 </p>
                                             </div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="flex flex-col">
@@ -413,7 +481,8 @@ export function WhatsAppButtonMenu({
                                             }
                                             className={cn(
                                                 "flex min-h-[58px] cursor-pointer items-center justify-between px-4 py-3",
-                                                "transition-colors hover:bg-[#f7f8f8] dark:hover:bg-[#182229]",
+                                                "transition-colors",
+                                                accentMenuHover,
                                                 idx !==
                                                 radioOptions.length - 1 &&
                                                 "border-b border-[#e5e5e5] dark:border-slate-800",
@@ -423,7 +492,7 @@ export function WhatsAppButtonMenu({
                                                 className={cn(
                                                     "text-[15px] font-semibold leading-[21px]",
                                                     selectedIndex === idx
-                                                        ? "text-[#00a884]"
+                                                        ? accentText
                                                         : "text-[#111b21] dark:text-slate-100",
                                                 )}
                                             >
@@ -434,12 +503,12 @@ export function WhatsAppButtonMenu({
                                                 className={cn(
                                                     "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
                                                     selectedIndex === idx
-                                                        ? "border-[#00a884]"
+                                                        ? accent === "tryMe" ? "border-[#6763AF]" : "border-[#00a884]"
                                                         : "border-[#8696a0] dark:border-slate-600",
                                                 )}
                                             >
                                                 {selectedIndex === idx && (
-                                                    <div className="h-2.5 w-2.5 rounded-full bg-[#00a884]" />
+                                                    <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: accentFill }} />
                                                 )}
                                             </div>
                                         </div>
@@ -527,6 +596,10 @@ export default function TemplatePreview({
     headerVariables = {},
     enableChipReplacer = false,
     chipVariables = [],
+    onActionSelect,
+    accent = "whatsapp",
+    actionsDisabled = false,
+    disabledActionIds = [],
 }) {
     const showToggleAction = (!isInteractive && !hideToggleAction);
     const t = useTranslations("whatsApp.templates");
@@ -543,6 +616,18 @@ export default function TemplatePreview({
     }, [forceShowExamples]);
 
     const chipRoleActive = !showToggleAction || (showToggleAction && showExamples);
+    const selectable = typeof onActionSelect === "function" && !actionsDisabled;
+    const disabledKeys = new Set((disabledActionIds || []).map((id) => String(id)));
+    const isBtnLocked = (btn, label) => {
+        if (actionsDisabled) return true;
+        const keys = [btn?.id, btn?.type, label, btn?.text, btn?.textEn, btn?.textAr]
+            .filter((value) => value != null && String(value).trim() !== "")
+            .map((value) => String(value));
+        return keys.some((key) => disabledKeys.has(key));
+    };
+    const accentText = accent === "tryMe" ? "text-[#6763AF]" : "text-[#00a884]";
+    const accentFill = accent === "tryMe" ? "#6763AF" : "#00a884";
+    const accentHover = accent === "tryMe" ? "hover:bg-[#6763AF]/10" : "hover:bg-template-btn-hover";
     const orderPropertiesFlat = useFlattenedOrderProperties();
     const dateLang = useDateLang(locale);
     const chipFlat = useMemo(
@@ -1183,16 +1268,33 @@ export default function TemplatePreview({
                                         <>
                                             {visibleButtons.map((btn, idx) => {
                                                 const btnText = btn.text ? btn.text : locale === "ar" ? btn.textAr : btn.textEn;
-                                                const ButtonComponent = btn.type === "COPY_CODE" ? "button" : "div";
+                                                const locked = isBtnLocked(btn, btnText);
+                                                const ButtonComponent = (selectable && !locked) || btn.type === "COPY_CODE" ? "button" : "div";
                                                 return (<ButtonComponent
                                                     key={btn.id || idx}
+                                                    type={ButtonComponent === "button" ? "button" : undefined}
+                                                    disabled={ButtonComponent === "button" && locked && btn.type !== "COPY_CODE"}
                                                     className={cn(
-                                                        "py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] transition-colors",
-                                                        btn.type === "COPY_CODE" ? "cursor-pointer w-full" : "cursor-default",
-                                                        "hover:bg-template-btn-hover",
+                                                        "py-2.5 px-3 flex items-center justify-center gap-2 font-medium text-[13px] transition-colors",
+                                                        accentText,
+                                                        (selectable && !locked) || (btn.type === "COPY_CODE" && !locked) ? "cursor-pointer w-full" : "cursor-default",
+                                                        locked && "opacity-50 pointer-events-none cursor-not-allowed",
+                                                        !locked && accentHover,
                                                         idx > 0 && "border-t border-whatsapp-button-border",
                                                     )}
-                                                    onClick={btn.type === "COPY_CODE" ? () => handleCopy(btn.example || "SAVE20") : undefined}
+                                                    onClick={() => {
+                                                        if (locked) return;
+                                                        if (selectable) {
+                                                            onActionSelect({
+                                                                kind: isList ? "list" : "button",
+                                                                id: btn.id,
+                                                                title: btnText,
+                                                                type: btn.type,
+                                                            });
+                                                            return;
+                                                        }
+                                                        if (btn.type === "COPY_CODE") handleCopy(btn.example || "SAVE20");
+                                                    }}
                                                 >
 
                                                     {btn.type === "CUSTOM" || btn.type === "QUICK_REPLY" || !btn.type && (
@@ -1200,16 +1302,16 @@ export default function TemplatePreview({
                                                     )}
                                                     {btn.type === "PHONE_NUMBER" && <Phone
                                                         size={14}
-                                                        fill="#00a884"
-                                                        color="#00a884"
+                                                        fill={accentFill}
+                                                        color={accentFill}
                                                         strokeWidth={1.8}
                                                     />}
                                                     {btn.type === "LOCATION_REQUEST" && <FaLocationDot size={14} />}
                                                     {btn.type === "VISIT_WEBSITE" && <ExternalLink size={14} />}
                                                     {btn.type === "WHATSAPP_CALL" && <Phone
                                                         size={14}
-                                                        fill="#00a884"
-                                                        color="#00a884"
+                                                        fill={accentFill}
+                                                        color={accentFill}
                                                         strokeWidth={1.8}
                                                     />}
                                                     {btn.type === "COPY_CODE" && <Copy size={14} />}
@@ -1224,10 +1326,17 @@ export default function TemplatePreview({
 
                                             {showMenuButton && (
                                                 <button
-                                                    onClick={() => setIsMenuOpen(true)}
+                                                    type="button"
+                                                    disabled={actionsDisabled}
+                                                    onClick={() => {
+                                                        if (actionsDisabled) return;
+                                                        setIsMenuOpen(true);
+                                                    }}
                                                     className={cn(
-                                                        "w-full py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] transition-colors",
-                                                        "hover:bg-template-btn-hover",
+                                                        "w-full py-2.5 px-3 flex items-center justify-center gap-2 font-medium text-[13px] transition-colors cursor-pointer",
+                                                        accentText,
+                                                        actionsDisabled && "opacity-50 pointer-events-none cursor-not-allowed",
+                                                        !actionsDisabled && accentHover,
                                                         "border-t border-whatsapp-button-border"
                                                     )}
                                                 >
@@ -1275,6 +1384,10 @@ export default function TemplatePreview({
                             seeAllOptionsLabel={seeAllOptionsLabel || t("preview.seeAllOptions")}
                             isPortal={isChatBubble}
                             enableChipReplacer={enableChipReplacer}
+                            onSelect={onActionSelect}
+                            accent={accent}
+                            actionsDisabled={actionsDisabled}
+                            disabledActionIds={disabledActionIds}
                         />
                     )}
                 </AnimatePresence>

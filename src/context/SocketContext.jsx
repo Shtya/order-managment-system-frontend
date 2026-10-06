@@ -169,6 +169,13 @@ export const SocketProvider = ({ children }) => {
         payload,
       });
     });
+
+    socket.on("agents:try-me", (payload) => {
+      publish({
+        type: "agents:try-me",
+        payload,
+      });
+    });
     socket.on("failed-order:update", (payload) => {
       publish({
         type: "FAILED_ORDER_UPDATE",
@@ -318,6 +325,7 @@ export const SocketProvider = ({ children }) => {
       socket.off("new_notification");
       socket.off("getting_started:achievement");
       socket.off("store:sync-status");
+      socket.off("agents:try-me");
       socket.off("failed-order:update");
       socket.off("shipment:status");
       socket.off("automation:run-status");

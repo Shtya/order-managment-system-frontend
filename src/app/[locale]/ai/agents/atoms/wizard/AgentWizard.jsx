@@ -15,6 +15,7 @@ import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import StepGeneral from "./StepGeneral";
+import StepAiSource from "./StepAiSource";
 import StepKnowledge from "./StepKnowledge";
 import StepCapabilities from "./StepCapabilities";
 import StepReview from "./StepReview";
@@ -32,6 +33,7 @@ const LIST_HREF = "/ai/agents";
 
 const SECTION_IDS = {
   general: "agent-section-general",
+  aiSource: "agent-section-ai-source",
   knowledge: "agent-section-knowledge",
   capabilities: "agent-section-capabilities",
   review: "agent-section-review",
@@ -261,7 +263,11 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
         <StepGeneral control={control} errors={errors} watch={watch} setValue={setValue} />
       </SectionCard>
 
-      <SectionCard stepKey="knowledge" index={1}>
+      <SectionCard stepKey="aiSource" index={1}>
+        <StepAiSource control={control} watch={watch} setValue={setValue} />
+      </SectionCard>
+
+      <SectionCard stepKey="knowledge" index={2}>
         <StepKnowledge
           watch={watch}
           setValue={setValue}
@@ -270,7 +276,7 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
         />
       </SectionCard>
 
-      <SectionCard stepKey="capabilities" index={2}>
+      <SectionCard stepKey="capabilities" index={3}>
         <StepCapabilities control={control} watch={watch} setValue={setValue} errors={errors} />
       </SectionCard>
 

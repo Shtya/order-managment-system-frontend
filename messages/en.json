@@ -11068,7 +11068,13 @@
       "transferToAi": "Confirm",
       "transferToWallet": "Transfer to wallet",
       "processing": "Processing...",
-      "transferToAiTitle": "Transfer to Ai wallet"
+      "transferToAiTitle": "Transfer to Ai wallet",
+      "openSettings": "Settings"
+    },
+    "settingsDialog": {
+      "title": "Wallet settings",
+      "fallbackTitle": "Use main wallet when AI wallet is low",
+      "fallbackDescription": "If the AI wallet does not have enough balance, charges are taken from the main wallet instead."
     },
     "methods": {
       "vodafoneCash": "Vodafone Cash",
@@ -11954,8 +11960,7 @@
     "tabs": {
       "contacts": "Contacts & Socials",
       "whatsapp": "WhatsApp",
-      "aiDecision": "AI Decision",
-      "aiMedia": "AI Media"
+      "ai": "AI"
     },
     "contacts": {
       "primaryTitle": "Primary Contact Information",
@@ -11981,6 +11986,82 @@
           "name": "Disabled",
           "desc": "WhatsApp integration will be disabled for all tenants."
         }
+      }
+    },
+    "ai": {
+      "sharedTitle": "Free allowance window",
+      "sharedSubtitle": "One validity period for every AI type. Empty days means no expiry. Accounts created before the cutoff start from that date; newer accounts start from their creation date.",
+      "durationLabel": "Validity (days)",
+      "durationPlaceholder": "Empty = no expiry",
+      "durationHint": "Days the free units stay valid after the start date below (or account creation if no cutoff).",
+      "cutoffLabel": "Start date for old accounts",
+      "cutoffHint": "If the merchant account was created before this date, the free allowance clock starts here. Leave empty to always use the account creation date."
+    },
+    "aiHosted": {
+      "sectionTitle": "Normal AI usage (hosted)",
+      "sectionSubtitle": "Madar-hosted models billed from the merchant wallet. Input and output prices apply to every hosted model.",
+      "inputTokenPriceLabel": "Input price per 1 Million Tokens ($)",
+      "inputTokenPriceHint": "Billed for tokens sent to the model, for every hosted model.",
+      "outputTokenPriceLabel": "Output price per 1 Million Tokens ($)",
+      "outputTokenPriceHint": "Billed for tokens the model returns, for every hosted model.",
+      "allowanceTitle": "Free Allowance",
+      "allowanceSubtitle": "Free tokens granted per tenant before the wallet is charged.",
+      "modes": {
+        "unlimited": {
+          "name": "Unlimited free",
+          "desc": "All hosted usage is free. Nothing is reserved or charged from wallets."
+        },
+        "limited": {
+          "name": "Limited free allowance",
+          "desc": "Grant a fixed number of free tokens, then charge the wallet."
+        }
+      },
+      "unitsLabel": "Free tokens (units)",
+      "unlimitedNote": "Unlimited mode selected: usage is fully free and no wallet reservation happens.",
+      "catalog": {
+        "title": "Hosted model catalog",
+        "subtitle": "Pick a system integration model. The model code is stored from the catalog, not typed in.",
+        "add": "Add hosted model",
+        "empty": "No hosted models yet.",
+        "addTitle": "Add hosted model",
+        "editTitle": "Edit hosted model",
+        "provider": "Provider",
+        "pickProvider": "Select a provider…",
+        "checkingIntegration": "Checking system integration…",
+        "integrationReady": "System integration is connected.",
+        "noIntegration": "This provider has no system key yet. Save an API key here, then choose a model.",
+        "apiKey": "API key",
+        "apiKeyRequired": "Enter an API key.",
+        "baseUrl": "Base URL (optional)",
+        "saveIntegration": "Save integration",
+        "savingIntegration": "Saving integration…",
+        "integrationSaved": "System integration saved.",
+        "integrationSaveFailed": "Could not save the integration.",
+        "test": "Test connection",
+        "testing": "Testing…",
+        "testOk": "Connection succeeded.",
+        "testFailed": "Connection test failed.",
+        "needIntegration": "Connect the system integration first.",
+        "model": "Model",
+        "pickModel": "Select a model…",
+        "connectFirst": "Connect integration first…",
+        "modelRequired": "Select a model.",
+        "loadModelsFailed": "Could not load models.",
+        "refresh": "Refresh models",
+        "syncing": "Syncing models…",
+        "synced": "{count} new models synced.",
+        "syncNoNew": "No new models.",
+        "syncFailed": "Could not sync models.",
+        "displayName": "Display name",
+        "descriptionEn": "Description (EN)",
+        "descriptionAr": "Description (AR)",
+        "active": "Active",
+        "inactive": "Inactive",
+        "recommended": "Recommended",
+        "cancel": "Cancel",
+        "saving": "Saving…",
+        "deleted": "Hosted model removed.",
+        "deleteTitle": "Delete this hosted model?"
       }
     },
     "aiDecision": {
@@ -12047,7 +12128,8 @@
       "whatsappRequired": "WhatsApp number is required.",
       "invalidUrl": "Please enter a valid URL (e.g., https://...)",
       "invalidNumber": "Please enter a valid non-negative number.",
-      "invalidInteger": "Please enter a valid whole number (0 or more)."
+      "invalidInteger": "Please enter a valid whole number (0 or more).",
+      "invalidDate": "Please enter a valid date."
     },
     "toast": {
       "saveSuccess": "Settings updated successfully.",
@@ -13600,6 +13682,7 @@
           "provider": "Provider",
           "aiModel": "AI Model",
           "aiProviderAutomatic": "Automatic",
+          "platformModels": "Platform models",
           "shippingCompany": "Shipping Company",
           "whatsappAgent": "AI agent",
           "agentNone": "None",
@@ -13752,6 +13835,14 @@
           "aiAddressCompletenessCalcModeInputOutput": "Both input and output tokens are billed.",
           "aiAddressCompletenessAllowanceDays": "Free allowance tokens (if any) expire {days} days after account creation.",
           "aiProvider": "AI Provider",
+          "aiSource": "AI source",
+          "aiSourceHosted": "Platform models",
+          "aiSourceHostedHint": "Billed from your wallet. No API key.",
+          "aiSourceTenant": "My account",
+          "aiSourceTenantHint": "Your provider key. No wallet charge.",
+          "selectHostedModel": "Select model...",
+          "hostedRecommended": "Recommended",
+          "hostedModelsEmpty": "No platform models yet.",
           "aiProviderDesc": "Only connected AI providers are shown.",
           "aiProviderOptionalDesc": "Leave Automatic to pick the best connected provider. Choose one only if you want a specific provider.",
           "aiProviderAutomatic": "Automatic",
@@ -18223,6 +18314,13 @@
       "providerDescription": "Which AI service generates the agent's replies. Automatic uses the store default.",
       "gender": "Gender",
       "genderDescription": "How the agent refers to itself (especially in Arabic). Customers are always addressed neutrally.",
+      "aiSource": "AI source",
+      "aiSourceDescription": "Choose where the agent gets the model it runs on.",
+      "aiSourceHosted": "Platform models",
+      "aiSourceHostedBadge": "No setup",
+      "aiSourceHostedHint": "Ready to use immediately. Usage is billed from your wallet.",
+      "aiSourceTenant": "My own account",
+      "aiSourceTenantHint": "Use your API key and pay the provider directly. Nothing is deducted from the wallet.",
       "customInstructions": "Agent instructions",
       "customInstructionsDescription": "Define extra rules for how the agent behaves and replies, such as tone of voice, how to handle customers, and what to do or avoid.",
       "customInstructionsPlaceholder": "e.g. If the customer asks to change the order address after shipping, tell them that changing the address is not available.",
@@ -18244,6 +18342,7 @@
       "editTitle": "Edit agent",
       "steps": {
         "general": "General information",
+        "aiSource": "AI source",
         "knowledge": "Knowledge",
         "capabilities": "Capabilities",
         "review": "Review"
@@ -18270,6 +18369,18 @@
       "mediaPricingUnit": "per million tokens",
       "mediaAudioPricingUnit": "per audio minute",
       "mediaInputsFooter": "When any media type is turned off, those files are not processed, the AI model is not called, and nothing is charged to your wallet.",
+      "hostedPriceLabel": "Platform model price (per million tokens)",
+      "hostedPriceValue": "Input {input} · Output {output}",
+      "hostedPriceShared": "Same price for every model",
+      "hostedModelUsed": "Model in use",
+      "hostedModelOnlyHint": "This is the only model available right now, so the agent will use it automatically.",
+      "hostedModelSelect": "Choose model",
+      "hostedModelsEmpty": "No platform models are available yet.",
+      "hostedRecommended": "Recommended",
+      "walletBalance": "Wallet balance",
+      "chargeWallet": "Charge wallet",
+      "noProvider": "No provider account yet? Add your API key, or switch back to platform models.",
+      "addProvider": "Add provider",
       "mediaEnabled": "On",
       "mediaDisabled": "Off",
       "mediaInputs": {
@@ -18414,7 +18525,8 @@
       },
       "reviewEmptyKnowledge": "No knowledge linked.",
       "editSection": "Edit",
-      "fixTryErrors": "Please fix the errors before trying the agent."
+      "fixTryErrors": "Please fix the errors before trying the agent.",
+      "chargeAiWallet": "Charge AI wallet"
     },
     "toast": {
       "fetchFailed": "Could not load agents",

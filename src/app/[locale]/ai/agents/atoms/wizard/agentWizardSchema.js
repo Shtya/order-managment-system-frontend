@@ -1,4 +1,4 @@
-export const AGENT_WIZARD_STEPS = ["general", "knowledge", "capabilities", "review"];
+export const AGENT_WIZARD_STEPS = ["general", "aiSource", "knowledge", "capabilities", "review"];
 
 /** User-toggleable capabilities (addressFix is automatic, never stored). */
 export const AGENT_CAPABILITIES = [
@@ -137,6 +137,8 @@ export function expandAgentCapabilities(list) {
 export const AGENT_MEDIA_INPUTS = ["acceptImage", "acceptVideo", "acceptDocument", "acceptAudio"];
 
 export const AGENT_PROVIDER_AUTO = "auto";
+export const AGENT_AI_SOURCE_HOSTED = "hosted";
+export const AGENT_AI_SOURCE_TENANT = "tenant";
 export const AGENT_LANGUAGES = ["auto", "arabic", "english"];
 export const AGENT_GENDERS = ["male", "female"];
 
@@ -144,6 +146,8 @@ export const initialAgentWizardData = {
   name: "",
   language: "auto",
   gender: "male",
+  aiSource: AGENT_AI_SOURCE_HOSTED,
+  hostedModelId: "",
   responseProviderId: AGENT_PROVIDER_AUTO,
   customInstructions: "",
   isActive: true,
@@ -195,10 +199,19 @@ export function buildAgentPayload(values) {
     language: values.language,
     gender: values.gender,
     customInstructions: String(values.customInstructions || "").trim() || null,
+    aiSource:
+      values.aiSource === AGENT_AI_SOURCE_HOSTED
+        ? AGENT_AI_SOURCE_HOSTED
+        : AGENT_AI_SOURCE_TENANT,
+    hostedModelId:
+      values.aiSource === AGENT_AI_SOURCE_HOSTED && values.hostedModelId
+        ? values.hostedModelId
+        : null,
     responseProviderId:
-      values.responseProviderId === AGENT_PROVIDER_AUTO
-        ? null
-        : values.responseProviderId,
+      values.aiSource === AGENT_AI_SOURCE_TENANT &&
+      values.responseProviderId !== AGENT_PROVIDER_AUTO
+        ? values.responseProviderId
+        : null,
     isActive: values.isActive ?? true,
     knowledgeIds: Array.isArray(values.knowledgeIds) ? values.knowledgeIds : [],
     capabilities,
@@ -230,6 +243,11 @@ export function mapAgentToForm(agent) {
     name: agent?.name || "",
     language: agent?.language || "auto",
     gender: agent?.gender || "male",
+    aiSource:
+      agent?.aiSource === AGENT_AI_SOURCE_HOSTED
+        ? AGENT_AI_SOURCE_HOSTED
+        : AGENT_AI_SOURCE_TENANT,
+    hostedModelId: agent?.hostedModelId || "",
     responseProviderId: agent?.responseProviderId || AGENT_PROVIDER_AUTO,
     customInstructions: agent?.customInstructions || "",
     isActive: agent?.isActive ?? true,

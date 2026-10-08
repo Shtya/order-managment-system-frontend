@@ -611,16 +611,23 @@ const ADDRESS_CORRECTION_FLOW_KEYS = [
 
 export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, setDisabled, onClose, mode }) {
     const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tAgents = useTranslations("agents");
     const tNodes = useTranslations("whatsApp.automations.builder.nodes");
     const tCommon = useTranslations("common");
     const tShipping = useTranslations("shipping");
     const locale = useLocale();
     const { settings } = useOrdersSettings();
     const [providers, setProviders] = useState([]);
+    const [hostedModels, setHostedModels] = useState([]);
     const [shippingCompanies, setShippingCompanies] = useState([]);
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [tempValue, setTempValue] = useState({
+        aiSource: value?.aiSource === "hosted" || (!value?.aiSource && !value?.providerId && mode === "create")
+            ? "hosted"
+            : "tenant",
+        hostedModelId: value?.hostedModelId || "",
+        hostedModelName: value?.hostedModelName || "",
         providerId: value?.providerId || "",
         providerName: value?.providerName || "",
         providerCode: value?.providerCode || "",
@@ -643,10 +650,11 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
         const fetchAiOptions = async () => {
             try {
                 setLoading(true);
-                const [providersRes, shippingRes, agentsRes] = await Promise.all([
+                const [providersRes, shippingRes, agentsRes, hostedRes] = await Promise.all([
                     api.get("/ai/providers", { params: { scope: "all", isActive: "true" } }),
                     api.get("/shipping/integrations/active"),
                     api.get("/agents", { params: { limit: 100, isActive: "true" } }),
+                    api.get("/ai/hosted-models"),
                 ]);
 
                 const providerRecords = Array.isArray(providersRes.data)
@@ -657,6 +665,10 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                 const shippingIntegrations = Array.isArray(shippingRes.data?.integrations) ? shippingRes.data.integrations : Array.isArray(shippingRes.data) ? shippingRes.data : [];
                 setShippingCompanies(shippingIntegrations);
                 setAgents(agentsRes.data?.records || []);
+                const hostedRows = Array.isArray(hostedRes.data)
+                    ? hostedRes.data
+                    : hostedRes.data?.records || [];
+                setHostedModels(hostedRows.filter((row) => row?.isActive !== false));
             } catch (e) {
                 toast.error(normalizeAxiosError(e));
             } finally {
@@ -670,6 +682,38 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
     useEffect(() => {
         setDisabled(loading);
     }, [loading, setDisabled]);
+
+    useEffect(() => {
+        if (tempValue.aiSource !== "hosted" || !hostedModels.length) return;
+        const current = hostedModels.find((row) => row.id === tempValue.hostedModelId);
+        if (current) return;
+        const next = hostedModels.find((row) => row.isRecommended) || hostedModels[0];
+        if (!next) return;
+        setTempValue((prev) => ({
+            ...prev,
+            hostedModelId: next.id,
+            hostedModelName: next.name || "",
+        }));
+    }, [tempValue.aiSource, tempValue.hostedModelId, hostedModels]);
+
+    const handleAiSourceChange = (aiSource) => {
+        setTempValue((prev) => ({
+            ...prev,
+            aiSource,
+            ...(aiSource === "hosted"
+                ? { providerId: "", providerName: "", providerCode: "" }
+                : { hostedModelId: "", hostedModelName: "" }),
+        }));
+    };
+
+    const handleHostedModelChange = (hostedModelId) => {
+        const row = hostedModels.find((item) => item.id === hostedModelId);
+        setTempValue((prev) => ({
+            ...prev,
+            hostedModelId,
+            hostedModelName: row?.name || "",
+        }));
+    };
 
     const handleProviderChange = (providerId) => {
         if (providerId === AI_PROVIDER_AUTO) {
@@ -738,8 +782,15 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
     };
 
     const handleSave = () => {
+        const hosted = tempValue.aiSource === "hosted";
         const nextValue = {
             ...tempValue,
+            aiSource: hosted ? "hosted" : "tenant",
+            hostedModelId: hosted ? tempValue.hostedModelId || "" : "",
+            hostedModelName: hosted ? tempValue.hostedModelName || "" : "",
+            providerId: hosted ? "" : tempValue.providerId,
+            providerName: hosted ? "" : tempValue.providerName,
+            providerCode: hosted ? "" : tempValue.providerCode,
             modelId: undefined,
             modelName: undefined,
             modelCode: undefined,
@@ -772,26 +823,108 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                         <p className="m-0">{tConfig("aiAddressCorrectionPurposeNote")}</p>
                     </div>
 
-                    <div className="space-y-1.5">
-                        <Label description={tConfig("aiProviderOptionalDesc")} classN={"text-foreground!"}>{tConfig("aiProvider")}</Label>
-                        <Select value={tempValue.providerId || AI_PROVIDER_AUTO} onValueChange={handleProviderChange}>
-                            <SelectTrigger className="">
-                                {loading ? (
-                                    <div className="flex items-center gap-2">
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        <span>{tConfig("loading")}</span>
-                                    </div>
-                                ) : (
-                                    <SelectValue placeholder={tConfig("selectAiProvider")} />
-                                )}
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={AI_PROVIDER_AUTO}>{tConfig("aiProviderAutomatic")}</SelectItem>
-                                {providers.map((provider) => (
-                                    <SelectItem key={provider.id} value={provider.id}>{provider.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="space-y-2">
+                        <Label classN={"text-foreground!"}>{tAgents("form.aiSource")}</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                {
+                                    id: "hosted",
+                                    title: tAgents("form.aiSourceHosted"),
+                                    hint: tAgents("form.aiSourceHostedHint"),
+                                    badge: tAgents("form.aiSourceHostedBadge"),
+                                },
+                                {
+                                    id: "tenant",
+                                    title: tAgents("form.aiSourceTenant"),
+                                    hint: tAgents("form.aiSourceTenantHint"),
+                                },
+                            ].map((option) => {
+                                const checked = tempValue.aiSource === option.id;
+                                return (
+                                    <button
+                                        key={option.id}
+                                        type="button"
+                                        onClick={() => handleAiSourceChange(option.id)}
+                                        className={cn(
+                                            "rounded-xl border px-3 py-2 text-start transition-colors",
+                                            checked
+                                                ? "border-primary bg-primary/5"
+                                                : "border-border hover:bg-muted/40",
+                                        )}
+                                    >
+                                        <span className="block text-xs font-bold text-foreground">
+                                            {option.title}
+                                            {option.badge ? (
+                                                <span className="ms-1 inline-flex rounded-md bg-primary px-1 py-0.5 text-[10px] font-medium text-white">
+                                                    {option.badge}
+                                                </span>
+                                            ) : null}
+                                        </span>
+                                        <span className="mt-0.5 block text-[10px] leading-snug text-muted-foreground">{option.hint}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {tempValue.aiSource === "hosted" ? (
+                            hostedModels.length > 1 ? (
+                                <Select value={tempValue.hostedModelId || undefined} onValueChange={handleHostedModelChange}>
+                                    <SelectTrigger className="h-10">
+                                        {loading ? (
+                                            <div className="flex items-center gap-2">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span>{tConfig("loading")}</span>
+                                            </div>
+                                        ) : (
+                                            <SelectValue placeholder={tConfig("selectHostedModel")} />
+                                        )}
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {hostedModels.map((row) => (
+                                            <SelectItem key={row.id} value={row.id}>
+                                                {row.name}
+                                                {row.isRecommended ? ` — ${tConfig("hostedRecommended")}` : ""}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : hostedModels.length === 1 ? (
+                                <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2">
+                                    <p className="text-xs font-semibold text-foreground">
+                                        {hostedModels[0].name}
+                                        {hostedModels[0].isRecommended ? (
+                                            <span className="ms-2 text-[10px] font-medium text-primary">{tAgents("wizard.hostedRecommended")}</span>
+                                        ) : null}
+                                    </p>
+                                    <p className="mt-1 text-[10px] leading-snug text-muted-foreground">
+                                        {(locale === "ar"
+                                            ? hostedModels[0].descriptionAr || hostedModels[0].description
+                                            : hostedModels[0].description || hostedModels[0].descriptionAr)
+                                            || tAgents("wizard.hostedModelOnlyHint")}
+                                    </p>
+                                </div>
+                            ) : !loading ? (
+                                <p className="text-[11px] text-muted-foreground">{tConfig("hostedModelsEmpty")}</p>
+                            ) : null
+                        ) : (
+                            <Select value={tempValue.providerId || AI_PROVIDER_AUTO} onValueChange={handleProviderChange}>
+                                <SelectTrigger className="h-10">
+                                    {loading ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            <span>{tConfig("loading")}</span>
+                                        </div>
+                                    ) : (
+                                        <SelectValue placeholder={tConfig("selectAiProvider")} />
+                                    )}
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={AI_PROVIDER_AUTO}>{tConfig("aiProviderAutomatic")}</SelectItem>
+                                    {providers.map((provider) => (
+                                        <SelectItem key={provider.id} value={provider.id}>{provider.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
                         {errors.provider && <p className="text-[10px] text-rose-500 font-bold">{errors.provider}</p>}
                     </div>
 
@@ -3296,7 +3429,7 @@ export function AiAddressCompletenessConfig({ isOpen, value, onChange, errors, s
     const { settings } = usePlatformSettings();
     const aiBilling = settings?.billing?.aiDecision || {};
     const tokenPrice = aiBilling.tokenPrice ?? 0.5;
-    const durationDays = aiBilling.allowance?.durationDays;
+    const durationDays = settings?.billing?.allowanceDurationDays;
 
     useEffect(() => {
         setDisabled(false);

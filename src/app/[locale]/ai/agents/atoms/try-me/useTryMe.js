@@ -28,6 +28,8 @@ export function buildTryMeSnapshot(agent, customerId) {
     language: agent.language,
     gender: agent.gender,
     customInstructions: agent.customInstructions ?? null,
+    aiSource: agent.aiSource === "hosted" ? "hosted" : "tenant",
+    hostedModelId: agent.hostedModelId || agent.hostedModel?.id || null,
     responseProviderId:
       agent.responseProviderId || agent.responseProvider?.id || null,
     isActive: agent.isActive,

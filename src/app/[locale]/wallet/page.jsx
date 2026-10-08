@@ -7,8 +7,11 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-import { Loader2, Plus, Bot } from "lucide-react";
+import { Loader2, Plus, Bot, Settings, Settings2, Wallet as WalletLucide } from "lucide-react";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import TransactionTab from "../dashboard/plans/tabs/transactionTab";
 import { dollor, dollorSign, platformCurrency } from "@/utils/healpers";
 import { convertEgpToUsd, convertUsdToEgp, useCurrencyRate } from "@/hook/useCurrencyRate";
@@ -57,6 +60,7 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const { rate, fetchRate } = useCurrencyRate();
   const { isTestUser } = useAuth();
@@ -178,6 +182,13 @@ export default function WalletPage() {
               tone="secondary"
               size="sm"
             />}
+            <Button_
+              size="sm"
+              label={t("actions.openSettings")}
+              variant="outline"
+              onClick={() => setSettingsOpen(true)}
+              icon={<Settings size={18} />}
+            />
           </>
         }
         stats={stats}
@@ -237,6 +248,63 @@ export default function WalletPage() {
           />
         )}
       </AnimatePresence>
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
+          <DialogHeader className="p-6 border-b dark:border-slate-800">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Settings2 className="text-primary" />
+              {t("settingsDialog.title")}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="p-6 max-h-[70vh] overflow-y-auto">
+            <WalletSettingsTab onSave={() => setSettingsOpen(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function WalletSettingsTab({ onSave }) {
+  const t = useTranslations("wallet");
+  const tSettings = useTranslations("settings");
+  const { tempSettings, patch, saving, handleSave } = useOrdersSettings();
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <WalletLucide size={20} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold">{t("settingsDialog.fallbackTitle")}</h3>
+              <p className="text-xs text-muted-foreground">{t("settingsDialog.fallbackDescription")}</p>
+            </div>
+          </div>
+          <Switch
+            checked={tempSettings?.aiWalletFallbackEnabled !== false}
+            onCheckedChange={(checked) =>
+              patch({ aiWalletFallbackEnabled: checked })
+            }
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-5 mt-5 border-t border-border/40">
+        <button
+          type="button"
+          onClick={() => handleSave(onSave)}
+          disabled={saving}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-[var(--primary)] text-white hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : null}
+          {tSettings("common.saveChanges")}
+        </button>
+      </div>
     </div>
   );
 }

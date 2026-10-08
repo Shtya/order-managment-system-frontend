@@ -66,7 +66,6 @@ export default function StepReview({ control, onEditSection }) {
         [t("form.name"), v.name || "—"],
         [t("form.language"), t(`languages.${v.language || "auto"}`)],
         [t("form.gender"), t(`genders.${v.gender || "male"}`)],
-        [t("form.provider"), providerName || t("provider.auto")],
         [t("form.customInstructions"), v.customInstructions || "—"],
         [
           t("form.isActive"),
@@ -81,6 +80,17 @@ export default function StepReview({ control, onEditSection }) {
           t(`wizard.mediaInputs.${id}.title`),
           v[id] ? t("wizard.mediaEnabled") : t("wizard.mediaDisabled"),
         ]),
+      ],
+    },
+    {
+      stepKey: "aiSource",
+      title: t("wizard.steps.aiSource"),
+      rows: [
+        [
+          t("form.aiSource"),
+          v.aiSource === "hosted" ? t("form.aiSourceHosted") : t("form.aiSourceTenant"),
+        ],
+        [t("form.provider"), providerName || t("provider.auto")],
       ],
     },
     {

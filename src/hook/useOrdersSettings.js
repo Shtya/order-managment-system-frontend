@@ -41,6 +41,7 @@ const defaultSettings =  {
     notifyMarketing: false,
     stockDeductionStrategy: "on_shipment",
     reservedEnabled: false,
+    aiWalletFallbackEnabled: true,
     duplicateWindowHours: 24,
     autoCancelDuplicates: false,
     workingHours: { enabled: true, start: "09:00", end: "18:00" },
@@ -108,6 +109,10 @@ const buildSettingsObject = (data, prevSettings) => ({
     data.stockDeductionStrategy ?? prevSettings.stockDeductionStrategy,
   reservedEnabled:
     data.reservedEnabled ?? prevSettings.reservedEnabled ?? false,
+  aiWalletFallbackEnabled:
+    data.aiWalletFallbackEnabled ??
+    prevSettings.aiWalletFallbackEnabled ??
+    true,
   duplicateWindowHours:
     data.duplicateWindowHours ?? prevSettings.duplicateWindowHours ?? 24,
   autoCancelDuplicates:

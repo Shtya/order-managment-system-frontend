@@ -222,7 +222,7 @@ export default function McpConnectPage() {
               {t("finePrint", { redirectHost: pending.redirectHost })}
             </p>
 
-            {pending.isLoopback ? (
+            {/* {pending.isLoopback ? (
               null
             ) : pending.isTrusted === false ? (
               <p
@@ -231,7 +231,7 @@ export default function McpConnectPage() {
               >
                 {t("untrustedWarning", { redirectHost: pending.redirectHost })}
               </p>
-            ) : null}
+            ) : null} */}
 
             <div className="flex gap-2.5">
               <button

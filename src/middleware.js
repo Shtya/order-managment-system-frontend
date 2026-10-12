@@ -1,6 +1,6 @@
 import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
-import { isPublicRoute, getRequiredRole, isSuperAdimnPaths, getCleanPath } from "./utils/route-utils";
+import { isPublicRoute, getRequiredRole, isSuperAdimnPaths, getCleanPath, isMcpConnectPath } from "./utils/route-utils";
 
 const intlMiddleware = createMiddleware({
   locales: ["en", "ar"],
@@ -66,17 +66,27 @@ export default function middleware(req) {
     return intlMiddleware(req);
   }
 
+  const mcpAuthRedirect = () => {
+    const cleanPath = getCleanPath(pathname);
+    const search = req.nextUrl.search || "";
+    const target = new URL(`/${locale}/auth`, req.url);
+    if (isMcpConnectPath(pathname)) {
+      target.searchParams.set("redirect", `${cleanPath}${search}`);
+    }
+    return target;
+  };
+
   let user = null;
   try {
     if (userCookie) user = JSON.parse(userCookie);
   } catch (e) {
-    const response = NextResponse.redirect(new URL(`/${locale}/auth`, req.url));
+    const response = NextResponse.redirect(mcpAuthRedirect());
     response.cookies.delete("user");
     return response;
   }
 
   if (!user) {
-    return NextResponse.redirect(new URL(`/${locale}/auth`, req.url));
+    return NextResponse.redirect(mcpAuthRedirect());
   }
 
   const userRole = user?.role?.name;
@@ -87,13 +97,18 @@ export default function middleware(req) {
     return NextResponse.redirect(new URL(`/${locale}/`, req.url));
   }
 
-  if (userRole === "super_admin" && !isSuperAdimnPaths(pathname)) {
+  if (
+    userRole === "super_admin" &&
+    !isSuperAdimnPaths(pathname) &&
+    !isMcpConnectPath(pathname)
+  ) {
     return NextResponse.redirect(new URL(`/${locale}/dashboard/users`, req.url));
   }
 
   const ONBOARDING_ALLOWED_PATHS = [
     "/onboarding",
     "/support-tickets",
+    "/mcp/connect",
   ];
 
   const cleanPath = getCleanPath(pathname);

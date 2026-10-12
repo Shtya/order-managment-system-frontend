@@ -19,7 +19,21 @@ const nextConfig = {
         locale: false,
       },
     ];
-  }
+  },
+  async headers() {
+    const frameDeny = [
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+    ];
+    return [
+      { source: "/mcp/connect", headers: frameDeny },
+      { source: "/:locale/mcp/connect", headers: frameDeny },
+      { source: "/auth", headers: frameDeny },
+      { source: "/auth/:path*", headers: frameDeny },
+      { source: "/:locale/auth", headers: frameDeny },
+      { source: "/:locale/auth/:path*", headers: frameDeny },
+    ];
+  },
 };
 
 module.exports = withNextIntl(nextConfig);

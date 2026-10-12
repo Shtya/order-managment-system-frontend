@@ -2,6 +2,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "@/i18n/navigation";
 import api from "@/utils/api";
+import { getSafeMcpConnectRedirect } from "@/utils/route-utils";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
@@ -33,7 +34,8 @@ export default function SuccessPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ accessToken: accessTokenFromUrl, user }),
                 });
-                const redirect = getDashboardRoute(user);
+                const redirect =
+                    getSafeMcpConnectRedirect(redirectUrl) || getDashboardRoute(user);
                 router.push(redirect);
             } catch (e) {
                 console.error('OAuth finalize failed', e);

@@ -53,3 +53,33 @@ export const isSuperAdimnPaths = (pathname) => {
 
   return path.startsWith("/dashboard") || path.startsWith("/notifications");
 };
+
+export const isMcpConnectPath = (pathname) => {
+  const path = getCleanPath(pathname);
+  return path === "/mcp/connect" || path.startsWith("/mcp/connect/");
+};
+
+/** Same-app /mcp/connect URLs only. Rejects open redirects. */
+export const getSafeMcpConnectRedirect = (redirect) => {
+  if (!redirect || typeof redirect !== "string") return null;
+  const trimmed = redirect.trim();
+  if (
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.includes("\\") ||
+    /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)
+  ) {
+    return null;
+  }
+
+  let pathname;
+  try {
+    const url = new URL(trimmed, "http://local.invalid");
+    if (url.origin !== "http://local.invalid") return null;
+    pathname = url.pathname;
+  } catch {
+    return null;
+  }
+
+  return isMcpConnectPath(pathname) ? trimmed : null;
+};

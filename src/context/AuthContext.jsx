@@ -9,6 +9,7 @@ import {
     writeAllStatisticsPrefsToLS,
 } from "@/utils/userPreferencesStorage";
 import { getDefaultAppRoute } from "@/utils/sidebarAccess";
+import { getSafeMcpConnectRedirect } from "@/utils/route-utils";
 import { normalizeRole, userHasPermission } from "@/utils/userAccess";
 import { testEmails } from "@/config/sidebarMenu";
 
@@ -236,16 +237,26 @@ export function AuthProvider({ children }) {
             console.error('[handleAuthSuccess] Failed to call session cookie API. Network or proxy error.', err);
         }
 
-        const targetPath = getDashboardRoute(data.user);
+        const fromQuery =
+            typeof window !== "undefined"
+                ? getSafeMcpConnectRedirect(
+                    new URLSearchParams(window.location.search).get("redirect"),
+                )
+                : null;
+                
+        const targetPath =
+            getSafeMcpConnectRedirect(route) ||
+            fromQuery ||
+            getDashboardRoute(data.user);
 
         if (typeof window !== "undefined") {
             setTimeout(() => {
-                window.location.href = route ? route : targetPath;
+                window.location.href = targetPath;
             }, 500);
         }
     }, [getDashboardRoute]);
 
-    const login = useCallback(async (email, password) => {
+    const login = useCallback(async (email, password, route) => {
         const lang = getLang();
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`, {
             method: 'POST',
@@ -256,7 +267,7 @@ export function AuthProvider({ children }) {
         const data = await res.json();
         if (!res.ok) throw data;
 
-        await handleAuthSuccess(data);
+        await handleAuthSuccess(data, route);
         return data;
     }, [handleAuthSuccess]);
 

@@ -11431,6 +11431,10 @@
         "label": "Automation Settings",
         "description": "Configure how automation behaves"
       },
+      "mcp": {
+        "label": "MCP connections",
+        "description": "Apps that access your data through MCP, such as ChatGPT and Claude"
+      },
       "language": {
         "label": "Language",
         "description": "Set default language for notifications, logs, and emails"
@@ -11457,6 +11461,60 @@
         "agent": "Agent",
         "agentDescription": "Choose the agent that replies to customers.",
         "selectAgent": "Select an agent"
+      }
+    },
+    "mcp": {
+      "guideButton": "Step-by-step connection guide",
+      "urlLabel": "MCP URL",
+      "urlHint": "Paste this URL in ChatGPT or Claude Code when you add the connector.",
+      "copyUrl": "Copy URL",
+      "copiedUrl": "URL copied",
+      "copyFailed": "Could not copy",
+      "activeTitle": "Active connections",
+      "searchPlaceholder": "Search connections",
+      "emptyTitle": "No MCP connections",
+      "emptySubtitle": "Connect ChatGPT or Claude Code. After you approve permissions, the connection appears here.",
+      "footnote": "Permissions for a connection cannot be changed. Revoke it, then connect the app again and choose the permissions you want.",
+      "table": {
+        "app": "App",
+        "permissions": "Permissions",
+        "connectedAt": "Connected",
+        "lastUsed": "Last used",
+        "options": "Actions"
+      },
+      "scope": {
+        "read": "Read only",
+        "write": "Read and write"
+      },
+      "neverUsed": "Not used yet",
+      "revoke": "Disconnect",
+      "revokeTitle": "Disconnect {name}?",
+      "revokeBody": "The app will lose access immediately. To reconnect, add it again and approve permissions.",
+      "cancel": "Cancel",
+      "revoked": "Disconnected {name}",
+      "revokeFailed": "Could not disconnect. Try again.",
+      "loadFailed": "Could not load connections",
+      "guide": {
+        "comingSoon": "Coming soon",
+        "title": "MCP connection guide",
+        "subtitle": "Choose the app you want to connect and follow the steps.",
+        "close": "Close",
+        "appsLabel": "Apps",
+        "connectTitle": "Connect {name}",
+        "stepTitle": "Follow the connection flow",
+        "stepText": "Open the app, add Madar as an MCP server using the URL on this page, then sign in and approve permissions.",
+        "imagePlaceholder": "A screenshot for this step will be added here.",
+        "footer": "After you approve permissions, the connection appears on the MCP connections page.",
+        "apps": {
+          "chatgpt": {
+            "name": "ChatGPT",
+            "summary": "Connect ChatGPT on the web as a custom connector."
+          },
+          "claude": {
+            "name": "Claude Code",
+            "summary": "Connect Claude Code from the terminal."
+          }
+        }
       }
     },
     "ttlInput": {
@@ -18830,5 +18888,29 @@
   "agentSelect": {
     "addAgent": "Add agent",
     "placeholder": "Select an agent"
+  },
+  "mcpConnect": {
+    "invalidLink": "This connection link is invalid.",
+    "loading": "Loading…",
+    "expired": "This connection request expired. Return to ChatGPT and try again.",
+    "decideFailed": "Could not complete the request. Please try again.",
+    "title": "{clientName} is requesting access to your account",
+    "signedInAs": "Signed in as",
+    "finePrint": "The app will only have access to the permissions you explicitly grant. It cannot access your data or perform actions beyond those permissions. You can revoke access at any time from Settings → MCP connections.",
+    "allow": "Allow",
+    "deny": "Deny",
+    "authBanner": "Sign in to continue connecting this app to your Madar account",
+    "untrustedWarning": "This redirect ({redirectHost}) is not a known ChatGPT or Claude address. Only allow if you started this connection yourself.",
+    "loopbackWarning": "After approval the code will be sent to an app on this computer ({redirectHost}). Any local program listening on that address could receive it.",
+    "scopes": {
+      "read": {
+        "title": "Read Your Data",
+        "hint": "Allow the AI to view your data"
+        },
+      "write": {
+        "title": "Manage Your Data",
+        "hint": "Allow the AI to create, add, and edit data"
+        }
+      }
   }
 }

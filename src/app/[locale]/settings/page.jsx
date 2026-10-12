@@ -53,6 +53,7 @@ import {
   FileDown,
   Tags,
   Megaphone,
+  Link2,
 } from "lucide-react";
 
 import { useForm } from "react-hook-form";
@@ -115,6 +116,7 @@ import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { PRODUCT_CATEGORY_KEYS } from "../auth/tabs/Signup";
+import McpConnectionsTab from "./McpConnectionsTab";
 import { IconArrow, OtpInput, PasswordStrength } from "../auth/tabs/AuthUi";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
@@ -462,7 +464,7 @@ export default function SettingsPage() {
   const tOrders = useTranslations("orders");
   const [activeTab, setActiveTab] = useState("company");
   const t = useTranslations("settings");
-
+  const {isTestUser} = useAuth();
   const TABS = [
     { id: "company", label: t("tabs.company.label"), icon: Building2 },
     {
@@ -480,12 +482,18 @@ export default function SettingsPage() {
       icon: <MessageSquare size={18} />,
       description: t("tabs.whatsapp.description")
     },
-    {
+      {
         id: "automations",
         label: t("tabs.automations.label"),
         icon: <Zap size={18} />,
         description: t("tabs.automations.description")
       },
+      ...(isTestUser ? [{
+        id: "mcp",
+        label: t("tabs.mcp.label"),
+        icon: <Link2 size={18} />,
+        description: t("tabs.mcp.description")
+      }] : []),
       {
         id: "language",
         label: t("tabs.language.label"),
@@ -509,6 +517,7 @@ export default function SettingsPage() {
     notifications: <NotificationsTab />,
     whatsapp: <WhatsAppTab />,
     automations: <AutomationsTab />,
+    mcp: <McpConnectionsTab />,
     language: <LanguageTab />,
     cities: <CitiesTab />,
   };

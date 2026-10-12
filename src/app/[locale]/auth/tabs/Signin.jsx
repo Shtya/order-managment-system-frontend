@@ -8,6 +8,7 @@ import { Field, AuthInput, PasswordInput, BtnPrimary, BtnGhost, BtnLink, Divider
 import { useSearchParams } from 'next/navigation';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { getSafeMcpConnectRedirect } from '@/utils/route-utils';
 
 const MailIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -69,7 +70,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
     const tid = toast.loading(t('signin.loading'));
 
     try {
-      await login(email, password);
+      await login(email, password, getSafeMcpConnectRedirect(redirectUrl));
       toast.success(t('signin.success'), { id: tid });
     } catch (error) {
       const status = error?.response?.status || error?.status || error?.statusCode;
@@ -79,10 +80,6 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
       } else {
         toast.error(t("signin.invalid_credentials"), { id: tid });
       }
-
-      setTimeout(() => {
-        router.push("/auth?mode=signin");
-      }, 1200);
     } finally {
       setLoading(false);
     }
@@ -91,7 +88,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
 
   const handleGoogleLoginWrapper = async () => {
     try {
-      await handleGoogleLogin(redirectUrl);
+      await handleGoogleLogin(getSafeMcpConnectRedirect(redirectUrl) || redirectUrl);
     } catch (error) {
       toast.error(t('signin.googleLoginFailed'));
     }

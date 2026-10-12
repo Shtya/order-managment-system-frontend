@@ -10,6 +10,7 @@ import SignIn from "./tabs/Signin";
 import SignUp from "./tabs/Signup";
 import ForgotPassword from "./tabs/Forgotpassword";
 import { useSearchParams } from "next/navigation";
+import { getSafeMcpConnectRedirect } from "@/utils/route-utils";
 
 /* ─────────────────────────────────────────────────────────────
    Global CSS
@@ -391,8 +392,10 @@ function ForgotBackBar({ onClick, t }) {
 ───────────────────────────────────────────────────────────── */
 export default function AuthPage() {
   const t = useTranslations("auth");
+  const tMcp = useTranslations("mcpConnect");
 
   const searchParams = useSearchParams();
+  const mcpRedirect = getSafeMcpConnectRedirect(searchParams.get("redirect"));
 
   const [mode, setMode] = useState(() => {
     return searchParams.get("mode") === "signup" ? "signup" : "signin";

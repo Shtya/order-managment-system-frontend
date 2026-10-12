@@ -89,7 +89,7 @@ const toastOptions = (isRTL) => ({
 });
 
 
-const pathsWitohutLayout = ["/onboarding"];
+const pathsWitohutLayout = ["/onboarding", "/mcp/connect"];
 function DashboardLayout({ children }) {
   const locale = useLocale();
   const isRTL = locale === "ar";

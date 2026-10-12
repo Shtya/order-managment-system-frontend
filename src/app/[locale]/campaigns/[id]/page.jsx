@@ -160,13 +160,17 @@ export default function CampaignDetailsPage() {
         const params = { page: p, limit: l };
         if (status && status !== "all") params.status = status;
         if (searchValue?.trim()) params.search = searchValue.trim();
-        const res = await api.get(`/campaigns/${id}/recipients`, { params });
-        const body = res.data?.records ? res.data : res.data?.data || {};
-        setRecords(body.records || []);
-        setTotalRecords(Number(body.total_records || 0));
-        setPage(Number(body.current_page || p));
-        setLimit(Number(body.per_page || l));
-        if (body.summary) setSummary(body.summary);
+        const [recipientsRes, summaryRes] = await Promise.all([
+          api.get(`/campaigns/${id}/recipients`, { params }),
+          api.get(`/campaigns/${id}/summary`),
+        ]);
+        const recipientsBody = recipientsRes.data?.records ? recipientsRes.data : recipientsRes.data?.data || {};
+        const summaryBody = summaryRes.data?.summary ? summaryRes.data : summaryRes.data?.data || {};
+        setRecords(recipientsBody.records || []);
+        setTotalRecords(Number(recipientsBody.total_records || 0));
+        setPage(Number(recipientsBody.current_page || p));
+        setLimit(Number(recipientsBody.per_page || l));
+        if (summaryBody) setSummary(summaryBody);
       } catch (error) {
         if (!silent) toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
       } finally {

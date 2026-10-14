@@ -29,22 +29,36 @@ export const renderBarcode = (element, value, overrides = {}) => {
 };
 
 
-export const getBarcodeDataUrl = (value, overrides = {}) => {
+/**
+ * @param {number} [maxAspectRatio] - If set, the bars are made taller when needed so the image
+ *   width/height never exceeds this ratio. A long code then still fills a fixed-height box
+ *   with objectFit "contain" instead of shrinking vertically.
+ */
+export const getBarcodeDataUrl = (value, overrides = {}, maxAspectRatio) => {
     if (!value) return "";
 
     // 1. Create an off-screen canvas
     const canvas = document.createElement("canvas");
 
     try {
-        // 2. Render barcode to the canvas
-        JsBarcode(canvas, value, {
+        const options = {
             ...BARCODE_CONFIG, // Ensure this constant is imported
             ...overrides,
             // Ensure width/height are appropriate for printing
             width: 2,
             height: 40,
             displayValue: false // Set to true if you want the text under the bars
-        });
+        };
+
+        // 2. Render barcode to the canvas
+        JsBarcode(canvas, value, options);
+
+        if (maxAspectRatio && canvas.width / canvas.height > maxAspectRatio) {
+            JsBarcode(canvas, value, {
+                ...options,
+                height: Math.ceil(canvas.width / maxAspectRatio),
+            });
+        }
 
         // 3. Return as a Base64 string
         return canvas.toDataURL("image/png");

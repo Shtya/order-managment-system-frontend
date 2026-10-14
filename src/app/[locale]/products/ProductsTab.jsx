@@ -24,7 +24,7 @@ import { getBarcodeDataUrl, renderBarcode } from "@/utils/barcode";
 import { Input } from "@/components/ui/input";
 import SafeHtmlRenderer from "@/components/atoms/SafeHtmlRenderer";
 import { cn } from "@/utils/cn";
-import SkuLabelsPDF from "./SkuLabelsPDF";
+import SkuLabelsPDF, { BARCODE_ASPECT_RATIO } from "./SkuLabelsPDF";
 import { pdf } from "@react-pdf/renderer";
 
 function normalizeAxiosError(err) {
@@ -1039,7 +1039,7 @@ export function SkuPrintModal({ open, onClose, product }) {
 				const attrStr = attrs.map(([k, v]) => `${k}: ${v}`).join(" | ");
 				const qty = quantities[s.id] || 1;
 
-				const barcodeDataUrl = await getBarcodeDataUrl(s.sku);
+				const barcodeDataUrl = await getBarcodeDataUrl(s.sku, {}, BARCODE_ASPECT_RATIO);
 
 				for (let i = 0; i < qty; i++) {
 					labelsData.push({

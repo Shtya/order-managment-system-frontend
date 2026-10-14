@@ -1514,6 +1514,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 												<StorageLocationSelect
 													showNoneOption={true}
 													value={field.value}
+													types={["shelf", "bin"]}
 													onChange={field.onChange}
 													warehouseId={whId}
 												/>

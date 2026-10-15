@@ -17923,14 +17923,22 @@
       "totalModels": "Total Models",
       "activeIntegrations": "Active Integrations",
       "customModels": "Custom Models",
-      "defaultModel": "Default Model"
+      "defaultModel": "Default Model",
+      "mcpConnections": "MCP Connections",
+      "mcpReadOnly": "Read Only",
+      "mcpWriteOnly": "Write Only",
+      "mcpReadWrite": "Read & Write"
     },
     "statsDesc": {
       "totalProviders": "Number of AI providers configured in the system",
       "totalModels": "Total models available across all providers",
       "activeIntegrations": "Providers with active, configured credentials",
       "customModels": "User-created models across all providers",
-      "defaultModel": "The default model used for AI chat requests"
+      "defaultModel": "The default model used for AI chat requests",
+      "mcpConnections": "Apps currently connected to your account through MCP",
+      "mcpReadOnly": "Connections that can only read your data",
+      "mcpWriteOnly": "Connections that can only change your data",
+      "mcpReadWrite": "Connections that can both read and change your data"
     },
     "actions": {
       "addProvider": "Add Provider",

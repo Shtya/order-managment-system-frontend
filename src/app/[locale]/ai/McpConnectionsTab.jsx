@@ -362,7 +362,7 @@ function IntegrationGuide({ open, onOpenChange, t, url }) {
   );
 }
 
-export default function McpConnectionsTab({ guideOpen = false, onGuideOpenChange }) {
+export default function McpConnectionsTab({ guideOpen = false, onGuideOpenChange, onGrantsChange }) {
   const tSet = useTranslations("settings.tabs.mcp");
   const t = useTranslations("settings.mcp");
   const locale = useLocale();
@@ -408,6 +408,7 @@ export default function McpConnectionsTab({ guideOpen = false, onGuideOpenChange
     try {
       await api.delete(`/oauth/grants/${pending.id}`);
       setGrants((rows) => rows.filter((g) => g.id !== pending.id));
+      onGrantsChange?.();
       toast.success(t("revoked", { name: pending.clientName }));
       setPending(null);
     } catch (e) {

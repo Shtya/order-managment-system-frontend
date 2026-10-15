@@ -26,6 +26,9 @@ import {
     MoreVertical,
     Unplug,
     BookOpen,
+    Link2,
+    PenLine,
+    ShieldCheck,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useTranslations, useLocale } from "next-intl";
@@ -1665,6 +1668,8 @@ export default function AiPage() {
     // ── All Models Tab State ──────────────────────────────────
     const [mainTab, setMainTab] = useState("providers");
     const [mcpGuideOpen, setMcpGuideOpen] = useState(false);
+    const [mcpStats, setMcpStats] = useState(null);
+    const [mcpStatsLoading, setMcpStatsLoading] = useState(false);
     const [allModels, setAllModels] = useState([]);
     const [allModelsLoading, setAllModelsLoading] = useState(false);
     const [allModelsCursor, setAllModelsCursor] = useState(null);
@@ -2042,6 +2047,53 @@ export default function AiPage() {
         { name: t("breadcrumb.ai") },
     ], [t]);
 
+    const fetchMcpStats = useCallback(async () => {
+        setMcpStatsLoading(true);
+        try {
+            const res = await api.get("/oauth/grants/stats");
+            setMcpStats(res.data);
+        } catch {
+            setMcpStats(null);
+        } finally {
+            setMcpStatsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (mainTab === "mcp") fetchMcpStats();
+    }, [mainTab, fetchMcpStats]);
+
+    const mcpStatsCards = useMemo(() => [
+        {
+            name: t("stats.mcpConnections"),
+            value: mcpStats?.total ?? 0,
+            icon: Link2,
+            sortOrder: 1,
+            description: t("statsDesc.mcpConnections"),
+        },
+        {
+            name: t("stats.mcpReadOnly"),
+            value: mcpStats?.readOnly ?? 0,
+            icon: Eye,
+            sortOrder: 2,
+            description: t("statsDesc.mcpReadOnly"),
+        },
+        {
+            name: t("stats.mcpWriteOnly"),
+            value: mcpStats?.writeOnly ?? 0,
+            icon: PenLine,
+            sortOrder: 3,
+            description: t("statsDesc.mcpWriteOnly"),
+        },
+        {
+            name: t("stats.mcpReadWrite"),
+            value: mcpStats?.readWrite ?? 0,
+            icon: ShieldCheck,
+            sortOrder: 4,
+            description: t("statsDesc.mcpReadWrite"),
+        },
+    ], [mcpStats, t]);
+
     const stats = useMemo(() => {
         const connectedCount = providers.filter((p) => p.integration?.credentials?.apiKey).length;
         const customModelsCount = models.filter((m) => m.scope === "custom").length;
@@ -2114,8 +2166,8 @@ export default function AiPage() {
             <PageHeader
                 breadcrumbs={breadcrumbs}
                 buttons={headerButtons}
-                stats={stats}
-                statsLoading={providersLoading}
+                stats={mainTab === "mcp" ? mcpStatsCards : stats}
+                statsLoading={mainTab === "mcp" ? mcpStatsLoading : providersLoading}
                 items={headerItems}
                 active={mainTab}
                 setActive={setMainTab}
@@ -2458,7 +2510,7 @@ export default function AiPage() {
                 </div>
             ) : mainTab === "mcp" && isTestUser ? (
                 <div className="mb-4">
-                    <McpConnectionsTab guideOpen={mcpGuideOpen} onGuideOpenChange={setMcpGuideOpen} />
+                    <McpConnectionsTab guideOpen={mcpGuideOpen} onGuideOpenChange={setMcpGuideOpen} onGrantsChange={fetchMcpStats} />
                 </div>
             ) : (
                 <div className="mb-4">

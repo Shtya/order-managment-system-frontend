@@ -24,6 +24,7 @@ export default function AgentSelect({
     triggerClassName,
     defaultOptionLabel,
     noneOptionLabel,
+    disabled,
 }) {
     const t = useTranslations("agentSelect");
     const [agents, setAgents] = useState([]);
@@ -47,6 +48,7 @@ export default function AgentSelect({
     return (
         <Select
             value={value || undefined}
+            disabled={disabled}
             onValueChange={(next) => {
                 if (!next) return;
                 onValueChange?.(next);

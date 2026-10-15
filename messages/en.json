@@ -9246,6 +9246,7 @@
       "cash": "Cash",
       "other": "Other",
       "vodafone_cash": "Vodafone Cash",
+      "wallet": "Wallet",
       "orange_cash": "Orange Cash",
       "etisalat_cash": "Etisalat Cash",
       "we_pay": "We Pay",
@@ -9478,6 +9479,7 @@
       "bank": "Bank transfer",
       "other": "Other method",
       "vodafone_cash": "Vodafone Cash",
+      "wallet": "Wallet",
       "orange_cash": "Orange Cash",
       "etisalat_cash": "Etisalat Cash",
       "we_pay": "WE Pay",
@@ -11460,7 +11462,9 @@
         "disabled": "Disabled",
         "agent": "Agent",
         "agentDescription": "Choose the agent that replies to customers.",
-        "selectAgent": "Select an agent"
+        "selectAgent": "Select an agent",
+        "aiMovedNote": "AI auto-reply and agent settings are now on the Agents page, where you can set them for each number.",
+        "aiMovedLink": "Open Agents page"
       }
     },
     "mcp": {
@@ -18334,6 +18338,7 @@
     },
     "actions": {
       "new": "Add agent",
+      "settings": "Settings",
       "edit": "Edit",
       "tryMe": "Try Me",
       "enable": "Activate",
@@ -18934,6 +18939,35 @@
   "agentSelect": {
     "addAgent": "Add agent",
     "placeholder": "Select an agent"
+  },
+  "whatsappAgentSettings": {
+    "title": "WhatsApp auto-reply",
+    "description": "Choose which agent replies to customers, for all numbers or for a specific number.",
+    "number": "WhatsApp number",
+    "defaultOption": "Default setting",
+    "defaultOptionHint": "Applies to every number that isn't customized",
+    "unnamedNumber": "WhatsApp number",
+    "tags": {
+      "all": "All numbers",
+      "custom": "Custom",
+      "default": "Default"
+    },
+    "defaultNote": "These settings apply to every WhatsApp number that hasn't been customized.",
+    "followDefault": "Follow default",
+    "customForNumber": "Custom for this number",
+    "followingHint": "This number follows the default setting. Choose \"Custom for this number\" to change it.",
+    "resetToDefault": "Go back to the default setting",
+    "enable": "Enable auto-reply",
+    "enableHint": "The agent replies to customer messages automatically.",
+    "agent": "Agent",
+    "agentHint": "The agent that replies to customers.",
+    "defaultAgent": "Default agent ({name})",
+    "noAgent": "no agent",
+    "agentRequired": "Select an agent for the default setting",
+    "save": "Save changes",
+    "discard": "Discard",
+    "unsaved": "Unsaved changes",
+    "saved": "Auto-reply settings saved"
   },
   "mcpConnect": {
     "invalidLink": "This connection link is invalid.",

@@ -19,6 +19,7 @@ import {
   Loader2,
   Plus,
   Power,
+  Settings,
   Trash2,
   UserCheck,
   MessageCircle,
@@ -46,6 +47,8 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
+import { WhatsAppAgentSettingsDialog } from "@/components/molecules/WhatsAppAgentSettings";
+import { useAuth } from "@/context/AuthContext";
 import { useExport } from "@/hook/useExport";
 import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
@@ -334,6 +337,8 @@ const AgentsTab = forwardRef(function AgentsTab(
   const searchTimer = useRef(null);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assigningAgent, setAssigningAgent] = useState(null);
+  const [whatsappSettingsOpen, setWhatsappSettingsOpen] = useState(false);
+  const { isTestUser } = useAuth();
   const tryMe = useTryMe();
 
   useEffect(() => {
@@ -643,15 +648,32 @@ const AgentsTab = forwardRef(function AgentsTab(
         stats={statsCards}
         statsLoading={statsLoading}
         buttons={
-          <Button_
-            size="sm"
-            label={t("actions.new")}
-            variant="solid"
-            icon={<Plus size={18} />}
-            permission="agents.create"
-            onClick={openCreate}
-          />
+          <>
+            {isTestUser ? (
+              <Button_
+                size="sm"
+                label={t("actions.settings")}
+                variant="outline"
+                permission="whatsapp.manage"
+                onClick={() => setWhatsappSettingsOpen(true)}
+                icon={<Settings size={18} />}
+              />
+            ) : null}
+            <Button_
+              size="sm"
+              label={t("actions.new")}
+              variant="solid"
+              icon={<Plus size={18} />}
+              permission="agents.create"
+              onClick={openCreate}
+            />  
+          </>
         }
+      />
+
+      <WhatsAppAgentSettingsDialog
+        open={whatsappSettingsOpen}
+        onOpenChange={setWhatsappSettingsOpen}
       />
 
       <Table

@@ -1003,7 +1003,7 @@ function TryMeEmptyState({ mode, customer, onPickCustomer, onAsk, t, locale }) {
           <p className="mt-0.5 mb-0 text-[12px] leading-snug text-[#6c6981]">{t("tryMe.questionsOnlyBody")}</p>
         </div>
       </div>
-      <div className="grid gap-2 w-full">
+      {/* <div className="grid gap-2 w-full">
         {questions.map((item, index) => {
           const text = locale === "ar" ? item.ar : item.en;
           return (
@@ -1021,7 +1021,7 @@ function TryMeEmptyState({ mode, customer, onPickCustomer, onAsk, t, locale }) {
             </button>
           );
         })}
-      </div>
+      </div> */}
     </div>
   );
 }

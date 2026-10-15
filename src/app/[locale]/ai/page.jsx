@@ -25,6 +25,7 @@ import {
     RefreshCw,
     MoreVertical,
     Unplug,
+    BookOpen,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useTranslations, useLocale } from "next-intl";
@@ -40,6 +41,7 @@ import { cn } from "@/utils/cn";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useDebounce } from "@/hook/useDebounce";
+import McpConnectionsTab from "./McpConnectionsTab";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1644,8 +1646,9 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
 // ─────────────────────────────────────────────────────────────
 export default function AiPage() {
     const t = useTranslations("ai");
+    const tMcp = useTranslations("settings.mcp");
     const locale = useLocale();
-    const { hasPermission } = useAuth();
+    const { hasPermission, isTestUser } = useAuth();
 
     // ── Data State ────────────────────────────────────────────
     const [providers, setProviders] = useState([]);
@@ -1661,6 +1664,7 @@ export default function AiPage() {
 
     // ── All Models Tab State ──────────────────────────────────
     const [mainTab, setMainTab] = useState("providers");
+    const [mcpGuideOpen, setMcpGuideOpen] = useState(false);
     const [allModels, setAllModels] = useState([]);
     const [allModelsLoading, setAllModelsLoading] = useState(false);
     const [allModelsCursor, setAllModelsCursor] = useState(null);
@@ -2071,11 +2075,18 @@ export default function AiPage() {
     const headerItems = useMemo(() => [
         { id: "providers", label: t("tabs.providers") },
         { id: "allModels", label: t("tabs.allModels") || "All Models" },
-    ], [t]);
+        ...(isTestUser ? [{ id: "mcp", label: t("tabs.mcp") }] : []),
+    ], [t, isTestUser]);
 
     const headerButtons = useMemo(() => (
         <Fragment>
-            {hasPermission("ai.manage") && (
+            {mainTab === "mcp" ? (
+                <Button_
+                    icon={<BookOpen className="w-4 h-4" />}
+                    label={tMcp("guideButton")}
+                    onClick={() => setMcpGuideOpen(true)}
+                />
+            ) : hasPermission("ai.manage") && (
                 <>
                     <Button_
                         icon={<Plus className="w-4 h-4" />}
@@ -2092,7 +2103,7 @@ export default function AiPage() {
                 </>
             )}
         </Fragment>
-    ), [customProviders.length, hasPermission, t]);
+    ), [customProviders.length, hasPermission, t, tMcp, mainTab]);
 
     const isProviderConnected = selectedProvider
         ? !!(integration?.credentials?.apiKey)
@@ -2444,6 +2455,10 @@ export default function AiPage() {
                             )}
                         </AnimatePresence>
                     </div>
+                </div>
+            ) : mainTab === "mcp" && isTestUser ? (
+                <div className="mb-4">
+                    <McpConnectionsTab guideOpen={mcpGuideOpen} onGuideOpenChange={setMcpGuideOpen} />
                 </div>
             ) : (
                 <div className="mb-4">

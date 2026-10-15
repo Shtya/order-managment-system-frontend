@@ -17922,6 +17922,7 @@
       "configurations": "Configurations",
       "models": "Models",
       "allModels": "All Models",
+      "mcp": "MCP connections",
       "usage": "Usage",
       "integrations": "Integrations"
     },

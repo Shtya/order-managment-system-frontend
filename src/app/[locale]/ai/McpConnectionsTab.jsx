@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import { BookOpen, Copy, Info, Link2, Trash2, X } from "lucide-react";
+import { Copy, Info, Link2, Trash2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "@/utils/api";
 import Table from "@/components/atoms/Table";
@@ -78,7 +78,7 @@ function IntegrationGuide({ open, onOpenChange, t }) {
   );
 }
 
-export default function McpConnectionsTab() {
+export default function McpConnectionsTab({ guideOpen = false, onGuideOpenChange }) {
   const tSet = useTranslations("settings.tabs.mcp");
   const t = useTranslations("settings.mcp");
   const locale = useLocale();
@@ -87,7 +87,6 @@ export default function McpConnectionsTab() {
   const [loading, setLoading] = useState(true);
   const [grants, setGrants] = useState([]);
   const [search, setSearch] = useState("");
-  const [guideOpen, setGuideOpen] = useState(false);
   const [pending, setPending] = useState(null);
   const [revoking, setRevoking] = useState(false);
 
@@ -213,50 +212,42 @@ export default function McpConnectionsTab() {
   );
 
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row">
-        <div>
-          <h2 className="text-xl font-black tracking-tight text-foreground">{tSet("label")}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{tSet("description")}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="border border-border rounded-[14px] bg-white overflow-hidden shadow-[0_2px_10px_rgba(30,30,60,0.03)]"
+    >
+      <div className="px-5 py-4 border-b border-border">
+        <div className="flex items-center gap-2">
+          <h2 className="text-[16px] font-semibold text-foreground">{t("activeTitle")}</h2>
+          <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">{grants.length}</span>
         </div>
-        <Button_
-          size="sm"
-          label={t("guideButton")}
-          icon={<BookOpen size={16} />}
-          onClick={() => setGuideOpen(true)}
-        />
-      </div>
+        <p className="mt-1 text-xs text-muted-foreground">{tSet("description")}</p>
 
-      <div className="mb-7 flex flex-wrap items-center gap-3.5 rounded-2xl border border-border bg-muted/30 p-3.5 sm:p-4">
-        <div className="grid size-[42px] place-items-center rounded-[13px] bg-primary/10 text-primary">
-          <Link2 size={20} />
+        <div className="mt-3 flex flex-wrap items-center gap-3 rounded-[11px] border border-border bg-muted/30 p-3">
+          <div className="grid size-[38px] place-items-center rounded-[10px] bg-primary/10 text-primary">
+            <Link2 size={18} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-semibold">{t("urlLabel")}</div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">{t("urlHint")}</div>
+          </div>
+          <code className="max-w-full truncate rounded-lg border border-border bg-background px-3 py-2 text-xs ltr:text-left" dir="ltr">
+            {url}
+          </code>
+          <Button_
+            size="sm"
+            variant="cancel"
+            tone="ghost"
+            label={t("copyUrl")}
+            icon={<Copy size={14} />}
+            onClick={() => copyText(url, t("copiedUrl"), t("copyFailed"))}
+          />
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold">{t("urlLabel")}</div>
-          <div className="mt-0.5 text-xs text-muted-foreground">{t("urlHint")}</div>
-        </div>
-        <code className="max-w-full truncate rounded-[10px] border border-border bg-background px-3 py-2 text-[13px] ltr:text-left" dir="ltr">
-          {url}
-        </code>
-        <Button_
-          size="sm"
-          variant="cancel"
-          tone="ghost"
-          label={t("copyUrl")}
-          icon={<Copy size={14} />}
-          onClick={() => copyText(url, t("copiedUrl"), t("copyFailed"))}
-        />
       </div>
-
-      <h3 className="mb-3.5 flex items-center gap-2.5 text-base font-semibold">
-        {t("activeTitle")}
-        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-          {grants.length}
-        </span>
-      </h3>
 
       <Table
-        tableKey="settings-mcp-grants"
+        tableKey="ai-mcp-grants"
         flat
         columns={columns}
         data={filtered}
@@ -270,12 +261,12 @@ export default function McpConnectionsTab() {
         }}
       />
 
-      <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+      <p className="flex items-start gap-2 border-t border-border px-5 py-3 text-xs leading-relaxed text-muted-foreground">
         <Info size={16} className="mt-0.5 shrink-0" />
         {t("footnote")}
       </p>
 
-      <IntegrationGuide open={guideOpen} onOpenChange={setGuideOpen} t={t} />
+      <IntegrationGuide open={guideOpen} onOpenChange={onGuideOpenChange} t={t} />
 
       <AlertDialog open={Boolean(pending)} onOpenChange={(o) => !o && setPending(null)}>
         <AlertDialogContent>

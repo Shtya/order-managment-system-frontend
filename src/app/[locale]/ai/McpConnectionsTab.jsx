@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import { Copy, Info, Link2, Trash2, X } from "lucide-react";
+import { Check, Copy, Image as ImageIcon, Info, Link2, Puzzle, Trash2, X } from "lucide-react";
+import { cn } from "@/utils/cn";
+import { ImagePreviewModal } from "@/components/atoms/ImagePreviewModal";
 import { motion } from "framer-motion";
 import api from "@/utils/api";
 import Table from "@/components/atoms/Table";
@@ -52,29 +54,311 @@ async function copyText(text, okMsg, failMsg) {
   }
 }
 
-function IntegrationGuide({ open, onOpenChange, t }) {
+// Step text lives in `settings.mcp.guide.apps.<key>.steps.<n>`; set `image` once screenshots exist.
+// `copyUrl` shows the copy button inside that step while it is active.
+const GUIDE_APPS = [
+  // {
+  //   key: "chatgpt",
+  //   logo: "/ai-providers/chatgpt.png",
+  //   steps: [{ image: null }, { image: null }, { image: null, copyUrl: true }, { image: null }],
+  // },
+  {
+    key: "claude",
+    logo: "/ai-providers/anthropic.png",
+    // The PNG is a full-bleed tile; padding it leaves a white frame.
+    tile: true,
+    steps: [
+      { image: "/MCP/claude/1-settings-step.png" },
+      { image: "/MCP/claude/2-click-button-step.png" },
+      { image: "/MCP/claude/3-fill-data-and-continue.png" },
+      { image: "/MCP/claude/4-authorization-method.png" },
+      { image: "/MCP/claude/5-connect.png" },
+      { image: "/MCP/claude/6-accept.png" },
+      { image: "/MCP/claude/7-now-mcp-connected.png" },
+    ],
+  },
+  // {
+  //   key: "gemini",
+  //   logo: "/ai-providers/gemini.png",
+  //   steps: [{ image: null }, { image: null }, { image: null, copyUrl: true }, { image: null }],
+  // },
+  {
+    key: "other",
+    logo: null,
+    steps: [{ image: null }, { image: null }, { image: null, copyUrl: true }, { image: null }],
+  },
+];
+
+function AppLogo({ app, name, className }) {
+  const [failed, setFailed] = useState(false);
+  const showImage = app.logo && !failed;
   return (
+    <span
+      className={cn(
+        "grid shrink-0 place-items-center overflow-hidden bg-white font-bold text-primary shadow-sm ring-1 ring-black/5",
+        className,
+      )}
+    >
+      {showImage ? (
+        <img
+          src={app.logo}
+          alt={name}
+          className={cn("size-full", app.tile ? "object-cover" : "object-contain p-1")}
+          onError={() => setFailed(true)}
+        />
+      ) : app.key === "other" ? (
+        <Puzzle className="size-[55%]" />
+      ) : (
+        String(name || "?").charAt(0).toUpperCase()
+      )}
+    </span>
+  );
+}
+
+function StepImage({ src, alt, placeholder, onPreview }) {
+  return (
+    <div
+      className={cn(
+        "w-full overflow-hidden rounded-xl border border-border bg-background shadow-[0_8px_22px_rgba(22,22,42,0.08)]",
+        src && "cursor-zoom-in transition-all hover:ring-2 hover:ring-primary/30",
+      )}
+      onClick={src ? () => onPreview?.(src) : undefined}
+    >
+      {/* <div className="flex gap-1 border-b border-border bg-muted/50 px-2.5 py-1.5" dir="ltr">
+        <i className="size-2 rounded-full bg-border" />
+        <i className="size-2 rounded-full bg-border" />
+        <i className="size-2 rounded-full bg-border" />
+      </div> */}
+      {src ? (
+        <img src={src} alt={alt} className="mx-auto block max-h-[60vh] w-full object-contain" />
+      ) : (
+        <div className="grid min-h-[220px] place-items-center md:min-h-[320px] p-4 text-center text-xs leading-relaxed text-muted-foreground">
+          <span className="flex flex-col items-center gap-2">
+            <ImageIcon size={28} className="opacity-50" />
+            {placeholder}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function IntegrationGuide({ open, onOpenChange, t, url }) {
+  const [activeKey, setActiveKey] = useState(GUIDE_APPS[0].key);
+  const [activeStep, setActiveStep] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+  const app = GUIDE_APPS.find((a) => a.key === activeKey) ?? GUIDE_APPS[0];
+  const appName = t(`guide.apps.${app.key}.name`);
+  const stepCount = app.steps.length;
+  const step = app.steps[activeStep] ?? app.steps[0];
+  const hasImages = app.steps.some((s) => s.image);
+  const stepTitle = t(`guide.apps.${app.key}.steps.${activeStep}.title`);
+
+  const selectApp = (key) => {
+    setActiveKey(key);
+    setActiveStep(0);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    } catch {
+      toast.error(t("copyFailed"));
+    }
+  };
+
+  return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        onEscapeKeyDown={(e) => {
+          if (previewImage) {
+            e.preventDefault();
+            setPreviewImage(null);
+          }
+        }}
+        onPointerDownOutside={(e) => {
+          if (previewImage) e.preventDefault();
+        }}
+        onInteractOutside={(e) => {
+          if (previewImage) e.preventDefault();
+        }}
         showCloseButton={false}
-        className="flex w-[min(420px,calc(100%-24px))] flex-col overflow-hidden p-0 sm:max-w-[420px]"
+        className="grid max-h-[90vh] w-[min(940px,calc(100%-24px))] grid-cols-1 gap-0 overflow-y-auto rounded-3xl p-0 sm:max-w-[940px] md:h-[min(680px,90vh)] md:grid-cols-[250px_1fr] md:overflow-hidden"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-border px-6 py-5">
-          <DialogTitle className="text-lg font-bold">{t("guide.title")}</DialogTitle>
-          <button
-            type="button"
-            className="grid size-[34px] place-items-center rounded-full border border-border bg-background"
-            onClick={() => onOpenChange(false)}
-            aria-label={t("guide.close")}
+        {/* ── Sidebar ─────────────────────────── */}
+        <aside className="flex flex-col gap-4 bg-gradient-to-br from-primary to-secondary px-4 py-5 text-white md:overflow-y-auto">
+          <div>
+            <DialogTitle className="text-base font-bold text-white">{t("guide.title")}</DialogTitle>
+            <p className="mt-1 text-xs text-white/80">{t("guide.subtitle")}</p>
+          </div>
+
+          <div className="rounded-2xl bg-white/15 p-3">
+            <span className="text-[11px] text-white/80">{t("urlLabel")}</span>
+            <div
+              className="my-1.5 overflow-x-auto whitespace-nowrap text-start font-mono text-[11px] font-medium"
+              dir="ltr"
+            >
+              {url}
+            </div>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className={cn(
+                "flex w-full items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 text-xs font-semibold transition-colors",
+                copied ? "bg-white/90 text-primary" : "bg-white text-primary hover:bg-white/90",
+              )}
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+              {copied ? t("copiedUrl") : t("copyUrl")}
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="px-1 text-[11px] font-semibold text-white/70">{t("guide.appsLabel")}</span>
+            {GUIDE_APPS.map((a) => {
+              const name = t(`guide.apps.${a.key}.name`);
+              const active = a.key === app.key;
+              return (
+                <button
+                  key={a.key}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => selectApp(a.key)}
+                  className={cn(
+                    "flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-start text-sm font-semibold transition-colors",
+                    active ? "bg-white/20 opacity-100" : "opacity-80 hover:bg-white/10 hover:opacity-100",
+                  )}
+                >
+                  <AppLogo app={a} name={name} className="size-[30px] rounded-[9px] text-xs" />
+                  {name}
+                  {/* <span className="ms-auto text-[11px] font-medium text-white/70">
+                    {t("guide.stepsCount", { count: a.steps.length })}
+                  </span> */}
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+
+        {/* ── Steps ───────────────────────────── */}
+        <section className="flex min-h-0 flex-col overflow-y-auto bg-card">
+          <div className="flex items-start justify-between gap-3 px-6 pb-2 pt-5">
+            <div className="flex items-center gap-3">
+              <AppLogo app={app} name={appName} className="size-10 rounded-xl text-sm" />
+              <div>
+                <h2 className="text-lg font-bold text-foreground">{t("guide.connectTitle", { name: appName })}</h2>
+                <p className="text-xs text-muted-foreground">{t(`guide.apps.${app.key}.summary`)}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="grid size-[34px] shrink-0 place-items-center rounded-full border border-border bg-background hover:bg-muted"
+              onClick={() => onOpenChange(false)}
+              aria-label={t("guide.close")}
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <div
+            className={cn(
+              "grid flex-1 grid-cols-1 items-start gap-5 px-6 pb-5 pt-3 md:items-stretch",
+              hasImages && "md:grid-cols-[1fr_1.2fr]",
+            )}
           >
-            <X size={16} />
-          </button>
-        </div>
-        <div className="px-6 py-10 text-center text-base font-semibold text-muted-foreground">
-          {t("guide.comingSoon")}
-        </div>
+            <ol className="flex flex-col gap-1 md:h-full">
+              {app.steps.map((s, i) => {
+                const isActive = i === activeStep;
+                const isDone = i < activeStep;
+                return (
+                  <li key={`${app.key}-${i}`} className="relative md:flex-1 md:last:flex-none">
+                    {i < stepCount - 1 && (
+                      <span
+                        className={cn(
+                          "absolute bottom-[-16px] start-[25px] top-[42px] w-0.5",
+                          isDone ? "bg-primary" : "bg-border",
+                        )}
+                      />
+                    )}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-current={isActive ? "step" : undefined}
+                      onClick={() => setActiveStep(i)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setActiveStep(i);
+                        }
+                      }}
+                      className={cn(
+                        "flex w-full cursor-pointer gap-3 rounded-2xl border p-3 text-start transition-colors",
+                        isActive ? "border-primary bg-primary/5" : "border-transparent hover:bg-muted/60",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "relative z-[1] grid size-7 shrink-0 place-items-center rounded-full border-2 text-[13px] font-bold",
+                          isDone && "border-primary bg-primary text-white",
+                          isActive && "border-primary bg-background text-primary",
+                          !isDone && !isActive && "border-border bg-muted text-muted-foreground",
+                        )}
+                      >
+                        {isDone ? <Check size={14} strokeWidth={3} /> : i + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-semibold text-foreground">
+                          {t(`guide.apps.${app.key}.steps.${i}.title`)}
+                        </h4>
+                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                          {t(`guide.apps.${app.key}.steps.${i}.text`)}
+                        </p>
+                        {s.copyUrl && isActive && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopy();
+                            }}
+                            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90"
+                          >
+                            {copied ? <Check size={13} /> : <Copy size={13} />}
+                            {copied ? t("copiedUrl") : t("copyUrl")}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+
+            {step.image && (
+              <div className="order-first flex flex-col items-center gap-3 md:sticky md:top-0 md:order-none md:self-start md:pt-3">
+                <StepImage
+                  src={step.image}
+                  alt={stepTitle}
+                  placeholder={t("guide.imagePlaceholder")}
+                  onPreview={setPreviewImage}
+                />
+              </div>
+            )}
+          </div>
+
+         
+        </section>
       </DialogContent>
     </Dialog>
+    <ImagePreviewModal
+      src={previewImage}
+      isOpen={!!previewImage}
+      onClose={() => setPreviewImage(null)}
+    />
+    </>
   );
 }
 
@@ -266,7 +550,7 @@ export default function McpConnectionsTab({ guideOpen = false, onGuideOpenChange
         {t("footnote")}
       </p>
 
-      <IntegrationGuide open={guideOpen} onOpenChange={onGuideOpenChange} t={t} />
+      <IntegrationGuide open={guideOpen} onOpenChange={onGuideOpenChange} t={t} url={url} />
 
       <AlertDialog open={Boolean(pending)} onOpenChange={(o) => !o && setPending(null)}>
         <AlertDialogContent>

@@ -11495,24 +11495,61 @@
       "revokeFailed": "Could not disconnect. Try again.",
       "loadFailed": "Could not load connections",
       "guide": {
-        "comingSoon": "Coming soon",
         "title": "MCP connection guide",
-        "subtitle": "Choose the app you want to connect and follow the steps.",
+        "subtitle": "Copy the URL, then follow the steps.",
         "close": "Close",
         "appsLabel": "Apps",
-        "connectTitle": "Connect {name}",
-        "stepTitle": "Follow the connection flow",
-        "stepText": "Open the app, add Madar as an MCP server using the URL on this page, then sign in and approve permissions.",
+        "connectTitle": "Connect with {name}",
         "imagePlaceholder": "A screenshot for this step will be added here.",
-        "footer": "After you approve permissions, the connection appears on the MCP connections page.",
+        "footer": "After you approve, the connection appears in the active connections table.",
+        "stepsCount": "{count} steps",
+        "stepOf": "Step {current} of {total}: {title}",
+        "prev": "Previous",
+        "next": "Next",
+        "permissionsLabel": "In the last step you choose:",
         "apps": {
           "chatgpt": {
             "name": "ChatGPT",
-            "summary": "Connect ChatGPT on the web as a custom connector."
+            "summary": "Add Madar as a custom connector.",
+            "steps": [
+              { "title": "Open settings", "text": "From the menu, open Settings, then \"Connectors\". You may need to turn on advanced options." },
+              { "title": "Create a new connection", "text": "Click \"Create\"." },
+              { "title": "Paste the Madar URL", "text": "Enter the name \"Madar\" and paste the URL you copied." },
+              { "title": "Sign in and approve", "text": "The Madar page opens. Sign in if needed, choose the permissions, then click Approve." }
+            ]
           },
           "claude": {
-            "name": "Claude Code",
-            "summary": "Connect Claude Code from the terminal."
+            "name": "Claude",
+            "summary": "Add Madar as a custom connector.",
+            "steps": [
+              { "title": "Open Connectors", "text": "In Claude, open Settings, then click \"Connectors\" in the side menu." },
+              { "title": "Add a custom connector", "text": "Click \"Add\" at the top, then choose \"Add custom connector\"." },
+              { "title": "Enter Madar's details", "text": "Type \"Madar\" as the name, paste the Madar URL you copied into the URL field, then click \"Continue\"." },
+              { "title": "Choose the sign-in method", "text": "Under Authentication choose \"Sign in now\", and under OAuth client choose \"Register automatically\". Then click \"Add\"." },
+              { "title": "Start the connection", "text": "On the Madar connector page, click \"Connect\"." },
+              { "title": "Allow access in Madar", "text": "A Madar page opens. Sign in if asked, turn on \"Read your data\", \"Edit your data\", or both, then click \"Allow\"." },
+              { "title": "Madar is connected", "text": "Back in Claude, Madar shows as connected with its tools. You can now ask Claude about your orders, products, and more." }
+            ]
+          },
+          "gemini": {
+            "name": "Gemini",
+            "summary": "Add Madar as an extension.",
+            "steps": [
+              { "title": "Open settings", "text": "From the menu, open Gemini settings." },
+              { "title": "Find extensions", "text": "Open the extensions or connected apps section." },
+              { "title": "Paste the Madar URL", "text": "Add a new connection and paste the URL you copied." },
+              { "title": "Sign in and approve", "text": "The Madar page opens. Sign in if needed, choose the permissions, then click Approve." }
+            ]
+          },
+          "other": {
+            "name": "Another app",
+            "summary": "Any app that supports MCP servers.",
+            "steps": [
+              { "title": "Open settings", "text": "Go to the settings of the app you use." },
+              { "title": "Find where to add tools", "text": "Look for an option to add an external app or an MCP server." },
+              { "title": "Paste the Madar URL", "text": "Paste the URL you copied." },
+              { "title": "Sign in and approve", "text": "The Madar page opens. Sign in if needed, choose the permissions, then click Approve." }
+            ]
           }
         }
       }

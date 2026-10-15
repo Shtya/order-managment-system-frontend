@@ -695,18 +695,6 @@ export function WhatsAppTab({ hideAccount = false, showAgentSettings = true, onS
       </div>
       ) : null}
 
-      {isTestUser && !showAgentSettings ? (
-        <div className="flex items-start gap-2.5 rounded-xl bg-primary/10 p-3 text-xs leading-relaxed">
-          <Info size={15} className="mt-0.5 shrink-0 text-primary" />
-          <span>
-            {t("aiMovedNote")}{" "}
-            <Link href="/ai/agents" className="font-medium text-primary hover:underline">
-              {t("aiMovedLink")}
-            </Link>
-          </span>
-        </div>
-      ) : null}
-
       {!hideAccount && <SaveFooter onSave={() => handleSave(onSave)} saving={saving} label={tSettings("common.saveChanges")} />}
     </motion.div>
   );

@@ -22,7 +22,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import Button_ from "@/components/atoms/Button";
-import AgentSelect, { AGENT_SELECT_DEFAULT } from "@/components/molecules/AgentSelect";
+import AgentSelect from "@/components/molecules/AgentSelect";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
@@ -30,9 +30,9 @@ import { cn } from "@/utils/cn";
 
 const DEFAULT_KEY = "__default__";
 
-const toAccountDraft = (row) => {
+const toAccountDraft = (row, defaultAgentId) => {
     if (!row?.aiResponses || row.aiResponses === "default") {
-        return { mode: "default", on: false, agentId: AGENT_SELECT_DEFAULT };
+        return { mode: "default", on: false, agentId: null };
     }
     return {
         mode: "custom",
@@ -40,7 +40,7 @@ const toAccountDraft = (row) => {
         agentId:
             row.aiAgentSource === "specific" && row.aiAgentId
                 ? row.aiAgentId
-                : AGENT_SELECT_DEFAULT,
+                : defaultAgentId || null,
     };
 };
 
@@ -51,11 +51,10 @@ const toAccountPayload = (draft) => {
     if (!draft.on) {
         return { aiResponses: "disabled", aiAgentSource: "default", aiAgentId: null };
     }
-    const specific = draft.agentId && draft.agentId !== AGENT_SELECT_DEFAULT;
     return {
         aiResponses: "enabled",
-        aiAgentSource: specific ? "specific" : "default",
-        aiAgentId: specific ? draft.agentId : null,
+        aiAgentSource: "specific",
+        aiAgentId: draft.agentId || null,
     };
 };
 
@@ -99,7 +98,7 @@ function ScopeOption({ title, subtitle, subtitleLtr, tag }) {
     );
 }
 
-function AgentFields({ value, onChange, readOnly, followsDefaultAgent, defaultAgentId }) {
+function AgentFields({ value, onChange, readOnly }) {
     const t = useTranslations("whatsappAgentSettings");
     return (
         <div
@@ -128,16 +127,6 @@ function AgentFields({ value, onChange, readOnly, followsDefaultAgent, defaultAg
                     value={value.agentId}
                     disabled={readOnly || !value.on}
                     onValueChange={(agentId) => onChange?.({ ...value, agentId })}
-                    defaultOptionLabel={
-                        followsDefaultAgent
-                            ? (agents) =>
-                                t("defaultAgent", {
-                                    name:
-                                        agents.find((agent) => agent.id === defaultAgentId)?.name ||
-                                        t("noAgent"),
-                                })
-                            : undefined
-                    }
                     triggerClassName="h-11 rounded-xl"
                 />
             </div>
@@ -181,8 +170,11 @@ export default function WhatsAppAgentSettings({ className }) {
     );
 
     const savedAccounts = useMemo(
-        () => Object.fromEntries(accounts.map((row) => [row.id, toAccountDraft(row)])),
-        [accounts],
+        () =>
+            Object.fromEntries(
+                accounts.map((row) => [row.id, toAccountDraft(row, savedDefault.agentId)]),
+            ),
+        [accounts, savedDefault.agentId],
     );
 
     const currentDefault = draftDefault ?? savedDefault;
@@ -209,6 +201,14 @@ export default function WhatsAppAgentSettings({ className }) {
         if (defaultDirty && draftDefault.on && !draftDefault.agentId) {
             setSelected(DEFAULT_KEY);
             toast.error(t("agentRequired"));
+            return;
+        }
+        const missingAgentId = dirtyAccountIds.find(
+            (id) => draftAccounts[id].mode === "custom" && draftAccounts[id].on && !draftAccounts[id].agentId,
+        );
+        if (missingAgentId) {
+            setSelected(missingAgentId);
+            toast.error(t("agentRequiredForNumber"));
             return;
         }
         setSaving(true);
@@ -290,8 +290,8 @@ export default function WhatsAppAgentSettings({ className }) {
                                     updateAccount(
                                         selected,
                                         mode === "custom"
-                                            ? { mode, on: currentDefault.on, agentId: AGENT_SELECT_DEFAULT }
-                                            : { mode, on: false, agentId: AGENT_SELECT_DEFAULT },
+                                            ? { mode, on: currentDefault.on, agentId: currentDefault.agentId || null }
+                                            : { mode, on: false, agentId: null },
                                     );
                                 }}
                                 className={cn(
@@ -316,8 +316,6 @@ export default function WhatsAppAgentSettings({ className }) {
                             <AgentFields
                                 value={selectedDraft}
                                 onChange={(next) => updateAccount(selected, next)}
-                                followsDefaultAgent
-                                defaultAgentId={currentDefault.agentId}
                             />
                             <div className="text-center">
                                 <button
@@ -327,7 +325,7 @@ export default function WhatsAppAgentSettings({ className }) {
                                         updateAccount(selected, {
                                             mode: "default",
                                             on: false,
-                                            agentId: AGENT_SELECT_DEFAULT,
+                                            agentId: null,
                                         })
                                     }
                                 >

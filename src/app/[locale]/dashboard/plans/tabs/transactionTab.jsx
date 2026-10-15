@@ -76,7 +76,7 @@ export const PaymentPurposeEnum = {
     FEATURE_PURCHASE: 'feature_purchase'
 };
 
-export default function TransactionTab({ defaultPurpose, allowedPurposes, showRelations = true, showDollar = false, tableKey="dashboard-transactions", flat = false }) {
+export default function TransactionTab({ defaultPurpose, allowedPurposes, category, showRelations = true, showDollar = false, tableKey="dashboard-transactions", flat = false }) {
     const t = useTranslations("plans")
     const router = useRouter()
     const { isSuperAdmin } = useAuth()
@@ -98,6 +98,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
         if (filters.startDate) params.startDate = filters.startDate;
         if (filters.endDate) params.endDate = filters.endDate;
         if (allowedPurposes) params.allowedPurposes = allowedPurposes;
+        if (category && category !== 'all') params.category = category;
         if (defaultPurpose) params.purpose = defaultPurpose;
         else if (filters.purpose && filters.purpose !== 'all') params.purpose = filters.purpose;
 
@@ -128,7 +129,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
     useEffect(() => {
         fetchTransactions(1, pager.per_page);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [debouncedSearch]);
+    }, [debouncedSearch, category]);
 
     // ── Apply filters ────────────────────────────────────────────────────
     const applyFilters = () => {
@@ -154,6 +155,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
             if (filters.startDate) params.startDate = filters.startDate;
             if (filters.endDate) params.endDate = filters.endDate;
             if (allowedPurposes) params.allowedPurposes = allowedPurposes;
+            if (category && category !== 'all') params.category = category;
             if (defaultPurpose) params.purpose = defaultPurpose;
             else if (filters.purpose && filters.purpose !== 'all') params.purpose = filters.purpose;
 

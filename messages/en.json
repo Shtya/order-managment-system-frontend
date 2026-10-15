@@ -10986,7 +10986,12 @@
     "currency": "EGP",
     "transactions": {
       "title": "Transactions",
-      "subtitle": "Charge your wallet and track all deposits and debits from your account"
+      "subtitle": "Charge your wallet and track all deposits and debits from your account",
+      "tabs": {
+        "all": "All Transactions",
+        "wallet": "Wallet Transactions",
+        "ai": "AI Wallet Transactions"
+      }
     },
     "deposit": {
       "title": "Deposit Funds",

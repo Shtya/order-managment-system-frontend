@@ -62,6 +62,7 @@ export default function WalletPage() {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [txCategory, setTxCategory] = useState("all");
   const { rate, fetchRate } = useCurrencyRate();
   const { isTestUser } = useAuth();
   // Fetch wallet data
@@ -192,6 +193,9 @@ export default function WalletPage() {
           </>
         }
         stats={stats}
+        items={["all", "wallet", "ai"].map((id) => ({ id, label: t(`transactions.tabs.${id}`) }))}
+        active={txCategory}
+        setActive={setTxCategory}
       />
 
       {/* Transactions Section */}
@@ -214,6 +218,7 @@ export default function WalletPage() {
           <TransactionTab
             tableKey="wallet-transactions"
             flat={true}
+            category={txCategory}
             allowedPurposes={[
               PaymentPurposeEnum.WALLET_TOP_UP,
               PaymentPurposeEnum.WALLET_WITHDRAWAL,

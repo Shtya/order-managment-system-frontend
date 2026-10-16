@@ -59,7 +59,7 @@ export default function AgentSelect({
             </SelectTrigger>
             <SelectContent className="bg-card-select">
                 <Link
-                    href="/ai/agents"
+                    href="/ai/agents/new"
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(

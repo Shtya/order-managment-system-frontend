@@ -1,13 +1,14 @@
-import { Link2, Phone, User } from "lucide-react";
+import { KeyRound, Link2, Mail, Phone, User } from "lucide-react";
 
 export const CAMPAIGN_PREVIEW_VALUES = {
   "customer.name": "Ahmed",
   "customer.number": "01012345678",
+  "customer.email": "customer@example.com",
   "campaign.orderToken": "sample-token",
   "campaign.orderUrl": "https://getmadar.net/o/sample-token",
 };
 
-const TOKEN_RE = /\{\{\s*(customer\.(?:name|number)|campaign\.(?:orderToken|orderUrl))\s*\}\}/gi;
+const TOKEN_RE = /\{\{\s*(customer\.(?:name|number|email)|campaign\.(?:orderToken|orderUrl))\s*\}\}/gi;
 
 export function hydrateCampaignPlaceholders(text, values = CAMPAIGN_PREVIEW_VALUES) {
   if (text == null) return "";
@@ -15,6 +16,7 @@ export function hydrateCampaignPlaceholders(text, values = CAMPAIGN_PREVIEW_VALU
     const key = String(id).toLowerCase();
     if (key === "customer.name") return values["customer.name"] ?? "";
     if (key === "customer.number") return values["customer.number"] ?? "";
+    if (key === "customer.email") return values["customer.email"] ?? "";
     if (key === "campaign.ordertoken") return values["campaign.orderToken"] ?? "";
     if (key === "campaign.orderurl") return values["campaign.orderUrl"] ?? "";
     return "";
@@ -58,6 +60,8 @@ export function getCampaignPlaceholderChips(t) {
   return [
     { id: "customer.name", label: t("message.placeholders.name"), preview: "Ahmed", icon: User },
     { id: "customer.number", label: t("message.placeholders.number"), preview: "01012345678", icon: Phone },
+    { id: "customer.email", label: t("message.placeholders.email"), preview: "customer@example.com", icon: Mail },
     { id: "campaign.orderUrl", label: t("message.placeholders.link"), preview: "https://getmadar.net/o/sample-token", icon: Link2 },
+    // { id: "campaign.orderToken", label: t("message.placeholders.token"), preview: "sample-token", icon: KeyRound },
   ];
 }

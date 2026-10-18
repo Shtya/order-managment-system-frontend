@@ -57,6 +57,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useSocket } from "@/context/SocketContext";
 import ActionButtons from "@/components/atoms/Actions";
 import api from "@/utils/api";
+import { buildNewCampaignHref } from "../atoms/campaignChannel";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import { cn } from "@/utils/cn";
@@ -65,6 +66,7 @@ import { campaignTemplateChipPreview, getCampaignPlaceholderChips } from "@/app/
 import { inspectTemplateOrderLink } from "@/app/[locale]/campaigns/atoms/campaignOrderUrl";
 import { VariableTextPreview } from "@/components/ui/VariableInput";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import EmailCampaignPreview from "@/components/email-builder/EmailCampaignPreview";
 
 const STATUS_BADGE_CLASS = {
   draft: "bg-slate-500/10 text-slate-600 border-slate-500/20",
@@ -165,11 +167,12 @@ export default function CampaignDetailsPage() {
           api.get(`/campaigns/${id}/summary`),
         ]);
         const recipientsBody = recipientsRes.data?.records ? recipientsRes.data : recipientsRes.data?.data || {};
-        const summaryBody = summaryRes.data?.summary ? summaryRes.data : summaryRes.data?.data || {};
+        const summaryBody = summaryRes.data || {};
         setRecords(recipientsBody.records || []);
         setTotalRecords(Number(recipientsBody.total_records || 0));
         setPage(Number(recipientsBody.current_page || p));
         setLimit(Number(recipientsBody.per_page || l));
+        
         if (summaryBody) setSummary(summaryBody);
       } catch (error) {
         if (!silent) toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
@@ -241,7 +244,7 @@ export default function CampaignDetailsPage() {
   }, [subscribe, id, fetchRecipients]);
 
   useEffect(() => {
-    const accountId = campaign?.templateConfigSnapshot?.accountId;
+    const accountId = campaign?.channel === "email" ? null : campaign?.templateConfigSnapshot?.accountId;
     if (!accountId) {
       setWhatsappAccount(null);
       return;
@@ -259,7 +262,7 @@ export default function CampaignDetailsPage() {
     return () => {
       cancelled = true;
     };
-  }, [campaign?.templateConfigSnapshot?.accountId]);
+  }, [campaign?.channel, campaign?.templateConfigSnapshot?.accountId]);
 
   useEffect(() => {
     if (campaign) setDocumentTitle(campaign.name || td("title"));
@@ -308,6 +311,7 @@ export default function CampaignDetailsPage() {
 
   const byStatus = summary.byStatus || {};
   const failed = Number(byStatus.failed || 0);
+  
   const pending = Number(byStatus.pending || 0) + Number(byStatus.sending || 0);
   const sent = Number(campaign?.sentCount || 0);
   const delivered = Number(campaign?.deliveredCount || 0);
@@ -406,10 +410,10 @@ export default function CampaignDetailsPage() {
       {["scheduled", "running", "paused"].includes(status) && (
         <Button_ size="sm" variant="outline" label={t("actions.cancel")} icon={<Ban size={16} />} permission="campaigns.update" onClick={() => setConfirm({ open: true, type: "cancel" })} />
       )}
-      {(status === "failed" || status === "completed") && failed > 0 && (
+      {(status === "failed" || status === "completed") && (failed > 0 || (status === "failed" && campaign?.failureReason === "audience_empty")) && (
         <Button_ size="sm" variant="outline" label={t("actions.retryFailed")} icon={<RotateCcw size={16} />} permission="campaigns.start" onClick={() => setConfirm({ open: true, type: "retry" })} />
       )}
-      <Button_ size="sm" variant="outline" label={t("actions.duplicate")} icon={<Copy size={16} />} permission="campaigns.create" onClick={() => router.push(`/campaigns/new/${campaign?.channel || "whatsapp"}?fromId=${id}`)} />
+      <Button_ size="sm" variant="outline" label={t("actions.duplicate")} icon={<Copy size={16} />} permission="campaigns.create" onClick={() => router.push(buildNewCampaignHref(campaign?.channel || "whatsapp", { fromId: id }))} />
       {status !== "running" && status !== "paused" && (
         <Button_ size="sm" variant="outline" label={t("actions.delete")} icon={<Trash2 size={16} />} permission="campaigns.delete" onClick={() => setConfirm({ open: true, type: "delete" })} />
       )}
@@ -424,7 +428,9 @@ export default function CampaignDetailsPage() {
       cell: (row) => (
         <div className="min-w-0">
           <span className="block text-sm font-semibold truncate">{row.name || "—"}</span>
-          <span className="block text-xs text-muted-foreground" dir="ltr">{row.phoneNumber}</span>
+          <span className="block text-xs text-muted-foreground" dir="ltr">
+            {campaign?.channel === "email" ? row.email : row.phoneNumber}
+          </span>
         </div>
       ),
     },
@@ -741,7 +747,9 @@ export default function CampaignDetailsPage() {
 
       <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-sm">
         <SectionTitle title={td("sections.channel")} />
-        {campaign.templateId || snap.templateData ? (
+        {campaign.channel === "email" ? (
+          <EmailCampaignPreview email={snap} />
+        ) : campaign.templateId || snap.templateData ? (
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-5">
             <div className="space-y-4 min-w-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

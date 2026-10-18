@@ -9472,14 +9472,13 @@
     },
     "paymentMethods": {
       "card": "Credit card",
-      "wallet": "E-wallet",
+      "wallet": "Wallet",
       "manual_adjustment": "Manual (admin)",
       "cash": "Cash",
       "visa": "Credit card (Visa/Mastercard)",
       "bank": "Bank transfer",
       "other": "Other method",
       "vodafone_cash": "Vodafone Cash",
-      "wallet": "Wallet",
       "orange_cash": "Orange Cash",
       "etisalat_cash": "Etisalat Cash",
       "we_pay": "WE Pay",
@@ -11521,43 +11520,100 @@
             "name": "ChatGPT",
             "summary": "Add Madar as a custom connector.",
             "steps": [
-              { "title": "Open settings", "text": "From the menu, open Settings, then \"Connectors\". You may need to turn on advanced options." },
-              { "title": "Create a new connection", "text": "Click \"Create\"." },
-              { "title": "Paste the Madar URL", "text": "Enter the name \"Madar\" and paste the URL you copied." },
-              { "title": "Sign in and approve", "text": "The Madar page opens. Sign in if needed, choose the permissions, then click Approve." }
+              {
+                "title": "Open settings",
+                "text": "From the menu, open Settings, then \"Connectors\". You may need to turn on advanced options."
+              },
+              {
+                "title": "Create a new connection",
+                "text": "Click \"Create\"."
+              },
+              {
+                "title": "Paste the Madar URL",
+                "text": "Enter the name \"Madar\" and paste the URL you copied."
+              },
+              {
+                "title": "Sign in and approve",
+                "text": "The Madar page opens. Sign in if needed, choose the permissions, then click Approve."
+              }
             ]
           },
           "claude": {
             "name": "Claude",
             "summary": "Add Madar as a custom connector.",
             "steps": [
-              { "title": "Open Connectors", "text": "In Claude, open Settings, then click \"Connectors\" in the side menu." },
-              { "title": "Add a custom connector", "text": "Click \"Add\" at the top, then choose \"Add custom connector\"." },
-              { "title": "Enter Madar's details", "text": "Type \"Madar\" as the name, paste the Madar URL you copied into the URL field, then click \"Continue\"." },
-              { "title": "Choose the sign-in method", "text": "Under Authentication choose \"Sign in now\", and under OAuth client choose \"Register automatically\". Then click \"Add\"." },
-              { "title": "Start the connection", "text": "On the Madar connector page, click \"Connect\"." },
-              { "title": "Allow access in Madar", "text": "A Madar page opens. Sign in if asked, turn on \"Read your data\", \"Edit your data\", or both, then click \"Allow\"." },
-              { "title": "Madar is connected", "text": "Back in Claude, Madar shows as connected with its tools. You can now ask Claude about your orders, products, and more." }
+              {
+                "title": "Open Connectors",
+                "text": "In Claude, open Settings, then click \"Connectors\" in the side menu."
+              },
+              {
+                "title": "Add a custom connector",
+                "text": "Click \"Add\" at the top, then choose \"Add custom connector\"."
+              },
+              {
+                "title": "Enter Madar's details",
+                "text": "Type \"Madar\" as the name, paste the Madar URL you copied into the URL field, then click \"Continue\"."
+              },
+              {
+                "title": "Choose the sign-in method",
+                "text": "Under Authentication choose \"Sign in now\", and under OAuth client choose \"Register automatically\". Then click \"Add\"."
+              },
+              {
+                "title": "Start the connection",
+                "text": "On the Madar connector page, click \"Connect\"."
+              },
+              {
+                "title": "Allow access in Madar",
+                "text": "A Madar page opens. Sign in if asked, turn on \"Read your data\", \"Edit your data\", or both, then click \"Allow\"."
+              },
+              {
+                "title": "Madar is connected",
+                "text": "Back in Claude, Madar shows as connected with its tools. You can now ask Claude about your orders, products, and more."
+              }
             ]
           },
           "gemini": {
             "name": "Gemini",
             "summary": "Add Madar as an extension.",
             "steps": [
-              { "title": "Open settings", "text": "From the menu, open Gemini settings." },
-              { "title": "Find extensions", "text": "Open the extensions or connected apps section." },
-              { "title": "Paste the Madar URL", "text": "Add a new connection and paste the URL you copied." },
-              { "title": "Sign in and approve", "text": "The Madar page opens. Sign in if needed, choose the permissions, then click Approve." }
+              {
+                "title": "Open settings",
+                "text": "From the menu, open Gemini settings."
+              },
+              {
+                "title": "Find extensions",
+                "text": "Open the extensions or connected apps section."
+              },
+              {
+                "title": "Paste the Madar URL",
+                "text": "Add a new connection and paste the URL you copied."
+              },
+              {
+                "title": "Sign in and approve",
+                "text": "The Madar page opens. Sign in if needed, choose the permissions, then click Approve."
+              }
             ]
           },
           "other": {
             "name": "Another app",
             "summary": "Any app that supports MCP servers.",
             "steps": [
-              { "title": "Open settings", "text": "Go to the settings of the app you use." },
-              { "title": "Find where to add tools", "text": "Look for an option to add an external app or an MCP server." },
-              { "title": "Paste the Madar URL", "text": "Paste the URL you copied." },
-              { "title": "Sign in and approve", "text": "The Madar page opens. Sign in if needed, choose the permissions, then click Approve." }
+              {
+                "title": "Open settings",
+                "text": "Go to the settings of the app you use."
+              },
+              {
+                "title": "Find where to add tools",
+                "text": "Look for an option to add an external app or an MCP server."
+              },
+              {
+                "title": "Paste the Madar URL",
+                "text": "Paste the URL you copied."
+              },
+              {
+                "title": "Sign in and approve",
+                "text": "The Madar page opens. Sign in if needed, choose the permissions, then click Approve."
+              }
             ]
           }
         }
@@ -15291,8 +15347,14 @@
         "manualRequired": "Add at least one recipient.",
         "filterRequired": "Configure at least one filter rule.",
         "templateRequired": "Select a WhatsApp template.",
+        "emailRequired": "Choose a connected email account and complete the subject, business identity and message.",
+        "emailAccountRequired": "Choose a sender account.",
+        "emailSubjectRequired": "Enter the email subject.",
+        "emailIdentityRequired": "Enter the business name and postal address.",
+        "emailContentRequired": "Add content to the email message.",
+        "emailAccountSuspended": "This sender account is suspended. Choose another account or reconnect this account before continuing.",
         "variablesRequired": "Fill all template variables.",
-        "orderLinkUnavailable": "This template cannot use order links.",
+        "orderLinkUnavailable": "The campaign message does not contain an order link. Add the Order link field to the WhatsApp template or email message.",
         "productsRequired": "Add at least one product.",
         "followupReplyRequired": "Set an automatic reply for every template button."
       },
@@ -15358,15 +15420,17 @@
           "title": "Insert fields",
           "name": "Customer name",
           "number": "Customer number",
-          "link": "Order link"
+          "email": "Customer email",
+          "link": "Order link",
+          "token": "Order token"
         }
       },
       "offer": {
         "title": "Offer",
         "subtitle": "Optional order page sent with a unique customer link.",
-        "unavailable": "Order links need an order-link field in the message, or a custom button on the template.",
-        "needOrderLinkVariable": "Insert the Order link field into a template variable on the Message step (you can add it more than once).",
-        "needCustomButton": "This template has no custom / quick-reply button to send a follow-up with the link.",
+        "unavailable": "To use the order page, the campaign message must deliver each customer’s unique Order link. Add it to the WhatsApp template or email message in the Message step.",
+        "needOrderLinkVariableEmail": "For email: return to the Message step and insert the Order link field into the email text or a button.",
+        "needOrderLinkVariableWhatsApp": "For WhatsApp: return to the Message step and assign the Order link field to a template variable. You can also use a template with a custom or quick-reply button and include the link in its automatic reply.",
         "enable": "Create a custom order link",
         "enableHint": "Create a campaign-specific order link so the customer can complete the order directly.",
         "products": "Products",
@@ -15436,6 +15500,7 @@
       "total": "Grand total",
       "name": "Full name",
       "phone": "Phone number",
+      "phonePlaceholder": "Enter a phone number",
       "phoneHint": "This is the mobile number we contacted you on. It cannot be changed.",
       "address": "Detailed address",
       "landmark": "Landmark",
@@ -18990,11 +19055,298 @@
       "read": {
         "title": "Read Your Data",
         "hint": "Allow the AI to view your data"
-        },
+      },
       "write": {
         "title": "Manage Your Data",
         "hint": "Allow the AI to create, add, and edit data"
-        }
       }
+    }
+  },
+  "emailBuilder": {
+    "envelope": {
+      "sender": "Sender account",
+      "connect": "Connect Gmail",
+      "reconnect": "Reconnect",
+      "subject": "Subject",
+      "preheader": "Preheader",
+      "identity": "Business identity / postal address",
+      "continue": "Continue connection in this tab",
+      "designTitle": "Design your email",
+      "designHint": "Choose the sender, enter the message details, then design the email content.",
+      "envelope": "Sender & envelope",
+      "senderPlaceholder": "Select a connected account",
+      "connectAnother": "Connect another Gmail account",
+      "noAccounts": "No Gmail account connected yet.",
+      "identityHint": "Shown at the bottom of the email.",
+      "preheaderHint": "The grey preview text shown next to the subject in the inbox.",
+      "optional": "optional",
+      "statusConnected": "Connected",
+      "statusReconnect": "Reconnect required",
+      "statusSuspended": "Suspended",
+      "statusDisconnected": "Disconnected"
+    },
+    "inboxPreview": {
+      "inboxPreview": "Inbox preview",
+      "inboxPrimary": "Primary",
+      "otherSender": "Another sender",
+      "otherEmail": "Other email in the inbox…",
+      "now": "Now",
+      "thisHour": "This hour",
+      "last24h": "Last 24 hours",
+      "left": "left",
+      "to": "to",
+      "me": "me",
+      "searchMail": "Search mail",
+      "inbox": "Inbox"
+    },
+    "test": {
+      "test": "Send test",
+      "recipient": "Test recipient",
+      "samples": "Send test email",
+      "testTitle": "Send a test email",
+      "testHint": "A real email is sent from the selected sender to this address.",
+      "samplesHint": "Test the email with sample values before sending to customers.",
+      "yourEmail": "Your email"
+    },
+    "review": {
+      "previewTitle": "Email preview",
+      "previewHint": "Exact server rendering with sample data",
+      "audience": "Audience",
+      "schedule": "Schedule",
+      "recipients": "recipients",
+      "scheduleNow": "Send now",
+      "scheduleScheduled": "Scheduled"
+    },
+    "preview": {
+      "preview": "Preview",
+      "approximate": "Design preview — approximate",
+      "readOnlyTitle": "Read-only preview",
+      "readOnlyHint": "This area cannot be edited directly. Select an element here, then edit it from the Properties sidebar.",
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "html": "View HTML",
+      "full": "Full screen",
+      "close": "Close",
+      "imageWeight": "Image loading weight",
+      "serverRendered": "Exact server preview",
+      "updating": "Updating preview",
+      "debounceHint": "The preview refreshes 400 ms after you stop editing.",
+      "imageLarge": "Large images may load slowly.",
+      "clipping": "HTML may be clipped by Gmail near 102 KB.",
+      "darkMode": "Check real inboxes in light and dark modes; client color changes are not simulated here.",
+      "noClipping": "No Gmail clipping",
+      "copyHtml": "Copy HTML",
+      "downloadHtml": "Download HTML",
+      "copied": "Copied"
+    },
+    "feedback": {
+      "footer": "Business identity is added by the server to the email footer.",
+      "loadError": "Could not load the email editor. Refresh to try again.",
+      "saved": "Saved",
+      "retina": "Image resolution may be too low for this display size.",
+      "pending": "Sending the test email…",
+      "accepted": "Accepted by provider; check the recipient mailbox.",
+      "testFailed": "The test email could not be sent. Check the sender connection and try again.",
+      "testUnknown": "The sending result is unknown. Check the recipient mailbox before trying again.",
+      "invalid": "Complete sender, subject, business identity and content.",
+      "externalLegacy": "Legacy images must be uploaded before this design can be saved in the new builder.",
+      "fixComponent": "Fix this",
+      "reconnectRequired": "Reconnect this Gmail account before sending the test email.",
+      "accountSuspended": "This sender account is suspended. Choose another account or reconnect this account before sending a test."
+    },
+    "manualEmail": {
+      "manualEmail": "Add email addresses",
+      "manualEmailHint": "Enter valid recipient email addresses.",
+      "invalidEmail": "Enter a valid email address.",
+      "duplicateEmail": "This email address is already added.",
+      "emailEmpty": "No email addresses yet."
+    },
+    "recovery": {
+      "restore": "Restore recovered design",
+      "discard": "Discard recovery",
+      "recovery": "An unfinished email design is available. Recipients are not recovered."
+    },
+    "panel": {
+      "blocks": "Blocks",
+      "properties": "Properties",
+      "empty": "Select an element to edit its properties.",
+      "content": "Content",
+      "layout": "Layout",
+      "layers": "Layers",
+      "blocksCount": "blocks",
+      "oneColumn": "1 column",
+      "twoColumns": "2 columns",
+      "threeColumns": "3 columns",
+      "style": "Formatting",
+      "spacingTab": "Spacing",
+      "deselect": "Deselect",
+      "emailSettings": "Email settings",
+      "emailSettingsHint": "Applies to the whole email. Select a block to edit it.",
+      "noContentSettings": "This block has no content settings. Use the Style and Spacing tabs.",
+      "searchPlaceholder": "Search for a block",
+      "searchLabel": "Search blocks",
+      "noResults": "No matching blocks.",
+      "tip": "Click an item to add it at the end.",
+      "tabAdd": "Add",
+      "searchLayers": "Search layers",
+      "collapseAll": "Collapse all",
+      "expandAll": "Expand all",
+      "emptyLayers": "No blocks yet. Add one from the Add tab.",
+      "noLayerMatch": "No matching layers.",
+      "layersHint": "↑ ↓ navigate · ← → expand/collapse · Delete remove"
+    },
+    "blockTypes": {
+      "text": "Text",
+      "button": "Button",
+      "image": "Image",
+      "divider": "Divider",
+      "spacer": "Spacer",
+      "section": "Section",
+      "column": "Column",
+      "wrapper": "Container",
+      "table": "Table",
+      "row": "Row"
+    },
+    "defaults": {
+      "text": "Write your message here…",
+      "button": "Click here",
+      "columnText": "Add content here…"
+    },
+    "actions": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "up": "Move up",
+      "down": "Move down",
+      "hide": "Hide / show",
+      "refresh": "Refresh"
+    },
+    "templates": {
+      "templates": "Starter template",
+      "blank": "Blank",
+      "announcement": "Announcement",
+      "promotion": "Promotion",
+      "product": "Product offer",
+      "replace": "Replace the current design? You can undo this."
+    },
+    "richText": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "strike": "Strike",
+      "bullets": "Bullets",
+      "numbers": "Numbered list",
+      "quote": "Quote",
+      "heading": "Heading",
+      "removeLink": "Remove link",
+      "paragraph": "Paragraph",
+      "bigHeading": "Big heading",
+      "subHeading": "Sub heading",
+      "messageText": "Message text",
+      "messageTextDescription": "The body text of this block. Supports formatting, links and variables.",
+      "apply": "Apply",
+      "characters": "{count} characters"
+    },
+    "variables": {
+      "variables": "Insert variable",
+      "variable": "Variable",
+      "customerGroup": "Customer",
+      "campaignGroup": "Campaign",
+      "customer_name": "Customer name",
+      "customer_number": "Phone number",
+      "customer_email": "Email",
+      "campaign_orderUrl": "Order page link",
+      "campaign_orderToken": "Order token"
+    },
+    "table": {
+      "addRow": "Add row",
+      "deleteRow": "Delete row",
+      "addColumn": "Add column",
+      "deleteColumn": "Delete column",
+      "merge": "Merge cells",
+      "split": "Split cell",
+      "headerRow": "Header row",
+      "headerColumn": "Header column",
+      "verticalAlign": "Vertical alignment",
+      "splitBeforeMove": "Split merged cells before moving rows or columns.",
+      "rowHeight": "Row height",
+      "cellStyle": "Cell style",
+      "insertInCell": "Insert in cell"
+    },
+    "canvas": {
+      "dropImage": "Drop an image or browse",
+      "autoFooter": "Auto footer",
+      "unsubscribe": "Unsubscribe"
+    },
+    "properties": {
+      "color": "Text color",
+      "link": "Link URL",
+      "backgroundColor": "Background",
+      "borderColor": "Border color",
+      "fontFamily": "Font family",
+      "fontSize": "Font size",
+      "fontWeight": "Font weight",
+      "lineHeight": "Line height",
+      "letterSpacing": "Letter spacing",
+      "paragraphSpacing": "Paragraph spacing",
+      "indent": "Indent",
+      "padding": "Padding",
+      "paddingTop": "Top padding",
+      "paddingBottom": "Bottom padding",
+      "paddingLeft": "Left padding",
+      "paddingRight": "Right padding",
+      "spacing": "Spacing",
+      "width": "Width",
+      "minHeight": "Minimum height",
+      "borderWidth": "Border width",
+      "borderRadius": "Border radius",
+      "align": "Alignment",
+      "direction": "Email direction",
+      "defaults": "Default styles",
+      "label": "Button text",
+      "alt": "Image description",
+      "upload": "Upload JPEG, PNG or GIF (5 MiB max)",
+      "columns": "Columns",
+      "moveToColumn": "Move to column",
+      "typography": "Typography",
+      "colors": "Colors",
+      "size": "Size",
+      "border": "Border",
+      "orderPage": "Order page",
+      "customUrl": "Custom URL",
+      "orderPageHint": "Links each customer to their personal order page. Requires the purchase page in the Offer step.",
+      "imageTypes": "JPG, PNG or GIF · max 5 MB",
+      "replaceImage": "Replace image",
+      "imageLink": "Link (optional)",
+      "innerPadding": "Inner padding (px)",
+      "elementPadding": "Inner element spacing",
+      "containerAppearance": "Container appearance",
+      "containerBackground": "Container background",
+      "containerBorderColor": "Container border color",
+      "containerBorderWidth": "Container border width",
+      "containerRadius": "Container corner radius",
+      "containerPadding": "Container inner spacing",
+      "outerMargin": "Outer margin",
+      "marginTop": "Top margin",
+      "marginBottom": "Bottom margin",
+      "marginLeft": "Left margin",
+      "marginRight": "Right margin",
+      "allSides": "All sides",
+      "outerSpacing": "Outer spacing",
+      "visibility": "Show in email",
+      "visibilityHint": "Hidden blocks stay in the design but are not sent.",
+      "weightLight": "Light",
+      "fontWeightNormal": "Regular",
+      "fontWeightBold": "Bold",
+      "resetFont": "Reset font"
+    },
+    "descriptions": {
+      "sender": "The Gmail account the email is sent from.",
+      "subject": "The subject line customers see in their inbox. You can add variables such as the customer name.",
+      "sampleName": "A sample value used in the preview and the test email only.",
+      "testRecipient": "The address that receives the test email. It is also used as the customer email value.",
+      "buttonLabel": "The text shown on the button. You can add variables such as the customer name."
+    }
   }
 }

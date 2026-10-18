@@ -8,8 +8,9 @@ import { normalizeCampaignChannel } from "../atoms/campaignChannel";
 function NewCampaignInner({ channel: channelProp }) {
   const searchParams = useSearchParams();
   const channel = normalizeCampaignChannel(
-    channelProp ?? searchParams.get("channel"),
+    channelProp ?? searchParams.get("channel") ?? "whatsapp",
   );
+
   return (
     <CampaignWizard
       mode="create"

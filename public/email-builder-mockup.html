@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Email campaign – Message step (mockup)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "rgb(var(--primary-rgb) / <alpha-value>)",
+          border: "rgb(var(--border-rgb) / <alpha-value>)",
+          muted: "rgb(var(--muted-rgb) / <alpha-value>)",
+          "muted-foreground": "rgb(var(--muted-fg-rgb) / <alpha-value>)",
+          foreground: "rgb(var(--fg-rgb) / <alpha-value>)",
+          background: "rgb(var(--bg-rgb) / <alpha-value>)",
+          card: "rgb(var(--card-rgb) / <alpha-value>)",
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root {
+    --primary: #6763af;
+    --primary-rgb: 103 99 175;
+    --primary-from: 103 99 175;
+    --primary-to: 118 114 185;
+    --primary-shadow: 118 114 185 / 0.32;
+    --radius: 0.75rem;
+    --border-rgb: 226 228 232;
+    --muted-rgb: 245 245 246;
+    --muted-fg-rgb: 115 115 115;
+    --fg-rgb: 23 23 23;
+    --bg-rgb: 246 246 247;
+    --card-rgb: 255 255 255;
+  }
+  .dark {
+    --border-rgb: 44 47 58;
+    --muted-rgb: 30 32 40;
+    --muted-fg-rgb: 140 145 158;
+    --fg-rgb: 236 238 242;
+    --bg-rgb: 15 17 23;
+    --card-rgb: 27 30 41;
+  }
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Tahoma, Arial; }
+
+  /* ── Same button system as globals.css (Button_ / PrimaryBtn) ── */
+  .btn { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-weight:600; letter-spacing:.01em; border-radius:var(--radius); border:none; cursor:pointer; white-space:nowrap; transition:all .2s; }
+  .btn-sm { padding:0 14px; height:34px; font-size:12.5px; border-radius:calc(var(--radius) - 1px); }
+  .btn-md { padding:0 18px; height:40px; font-size:13.5px; }
+  .btn-icon { width:34px; height:34px; padding:0; }
+  .btn-solid { background:linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to))); color:#fff; box-shadow:0 3px 12px -3px rgb(var(--primary-shadow)), inset 0 1px 0 rgba(255,255,255,.16); }
+  .btn-solid:hover { transform:translateY(-1.5px); filter:brightness(1.05); }
+  .btn-outline { background:transparent; color:var(--primary); box-shadow:inset 0 0 0 1.5px var(--primary); }
+  .btn-outline:hover { background:color-mix(in oklab, var(--primary) 6%, transparent); }
+  .btn-ghost { background:color-mix(in oklab, var(--primary) 9%, transparent); color:var(--primary); box-shadow:inset 0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent); }
+  .btn-ghost:hover { background:color-mix(in oklab, var(--primary) 15%, transparent); }
+  .btn-default { background:transparent; color:rgb(var(--fg-rgb)); box-shadow:inset 0 0 0 1.5px rgb(var(--border-rgb)); }
+  .btn-default:hover { background:rgb(var(--muted-rgb)); }
+  .btn:disabled { opacity:.4; pointer-events:none; }
+
+  /* ── Same card + field look as main-card / ui/input ── */
+  .main-card { background:rgb(var(--card-rgb)); border:1px solid rgb(var(--border-rgb)); border-radius:.75rem; box-shadow:rgba(50,50,93,.04) 0 2px 8px, rgba(50,50,93,.06) 0 8px 32px -4px; }
+  .field { width:100%; height:40px; border-radius:.375rem; border:1px solid rgb(var(--border-rgb)); background:rgb(var(--bg-rgb) / .6); color:rgb(var(--fg-rgb)); font-size:14px; padding:0 14px; outline:none; transition:all .2s; }
+  .field:hover { border-color:color-mix(in srgb, var(--primary), transparent 50%); }
+  .field:focus { border-color:var(--primary); background:rgb(var(--bg-rgb)); box-shadow:0 0 0 3px color-mix(in srgb, var(--primary), transparent 88%); }
+  .field-sm { height:34px; font-size:12.5px; padding:0 10px; }
+  .section-title { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.12em; color:rgb(var(--muted-fg-rgb)); }
+
+  /* Segmented control (SwitcherTabs-like) */
+  .seg { display:inline-flex; padding:3px; border-radius:.6rem; background:rgb(var(--muted-rgb)); border:1px solid rgb(var(--border-rgb)); }
+  .seg button { display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 10px; font-size:12px; font-weight:600; border-radius:.45rem; color:rgb(var(--muted-fg-rgb)); }
+  .seg button.active { background:rgb(var(--card-rgb)); color:var(--primary); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+
+  /* Palette tiles */
+  .tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; height:70px; border-radius:.6rem; border:1px dashed rgb(var(--border-rgb)); font-size:11.5px; font-weight:600; color:rgb(var(--fg-rgb)); background:rgb(var(--card-rgb)); cursor:grab; transition:all .15s; }
+  .tile:hover { border-style:solid; border-color:var(--primary); color:var(--primary); background:color-mix(in oklab, var(--primary) 5%, transparent); }
+  .tile svg { width:18px; height:18px; }
+
+  /* Canvas blocks */
+  .blk { position:relative; outline:1px dashed transparent; outline-offset:-1px; cursor:pointer; transition:outline-color .15s; }
+  .blk:hover { outline-color:color-mix(in oklab, var(--primary) 55%, transparent); }
+  .blk.selected { outline:2px solid var(--primary); }
+  .blk .tag { display:none; position:absolute; top:-22px; inset-inline-start:-2px; height:20px; padding:0 8px; font:600 10.5px/20px ui-sans-serif,system-ui; color:#fff; background:var(--primary); border-radius:6px 6px 0 0; z-index:5; }
+  .blk .tools { display:none; position:absolute; top:-30px; inset-inline-end:-2px; gap:2px; padding:3px; background:rgb(var(--card-rgb)); border:1px solid rgb(var(--border-rgb)); border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,.1); z-index:6; }
+  .blk .tools button { width:24px; height:24px; display:grid; place-items:center; border-radius:5px; color:rgb(var(--muted-fg-rgb)); }
+  .blk .tools button:hover { background:rgb(var(--muted-rgb)); color:var(--primary); }
+  .blk .tools button.danger:hover { color:#dc2626; }
+  .blk .tools svg { width:14px; height:14px; }
+  .blk.selected > .tag, .blk.selected > .tools { display:flex; }
+  .blk:hover > .tag { display:block; background:color-mix(in oklab, var(--primary) 70%, transparent); }
+  .blk.selected > .tag { display:block; background:var(--primary); }
+  .drop-line { height:3px; border-radius:3px; background:var(--primary); margin:0 24px; opacity:0; }
+
+  /* Layers tree */
+  .layer { display:flex; align-items:center; gap:6px; width:100%; height:30px; padding-inline-end:8px; border-radius:.45rem; font-size:12px; color:rgb(var(--fg-rgb)); }
+  .layer:hover { background:rgb(var(--muted-rgb)); }
+  .layer.active { background:color-mix(in oklab, var(--primary) 12%, transparent); color:var(--primary); font-weight:600; }
+  .layer svg { width:14px; height:14px; flex-shrink:0; }
+
+  .swatch { width:26px; height:26px; border-radius:7px; border:2px solid rgb(var(--card-rgb)); box-shadow:0 0 0 1px rgb(var(--border-rgb)); cursor:pointer; }
+  .swatch.active { box-shadow:0 0 0 2px var(--primary); }
+
+  .var-chip { display:inline-flex; align-items:center; gap:4px; height:24px; padding:0 8px; border-radius:999px; font-size:11px; font-weight:600; background:color-mix(in oklab, var(--primary) 10%, transparent); color:var(--primary); border:1px solid color-mix(in oklab, var(--primary) 25%, transparent); }
+
+  /* Phone frame */
+  .phone { width:390px; border-radius:44px; padding:12px; background:#111; box-shadow:0 30px 60px -20px rgba(0,0,0,.45); }
+  .phone-screen { border-radius:34px; overflow:hidden; background:#fff; height:760px; display:flex; flex-direction:column; }
+  .scroll-thin::-webkit-scrollbar { width:6px; height:6px; }
+  .scroll-thin::-webkit-scrollbar-thumb { background:rgb(var(--border-rgb)); border-radius:6px; }
+</style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+
+<!-- Mockup controls (not part of the design) -->
+<div class="fixed bottom-4 inset-inline-end-4 z-[80] flex gap-2" style="inset-inline-end:16px">
+  <button class="btn btn-sm btn-default bg-card" onclick="document.documentElement.classList.toggle('dark')"><i data-lucide="moon"></i> Theme</button>
+  <button class="btn btn-sm btn-default bg-card" onclick="toggleDir()"><i data-lucide="languages"></i> LTR / RTL</button>
+</div>
+
+<div class="p-5 space-y-4 max-w-[1500px] mx-auto">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm text-muted-foreground">
+    <span>Campaigns</span><i data-lucide="chevron-right" class="w-4 h-4 rtl:rotate-180"></i>
+    <span>Email</span><i data-lucide="chevron-right" class="w-4 h-4 rtl:rotate-180"></i>
+    <span class="font-semibold text-foreground">New campaign</span>
+  </div>
+
+  <!-- Stepper (unchanged, same as wizard) -->
+  <div class="main-card p-6">
+    <div class="flex items-center">
+      <div class="flex items-center flex-1 min-w-0">
+        <div class="flex items-center gap-2"><div class="grid h-8 w-8 place-items-center rounded-full border border-primary bg-primary/10 text-primary text-sm font-bold">✓</div><span class="text-xs text-muted-foreground">General</span></div>
+        <div class="h-0.5 flex-1 mx-2 bg-primary"></div>
+      </div>
+      <div class="flex items-center flex-1 min-w-0">
+        <div class="flex items-center gap-2"><div class="grid h-8 w-8 place-items-center rounded-full border border-primary bg-primary/10 text-primary text-sm font-bold">✓</div><span class="text-xs text-muted-foreground">Recipients</span></div>
+        <div class="h-0.5 flex-1 mx-2 bg-primary"></div>
+      </div>
+      <div class="flex items-center flex-1 min-w-0">
+        <div class="flex items-center gap-2"><div class="grid h-8 w-8 place-items-center rounded-full border border-primary bg-primary text-white text-sm font-bold">3</div><span class="text-xs font-bold">Message</span></div>
+        <div class="h-0.5 flex-1 mx-2 bg-border"></div>
+      </div>
+      <div class="flex items-center flex-1 min-w-0">
+        <div class="flex items-center gap-2"><div class="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground text-sm font-bold">4</div><span class="text-xs text-muted-foreground">Offer</span></div>
+        <div class="h-0.5 flex-1 mx-2 bg-border"></div>
+      </div>
+      <div class="flex items-center">
+        <div class="flex items-center gap-2"><div class="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground text-sm font-bold">5</div><span class="text-xs text-muted-foreground">Review</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════ MESSAGE STEP ═════════════ -->
+  <div class="main-card p-6 space-y-5">
+
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h3 class="text-sm font-bold">Design your email</h3>
+        <p class="text-xs text-muted-foreground">Choose the sender, write the envelope, then build the email body. Final rendering is done by the server.</p>
+      </div>
+      <!-- Draft recovery banner (restyled) -->
+      <div class="flex items-center gap-3 rounded-xl border border-amber-300/60 bg-amber-50 dark:bg-amber-500/10 px-3 py-2">
+        <i data-lucide="history" class="w-4 h-4 text-amber-600"></i>
+        <span class="text-xs">An unsaved draft from 12 minutes ago was found.</span>
+        <button class="btn btn-sm btn-ghost !h-7">Restore</button>
+        <button class="text-xs text-muted-foreground hover:text-foreground">Discard</button>
+      </div>
+    </div>
+
+    <!-- ── 1. Sender + envelope ── -->
+    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-4">
+
+      <div class="rounded-xl border border-border p-4 space-y-4">
+        <p class="section-title">Sender &amp; envelope</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Sender account -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Sender account <span class="text-red-500">*</span></label>
+            <div class="flex gap-2">
+              <button class="field flex items-center justify-between gap-2 text-start">
+                <span class="flex items-center gap-2 min-w-0">
+                  <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-red-50 text-red-500 text-[11px] font-black">G</span>
+                  <span class="truncate">sales@mystore.com</span>
+                  <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2 h-5 text-[10.5px] font-semibold text-emerald-600"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Connected</span>
+                </span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-muted-foreground"></i>
+              </button>
+              <button class="btn btn-md btn-ghost !px-3" title="Reconnect"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+            </div>
+            <button class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Connect another Gmail account</button>
+          </div>
+
+          <!-- Business identity -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium flex items-center gap-1.5">Business identity <span class="text-red-500">*</span>
+              <i data-lucide="info" class="w-3.5 h-3.5 text-muted-foreground" title="Shown in the footer of every email (required by anti-spam rules)."></i>
+            </label>
+            <input class="field" value="My Store · 12 Tahrir St, Cairo" />
+            <p class="text-[11px] text-muted-foreground">Shown in the email footer with the unsubscribe link.</p>
+          </div>
+        </div>
+
+        <!-- Subject -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-medium">Subject <span class="text-red-500">*</span></label>
+            <span class="text-[11px] text-muted-foreground">42 / 200</span>
+          </div>
+          <div class="relative">
+            <input class="field pe-28" value="{{customer.name}}, your special offer is ready 🎁" />
+            <button class="absolute inset-y-0 end-1.5 my-auto btn btn-sm btn-ghost !h-7 !px-2.5" onclick="togglePop('pop-subject')"><i data-lucide="braces" class="w-3.5 h-3.5"></i>Variable</button>
+            <div id="pop-subject" class="hidden absolute end-0 top-11 z-20 w-64 rounded-xl border border-border bg-card p-2 shadow-xl">
+              <p class="px-2 py-1 text-[11px] font-bold text-muted-foreground">Customer variables</p>
+              <button class="w-full flex items-center justify-between rounded-lg px-2 py-1.5 text-xs hover:bg-muted"><span>Customer name</span><code class="text-[10.5px] text-muted-foreground">customer.name</code></button>
+              <button class="w-full flex items-center justify-between rounded-lg px-2 py-1.5 text-xs hover:bg-muted"><span>Phone number</span><code class="text-[10.5px] text-muted-foreground">customer.number</code></button>
+              <button class="w-full flex items-center justify-between rounded-lg px-2 py-1.5 text-xs hover:bg-muted"><span>Email</span><code class="text-[10.5px] text-muted-foreground">customer.email</code></button>
+              <p class="px-2 pt-2 pb-1 text-[11px] font-bold text-muted-foreground">Campaign</p>
+              <button class="w-full flex items-center justify-between rounded-lg px-2 py-1.5 text-xs hover:bg-muted"><span>Order page link</span><code class="text-[10.5px] text-muted-foreground">campaign.orderUrl</code></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preheader -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-medium flex items-center gap-1.5">Preheader <span class="text-[11px] font-normal text-muted-foreground">(optional)</span></label>
+            <span class="text-[11px] text-muted-foreground">38 / 300</span>
+          </div>
+          <div class="relative">
+            <input class="field pe-28" value="A thank-you gift from our store, inside." />
+            <button class="absolute inset-y-0 end-1.5 my-auto btn btn-sm btn-ghost !h-7 !px-2.5"><i data-lucide="braces" class="w-3.5 h-3.5"></i>Variable</button>
+          </div>
+          <p class="text-[11px] text-muted-foreground">The grey preview text shown next to the subject in the inbox.</p>
+        </div>
+      </div>
+
+      <!-- Right: inbox preview + budget -->
+      <div class="space-y-4">
+        <div class="rounded-xl border border-border bg-muted/40 p-4 space-y-3">
+          <p class="section-title text-center">Inbox preview</p>
+          <div class="rounded-lg bg-white text-slate-900 border border-slate-200 overflow-hidden shadow-sm">
+            <div class="flex items-center gap-2 px-3 h-8 border-b border-slate-100 text-[11px] text-slate-500"><i data-lucide="inbox" class="w-3.5 h-3.5"></i>Primary</div>
+            <div class="flex items-start gap-3 px-3 py-2.5 bg-[#f2f6fc]">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-white text-xs font-bold">M</span>
+              <div class="min-w-0 flex-1">
+                <div class="flex justify-between"><span class="text-[13px] font-bold">My Store</span><span class="text-[11px] font-bold">10:24 AM</span></div>
+                <p class="text-[12.5px] font-bold truncate">Mona, your special offer is ready 🎁</p>
+                <p class="text-[12px] text-slate-500 truncate">A thank-you gift from our store, inside.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 px-3 py-2.5 opacity-50">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-300 text-white text-xs font-bold">A</span>
+              <div class="min-w-0 flex-1"><p class="text-[13px]">Another sender</p><p class="text-[12px] text-slate-500 truncate">Other email in the inbox…</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-border p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <p class="section-title">Sending budget</p>
+            <span class="text-[11px] text-muted-foreground">updated 20s ago</span>
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs"><span>This hour</span><span class="font-semibold">14 / 20 left</span></div>
+            <div class="h-2 rounded-full bg-muted overflow-hidden"><div class="h-full bg-primary rounded-full" style="width:30%"></div></div>
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs"><span>Last 24 hours</span><span class="font-semibold">62 / 100 left</span></div>
+            <div class="h-2 rounded-full bg-muted overflow-hidden"><div class="h-full bg-primary rounded-full" style="width:38%"></div></div>
+          </div>
+          <p class="text-[11px] text-muted-foreground flex gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5 shrink-0 mt-px"></i>App limits only. Gmail's own remaining quota is not visible.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 2. Builder ── -->
+    <div class="rounded-xl border border-border overflow-hidden" id="builder">
+
+      <!-- Toolbar -->
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-2">
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-icon btn-default" title="Undo (Ctrl+Z)"><i data-lucide="undo-2" class="w-4 h-4"></i></button>
+          <button class="btn btn-icon btn-default" title="Redo (Ctrl+Y)" disabled><i data-lucide="redo-2" class="w-4 h-4"></i></button>
+          <span class="w-px h-6 bg-border mx-1"></span>
+          <button class="btn btn-sm btn-default"><i data-lucide="layout-template" class="w-4 h-4"></i>Templates<i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+          <button class="btn btn-sm btn-default"><i data-lucide="palette" class="w-4 h-4"></i>Global style</button>
+        </div>
+        <div class="seg">
+          <button class="active" id="dev-desktop" onclick="setDevice('desktop')"><i data-lucide="monitor" class="w-3.5 h-3.5"></i>Desktop</button>
+          <button id="dev-mobile" onclick="setDevice('mobile')"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i>Mobile</button>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-sm btn-default"><i data-lucide="code-xml" class="w-4 h-4"></i>HTML</button>
+          <button class="btn btn-icon btn-default" title="Full screen"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
+          <button class="btn btn-sm btn-solid" onclick="openPreview()"><i data-lucide="eye" class="w-4 h-4"></i>Preview</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_320px]" style="min-height:760px">
+
+        <!-- LEFT: blocks + layers -->
+        <aside class="border-e border-border bg-card p-3 space-y-5 overflow-y-auto scroll-thin" style="max-height:760px">
+          <div class="space-y-2.5">
+            <p class="section-title">Content</p>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="tile"><i data-lucide="type"></i>Text</div>
+              <div class="tile"><i data-lucide="image"></i>Image</div>
+              <div class="tile"><i data-lucide="mouse-pointer-click"></i>Button</div>
+              <div class="tile"><i data-lucide="minus"></i>Divider</div>
+              <div class="tile"><i data-lucide="move-vertical"></i>Spacer</div>
+              <div class="tile"><i data-lucide="table"></i>Table</div>
+            </div>
+          </div>
+          <div class="space-y-2.5">
+            <p class="section-title">Layout</p>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="tile !h-14"><div class="flex gap-0.5 w-10"><span class="h-4 flex-1 rounded-sm bg-current opacity-30"></span></div>1 column</div>
+              <div class="tile !h-14"><div class="flex gap-0.5 w-10"><span class="h-4 flex-1 rounded-sm bg-current opacity-30"></span><span class="h-4 flex-1 rounded-sm bg-current opacity-30"></span></div>2 columns</div>
+              <div class="tile !h-14"><div class="flex gap-0.5 w-10"><span class="h-4 flex-1 rounded-sm bg-current opacity-30"></span><span class="h-4 flex-1 rounded-sm bg-current opacity-30"></span><span class="h-4 flex-1 rounded-sm bg-current opacity-30"></span></div>3 columns</div>
+              <div class="tile !h-14"><div class="flex gap-0.5 w-10"><span class="h-4 w-3 rounded-sm bg-current opacity-30"></span><span class="h-4 flex-1 rounded-sm bg-current opacity-30"></span></div>1 : 2</div>
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between"><p class="section-title">Layers</p><span class="text-[10.5px] text-muted-foreground">9 blocks</span></div>
+            <div class="space-y-0.5" id="layers">
+              <button class="layer" style="padding-inline-start:4px"><i data-lucide="rows-3"></i>Section · Header</button>
+              <button class="layer" style="padding-inline-start:22px" data-target="b-logo"><i data-lucide="image"></i>Logo</button>
+              <button class="layer" style="padding-inline-start:4px"><i data-lucide="rows-3"></i>Section · Hero</button>
+              <button class="layer" style="padding-inline-start:22px" data-target="b-hero"><i data-lucide="image"></i>Hero image</button>
+              <button class="layer" style="padding-inline-start:22px" data-target="b-title"><i data-lucide="type"></i>Heading</button>
+              <button class="layer" style="padding-inline-start:22px" data-target="b-body"><i data-lucide="type"></i>Paragraph</button>
+              <button class="layer active" style="padding-inline-start:22px" data-target="b-cta"><i data-lucide="mouse-pointer-click"></i>Button · Order now</button>
+              <button class="layer" style="padding-inline-start:4px"><i data-lucide="columns-2"></i>Section · 2 columns</button>
+              <button class="layer" style="padding-inline-start:22px" data-target="b-p1"><i data-lucide="square"></i>Column 1</button>
+              <button class="layer" style="padding-inline-start:22px" data-target="b-p2"><i data-lucide="square"></i>Column 2</button>
+              <button class="layer text-muted-foreground" style="padding-inline-start:22px" data-target="b-div"><i data-lucide="minus"></i>Divider <i data-lucide="eye-off" class="ms-auto"></i></button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- CENTER: canvas that looks like an opened email -->
+        <div class="bg-muted/60 p-6 overflow-y-auto scroll-thin" style="max-height:760px">
+          <div id="canvas-wrap" class="mx-auto transition-all duration-300" style="max-width:640px">
+
+            <!-- Email client chrome -->
+            <div class="rounded-t-xl bg-card border border-border border-b-0 px-4 py-3 space-y-1.5">
+              <p class="text-[15px] font-semibold text-foreground">Mona, your special offer is ready 🎁</p>
+              <div class="flex items-center gap-2">
+                <span class="grid h-7 w-7 place-items-center rounded-full bg-primary text-white text-[11px] font-bold">M</span>
+                <div class="text-xs leading-tight"><span class="font-semibold">My Store</span> <span class="text-muted-foreground">&lt;sales@mystore.com&gt;</span><br/><span class="text-muted-foreground">to mona@example.com</span></div>
+              </div>
+            </div>
+
+            <!-- Email body (600px, white – real email look) -->
+            <div class="bg-[#f4f4f7] border border-border rounded-b-xl py-6">
+              <div class="mx-auto bg-white text-[#222] shadow-sm" style="max-width:600px; font-family:Arial, sans-serif">
+
+                <div class="blk px-6 py-5 text-center border-b border-slate-100" id="b-logo" data-type="image" data-name="Logo">
+                  <span class="tag">Image</span>
+                  <div class="tools"><button title="Move up"><i data-lucide="arrow-up"></i></button><button title="Move down"><i data-lucide="arrow-down"></i></button><button title="Duplicate"><i data-lucide="copy"></i></button><button title="Hide"><i data-lucide="eye-off"></i></button><button class="danger" title="Delete"><i data-lucide="trash-2"></i></button></div>
+                  <span class="inline-flex items-center gap-2 text-lg font-black tracking-tight" style="color:#6763af"><span class="grid h-8 w-8 place-items-center rounded-lg text-white" style="background:#6763af">M</span>MY STORE</span>
+                </div>
+
+                <div class="blk" id="b-hero" data-type="image" data-name="Hero image">
+                  <span class="tag">Image</span>
+                  <div class="tools"><button><i data-lucide="arrow-up"></i></button><button><i data-lucide="arrow-down"></i></button><button><i data-lucide="copy"></i></button><button><i data-lucide="eye-off"></i></button><button class="danger"><i data-lucide="trash-2"></i></button></div>
+                  <div class="h-56 w-full grid place-items-center text-white" style="background:linear-gradient(135deg,#6763af,#9b8fe0 60%,#f0b7c8)">
+                    <div class="text-center"><p class="text-[13px] tracking-[.3em] font-bold opacity-90">LIMITED TIME</p><p class="text-4xl font-black mt-1">20% OFF</p></div>
+                  </div>
+                </div>
+
+                <div class="blk px-8 pt-7 pb-2" id="b-title" data-type="text" data-name="Heading">
+                  <span class="tag">Text</span>
+                  <div class="tools"><button><i data-lucide="arrow-up"></i></button><button><i data-lucide="arrow-down"></i></button><button><i data-lucide="copy"></i></button><button><i data-lucide="eye-off"></i></button><button class="danger"><i data-lucide="trash-2"></i></button></div>
+                  <h1 class="text-[26px] font-bold leading-tight">Hello <span class="var-chip !text-[20px] !h-8">customer.name</span>,</h1>
+                </div>
+
+                <div class="blk px-8 py-3" id="b-body" data-type="text" data-name="Paragraph">
+                  <span class="tag">Text</span>
+                  <div class="tools"><button><i data-lucide="arrow-up"></i></button><button><i data-lucide="arrow-down"></i></button><button><i data-lucide="copy"></i></button><button><i data-lucide="eye-off"></i></button><button class="danger"><i data-lucide="trash-2"></i></button></div>
+                  <p class="text-[16px] leading-[1.7] text-[#444]">Thank you for being one of our best customers. As a small thank-you, we prepared a special offer just for you. It is valid until the end of the week.</p>
+                </div>
+
+                <div class="drop-line"></div>
+
+                <div class="blk selected px-8 py-5 text-center" id="b-cta" data-type="button" data-name="Order now">
+                  <span class="tag">Button</span>
+                  <div class="tools"><button><i data-lucide="arrow-up"></i></button><button><i data-lucide="arrow-down"></i></button><button><i data-lucide="copy"></i></button><button><i data-lucide="eye-off"></i></button><button class="danger"><i data-lucide="trash-2"></i></button></div>
+                  <a class="inline-block px-8 py-3.5 text-[15px] font-bold text-white" style="background:#6763af; border-radius:8px">Order now</a>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 px-8 py-5">
+                  <div class="blk rounded-lg border border-slate-100 p-3" id="b-p1" data-type="column" data-name="Column 1">
+                    <span class="tag">Column</span>
+                    <div class="tools"><button><i data-lucide="copy"></i></button><button class="danger"><i data-lucide="trash-2"></i></button></div>
+                    <div class="h-28 rounded-md bg-slate-100 grid place-items-center text-slate-400"><i data-lucide="image" class="w-6 h-6"></i></div>
+                    <p class="mt-2 text-[14px] font-bold">Classic watch</p>
+                    <p class="text-[13px] text-[#6763af] font-bold">EGP 1,200</p>
+                  </div>
+                  <div class="blk rounded-lg border border-slate-100 p-3" id="b-p2" data-type="column" data-name="Column 2">
+                    <span class="tag">Column</span>
+                    <div class="tools"><button><i data-lucide="copy"></i></button><button class="danger"><i data-lucide="trash-2"></i></button></div>
+                    <div class="h-28 rounded-md bg-slate-100 grid place-items-center text-slate-400"><i data-lucide="image" class="w-6 h-6"></i></div>
+                    <p class="mt-2 text-[14px] font-bold">Leather wallet</p>
+                    <p class="text-[13px] text-[#6763af] font-bold">EGP 450</p>
+                  </div>
+                </div>
+
+                <div class="blk px-8 py-2 opacity-40" id="b-div" data-type="divider" data-name="Divider">
+                  <span class="tag">Divider · hidden</span>
+                  <div class="tools"><button><i data-lucide="eye"></i></button><button class="danger"><i data-lucide="trash-2"></i></button></div>
+                  <hr class="border-slate-200" />
+                </div>
+
+                <!-- Footer – rendered by the server, not editable -->
+                <div class="px-8 py-6 text-center text-[11px] text-[#637469] bg-[#fafafa] border-t border-slate-100 relative">
+                  <span class="absolute top-2 end-2 inline-flex items-center gap-1 rounded-full bg-slate-200/70 px-2 h-5 text-[10px] font-semibold text-slate-500"><i data-lucide="lock" class="w-3 h-3"></i>Auto footer</span>
+                  My Store · 12 Tahrir St, Cairo<br/><a class="underline">Unsubscribe</a>
+                </div>
+              </div>
+            </div>
+
+            <p class="mt-3 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5"></i>Design view is approximate. Use <b>Preview</b> to see the exact email that will be sent.</p>
+          </div>
+        </div>
+
+        <!-- RIGHT: properties -->
+        <aside class="border-s border-border bg-card flex flex-col" style="max-height:760px">
+          <div class="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary" id="prop-icon"><i data-lucide="mouse-pointer-click" class="w-4 h-4"></i></span>
+              <div class="min-w-0">
+                <p class="text-sm font-bold truncate" id="prop-title">Button</p>
+                <p class="text-[11px] text-muted-foreground truncate" id="prop-sub">Order now</p>
+              </div>
+            </div>
+            <button class="btn btn-icon btn-default !w-8 !h-8" title="Deselect" onclick="selectBlock(null)"><i data-lucide="x" class="w-4 h-4"></i></button>
+          </div>
+          <div class="px-4 pt-3">
+            <div class="seg w-full">
+              <button class="active flex-1 justify-center" data-ptab="content" onclick="propTab('content')">Content</button>
+              <button class="flex-1 justify-center" data-ptab="style" onclick="propTab('style')">Style</button>
+              <button class="flex-1 justify-center" data-ptab="spacing" onclick="propTab('spacing')">Spacing</button>
+            </div>
+          </div>
+
+          <div class="flex-1 overflow-y-auto scroll-thin p-4 space-y-4">
+
+            <!-- CONTENT tab -->
+            <div data-pane="content" class="space-y-4">
+              <!-- button content -->
+              <div data-for="button" class="space-y-4">
+                <div class="space-y-2"><label class="text-sm font-medium">Button text</label><input class="field" value="Order now"/></div>
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Link</label>
+                  <div class="seg w-full">
+                    <button class="active flex-1 justify-center"><i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>Order page</button>
+                    <button class="flex-1 justify-center"><i data-lucide="link" class="w-3.5 h-3.5"></i>Custom URL</button>
+                  </div>
+                  <div class="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-primary shrink-0"></i>
+                    <p class="text-xs">Links each customer to their personal order page. Requires <b>Offer</b> step.</p>
+                  </div>
+                </div>
+              </div>
+              <!-- text content -->
+              <div data-for="text" class="space-y-3 hidden">
+                <div class="flex flex-wrap gap-1 rounded-lg border border-border bg-muted/40 p-1">
+                  <button class="btn btn-icon btn-default !w-8 !h-8 !shadow-none"><i data-lucide="bold" class="w-4 h-4"></i></button>
+                  <button class="btn btn-icon btn-default !w-8 !h-8 !shadow-none"><i data-lucide="italic" class="w-4 h-4"></i></button>
+                  <button class="btn btn-icon btn-default !w-8 !h-8 !shadow-none"><i data-lucide="underline" class="w-4 h-4"></i></button>
+                  <button class="btn btn-icon btn-default !w-8 !h-8 !shadow-none"><i data-lucide="strikethrough" class="w-4 h-4"></i></button>
+                  <span class="w-px bg-border mx-0.5"></span>
+                  <button class="btn btn-icon btn-default !w-8 !h-8 !shadow-none"><i data-lucide="list" class="w-4 h-4"></i></button>
+                  <button class="btn btn-icon btn-default !w-8 !h-8 !shadow-none"><i data-lucide="list-ordered" class="w-4 h-4"></i></button>
+                  <button class="btn btn-icon btn-default !w-8 !h-8 !shadow-none"><i data-lucide="quote" class="w-4 h-4"></i></button>
+                  <button class="btn btn-icon btn-default !w-8 !h-8 !shadow-none"><i data-lucide="link" class="w-4 h-4"></i></button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <select class="field field-sm"><option>Paragraph</option><option>Heading 1</option><option>Heading 2</option><option>Heading 3</option></select>
+                  <button class="btn btn-sm btn-ghost"><i data-lucide="braces" class="w-3.5 h-3.5"></i>Variable</button>
+                </div>
+                <div class="min-h-40 rounded-md border border-border bg-background/60 p-3 text-sm leading-relaxed focus-within:border-primary">
+                  Thank you for being one of our best customers. As a small thank-you, we prepared a special offer just for you.
+                </div>
+              </div>
+              <!-- image content -->
+              <div data-for="image" class="space-y-4 hidden">
+                <div class="rounded-xl border-2 border-dashed border-border p-5 text-center space-y-2 hover:border-primary transition">
+                  <span class="mx-auto grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary"><i data-lucide="upload-cloud" class="w-5 h-5"></i></span>
+                  <p class="text-sm font-semibold">Drop an image or <span class="text-primary">browse</span></p>
+                  <p class="text-[11px] text-muted-foreground">JPG, PNG or GIF · max 5 MB</p>
+                </div>
+                <div class="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-xs"><span>hero.jpg · 1600×900</span><span class="font-semibold text-emerald-600">186 KB</span></div>
+                <div class="space-y-2"><label class="text-sm font-medium">Alt text</label><input class="field" value="20% off offer"/></div>
+                <div class="space-y-2"><label class="text-sm font-medium">Link (optional)</label><input class="field" placeholder="https://"/></div>
+              </div>
+              <div data-for="other" class="hidden">
+                <p class="text-xs text-muted-foreground">This block has no content settings. Use the Style and Spacing tabs.</p>
+              </div>
+            </div>
+
+            <!-- STYLE tab -->
+            <div data-pane="style" class="space-y-4 hidden">
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Background</label>
+                <div class="flex flex-wrap gap-2">
+                  <span class="swatch active" style="background:#6763af"></span>
+                  <span class="swatch" style="background:#176c51"></span>
+                  <span class="swatch" style="background:#2563eb"></span>
+                  <span class="swatch" style="background:#e11d48"></span>
+                  <span class="swatch" style="background:#d97706"></span>
+                  <span class="swatch" style="background:#111827"></span>
+                  <label class="swatch grid place-items-center bg-card text-muted-foreground"><i data-lucide="plus" class="w-3.5 h-3.5"></i></label>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-2"><label class="text-sm font-medium">Text color</label>
+                  <div class="field flex items-center gap-2"><span class="h-5 w-5 rounded border border-border" style="background:#fff"></span><span class="text-xs">#FFFFFF</span></div></div>
+                <div class="space-y-2"><label class="text-sm font-medium">Font</label>
+                  <select class="field"><option>Arial</option><option>Verdana</option><option>Tahoma</option><option>Georgia</option></select></div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-2"><label class="text-sm font-medium">Font size</label><input class="field" type="number" value="15"/></div>
+                <div class="space-y-2"><label class="text-sm font-medium">Weight</label><select class="field"><option>Bold</option><option>Regular</option></select></div>
+              </div>
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Alignment</label>
+                <div class="seg w-full">
+                  <button class="flex-1 justify-center"><i data-lucide="align-left" class="w-4 h-4"></i></button>
+                  <button class="active flex-1 justify-center"><i data-lucide="align-center" class="w-4 h-4"></i></button>
+                  <button class="flex-1 justify-center"><i data-lucide="align-right" class="w-4 h-4"></i></button>
+                  <button class="flex-1 justify-center"><i data-lucide="maximize" class="w-4 h-4"></i></button>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between"><label class="text-sm font-medium">Corner radius</label><span class="text-xs text-muted-foreground">8 px</span></div>
+                <input type="range" min="0" max="40" value="8" class="w-full accent-[#6763af]"/>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between"><label class="text-sm font-medium">Border</label><span class="text-xs text-muted-foreground">0 px</span></div>
+                <input type="range" min="0" max="10" value="0" class="w-full accent-[#6763af]"/>
+              </div>
+            </div>
+
+            <!-- SPACING tab -->
+            <div data-pane="spacing" class="space-y-4 hidden">
+              <p class="text-xs text-muted-foreground">Inner padding (px)</p>
+              <div class="relative mx-auto w-full rounded-xl border border-dashed border-border p-10">
+                <input class="field field-sm absolute top-1.5 left-1/2 -translate-x-1/2 w-14 text-center" value="14"/>
+                <input class="field field-sm absolute bottom-1.5 left-1/2 -translate-x-1/2 w-14 text-center" value="14"/>
+                <input class="field field-sm absolute left-1.5 top-1/2 -translate-y-1/2 w-14 text-center" value="32"/>
+                <input class="field field-sm absolute right-1.5 top-1/2 -translate-y-1/2 w-14 text-center" value="32"/>
+                <div class="h-12 rounded-lg bg-primary/10 border border-primary/30 grid place-items-center text-xs font-semibold text-primary mx-6">Block</div>
+              </div>
+              <div class="flex items-center justify-between rounded-xl border border-border p-3">
+                <div><p class="text-sm font-semibold">Same on all sides</p><p class="text-xs text-muted-foreground">Link the four values</p></div>
+                <span class="relative inline-flex h-5 w-9 rounded-full bg-border"><span class="absolute top-0.5 start-0.5 h-4 w-4 rounded-full bg-white shadow"></span></span>
+              </div>
+              <div class="space-y-2"><label class="text-sm font-medium">Outer spacing</label><input class="field" type="number" value="20"/></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ── 3. Sample data + test ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <details class="rounded-xl border border-border p-4 group" open>
+        <summary class="flex cursor-pointer list-none items-center justify-between">
+          <div><p class="text-sm font-semibold">Sample data</p><p class="text-xs text-muted-foreground">Values used for preview and test emails only.</p></div>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-muted-foreground group-open:rotate-180 transition"></i>
+        </summary>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+          <div class="space-y-1.5"><label class="text-[11px] text-muted-foreground">customer.name</label><input class="field field-sm" value="Mona"/></div>
+          <div class="space-y-1.5"><label class="text-[11px] text-muted-foreground">customer.number</label><input class="field field-sm" value="+201000000000"/></div>
+          <div class="space-y-1.5"><label class="text-[11px] text-muted-foreground">customer.email</label><input class="field field-sm" value="mona@example.com"/></div>
+          <div class="space-y-1.5"><label class="text-[11px] text-muted-foreground">campaign.orderUrl</label><input class="field field-sm" value="https://shop.example.com/o/abc"/></div>
+        </div>
+      </details>
+
+      <div class="rounded-xl border border-border p-4 space-y-3">
+        <div><p class="text-sm font-semibold">Send a test email</p><p class="text-xs text-muted-foreground">A real email is sent from <b>sales@mystore.com</b> to the address below.</p></div>
+        <div class="flex gap-2">
+          <input class="field" type="email" placeholder="you@example.com" value="sales@mystore.com"/>
+          <button class="btn btn-md btn-outline"><i data-lucide="send" class="w-4 h-4"></i>Send test</button>
+        </div>
+        <div class="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-400">
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i>Accepted by Gmail · 10:24 AM
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer (unchanged wizard footer) -->
+    <div class="flex items-center justify-between gap-3 border-t border-border pt-5">
+      <p class="text-xs text-red-500"></p>
+      <div class="flex items-center gap-2 ms-auto">
+        <button class="btn btn-sm btn-outline">Back</button>
+        <button class="btn btn-md btn-solid">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════ PREVIEW DIALOG ═════════════ -->
+<div id="preview" class="hidden fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm p-4 md:p-8">
+  <div class="main-card h-full flex flex-col overflow-hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+      <div class="flex items-center gap-3">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 text-primary"><i data-lucide="eye" class="w-4 h-4"></i></span>
+        <div><p class="text-sm font-bold">Email preview</p><p class="text-[11px] text-muted-foreground">Exact server rendering with sample data</p></div>
+      </div>
+      <div class="seg">
+        <button class="active" id="pv-desktop" onclick="setPreview('desktop')"><i data-lucide="monitor" class="w-3.5 h-3.5"></i>Desktop</button>
+        <button id="pv-mobile" onclick="setPreview('mobile')"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i>Mobile</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 h-7 text-[11px] font-semibold"><i data-lucide="file-code-2" class="w-3.5 h-3.5 text-muted-foreground"></i>38 KB</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2.5 h-7 text-[11px] font-semibold text-emerald-600"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i>No Gmail clipping</span>
+        <button class="btn btn-icon btn-default" onclick="closePreview()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-auto bg-muted/60 p-6 scroll-thin">
+      <!-- Desktop: Gmail-like reading pane -->
+      <div id="pv-d" class="mx-auto max-w-[900px] rounded-xl bg-white text-slate-900 shadow-xl overflow-hidden border border-slate-200">
+        <div class="flex items-center gap-2 bg-[#f6f8fc] px-4 h-11 border-b border-slate-200">
+          <span class="w-3 h-3 rounded-full bg-red-400"></span><span class="w-3 h-3 rounded-full bg-amber-400"></span><span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+          <div class="ms-4 flex-1 h-7 rounded-full bg-white border border-slate-200 text-[12px] text-slate-400 flex items-center px-3 gap-2"><i data-lucide="search" class="w-3.5 h-3.5"></i>Search mail</div>
+        </div>
+        <div class="px-8 pt-5 pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2"><h2 class="text-[22px]">Mona, your special offer is ready 🎁</h2><span class="rounded bg-slate-100 px-1.5 text-[11px] text-slate-600">Inbox</span></div>
+          <div class="mt-3 flex items-center gap-3">
+            <span class="grid h-10 w-10 place-items-center rounded-full bg-[#6763af] text-white font-bold">M</span>
+            <div class="text-[13px] leading-tight flex-1"><b>My Store</b> <span class="text-slate-500">&lt;sales@mystore.com&gt;</span> <span class="text-slate-400 text-[12px]">· Unsubscribe</span><br/><span class="text-slate-500 text-[12px]">to me</span></div>
+            <span class="text-[12px] text-slate-500">10:24 AM</span>
+          </div>
+        </div>
+        <div class="bg-[#f4f4f7] py-8">
+          <div class="mx-auto bg-white shadow-sm" style="max-width:600px; font-family:Arial, sans-serif" id="email-body-d"></div>
+        </div>
+      </div>
+
+      <!-- Mobile: phone frame -->
+      <div id="pv-m" class="hidden mx-auto phone">
+        <div class="phone-screen">
+          <div class="flex items-center justify-between px-6 pt-3 pb-1 text-[12px] font-semibold text-slate-900"><span>9:41</span><span class="flex gap-1"><i data-lucide="signal" class="w-3.5 h-3.5"></i><i data-lucide="wifi" class="w-3.5 h-3.5"></i><i data-lucide="battery-full" class="w-3.5 h-3.5"></i></span></div>
+          <div class="flex items-center gap-3 px-4 h-11 text-slate-700 border-b border-slate-100"><i data-lucide="arrow-left" class="w-5 h-5"></i><span class="flex-1"></span><i data-lucide="archive" class="w-5 h-5"></i><i data-lucide="trash-2" class="w-5 h-5"></i></div>
+          <div class="px-4 py-3 text-slate-900 border-b border-slate-100">
+            <p class="text-[18px] leading-snug">Mona, your special offer is ready 🎁</p>
+            <div class="mt-2 flex items-center gap-2 text-[12px]"><span class="grid h-8 w-8 place-items-center rounded-full bg-[#6763af] text-white font-bold">M</span><div><b>My Store</b> <span class="text-slate-500">10:24 AM</span><br/><span class="text-slate-500">to me</span></div></div>
+          </div>
+          <div class="flex-1 overflow-y-auto bg-[#f4f4f7]" id="email-body-m"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<template id="email-tpl">
+  <div class="px-6 py-5 text-center border-b border-slate-100"><span class="inline-flex items-center gap-2 text-lg font-black" style="color:#6763af"><span class="grid h-8 w-8 place-items-center rounded-lg text-white" style="background:#6763af">M</span>MY STORE</span></div>
+  <div class="h-56 w-full grid place-items-center text-white" style="background:linear-gradient(135deg,#6763af,#9b8fe0 60%,#f0b7c8)"><div class="text-center"><p class="text-[13px] tracking-[.3em] font-bold opacity-90">LIMITED TIME</p><p class="text-4xl font-black mt-1">20% OFF</p></div></div>
+  <div class="px-8 pt-7 pb-2"><h1 class="text-[26px] font-bold leading-tight text-[#222]">Hello Mona,</h1></div>
+  <div class="px-8 py-3"><p class="text-[16px] leading-[1.7] text-[#444]">Thank you for being one of our best customers. As a small thank-you, we prepared a special offer just for you. It is valid until the end of the week.</p></div>
+  <div class="px-8 py-5 text-center"><a class="inline-block px-8 py-3.5 text-[15px] font-bold text-white" style="background:#6763af;border-radius:8px">Order now</a></div>
+  <div class="grid grid-cols-2 gap-4 px-8 py-5 email-cols">
+    <div class="rounded-lg border border-slate-100 p-3"><div class="h-28 rounded-md bg-slate-100"></div><p class="mt-2 text-[14px] font-bold text-[#222]">Classic watch</p><p class="text-[13px] text-[#6763af] font-bold">EGP 1,200</p></div>
+    <div class="rounded-lg border border-slate-100 p-3"><div class="h-28 rounded-md bg-slate-100"></div><p class="mt-2 text-[14px] font-bold text-[#222]">Leather wallet</p><p class="text-[13px] text-[#6763af] font-bold">EGP 450</p></div>
+  </div>
+  <div class="px-8 py-6 text-center text-[11px] text-[#637469] bg-[#fafafa] border-t border-slate-100">My Store · 12 Tahrir St, Cairo<br/><a class="underline">Unsubscribe</a></div>
+</template>
+
+<script>
+  lucide.createIcons();
+
+  const meta = {
+    button: { title: "Button", icon: "mouse-pointer-click" },
+    text: { title: "Text", icon: "type" },
+    image: { title: "Image", icon: "image" },
+    column: { title: "Column", icon: "square" },
+    divider: { title: "Divider", icon: "minus" },
+  };
+
+  function selectBlock(id) {
+    document.querySelectorAll(".blk").forEach((b) => b.classList.toggle("selected", b.id === id));
+    document.querySelectorAll(".layer").forEach((l) => l.classList.toggle("active", l.dataset.target === id));
+    const el = id && document.getElementById(id);
+    const type = el ? el.dataset.type : null;
+    document.getElementById("prop-title").textContent = type ? meta[type].title : "Nothing selected";
+    document.getElementById("prop-sub").textContent = el ? el.dataset.name : "Click a block in the canvas";
+    document.getElementById("prop-icon").innerHTML = `<i data-lucide="${type ? meta[type].icon : "mouse-pointer"}" class="w-4 h-4"></i>`;
+    document.querySelectorAll("[data-for]").forEach((p) => {
+      const key = ["button", "text", "image"].includes(type) ? type : "other";
+      p.classList.toggle("hidden", p.dataset.for !== key);
+    });
+    lucide.createIcons();
+  }
+  document.querySelectorAll(".blk").forEach((b) =>
+    b.addEventListener("click", (e) => { e.stopPropagation(); selectBlock(b.id); })
+  );
+  document.querySelectorAll(".layer[data-target]").forEach((l) =>
+    l.addEventListener("click", () => selectBlock(l.dataset.target))
+  );
+
+  function propTab(name) {
+    document.querySelectorAll("[data-ptab]").forEach((b) => b.classList.toggle("active", b.dataset.ptab === name));
+    document.querySelectorAll("[data-pane]").forEach((p) => p.classList.toggle("hidden", p.dataset.pane !== name));
+  }
+
+  function setDevice(d) {
+    document.getElementById("dev-desktop").classList.toggle("active", d === "desktop");
+    document.getElementById("dev-mobile").classList.toggle("active", d === "mobile");
+    document.getElementById("canvas-wrap").style.maxWidth = d === "mobile" ? "400px" : "640px";
+  }
+
+  function togglePop(id) { document.getElementById(id).classList.toggle("hidden"); }
+
+  function fillEmail() {
+    const tpl = document.getElementById("email-tpl").innerHTML;
+    document.getElementById("email-body-d").innerHTML = tpl;
+    document.getElementById("email-body-m").innerHTML = `<div class="bg-white">${tpl}</div>`;
+    document.querySelectorAll("#email-body-m .email-cols").forEach((c) => c.classList.replace("grid-cols-2", "grid-cols-1"));
+  }
+  function openPreview() { fillEmail(); document.getElementById("preview").classList.remove("hidden"); lucide.createIcons(); }
+  function closePreview() { document.getElementById("preview").classList.add("hidden"); }
+  function setPreview(d) {
+    document.getElementById("pv-desktop").classList.toggle("active", d === "desktop");
+    document.getElementById("pv-mobile").classList.toggle("active", d === "mobile");
+    document.getElementById("pv-d").classList.toggle("hidden", d !== "desktop");
+    document.getElementById("pv-m").classList.toggle("hidden", d !== "mobile");
+  }
+  function toggleDir() {
+    const h = document.documentElement;
+    h.dir = h.dir === "rtl" ? "ltr" : "rtl";
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePreview(); });
+</script>
+</body>
+</html>

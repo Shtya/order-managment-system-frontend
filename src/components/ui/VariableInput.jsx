@@ -7,6 +7,7 @@ import { cn } from "@/utils/cn"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { renderToStaticMarkup } from "react-dom/server"
 import { CompactDateConfig, DEFAULT_DATE_FORMATS, formatDateWithFormat, getNaturalDayName, useDateLang } from "@/components/ui/dateConfig"
+import { VariableChip } from "@/components/ui/VariableChip"
 export { getNaturalDayName }
 // ---------------------------------------------------------------------------
 // Shared field tokens — copied from your Input component so this stays
@@ -114,54 +115,6 @@ function buildChip(variable) {
 
     return chip
 }
-
-// React (non-DOM) version of the variable chip — mirrors buildChip's visuals
-// for read-only surfaces (e.g. template previews) that want the same chip look.
-const chipSizeClasses = {
-    normal: "pl-1 pr-2 py-0.5 text-xs",
-    small: "pl-1 pr-1.5 py-px text-[10px]",
-}
-
-const chipIconSizeClasses = {
-    normal: "h-4 w-4 text-[10px]",
-    small: "h-3.5 w-3.5 text-[9px]",
-}
-
-const VariableChip = React.memo(function VariableChip({ variable, example, showExample = false, size = "normal", className }) {
-    const Icon = variable?.icon
-    const label = variable?.label ?? ""
-    const preview = example ?? variable?.preview ?? variable?.example
-    
-    return (
-        <span className={cn(
-            "inline-flex max-w-full min-w-0 items-center gap-1.5 align-middle select-none flex-wrap",
-            "rounded-sm border border-border bg-foreground/5 mx-0.5",
-            chipSizeClasses[size] ?? chipSizeClasses.normal,
-            className
-        )}>
-            <span className={cn(
-                "flex shrink-0 items-center justify-center rounded-[4px] bg-[var(--primary)] font-bold text-white",
-                chipIconSizeClasses[size] ?? chipIconSizeClasses.normal
-            )}>
-                {Icon ? (
-                    <Icon className={cn("text-current", size === "small" ? "h-2 w-2" : "h-2.5 w-2.5")} />
-                ) : (
-                    label?.[0]?.toUpperCase() ?? "•"
-                )}
-            </span>
-            <span className="min-w-0 font-medium text-foreground break-all">{label}</span>
-            {preview != null && preview !== "" && (
-                <span className={cn(
-                    "min-w-0 break-all",
-                    showExample ? "font-medium text-foreground" : "text-muted-foreground/80",
-                )}>
-                    {preview}
-                </span>
-            )}
-        </span>
-    )
-})
-VariableChip.displayName = "VariableChip"
 
 function VariableTextPreview({
     text,
@@ -290,6 +243,157 @@ function findVariableForToken(flattened, id, lang = "en") {
     return null
 }
 
+/**
+ * Shared variable browser. The host editor owns caret/selection behavior and
+ * receives the selected variable through onSelect.
+ */
+function VariablePicker({
+    variables = [],
+    onSelect,
+    popupTitle = "Variables",
+    disabled = false,
+    open: controlledOpen,
+    onOpenChange,
+    children,
+    align = "end",
+    contentClassName,
+}) {
+    const locale = useLocale()
+    const lang = useDateLang(locale)
+    const [internalOpen, setInternalOpen] = React.useState(false)
+    const [expanded, setExpanded] = React.useState({})
+    const [configNode, setConfigNode] = React.useState(null)
+    const [dateOffset, setDateOffset] = React.useState(0)
+    const [dateFormat, setDateFormat] = React.useState("DD-MM-YYYY")
+    const open = controlledOpen ?? internalOpen
+    const setOpen = React.useCallback((next) => {
+        if (next) setConfigNode(null)
+        if (controlledOpen === undefined) setInternalOpen(next)
+        onOpenChange?.(next)
+    }, [controlledOpen, onOpenChange])
+
+    const choose = React.useCallback((variable) => {
+        onSelect?.(variable)
+        setOpen(false)
+    }, [onSelect, setOpen])
+
+    const openConfig = React.useCallback((variable) => {
+        setDateOffset(variable.defaultOffset ?? 0)
+        setDateFormat(variable.defaultFormat ?? DEFAULT_DATE_FORMATS[0])
+        setConfigNode(variable)
+    }, [])
+
+    const confirmConfig = React.useCallback(() => {
+        if (!configNode) return
+        const token = `global.date.${dateOffset}.${dateFormat}`
+        const target = new Date()
+        target.setDate(target.getDate() + (Number.isFinite(dateOffset) ? dateOffset : 0))
+        choose({
+            ...configNode,
+            id: token,
+            preview: formatDateWithFormat(target, dateFormat, lang),
+        })
+        setConfigNode(null)
+    }, [choose, configNode, dateFormat, dateOffset, lang])
+
+    const renderNode = React.useCallback((variable, level = 0) => {
+        const hasChildren = variable.children?.length > 0
+        const isExpanded = expanded[variable.id]
+        const Icon = variable.icon
+        return (
+            <div key={variable.id} className="select-none">
+                <button
+                    type="button"
+                    className={cn(
+                        "group flex w-full cursor-pointer items-center gap-3 rounded-xl p-3 text-start transition-all",
+                        level > 0 && "ms-6 w-[calc(100%-1.5rem)]",
+                        hasChildren
+                            ? "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                            : "hover:bg-primary/5 hover:text-primary",
+                    )}
+                    onClick={() => {
+                        if (hasChildren) {
+                            setExpanded((previous) => ({
+                                ...previous,
+                                [variable.id]: !previous[variable.id],
+                            }))
+                        } else if (variable.requiresConfig) {
+                            openConfig(variable)
+                        } else {
+                            choose(variable)
+                        }
+                    }}
+                >
+                    <span className="flex min-w-0 flex-1 items-center gap-2">
+                        {hasChildren ? (
+                            isExpanded
+                                ? <ChevronDown size={16} className="shrink-0 text-slate-400" />
+                                : <ChevronRight size={16} className="shrink-0 text-slate-400" />
+                        ) : <span className="h-4 w-4 shrink-0" />}
+                        {Icon ? (
+                            <Icon size={18} className={cn("shrink-0", hasChildren ? "text-slate-400" : "text-primary")} />
+                        ) : (
+                            <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] bg-[var(--primary)] text-[10px] font-bold text-white">
+                                {variable.label?.[0]?.toUpperCase() ?? "•"}
+                            </span>
+                        )}
+                        <span className="truncate text-sm font-bold">{variable.label}</span>
+                        {!hasChildren && (variable.preview || variable.example) && (
+                            <span className="truncate text-[10px] font-medium text-slate-400">
+                                ({variable.preview || variable.example})
+                            </span>
+                        )}
+                    </span>
+                    {!hasChildren && <Plus size={16} className="shrink-0 text-primary opacity-0 transition-opacity group-hover:opacity-100" />}
+                </button>
+                {hasChildren && isExpanded && (
+                    <div className="mt-1">
+                        {variable.children.map((child) => renderNode(child, level + 1))}
+                    </div>
+                )}
+            </div>
+        )
+    }, [choose, expanded, openConfig])
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild disabled={disabled}>{children}</PopoverTrigger>
+            <PopoverContent
+                align={align}
+                className={cn("min-w-[22rem]! w-auto! p-3", contentClassName)}
+                sideOffset={6}
+            >
+                {configNode ? (
+                    <CompactDateConfig
+                        configNode={configNode}
+                        dateOffset={dateOffset}
+                        dateFormat={dateFormat}
+                        locale={locale}
+                        formats={configNode.formats || DEFAULT_DATE_FORMATS}
+                        onBack={() => setConfigNode(null)}
+                        onOffsetChange={(next) => setDateOffset(Number.isFinite(next) ? next : 0)}
+                        onFormatChange={setDateFormat}
+                        onConfirm={confirmConfig}
+                    />
+                ) : (
+                    <>
+                        <div className="px-2 pb-2 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/80">
+                            {popupTitle}
+                        </div>
+                        <div
+                            className="max-h-[500px] space-y-1 overflow-y-auto"
+                            onWheel={(event) => event.stopPropagation()}
+                            onTouchMove={(event) => event.stopPropagation()}
+                        >
+                            {variables.map((variable) => renderNode(variable))}
+                        </div>
+                    </>
+                )}
+            </PopoverContent>
+        </Popover>
+    )
+}
+
 // Turn a {{variable.path}} string into DOM content (text + chip + <br> nodes).
 function hydrate(container, value, flattened, lang = "en") {
     container.innerHTML = ""
@@ -336,22 +440,13 @@ const VariableInput = React.forwardRef(function VariableInput(
 ) {
     const editableRef = React.useRef(null)
     const savedRangeRef = React.useRef(null)
+    const [pickerOpen, setPickerOpen] = React.useState(false)
     const locale = useLocale()
     const lang = useDateLang(locale)
-    const [open, setOpen] = React.useState(false)
-    const [expanded, setExpanded] = React.useState({})
-    const [configNode, setConfigNode] = React.useState(null)
-    const [dateOffset, setDateOffset] = React.useState(0)
-    const [dateFormat, setDateFormat] = React.useState("DD-MM-YYYY")
     const wrapRef = React.useRef(null)
 
     // Memoize flattened variables for hydrate
     const flattenedVariables = React.useMemo(() => flattenVariables(variables), [variables])
-
-    // Toggle expand state
-    const toggleExpand = React.useCallback((id) => {
-        setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
-    }, [])
 
     // The last value *this component* produced (either by emitting onChange,
     // or by syncing external `value` into the DOM). Comparing against this
@@ -482,7 +577,6 @@ const VariableInput = React.forwardRef(function VariableInput(
             sel.addRange(range)
             savedRangeRef.current = range.cloneRange()
 
-            setOpen(false)
             emitChange()
         },
         [disabled, emitChange]
@@ -562,7 +656,7 @@ const VariableInput = React.forwardRef(function VariableInput(
             wrapSelection,
             insertVariable,
             insertRaw,
-            openVariablePicker: () => setOpen(true),
+            openVariablePicker: () => setPickerOpen(true),
         }),
         [wrapSelection, insertVariable, insertRaw]
     )
@@ -691,85 +785,9 @@ const VariableInput = React.forwardRef(function VariableInput(
 
         emitChange()
     }
-    // Open the inline config panel for variables that need extra values
-    // (e.g. the dynamic date), otherwise insert the chip right away.
-    const openVariableConfig = React.useCallback((node) => {
-        setDateOffset(node.defaultOffset ?? 0)
-        setDateFormat(node.defaultFormat ?? DEFAULT_DATE_FORMATS[0])
-        setConfigNode(node)
-    }, [])
-    
-    const confirmVariableConfig = React.useCallback(() => {
-        if (!configNode) return
-        const token = `global.date.${dateOffset}.${dateFormat}`
-        const target = new Date()
-        target.setDate(target.getDate() + (Number.isFinite(dateOffset) ? dateOffset : 0))
-        const sample = formatDateWithFormat(target, dateFormat, lang)
-        
-        insertVariable({ ...configNode, id: token, preview: sample })
-        setConfigNode(null)
-    }, [configNode, dateOffset, dateFormat, insertVariable, lang])
-
-    // Recursively render nodes
-    const renderNode = React.useCallback((node, level = 0) => {
-        const hasChildren = node.children && node.children.length > 0
-        const isExpanded = expanded[node.id]
-
-        return (
-            <div key={node.id} className="select-none">
-                <div
-                    onClick={() => {
-                        if (hasChildren) {
-                            toggleExpand(node.id)
-                        } else if (node.requiresConfig) {
-                            openVariableConfig(node)
-                        } else {
-                            insertVariable(node)
-                        }
-                    }}
-                    className={cn(
-                        "flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer group",
-                        level > 0 ? "ms-6" : "",
-                        hasChildren ? "hover:bg-slate-50 dark:hover:bg-slate-800/50" : "hover:bg-primary/5 hover:text-primary"
-                    )}
-                >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {hasChildren ? (
-                            isExpanded ? <ChevronDown size={16} className="text-slate-400" /> : <ChevronRight size={16} className="text-slate-400" />
-                        ) : (
-                            <div className="w-4 h-4" />
-                        )}
-                        {node.icon ? (
-                            <node.icon size={18} className={cn("shrink-0", hasChildren ? "text-slate-400" : "text-primary")} />
-                        ) : (
-                            <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] bg-[var(--primary)] text-[10px] font-bold text-white">
-                                {node.label?.[0]?.toUpperCase() ?? "•"}
-                            </span>
-                        )}
-                        <span className="text-sm font-bold truncate">{node.label}</span>
-                        {!hasChildren && (node.preview || node.example) && (
-                            <span className="text-[10px] text-slate-400 font-medium truncate">({node.preview || node.example})</span>
-                        )}
-                    </div>
-                    {!hasChildren && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Plus size={16} className="text-primary" />
-                        </div>
-                    )}
-                </div>
-                {hasChildren && isExpanded && (
-                    <div className="mt-1">
-                        {node.children.map(child => renderNode(child, level + 1))}
-                    </div>
-                )}
-            </div>
-        )
-    }, [expanded, toggleExpand, insertVariable, openVariableConfig])
-    
     return (
         <div ref={wrapRef} className="group relative w-full">
-            <Popover open={open} onOpenChange={setOpen}>
-                <div
+            <div
                     className={cn(
                         shellBase,
                         "flex",
@@ -807,19 +825,20 @@ const VariableInput = React.forwardRef(function VariableInput(
                         {...props}
                     />
 
-                    {hasVariables && (
-                        <PopoverTrigger asChild>
+                    {hasVariables && !disableHydrate && (
+                        <VariablePicker
+                            variables={variables}
+                            onSelect={insertVariable}
+                            popupTitle={popupTitle}
+                            disabled={disabled}
+                            open={pickerOpen}
+                            onOpenChange={setPickerOpen}
+                        >
                             <button
                                 type="button"
                                 disabled={disabled}
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    
-                                    setOpen((o) => {
-                                        if (!o) setConfigNode(null)
-                                        return !o
-                                    })
-                                }}
+                                onPointerDown={saveSelection}
+                                onClick={(event) => event.stopPropagation()}
                                 aria-label="Insert variable"
                                 className={cn(
                                     "absolute end-2",
@@ -832,48 +851,14 @@ const VariableInput = React.forwardRef(function VariableInput(
                             >
                                 <Plus className="h-3.5 w-3.5" />
                             </button>
-                        </PopoverTrigger>
+                        </VariablePicker>
                     )}
                 </div>
-
-                {hasVariables && !disableHydrate && (
-                    <PopoverContent
-                        align="end"
-                        className="min-w-[22rem]! w-auto! p-3"
-                        sideOffset={6}
-                    >
-                        {configNode ? (
-                            <CompactDateConfig
-                                configNode={configNode}
-                                dateOffset={dateOffset}
-                                dateFormat={dateFormat}
-                                locale={locale}
-                                formats={configNode.formats || DEFAULT_DATE_FORMATS}
-                                onBack={() => setConfigNode(null)}
-                                onOffsetChange={(next) => setDateOffset(Number.isFinite(next) ? next : 0)}
-                                onFormatChange={(next) => setDateFormat(next)}
-                                onConfirm={confirmVariableConfig}
-                            />
-                        ) : (
-                            <>
-                                <div className="px-2 pb-2 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/80">
-                                    {popupTitle}
-                                </div>
-                                <div className="space-y-1 max-h-[500px] overflow-y-auto"
-                                    onWheel={(e) => e.stopPropagation()}
-                                    onTouchMove={(e) => e.stopPropagation()}>
-                                    {variables.map((variable) => renderNode(variable))}
-                                </div>
-                            </>
-                        )}
-                    </PopoverContent>
-                )}
-            </Popover>
         </div>
     )
 })
 
 VariableInput.displayName = "VariableInput"
 
-export { VariableInput, VariableChip, VariableTextPreview, flattenVariables, findVariableForToken }
+export { VariableInput, VariableChip, VariablePicker, VariableTextPreview, flattenVariables, findVariableForToken }
 export default VariableInput

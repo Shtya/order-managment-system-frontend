@@ -42,11 +42,12 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { CampaignOrderPageTab } from "../orders/atoms/SettingsModal";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import {
+  buildNewCampaignHref,
   campaignListHref,
   normalizeCampaignChannel,
 } from "./atoms/campaignChannel";
 
-const DEFAULT_FILTERS = { status: "all" };
+const DEFAULT_FILTERS = { status: "all", channel: "all" };
 
 const STAT_CARDS = [
   { key: "total", icon: Send, sortOrder: 0 },
@@ -95,8 +96,12 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
   const [statsLoading, setStatsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState({
+    ...DEFAULT_FILTERS,
+  });
+  const [appliedFilters, setAppliedFilters] = useState({
+    ...DEFAULT_FILTERS,
+  });
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(12);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -133,14 +138,17 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
 
   const buildParams = useCallback(
     (p, l, filterState = appliedFilters, searchValue = debouncedSearch) => {
-      const params = { page: p, limit: l, channel };
+      const params = { page: p, limit: l };
       if (searchValue?.trim()) params.search = searchValue.trim();
       if (filterState.status && filterState.status !== "all") {
         params.status = filterState.status;
       }
+      if (filterState.channel && filterState.channel !== "all") {
+        params.channel = filterState.channel;
+      }
       return params;
     },
-    [appliedFilters, channel, debouncedSearch],
+    [appliedFilters, debouncedSearch],
   );
 
   const fetchCampaigns = useCallback(
@@ -206,7 +214,8 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
   };
 
   const hasActiveFilters = useMemo(
-    () => appliedFilters.status !== "all",
+    () =>
+      appliedFilters.status !== "all" || appliedFilters.channel !== "all",
     [appliedFilters],
   );
 
@@ -313,7 +322,7 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
         tooltip: t("actions.edit"),
         variant: "blue",
         permission: "campaigns.update",
-        onClick: () => router.push(`/campaigns/${row.id}/edit?channel=${channel}`),
+        onClick: () => router.push(`/campaigns/${row.id}/edit?channel=${row.channel}`),
       });
       actions.push({
         icon: busy ? <Loader2 className="animate-spin" /> : <Play />,
@@ -364,7 +373,7 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
 
     if (
       (status === "failed" || status === "completed") &&
-      Number(row.failedCount || 0) > 0
+      (Number(row.failedCount || 0) > 0 || (status === "failed" && row.failureReason === "audience_empty"))
     ) {
       actions.push({
         icon: busy ? <Loader2 className="animate-spin" /> : <RotateCcw />,
@@ -381,7 +390,7 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
       variant: "blue",
       permission: "campaigns.create",
       disabled: busy,
-      onClick: () => router.push(`/campaigns/new/${channel || "whatsapp"}?fromId=${row.id}`),
+      onClick: () => router.push(buildNewCampaignHref(row.channel || "whatsapp", { fromId: row.id })),
     });
 
     if (status !== "running" && status !== "paused") {
@@ -600,14 +609,14 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
               variant="solid"
               icon={<Plus size={18} />}
               permission="campaigns.create"
-              onClick={() => router.push(`/campaigns/new/whatsapp`)}
+              onClick={() => router.push(buildNewCampaignHref())}
             />
           </div>
         }
       />
 
       <Table
-        tableKey={`campaigns-${channel}`}
+        tableKey={`campaigns`}
         searchValue={search}
         onSearchChange={setSearch}
         onSearch={() => {
@@ -630,7 +639,7 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
               handleExport({
                 endpoint: "/campaigns/export",
                 params: exportParams,
-                filename: `campaigns-${channel}.xlsx`,
+                filename: `campaigns.xlsx`,
               }),
           },
         ]}
@@ -651,6 +660,26 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
                       {t(`status.${status}`)}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </FilterField>
+
+            <FilterField label={t("columns.channel")}>
+              <Select
+                value={filters.channel}
+                onValueChange={(v) => setFilters((f) => ({ ...f, channel: v }))}
+              >
+                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                  <SelectValue placeholder={t("columns.channel")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{tc("all")}</SelectItem>
+                  <SelectItem value="whatsapp">
+                    {t("channels.whatsapp")}
+                  </SelectItem>
+                  <SelectItem value="email">
+                    {t("channels.email")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </FilterField>

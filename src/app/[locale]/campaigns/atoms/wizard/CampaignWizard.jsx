@@ -1,7 +1,9 @@
 "use client";
+import { emailContentPayload } from "@/components/email-builder/document";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -13,6 +15,7 @@ import { useRouter } from "@/i18n/navigation";
 import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
+import EmailDraftRecovery from "@/components/email-builder/EmailDraftRecovery";
 import StepGeneral from "./StepGeneral";
 import StepRecipients from "./StepRecipients";
 import StepMessage from "./StepMessage";
@@ -71,11 +74,13 @@ function mapCampaignToForm(campaign) {
     audienceFileUrl: campaign.audienceFileUrl || null,
     manualRecipients: (campaign.audienceManualSnapshot || []).map((r) => ({
       phoneNumber: r.phoneNumber,
+      email:r.email,
       name: r.name || null,
     })),
     audienceFilter: campaign.audienceFilter || null,
     audienceFilterRaw: campaign.audienceFilter ? fromApiFilter(campaign.audienceFilter) : null,
-    whatsappAccountId: snap.accountId || null,
+    email: campaign.channel === "email" ? { accountId:snap.accountId, subject:snap.subject, preheader:snap.preheader || "", businessIdentity:snap.businessIdentity, document:snap.document } : null,
+    whatsappAccountId: campaign.channel === "email" ? null : snap.accountId || null,
     whatsapp: campaign.templateId
       ? {
           templateId: campaign.templateId,
@@ -116,16 +121,21 @@ function mapCampaignToForm(campaign) {
 }
 
 export default function CampaignWizard({ mode = "create", campaignId = null, copyFromId = null, channel: channelProp = null }) {
+  const emailHistoryRef = useRef(null);
   const isEdit = mode === "edit";
   const isCopy = !isEdit && !!copyFromId;
-  // Channel is locked from the URL (/campaigns/{type}); invalid → WhatsApp.
-  const lockedChannel = normalizeCampaignChannel(channelProp ?? "whatsapp");
+  const searchParams = useSearchParams();
+  const queryChannel = normalizeCampaignChannel(
+    searchParams.get("channel") ?? channelProp ?? "whatsapp",
+  );
+  const lockedChannel = normalizeCampaignChannel(channelProp ?? queryChannel ?? "whatsapp");
   const t = useTranslations("campaigns.wizard");
   const tc = useTranslations("campaigns");
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [stepError, setStepError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [validating, setValidating] = useState(false);
   const [nameStatus, setNameStatus] = useState(null);
   const [pageLoading, setPageLoading] = useState(isEdit || isCopy);
   const [notEditable, setNotEditable] = useState(false);
@@ -135,6 +145,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
   });
 
   const watchedChannel = watch("channel");
+  const previousChannelRef = useRef(watchedChannel || lockedChannel);
   const listHref = useMemo(
     () => campaignListHref(watchedChannel),
     [watchedChannel],
@@ -144,9 +155,29 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
   // Edit keeps the stored campaign channel (applied on load below).
   useEffect(() => {
     if (isEdit) return;
-    setValue("channel", lockedChannel, { shouldDirty: true });
+    const next = normalizeCampaignChannel(queryChannel ?? lockedChannel ?? "whatsapp");
+    if (watchedChannel !== next) {
+      setValue("channel", next, { shouldDirty: true });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lockedChannel, isEdit]);
+  }, [queryChannel, lockedChannel, isEdit]);
+
+  useEffect(() => {
+    if (isEdit) return;
+    const prev = previousChannelRef.current;
+    if (watchedChannel && prev && watchedChannel !== prev) {
+      setValue("email", null, { shouldDirty: true });
+      setValue("whatsappAccountId", null, { shouldDirty: true });
+      setValue("whatsapp", null, { shouldDirty: true });
+      setValue("enablePurchasePage", false, { shouldDirty: true });
+      setValue("products", [], { shouldDirty: true });
+      setValue("shippingPrice", 0, { shouldDirty: true });
+      setValue("orderReplyFollowupEnabled", false, { shouldDirty: true });
+      setValue("orderReplyFollowups", [], { shouldDirty: true });
+      setStep(0);
+    }
+    previousChannelRef.current = watchedChannel;
+  }, [watchedChannel, isEdit]);
 
   useEffect(() => {
     setDocumentTitle(t(isEdit ? "editTitle" : "title"));
@@ -193,6 +224,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
   );
 
   const goNext = async () => {
+    if (validating) return;
     setStepError("");
     const values = getValues();
     if (step === 0) {
@@ -217,10 +249,29 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
     }
     if (step === 2) {
       const errs = validateStepMessage(values);
+      clearErrors("email");
+      Object.entries(errs).forEach(([key, message]) =>
+        setError(key, { type: "manual", message }),
+      );
       if (Object.keys(errs).length) {
-        setStepError(t(errs.whatsapp || "fixStepErrors"));
+        const errorKey = errs["email.document"] || errs.whatsapp;
+        setStepError(errorKey ? t(errorKey) : "");
+        if (errs["email.accountId"] === "validation.emailAccountSuspended")
+          toast.error(t(errs["email.accountId"]));
         return;
       }
+    }
+    if (step === 2 && values.channel === "email") {
+      setValidating(true);
+      try { await api.post("/email/content/validate", emailContentPayload(values.email)); }
+      catch(error) {
+        window.dispatchEvent(new CustomEvent("email-builder-diagnostics", {
+          detail: error.response?.data?.diagnostics || [],
+        }));
+        setStepError(normalizeAxiosError(error) || t("fixStepErrors"));
+        return;
+      }
+      finally { setValidating(false); }
     }
     if (step === 3) {
       const errs = validateStepOffer(values);
@@ -239,7 +290,16 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
     const m = validateStepMessage(values);
     const o = validateStepOffer(values);
     if (Object.keys(g).length || Object.keys(r).length || Object.keys(m).length || Object.keys(o).length) {
-      setStepError(t("fixStepErrors"));
+      clearErrors();
+      Object.entries({ ...g, ...r, ...m, ...o }).forEach(([key, message]) =>
+        setError(key, { type: "manual", message }),
+      );
+      if (Object.keys(g).length) setStep(0);
+      else if (Object.keys(r).length) setStep(1);
+      else if (Object.keys(m).length) setStep(2);
+      else setStep(3);
+      const globalMessage = m["email.document"] || m.whatsapp;
+      setStepError(globalMessage ? t(globalMessage) : "");
       return;
     }
     if (nameStatus === "checking" || nameStatus === "taken") {
@@ -249,9 +309,19 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
     setSaving(true);
     try {
       const payload = buildCampaignPayload(values, { copyStoredFile: !isEdit });
+      if (values.channel === "email") {
+        try {
+          await api.post("/email/content/validate", emailContentPayload(values.email));
+        } catch (error) {
+          window.dispatchEvent(new CustomEvent("email-builder-diagnostics", {
+            detail: error.response?.data?.diagnostics || [],
+          }));
+          throw error;
+        }
+      }
       // Header media picked from disk must become a hosted URL first.
       // Mirrors whatsapp-healper handleAssetUpload (/orphan-files/any).
-      const headerFile = values.whatsapp?.headerFile;
+      const headerFile = values.channel === "whatsapp" ? values.whatsapp?.headerFile : null;
       if (headerFile) {
         const fd = new FormData();
         fd.append("file", headerFile);
@@ -287,6 +357,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
+      window.dispatchEvent(new CustomEvent("email-draft-clear"));
       toast.success(t("saved"));
       router.push(campaignListHref(values.channel));
     } catch (error) {
@@ -330,6 +401,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
   return (
     <div className="min-h-screen p-5 space-y-4">
       <PageHeader breadcrumbs={breadcrumbs} />
+      {/* {watchedChannel === "email" && <EmailDraftRecovery watch={watch} setValue={setValue} campaignId={campaignId || copyFromId || "new"}/>} */}
 
       <Card>
         <CardContent>
@@ -370,13 +442,15 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
               errors={errors}
               watch={watch}
               setValue={setValue}
+              setStep={setStep}
+              step={step}
               campaignId={isEdit ? campaignId : null}
               nameStatus={nameStatus}
               setNameStatus={setNameStatus}
             />
           )}
           {step === 1 && <StepRecipients control={control} watch={watch} setValue={setValue} getValues={getValues} />}
-          {step === 2 && <StepMessage watch={watch} setValue={setValue} getValues={getValues} />}
+          {step === 2 && <StepMessage watch={watch} setValue={setValue} getValues={getValues} emailHistoryRef={emailHistoryRef} errors={errors} clearErrors={clearErrors}/>}
           {step === 3 && <StepOffer watch={watch} setValue={setValue} />}
           {step === 4 && <StepReview watch={watch} getValues={getValues} />}
         </CardContent>
@@ -387,7 +461,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
               <Button_ type="button" size="sm" variant="outline" label={t("back")} onClick={() => setStep((s) => s - 1)} />
             )}
             {step < STEPS.length - 1 ? (
-              <PrimaryBtn key="next" type="button" onClick={goNext}>
+              <PrimaryBtn key="next" type="button" loading={validating} onClick={goNext}>
                 {t("next")}
               </PrimaryBtn>
             ) : (

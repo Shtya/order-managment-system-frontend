@@ -34,18 +34,18 @@ function cellText(value) {
 }
 
 // Shared row-matrix parser: rows[0] is the header row.
-function parseMatrix(rows) {
+function parseMatrix(rows, channel = "whatsapp") {
   const data = (rows || []).filter((r) => r.some((c) => String(c ?? "").trim() !== ""));
   if (!data.length) return { error: "empty" };
   const headers = data[0].map(normalizeHeader);
-  const phoneIdx = headers.findIndex((h) => PHONE_HEADERS.has(h));
+  const phoneIdx = headers.findIndex((h) => channel === "email" ? ["email","emailaddress"].includes(h) : PHONE_HEADERS.has(h));
   if (phoneIdx === -1) return { error: "missing_phone", headers: data[0].map((c) => String(c ?? "")) };
   const body = data.slice(1);
   if (body.length > MAX_ROWS) return { error: "too_many" };
   let valid = 0;
   let invalid = 0;
   for (const row of body) {
-    if (!normalizeAnyPhone(cellText(row[phoneIdx]))) invalid += 1;
+    if (!(channel === "email" ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cellText(row[phoneIdx])) : normalizeAnyPhone(cellText(row[phoneIdx])))) invalid += 1;
     else valid += 1;
   }
   if (!valid) return { error: "empty_valid" };
@@ -54,6 +54,7 @@ function parseMatrix(rows) {
 
 export default function FileUpload({ watch, setValue }) {
   const t = useTranslations("campaigns.wizard");
+  const channel = watch("channel");
   const file = watch("audienceFile");
   const meta = watch("audienceFileMeta");
   const existingUrl = watch("audienceFileUrl");
@@ -90,7 +91,7 @@ export default function FileUpload({ watch, setValue }) {
         const lines = String(text || "")
           .split(/\r?\n/)
           .filter((l) => l.trim());
-        const parsed = parseMatrix(lines.map((l) => l.split(",")));
+        const parsed = parseMatrix(lines.map((l) => l.split(",")), channel);
         if (parsed.error) {
           fail(parsed.error);
           if (parsed.headers) {
@@ -114,7 +115,7 @@ export default function FileUpload({ watch, setValue }) {
         return false;
       }
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", raw: true });
-      const parsed = parseMatrix(rows);
+      const parsed = parseMatrix(rows, channel);
       if (parsed.error) {
         fail(parsed.error);
         if (parsed.headers) {
@@ -139,7 +140,7 @@ export default function FileUpload({ watch, setValue }) {
   const downloadTemplate = async () => {
     setDownloading(true);
     try {
-      const res = await api.get("/campaigns/audience-file-template", { responseType: "blob" });
+      const res = await api.get(`/campaigns/audience-file-template?channel=${channel}`, { responseType: "blob" });
       const url = URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement("a");
       a.href = url;

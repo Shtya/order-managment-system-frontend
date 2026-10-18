@@ -22,11 +22,13 @@ import { getCampaignPlaceholderChips } from "../campaignPlaceholders";
 
 export default function StepOffer({ watch, setValue }) {
   const t = useTranslations("campaigns.wizard");
+  const email = watch("email");
+  const isEmail = watch("channel") === "email";
   const whatsapp = watch("whatsapp");
   const enablePurchasePage = watch("enablePurchasePage");
   const products = watch("products") || [];
   const followups = watch("orderReplyFollowups") || [];
-  const inspect = useMemo(() => inspectTemplateOrderLink(whatsapp), [whatsapp]);
+  const inspect = useMemo(() => isEmail ? { orderLinkAvailable: /\{\{\s*campaign\.orderUrl\s*\}\}/.test(JSON.stringify(email || {})), hasQuickReply: false, qrOnly:false, quickReplies:[] } : inspectTemplateOrderLink(whatsapp), [whatsapp, email, isEmail]);
   // Same button variants as today (custom + quick-reply), keyed by
   // index + text so template changes reconcile the reply list below.
   const buttons = inspect.quickReplies;
@@ -152,8 +154,8 @@ export default function StepOffer({ watch, setValue }) {
           <p className="text-sm text-muted-foreground">{t("offer.unavailable")}</p>
         </div>
         <ul className="mx-auto max-w-md list-disc space-y-1 ps-5 text-sm text-muted-foreground">
-          {!inspect.hasOrderUrlVariable && <li>{t("offer.needOrderLinkVariable")}</li>}
-          {!inspect.hasQuickReply && <li>{t("offer.needCustomButton")}</li>}
+          <li>{t("offer.needOrderLinkVariableEmail")}</li>
+          <li>{t("offer.needOrderLinkVariableWhatsApp")}</li>
         </ul>
       </div>
     );

@@ -51,6 +51,7 @@ export const initialWizardData = {
   manualRecipients: [],
   audienceFilter: null,
   // Step 3 (whatsapp snapshot parts)
+  email: null,
   whatsappAccountId: null,
   whatsapp: null,
   enablePurchasePage: false,
@@ -198,6 +199,20 @@ export function validateStepRecipients(data) {
 
 export function validateStepMessage(data) {
   const errors = {};
+  if (data.channel === "email") {
+    if (data.email?.accountStatus === "suspended") {
+      errors["email.accountId"] = "validation.emailAccountSuspended";
+    }
+    else if (!data.email?.accountId)
+      errors["email.accountId"] = "validation.emailAccountRequired";
+    if (!data.email?.subject?.trim())
+      errors["email.subject"] = "validation.emailSubjectRequired";
+    if (!data.email?.businessIdentity?.trim())
+      errors["email.businessIdentity"] = "validation.emailIdentityRequired";
+    if (!data.email?.document?.blocks?.length)
+      errors["email.document"] = "validation.emailContentRequired";
+    return errors;
+  }
   if ((data.channel || "whatsapp") === "whatsapp") {
     if (!data.whatsapp?.templateId || !data.whatsappAccountId) {
       errors.whatsapp = "validation.templateRequired";
@@ -220,7 +235,7 @@ export function validateStepMessage(data) {
 }
 
 export function validateStepOffer(data) {
-  const inspect = inspectTemplateOrderLink(data.whatsapp);
+  const inspect = data.channel === "email" ? { orderLinkAvailable: /\{\{\s*campaign\.orderUrl\s*\}\}/.test(JSON.stringify(data.email || {})), hasQuickReply: false, qrOnly: false } : inspectTemplateOrderLink(data.whatsapp);
   const errors = {};
   if (!data.enablePurchasePage) return errors;
   if (!inspect.orderLinkAvailable) {
@@ -277,7 +292,7 @@ export function buildCampaignPayload(data, opts = {}) {
       price: Number(p.price || 0),
       sortOrder: index,
     }));
-    const inspect = inspectTemplateOrderLink(data.whatsapp);
+    const inspect = data.channel === "email" ? { orderLinkAvailable: /\{\{\s*campaign\.orderUrl\s*\}\}/.test(JSON.stringify(data.email || {})), hasQuickReply: false, qrOnly: false } : inspectTemplateOrderLink(data.whatsapp);
     const followupOn = inspect.qrOnly ? true : !!data.orderReplyFollowupEnabled;
     payload.orderReplyFollowupEnabled = followupOn;
     if (followupOn && inspect.hasQuickReply) {
@@ -317,7 +332,7 @@ export function buildCampaignPayload(data, opts = {}) {
   else payload.audienceSegmentId = null;
   if (data.audienceType === "manual") {
     payload.manualRecipients = (data.manualRecipients || []).map((r) => ({
-      phoneNumber: r.phoneNumber,
+      ...(data.channel === "email" ? { email:r.email, ...(r.phoneNumber ? {phoneNumber:r.phoneNumber} : {}) } : {phoneNumber:r.phoneNumber}),
       ...(r.name ? { name: r.name } : {}),
     }));
   }
@@ -334,7 +349,12 @@ export function buildCampaignPayload(data, opts = {}) {
     payload.audienceFileUrl = data.audienceFileUrl;
     payload.duplicateAudienceFile = true;
   }
-  if (data.whatsapp) {
+  if (data.channel === "email") {
+    const email = { ...(data.email || {}) };
+    delete email.accountStatus;
+    payload.email = email;
+  }
+  if (data.channel !== "email" && data.whatsapp) {
     payload.whatsapp = {
       templateId: data.whatsapp.templateId,
       accountId: data.whatsappAccountId,

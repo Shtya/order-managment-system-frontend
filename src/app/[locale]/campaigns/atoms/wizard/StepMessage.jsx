@@ -1,5 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
+const EmailBuilder = dynamic(
+  () => import("@/components/email-builder/EmailBuilder"),
+  { ssr: false, loading: () => <EmailBuilderSkeleton /> },
+);
 import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
@@ -10,9 +15,71 @@ import { InternalTemplateDialog } from "@/app/[locale]/whatsapp/atoms/InternalTe
 import WhatsAppAccountSelect from "@/app/[locale]/whatsapp/atoms/WhatsAppAccountSelect";
 import TemplatePreview from "@/app/[locale]/whatsapp/atoms/TemplatePreview";
 import MediaUpload from "@/app/[locale]/whatsapp/atoms/MediaUpload";
+
 import LocationFields from "@/app/[locale]/whatsapp/atoms/chats/LocationFields";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
 import { campaignTemplateChipPreview, getCampaignPlaceholderChips } from "../campaignPlaceholders";
+
+function SkeletonLine({ className = "" }) {
+  return <div className={`h-3 rounded bg-muted-foreground/15 ${className}`} />;
+}
+
+function EmailBuilderSkeleton() {
+  return (
+    <div aria-busy="true" className="animate-pulse space-y-5">
+      <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <SkeletonLine className="w-36" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {[0, 1].map((item) => (
+            <div key={item} className="space-y-2">
+              <SkeletonLine className="w-24" />
+              <div className="h-10 rounded-lg bg-muted" />
+            </div>
+          ))}
+        </div>
+        <SkeletonLine className="w-28" />
+        <div className="h-10 rounded-lg bg-muted" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {[0, 1].map((item) => (
+          <div key={item} className="space-y-3 rounded-xl border border-border bg-card p-4">
+            <SkeletonLine className="w-32" />
+            <div className="h-24 rounded-lg bg-muted" />
+          </div>
+        ))}
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex h-12 items-center gap-2 border-b border-border px-4">
+          <div className="h-7 w-16 rounded-lg bg-muted" />
+          <div className="h-7 w-16 rounded-lg bg-muted" />
+          <div className="ms-auto h-7 w-24 rounded-lg bg-muted" />
+        </div>
+        <div className="grid min-h-[360px] grid-cols-1 lg:grid-cols-[180px_minmax(0,1fr)_240px]">
+          <div className="hidden border-e border-border p-4 lg:block">
+            <SkeletonLine className="mb-4 w-20" />
+            <div className="space-y-2">
+              {[0, 1, 2].map((item) => (
+                <div key={item} className="h-10 rounded-lg bg-muted" />
+              ))}
+            </div>
+          </div>
+          <div className="bg-muted/30 p-5">
+            <div className="mx-auto h-72 max-w-[540px] rounded-xl bg-muted" />
+          </div>
+          <div className="hidden border-s border-border p-4 lg:block">
+            <SkeletonLine className="mb-4 w-24" />
+            <div className="space-y-3">
+              <div className="h-9 rounded-lg bg-muted" />
+              <div className="h-20 rounded-lg bg-muted" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function buildInitialWhatsapp(template, accountId, wabaId) {
   const config = template.templateConfig || {};
@@ -54,7 +121,18 @@ function buildInitialWhatsapp(template, accountId, wabaId) {
   };
 }
 
-export default function StepMessage({ watch, setValue }) {
+export default function StepMessage({ watch, setValue, emailHistoryRef, errors, clearErrors }) {
+  return watch("channel") === "email" ? (
+    <EmailBuilder
+      watch={watch}
+      setValue={setValue}
+      historyRef={emailHistoryRef}
+      errors={errors?.email}
+      clearErrors={clearErrors}
+    />
+  ) : <WhatsappMessage watch={watch} setValue={setValue}/>;
+}
+function WhatsappMessage({ watch, setValue }) {
   const accountId = watch("whatsappAccountId");
   const whatsapp = watch("whatsapp");
   const t = useTranslations("campaigns.wizard");

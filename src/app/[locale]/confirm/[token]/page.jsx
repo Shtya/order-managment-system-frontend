@@ -229,6 +229,7 @@ export default function PublicCampaignOrderPage() {
   const [areasLoading, setAreasLoading] = useState(false);
   const [form, setForm] = useState({
     customerName: "",
+    phoneNumber: "",
     address: "",
     landmark: "",
     cityId: "",
@@ -258,6 +259,7 @@ export default function PublicCampaignOrderPage() {
         setCities(Array.isArray(cityList) ? cityList : []);
         setForm({
           customerName: json.customerName || "",
+          phoneNumber: json.phoneNumber || "",
           address: json.address || "",
           landmark: json.landmark || "",
           cityId: json.cityId || "",
@@ -336,6 +338,7 @@ export default function PublicCampaignOrderPage() {
         alreadyOrdered: true,
         orderNumber: prev.orderNumber || "PREVIEW-1001",
         customerName: form.customerName || prev.customerName,
+        phoneNumber: form.phoneNumber || prev.phoneNumber,
         address: form.address || prev.address,
         landmark: form.landmark || prev.landmark,
         city: locName(selectedCity, locale) || prev.city,
@@ -357,6 +360,7 @@ export default function PublicCampaignOrderPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerName: form.customerName,
+          phoneNumber: form.phoneNumber || undefined,
           address: form.address,
           landmark: form.landmark || undefined,
           city: collect ? locName(selectedCity, locale) || data?.city : "",
@@ -483,6 +487,45 @@ export default function PublicCampaignOrderPage() {
                 <h1 className="text-[23px] font-bold">{t("title")}</h1>
               </div>
               <p className="mb-5 ms-[52px] text-[13px] text-muted-foreground max-sm:ms-0">{t("subtitle")}</p>
+              {(data.requiresCustomerName || data.requiresPhoneNumber) && (
+                <div className="mt-5 border-t border-border pt-5">
+                  <SectionTitle icon={User}>{t("customerSection")}</SectionTitle>
+                  <div
+                    className={cn(
+                      "grid gap-3.5",
+                      data.requiresCustomerName && data.requiresPhoneNumber
+                        ? "sm:grid-cols-2"
+                        : "sm:grid-cols-1",
+                    )}
+                  >
+                    {data.requiresCustomerName && (
+                      <Field label={t("name")}>
+                        <Input
+                          required
+                          value={form.customerName}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, customerName: e.target.value }))
+                          }
+                        />
+                      </Field>
+                    )}
+                    {data.requiresPhoneNumber && (
+                      <Field label={t("phone")}>
+                        <Input
+                          required
+                          type="tel"
+                          dir="ltr"
+                          value={form.phoneNumber}
+                          placeholder={t("phonePlaceholder")}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, phoneNumber: e.target.value }))
+                          }
+                        />
+                      </Field>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="mt-5 border-t border-border pt-5">
                 <SectionTitle icon={MapPin}>{t("addressSection")}</SectionTitle>
                 <div className="grid gap-3.5 sm:grid-cols-2">

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -15,7 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
-import { Badge } from "@/components/ui/badge";
 import { FieldStatusInfo } from "@/components/atoms/SlugInput";
 import { cn } from "@/utils/cn";
 import api from "@/utils/api";
@@ -27,19 +28,35 @@ export default function StepGeneral({
   errors,
   watch,
   setValue,
+  step,
+  setStep,
   campaignId,
   nameStatus,
   setNameStatus,
 }) {
   const t = useTranslations("campaigns.wizard");
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const workingHoursEnabled = watch("workingHoursEnabled");
   const workingHoursTimezone = watch("workingHoursTimezone");
   const name = watch("name");
-  // Channel is locked from the URL (/campaigns/{type}); no picker here.
   const channel = normalizeCampaignChannel(watch("channel"));
   const scheduleMode = watch("scheduleMode");
   const [debouncedName, setDebouncedName] = useState(name);
+
+  const handleChannelChange = (nextChannel) => {
+    const normalized = normalizeCampaignChannel(nextChannel);
+    if (normalized === channel) return;
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("channel", normalized);
+
+    setValue("channel", normalized, { shouldDirty: true });
+    router.replace(`/campaigns/new?${nextParams.toString()}`, { scroll: false });
+
+    if (step >= 2) setStep(0);
+  };
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedName(name), 600);
@@ -222,17 +239,27 @@ export default function StepGeneral({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>{t("channel")}</Label>
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3.5 py-3">
-          <Badge variant="outline" className="font-bold">
-            {t(`channels.${channel}`)}
-          </Badge>
-          <span className="text-xs text-muted-foreground">{t("channelLockedHint")}</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>{t("channel")}</Label>
+          <Controller
+            name="channel"
+            control={control}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={(value) => handleChannelChange(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="whatsapp">{t("channels.whatsapp")}</SelectItem>
+                  <SelectItem value="email">{t("channels.email")}</SelectItem>
+                  {/* <SelectItem value="sms">{t("channels.sms")}</SelectItem> */}
+                </SelectContent>
+              </Select>
+            )}
+          />
         </div>
-      </div>
 
-      <div className="space-y-4">
         <div className="space-y-2">
           <Label>{t("scheduleMode")}</Label>
           <Controller
@@ -251,6 +278,9 @@ export default function StepGeneral({
             )}
           />
         </div>
+      </div>
+
+      <div className="space-y-4">
         {scheduleMode === "scheduled" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">

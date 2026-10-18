@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Puzzle, FileUp, PenLine, Filter } from "lucide-react";
 import { cn } from "@/utils/cn";
 import SegmentPicker from "./SegmentPicker";
@@ -50,7 +50,9 @@ const RESET_ON_SWITCH = {
 };
 
 export default function StepRecipients({ watch, setValue, getValues }) {
-  const t = useTranslations("campaigns.wizard");
+  const tw = useTranslations("campaigns.wizard");
+  const t = useTranslations("emailBuilder");
+  const isEmail = watch("channel") === "email";
   const audienceType = watch("audienceType") || "segment";
 
   const pickSource = (id) => {
@@ -82,8 +84,8 @@ export default function StepRecipients({ watch, setValue, getValues }) {
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 text-primary">
                 <Icon size={17} />
               </span>
-              <span className="text-sm font-bold">{t(`recipients.${s.id}`)}</span>
-              <span className="text-[11px] text-muted-foreground leading-snug">{t(`recipients.${s.id}Hint`)}</span>
+              <span className="text-sm font-bold">{isEmail && s.id === "manual" ? t("manualEmail.manualEmail") : tw(`recipients.${s.id}`)}</span>
+              <span className="text-[11px] text-muted-foreground leading-snug">{isEmail && s.id === "manual" ? t("manualEmail.manualEmailHint") : tw(`recipients.${s.id}Hint`)}</span>
             </button>
           );
         })}

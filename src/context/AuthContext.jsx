@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { clearPrivateDrafts } from "@/utils/privateDraftStorage";
 import api, { getLang } from "@/utils/api";
 import {
     readAllTablePrefsFromLS,
@@ -19,6 +20,27 @@ const USER_STORAGE_KEY = "user";
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState();
+    const previousDraftIdentity = useRef(null);
+    useEffect(() => {
+        clearPrivateDrafts(undefined, true);
+        const timer = setInterval(() => clearPrivateDrafts(undefined, true), 60000);
+        const storageChanged = event => {
+            if (event.key === "accessToken" && !event.newValue) clearPrivateDrafts();
+            if (event.key === "user") {
+                try {
+                    const oldUser = JSON.parse(event.oldValue || "null"), nextUser = JSON.parse(event.newValue || "null");
+                    if (oldUser?.id !== nextUser?.id || oldUser?.adminId !== nextUser?.adminId) clearPrivateDrafts();
+                } catch { clearPrivateDrafts(); }
+            }
+        };
+        window.addEventListener("storage", storageChanged);
+        return () => { clearInterval(timer); window.removeEventListener("storage", storageChanged); };
+    }, []);
+    useEffect(() => {
+        const identity = user ? `${user.id}:${user.adminId || user.id}:${user.role?.name}` : null;
+        if (previousDraftIdentity.current && previousDraftIdentity.current !== identity) clearPrivateDrafts();
+        previousDraftIdentity.current = identity;
+    }, [user?.id, user?.adminId, user?.role?.name]);
     /** null = not loaded yet; object = loaded once for the session (not on User /users/me). */
     const [tablePreferences, setTablePreferences] = useState(() => {
         if (typeof window === "undefined") return null;
@@ -142,6 +164,7 @@ export function AuthProvider({ children }) {
 
         } else {
 
+            clearPrivateDrafts();
             localStorage.removeItem('accessToken');
             localStorage.removeItem(USER_STORAGE_KEY);
             setToken(null);
@@ -298,6 +321,7 @@ export function AuthProvider({ children }) {
 
     const logout = useCallback(async () => {
         try {
+            clearPrivateDrafts();
             ["accessToken", USER_STORAGE_KEY].forEach((k) => localStorage.removeItem(k));
             setToken(null);
             setUser(null);

@@ -2,6 +2,7 @@ const createNextIntlPlugin = require('next-intl/plugin');
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   reactStrictMode: false,
   devIndicators: false,
   output: "standalone",

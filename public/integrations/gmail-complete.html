@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gmail connection</title>
+    <style>
+      :root { color-scheme: light dark; font-family: Arial, sans-serif; }
+      body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: #f4f7f5; color: #17352b; }
+      main { width: min(360px, calc(100% - 32px)); box-sizing: border-box; border: 1px solid #d7e2dc; border-radius: 16px; background: white; padding: 24px; text-align: center; box-shadow: 0 12px 36px rgba(23, 53, 43, .12); }
+      h1 { margin: 0 0 8px; font-size: 18px; }
+      p { margin: 0 0 18px; color: #637469; font-size: 14px; line-height: 1.5; }
+      button, a { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; border: 0; border-radius: 9px; background: #176c51; color: white; padding: 0 16px; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+      [hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 id="title">Gmail connection finished</h1>
+      <p id="message">Returning to the campaign editor…</p>
+      <button id="close" type="button" hidden>Close this window</button>
+      <a id="return" href="/" hidden>Return to the campaign editor</a>
+    </main>
+    <script>
+      (() => {
+        const params = new URLSearchParams(location.search);
+        const status = params.get("emailConnection");
+        const savedReturn = sessionStorage.getItem("email-oauth-return") || "";
+        let locale = navigator.language?.toLowerCase().startsWith("ar") ? "ar" : "en";
+        try {
+          const savedPath = new URL(savedReturn, location.origin).pathname;
+          const pathLocale = savedPath.match(/^\/(ar|en)(?:\/|$)/)?.[1];
+          if (pathLocale) locale = pathLocale;
+        } catch {}
+        const copy = {
+          en: {
+            title: "Gmail connection finished",
+            returning: "Returning to the campaign editor…",
+            cancelledTitle: "Gmail connection cancelled",
+            cancelled: "No Gmail account was connected.",
+            close: "Close this window",
+            closeHint: "You can close this window and return to the campaign editor.",
+            return: "Return to the campaign editor",
+            continue: "Continue to the campaign editor.",
+          },
+          ar: {
+            title: "اكتمل ربط Gmail",
+            returning: "جارٍ الرجوع إلى محرر الحملة…",
+            cancelledTitle: "تم إلغاء ربط Gmail",
+            cancelled: "لم يتم ربط أي حساب Gmail.",
+            close: "إغلاق هذه النافذة",
+            closeHint: "يمكنك إغلاق هذه النافذة والرجوع إلى محرر الحملة.",
+            return: "الرجوع إلى محرر الحملة",
+            continue: "تابع إلى محرر الحملة.",
+          },
+        }[locale];
+        document.documentElement.lang = locale;
+        document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+        const payload = {
+          type: "email-oauth-complete",
+          accountId: params.get("accountId"),
+          status,
+        };
+        const closeButton = document.getElementById("close");
+        const returnLink = document.getElementById("return");
+        const message = document.getElementById("message");
+        const title = document.getElementById("title");
+        title.textContent = copy.title;
+        message.textContent = copy.returning;
+        closeButton.textContent = copy.close;
+        returnLink.textContent = copy.return;
+
+        if (status === "cancelled") {
+          title.textContent = copy.cancelledTitle;
+          message.textContent = copy.cancelled;
+        }
+
+        closeButton.addEventListener("click", () => window.close());
+
+        try {
+          const channel = new BroadcastChannel("email-oauth-complete");
+          channel.postMessage(payload);
+          channel.close();
+        } catch {}
+        try {
+          localStorage.setItem("email-oauth-complete", JSON.stringify(payload));
+          localStorage.removeItem("email-oauth-complete");
+        } catch {}
+        try {
+          if (window.opener && !window.opener.closed)
+            window.opener.postMessage(payload, window.location.origin);
+        } catch {}
+
+        window.close();
+        [50, 250, 1000].forEach((delay) => setTimeout(() => window.close(), delay));
+        setTimeout(() => {
+          closeButton.hidden = false;
+          message.textContent = copy.closeHint;
+        }, 300);
+
+        if (window.opener && !window.opener.closed) return;
+
+        try {
+          const target = new URL(savedReturn, location.origin);
+          if (
+            target.origin === location.origin &&
+            /^\/[a-z]{2}\/campaigns\/(?:new\/email|[a-f0-9-]{36}\/edit)$/.test(target.pathname)
+          ) {
+            returnLink.href = target.href;
+            returnLink.hidden = false;
+            message.textContent = copy.continue;
+          }
+        } catch {}
+      })();
+    </script>
+  </body>
+</html>

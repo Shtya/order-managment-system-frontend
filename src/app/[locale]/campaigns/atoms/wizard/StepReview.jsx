@@ -1,5 +1,6 @@
 "use client";
 
+import EmailReview from "@/components/email-builder/EmailReview";
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,10 @@ import { inspectTemplateOrderLink } from "../campaignOrderUrl";
 import { VariableTextPreview } from "@/components/ui/VariableInput";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
-export default function StepReview({ getValues }) {
+export default function StepReview(props) {
+  return props.getValues().channel === "email" ? <EmailReview {...props}/> : <WhatsappReview {...props}/>;
+}
+function WhatsappReview({ getValues }) {
   const tSeg = useTranslations("customerSegments");
   const ta = useTranslations("audienceFilter");
   const tOrders = useTranslations("orders");
@@ -99,7 +103,7 @@ export default function StepReview({ getValues }) {
   }, []);
 
   useEffect(() => {
-    const accountId = v.whatsappAccountId || v.whatsapp?.accountId;
+    const accountId = v.channel === "email" ? null : v.whatsappAccountId || v.whatsapp?.accountId;
     if (!accountId) {
       setWhatsappAccount(null);
       return;
@@ -116,7 +120,7 @@ export default function StepReview({ getValues }) {
     return () => {
       cancelled = true;
     };
-  }, [v.whatsappAccountId, v.whatsapp?.accountId]);
+  }, [v.channel, v.whatsappAccountId, v.whatsapp?.accountId]);
 
   const fieldOptions = useMemo(
     () => buildAudienceFieldOptions({ lookups: lookupsRaw, locale, tOrders, tTags, tAudience: ta }),
@@ -210,8 +214,10 @@ export default function StepReview({ getValues }) {
               {t("recipients.numbersFound", { count: (v.manualRecipients || []).length })}
             </p>
             {(v.manualRecipients || []).map((row, index) => (
-              <div key={`${row.phoneNumber}-${index}`} className="rounded-xl border border-border px-3 py-2 text-sm">
-                <span className="font-bold" dir="ltr">{row.phoneNumber}</span>
+              <div key={`${row.email || row.phoneNumber}-${index}`} className="rounded-xl border border-border px-3 py-2 text-sm">
+                <span className="font-bold" dir="ltr">
+                  {v.channel === "email" ? row.email : row.phoneNumber}
+                </span>
                 {row.name && <span className="ms-2 text-muted-foreground">{row.name}</span>}
               </div>
             ))}

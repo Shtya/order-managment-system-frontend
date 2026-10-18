@@ -13,6 +13,32 @@ export const EMAIL_GUIDELINE_TYPES = {
 };
 
 export const EMAIL_SENDING_GUIDELINES = [
+   {
+    id: "pace",
+    title: text("وتيرة الإرسال وحدود Gmail", "Sending pace and Gmail limits"),
+    advices: [
+      advice("recommended", "ابدأ تدريجيًا", "Ramp up gradually", "ابدأ بالمشتركين المتفاعلين وبحجم صغير، وزد الحجم تدريجيًا.", "Start with engaged subscribers and a small volume, then increase gradually."),
+      advice("recommended", "وتيرة ثابتة", "Keep a steady pace", "تجنب الدفعات الكبيرة والقفزات المفاجئة في الحجم.", "Avoid large bursts and sudden volume jumps."),
+      advice("recommended", "استجب للمؤشرات", "React to warning signals", "عند ارتفاع الرفض أو التأجيل أو الشكاوى، أبطئ أو أوقف وافحص السبب.", "Slow or stop when rejection, deferral, or complaint rates rise, then investigate."),
+      advice("required", "احترم حدود Gmail", "Respect Gmail limits", "حدود الحساب ليست تصريحًا بإرسال رسائل غير مطلوبة.", "Account limits are not permission to send unsolicited mail."),
+      advice("required", "لا تتحايل", "Do not evade enforcement", "لا تدوّر الحسابات أو تستخدم عدة حسابات للتحايل على الإنفاذ.", "Do not rotate or multiply accounts to evade enforcement."),
+      advice("recommended", "إرسال متسلسل", "Serialize account sends", "لا ترسل بالتوازي من الحساب نفسه، واحترم توقيت إعادة المحاولة.", "Do not send concurrently from one account; respect retry timing."),
+      advice("prohibited", "لا شبكات تسخين مصطنعة", "No artificial warm-up networks", "لا تعتمد على شبكات تسخين أو تفاعل مصطنع.", "Do not rely on artificial warm-up or engagement networks."),
+    ],
+  },
+    {
+    id: "reputation",
+    title: text("السمعة وصحة القائمة", "Reputation and list health"),
+    advices: [
+      advice("recommended", "راقب الشكاوى", "Monitor complaints", "استهدف معدل شكاوى أقل من 0.1% وتجنب بلوغ 0.3%.", "Aim for complaints below 0.1% and avoid reaching 0.3%."),
+      advice("recommended", "استخدم Postmaster Tools", "Use Postmaster Tools", "استخدم Postmaster Tools للنطاقات الموثقة؛ قد لا تظهر بيانات لعناوين Gmail الفردية.", "Use Postmaster Tools for verified domains; personal Gmail addresses may not receive data."),
+      advice("recommended", "راقب مؤشرات الإرسال", "Track sending signals", "راقب الارتداد والتأجيل والشكاوى والرفض؛ Gmail API لا يوفر تقارير فتح ونقر وتسليم كاملة.", "Monitor bounces, deferrals, complaints, and rejections; Gmail API does not provide complete delivery, open, or click reporting."),
+      advice("recommended", "أوقف العناوين السيئة", "Suppress bad addresses", "أوقف المرتد نهائيًا وخفف أو أوقف إرسال غير المتفاعلين.", "Suppress permanent bounces and reduce or stop sends to unengaged recipients."),
+      advice("recommended", "سهّل الإلغاء", "Make unsubscribe easy", "اجعل الإلغاء أسهل من الإبلاغ كمزعج، وافصل القوائم حسب الاهتمام.", "Make unsubscribe easier than reporting spam and segment lists by interest."),
+      advice("recommended", "راجع الحملات السيئة", "Review harmful campaigns", "راجع أي حملة تسبب قفزة في الشكاوى أو الرفض أو الإلغاءات.", "Review any campaign that causes a spike in complaints, rejections, or unsubscribes."),
+      advice("prohibited", "لا تصيّد تجريبيًا", "No phishing simulations", "لا ترسل حملات تصيد تجريبية من نطاق الإرسال التسويقي.", "Do not send phishing simulations from your marketing domain."),
+    ],
+  },
   {
     id: "consent",
     title: text("قبل إنشاء الحملة: القائمة والموافقة", "Before the campaign: list and consent"),
@@ -86,32 +112,6 @@ export const EMAIL_SENDING_GUIDELINES = [
       advice("required", "سجل دائم", "Permanent suppression", "احتفظ بسجل إلغاء دائم وطبقه على الاستيرادات والحملات التالية.", "Keep a durable suppression record and apply it to imports and future campaigns."),
       advice("required", "افصل التسويق عن الضروري", "Separate essential email", "إلغاء التسويق لا يوقف رسائل الأمان والمعاملات الضرورية.", "Marketing unsubscribe must not block necessary security or transactional messages."),
       advice("recommended", "مركز تفضيلات", "Preference center", "يمكن توفير مركز تفضيلات بشرط ألا يعيق الإلغاء الكامل.", "A preference center is useful as long as it does not obstruct full unsubscribe."),
-    ],
-  },
-  {
-    id: "pace",
-    title: text("وتيرة الإرسال وحدود Gmail", "Sending pace and Gmail limits"),
-    advices: [
-      advice("recommended", "ابدأ تدريجيًا", "Ramp up gradually", "ابدأ بالمشتركين المتفاعلين وبحجم صغير، وزد الحجم تدريجيًا.", "Start with engaged subscribers and a small volume, then increase gradually."),
-      advice("recommended", "وتيرة ثابتة", "Keep a steady pace", "تجنب الدفعات الكبيرة والقفزات المفاجئة في الحجم.", "Avoid large bursts and sudden volume jumps."),
-      advice("recommended", "استجب للمؤشرات", "React to warning signals", "عند ارتفاع الرفض أو التأجيل أو الشكاوى، أبطئ أو أوقف وافحص السبب.", "Slow or stop when rejection, deferral, or complaint rates rise, then investigate."),
-      advice("required", "احترم حدود Gmail", "Respect Gmail limits", "حدود الحساب ليست تصريحًا بإرسال رسائل غير مطلوبة.", "Account limits are not permission to send unsolicited mail."),
-      advice("required", "لا تتحايل", "Do not evade enforcement", "لا تدوّر الحسابات أو تستخدم عدة حسابات للتحايل على الإنفاذ.", "Do not rotate or multiply accounts to evade enforcement."),
-      advice("recommended", "إرسال متسلسل", "Serialize account sends", "لا ترسل بالتوازي من الحساب نفسه، واحترم توقيت إعادة المحاولة.", "Do not send concurrently from one account; respect retry timing."),
-      advice("prohibited", "لا شبكات تسخين مصطنعة", "No artificial warm-up networks", "لا تعتمد على شبكات تسخين أو تفاعل مصطنع.", "Do not rely on artificial warm-up or engagement networks."),
-    ],
-  },
-  {
-    id: "reputation",
-    title: text("السمعة وصحة القائمة", "Reputation and list health"),
-    advices: [
-      advice("recommended", "راقب الشكاوى", "Monitor complaints", "استهدف معدل شكاوى أقل من 0.1% وتجنب بلوغ 0.3%.", "Aim for complaints below 0.1% and avoid reaching 0.3%."),
-      advice("recommended", "استخدم Postmaster Tools", "Use Postmaster Tools", "استخدم Postmaster Tools للنطاقات الموثقة؛ قد لا تظهر بيانات لعناوين Gmail الفردية.", "Use Postmaster Tools for verified domains; personal Gmail addresses may not receive data."),
-      advice("recommended", "راقب مؤشرات الإرسال", "Track sending signals", "راقب الارتداد والتأجيل والشكاوى والرفض؛ Gmail API لا يوفر تقارير فتح ونقر وتسليم كاملة.", "Monitor bounces, deferrals, complaints, and rejections; Gmail API does not provide complete delivery, open, or click reporting."),
-      advice("recommended", "أوقف العناوين السيئة", "Suppress bad addresses", "أوقف المرتد نهائيًا وخفف أو أوقف إرسال غير المتفاعلين.", "Suppress permanent bounces and reduce or stop sends to unengaged recipients."),
-      advice("recommended", "سهّل الإلغاء", "Make unsubscribe easy", "اجعل الإلغاء أسهل من الإبلاغ كمزعج، وافصل القوائم حسب الاهتمام.", "Make unsubscribe easier than reporting spam and segment lists by interest."),
-      advice("recommended", "راجع الحملات السيئة", "Review harmful campaigns", "راجع أي حملة تسبب قفزة في الشكاوى أو الرفض أو الإلغاءات.", "Review any campaign that causes a spike in complaints, rejections, or unsubscribes."),
-      advice("prohibited", "لا تصيّد تجريبيًا", "No phishing simulations", "لا ترسل حملات تصيد تجريبية من نطاق الإرسال التسويقي.", "Do not send phishing simulations from your marketing domain."),
     ],
   },
   {

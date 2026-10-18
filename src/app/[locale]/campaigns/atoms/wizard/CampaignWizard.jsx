@@ -450,7 +450,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
             />
           )}
           {step === 1 && <StepRecipients control={control} watch={watch} setValue={setValue} getValues={getValues} />}
-          {step === 2 && <StepMessage watch={watch} setValue={setValue} getValues={getValues} emailHistoryRef={emailHistoryRef} errors={errors} clearErrors={clearErrors}/>}
+          {step === 2 && <StepMessage watch={watch} setValue={setValue} getValues={getValues} emailHistoryRef={emailHistoryRef} errors={errors} setError={setError} clearErrors={clearErrors} setStepError={setStepError}/>}
           {step === 3 && <StepOffer watch={watch} setValue={setValue} />}
           {step === 4 && <StepReview watch={watch} getValues={getValues} />}
         </CardContent>

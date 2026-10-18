@@ -76,7 +76,7 @@ function FullscreenPortal({ active, children }) {
   return active ? createPortal(children, document.body) : children;
 }
 
-export default function EmailBuilder({ watch, setValue, historyRef, errors, clearErrors }) {
+export default function EmailBuilder({ watch, setValue, historyRef, errors, setError, clearErrors, onGlobalError }) {
   const tw = useTranslations("campaigns.wizard");
   const t = useTranslations("emailBuilder");
   const variableOptions = useMemo(() => getCampaignPlaceholderChips(tw), [tw]);
@@ -105,6 +105,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, clea
     [full, setFull] = useState(false),
     [busy, setBusy] = useState(false),
     [testTo, setTestTo] = useState(""),
+    [testToError, setTestToError] = useState(""),
     [message, setMessage] = useState(""),
     [testPending, setTestPending] = useState(false),
     [testNeedsReconnect, setTestNeedsReconnect] = useState(false),
@@ -411,19 +412,41 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, clea
   }
   async function sendTest() {
     const selectedAccount = accounts.find((item) => item.id === accountId);
-    if (selectedAccount?.status === "suspended") {
-      const suspendedMessage = t("feedback.accountSuspended");
-      setMessage(suspendedMessage);
-      setTestNeedsReconnect(true);
-      toast.error(suspendedMessage);
+    clearErrors?.("email");
+    onGlobalError?.("");
+    let invalid = false;
+    const requireField = (field, missing, message) => {
+      if (!missing) return;
+      invalid = true;
+      setError?.(`email.${field}`, { type: "manual", message });
+    };
+    requireField(
+      "accountId",
+      selectedAccount?.status === "suspended",
+      "validation.emailAccountSuspended",
+    );
+    requireField("accountId", !accountId, "validation.emailAccountRequired");
+    requireField("subject", !email.subject?.trim(), "validation.emailSubjectRequired");
+    requireField(
+      "businessIdentity",
+      !email.businessIdentity?.trim(),
+      "validation.emailIdentityRequired",
+    );
+    if (!doc?.blocks?.length) {
+      invalid = true;
+      onGlobalError?.(tw("validation.emailContentRequired"));
+    }
+    if (invalid) {
+      if (selectedAccount?.status === "suspended")
+        toast.error(t("feedback.accountSuspended"));
       return;
     }
-    if (
-      !accountId ||
-      !testTo ||
-      !root.current.querySelector("[data-test-recipient]").reportValidity()
-    )
-      throw new Error(t("feedback.invalid"));
+    const recipientInput = root.current.querySelector("[data-test-recipient]");
+    if (!testTo || !recipientInput?.checkValidity()) {
+      setTestToError(t("feedback.testRecipientRequired"));
+      recipientInput?.reportValidity();
+      return;
+    }
     setTestNeedsReconnect(false);
     setTestPending(true);
     setMessage(t("feedback.pending"));
@@ -695,11 +718,13 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, clea
               </div>
             </div>
 
-            <div className="space-y-2  px-5">
-
-              <Label htmlFor="email-test-to" description={t("descriptions.testRecipient")}>
-                {t("test.yourEmail")}
-              </Label>
+            <div className="space-y-2 px-5">
+              <Field
+                id="email-test-to"
+                label={t("test.yourEmail")}
+                description={t("descriptions.testRecipient")}
+                error={testToError}
+              >
               <Input
                 id="email-test-to"
                 data-test-recipient
@@ -709,12 +734,16 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, clea
                 aria-label={t("test.recipient")}
                 placeholder="you@example.com"
                 value={testTo}
-                onChange={(e) => setTestTo(e.target.value)}
+                onChange={(e) => {
+                  setTestTo(e.target.value);
+                  setTestToError("");
+                }}
               />
+              </Field>
               <Button
                 type="button"
                 className="mt-3 w-full"
-                disabled={busy || testPending || !accountId}
+                disabled={busy || testPending}
                 onClick={() => perform(sendTest)}
               >
                 <Send size={15} />

@@ -121,14 +121,16 @@ function buildInitialWhatsapp(template, accountId, wabaId) {
   };
 }
 
-export default function StepMessage({ watch, setValue, emailHistoryRef, errors, clearErrors }) {
+export default function StepMessage({ watch, setValue, emailHistoryRef, errors, setError, clearErrors, setStepError }) {
   return watch("channel") === "email" ? (
     <EmailBuilder
       watch={watch}
       setValue={setValue}
       historyRef={emailHistoryRef}
       errors={errors?.email}
+      setError={setError}
       clearErrors={clearErrors}
+      onGlobalError={setStepError}
     />
   ) : <WhatsappMessage watch={watch} setValue={setValue}/>;
 }

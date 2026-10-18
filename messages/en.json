@@ -19148,6 +19148,7 @@
       "accepted": "Accepted by provider; check the recipient mailbox.",
       "testFailed": "The test email could not be sent. Check the sender connection and try again.",
       "testUnknown": "The sending result is unknown. Check the recipient mailbox before trying again.",
+      "testRecipientRequired": "Enter a valid test recipient email address.",
       "invalid": "Complete sender, subject, business identity and content.",
       "externalLegacy": "Legacy images must be uploaded before this design can be saved in the new builder.",
       "fixComponent": "Fix this",

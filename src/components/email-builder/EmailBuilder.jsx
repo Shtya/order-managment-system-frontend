@@ -69,6 +69,7 @@ import { Button } from "../ui/button";
 import Button_ from "@/components/atoms/Button";
 import { getCampaignPlaceholderChips } from "@/app/[locale]/campaigns/atoms/campaignPlaceholders";
 import { VariablePreviewText } from "@/components/ui/VariableChip";
+import EmailSendingGuidelines from "./EmailSendingGuidelines";
 const tablesEnabled = process.env.NEXT_PUBLIC_EMAIL_TABLES_ENABLED === "true";
 const TEMPLATES = ["blank", "announcement", "promotion", "product"];
 
@@ -667,9 +668,12 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
       className="space-y-5"
     >
       {!full && (
-        <div>
-          <h3 className="text-base font-bold">{t("envelope.designTitle")}</h3>
-          <p className="text-sm text-muted-foreground">{t("envelope.designHint")}</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-bold">{t("envelope.designTitle")}</h3>
+            <p className="text-sm text-muted-foreground">{t("envelope.designHint")}</p>
+          </div>
+          <EmailSendingGuidelines />
         </div>
       )}
 

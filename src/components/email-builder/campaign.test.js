@@ -19,7 +19,26 @@ import {
   EMAIL_ALLOWED_FONTS,
   EMAIL_FONT_FAMILY_PATTERN,
 } from "./defaults";
+import {
+  EMAIL_GUIDELINE_SOURCES,
+  EMAIL_SENDING_GUIDELINES,
+} from "./emailSendingGuidelines";
 describe("email campaign integration", () => {
+  it("keeps every sending guideline and source bilingual", () => {
+    expect(EMAIL_SENDING_GUIDELINES.length).toBeGreaterThan(0);
+    for (const group of EMAIL_SENDING_GUIDELINES) {
+      expect(group.title.ar).toBeTruthy();
+      expect(group.title.en).toBeTruthy();
+      for (const item of group.advices) {
+        expect(item.type).toBeTruthy();
+        expect(item.title.ar).toBeTruthy();
+        expect(item.title.en).toBeTruthy();
+        expect(item.description.ar).toBeTruthy();
+        expect(item.description.en).toBeTruthy();
+      }
+    }
+    expect(EMAIL_GUIDELINE_SOURCES).toHaveLength(3);
+  });
   it("preserves email identities and content without submitting WhatsApp fields", () => {
     const email = {
       accountId: "account",

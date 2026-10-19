@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import BrandLogo from "@/components/atoms/BrandLogo";
+import { Link } from "@/i18n/navigation";
 
 /* ─── Social icons (inline SVG) ─── */
 const SOCIAL_ICONS = [
@@ -347,6 +348,12 @@ export default function FooterSection() {
           >
             {t("copyright")}
           </p>
+          <Link
+            href="/privacy"
+            className="text-sm font-semibold text-gray-500 transition-colors hover:text-primary hover:underline"
+          >
+            {t("privacy")}
+          </Link>
         </div>
       </footer>
     </>

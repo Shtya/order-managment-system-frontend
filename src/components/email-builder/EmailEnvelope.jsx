@@ -15,6 +15,7 @@ import { VariableInput } from "@/components/ui/VariableInput";
 import { VariablePreviewText } from "@/components/ui/VariableChip";
 import { getCampaignPlaceholderChips } from "@/app/[locale]/campaigns/atoms/campaignPlaceholders";
 import { Field, SectionTitle } from "./parts";
+import { Link } from "@/i18n/navigation";
 
 const STATUS_TONES = {
   connected: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10",
@@ -175,6 +176,13 @@ export default function EmailEnvelope({
                   {t("envelope.continue")}
                 </a>
               )}
+              <Link
+                href="/privacy"
+                target="_blank"
+                className="text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-primary"
+              >
+                {t("envelope.privacy")}
+              </Link>
             </div>
           </Field>
           <Field

@@ -10401,7 +10401,8 @@
       "about": "عن المنصة",
       "contact": "تواصل معانا"
     },
-    "copyright": "جميع الحقوق محفوظة لدي منصة @2026"
+    "copyright": "جميع الحقوق محفوظة لدي منصة @2026",
+    "privacy": "سياسة الخصوصية"
   },
   "auth": {
     "logout": {
@@ -19109,7 +19110,8 @@
       "statusConnected": "مربوط",
       "statusReconnect": "يتطلب إعادة الربط",
       "statusSuspended": "موقوف",
-      "statusDisconnected": "غير مربوط"
+      "statusDisconnected": "غير مربوط",
+      "privacy": "كيف تستخدم مدار بيانات Google"
     },
     "inboxPreview": {
       "inboxPreview": "معاينة صندوق الوارد",

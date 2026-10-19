@@ -3,9 +3,9 @@ import { Link } from "@/i18n/navigation";
 const content = {
   en: {
     title: "Privacy Policy",
-    updated: "Last updated: June 1, 2026",
+    updated: "Last updated: October 19, 2026",
     intro:
-      "Madar (available at getmadar.net) is a multi-tenant e-commerce operations and WhatsApp CRM platform. We help businesses manage customer communication, orders, shipping, products, suppliers, and store operations from one dashboard.",
+      "Madar (available at getmadar.net) is a multi-tenant e-commerce operations, WhatsApp CRM, and email campaign platform. We help businesses manage customer communication, orders, shipping, products, suppliers, and store operations from one dashboard.",
     sections: [
       {
         title: "Who We Are",
@@ -74,6 +74,32 @@ const content = {
         `,
       },
       {
+        title: "Google & Gmail Data",
+        body: `
+          <p>Madar lets an authorized user connect a Gmail account and send email campaigns or test messages from that account. The connection uses the <code class="text-xs font-mono bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">openid</code>, <code class="text-xs font-mono bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">email</code>, and <code class="text-xs font-mono bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">https://www.googleapis.com/auth/gmail.send</code> scopes.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-4 mb-1 uppercase tracking-wider">Google Data We Access and Store</h3>
+          <ul class="list-disc list-inside space-y-1 mb-4">
+            <li>Your Google account identifier, verified email address, display name if supplied by Google, and granted OAuth scopes</li>
+            <li>An OAuth refresh token, encrypted at rest and stored only on Madar's servers, so requested messages can be sent from the connected account</li>
+            <li>Technical sending records, including the connected sender, recipient, delivery state, and Gmail message identifier when returned</li>
+          </ul>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">How We Use Google Data</h3>
+          <p class="mb-3">We use your Google identity only to identify and display the connected sender and bind it to the correct Madar user and tenant. We use Gmail access only to send test emails and campaigns that an authorized user creates and initiates in Madar.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">Data We Do Not Access</h3>
+          <p class="mb-3">Madar does not read, list, download, delete, or modify your inbox messages, received mail, drafts, contacts, attachments, labels, or mailbox history.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">Your Control</h3>
+          <p class="mb-3">You choose whether to authorize a Gmail connection. Madar supports disconnecting the account and revoking its Google token, and you can revoke Madar's access at any time from your Google Account permissions.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">Sharing and Limited Use</h3>
+          <p class="mb-3">Google data is disclosed only to Google/Gmail to perform sending requested through Madar, to infrastructure processors acting on our behalf where necessary to operate and secure the service, or when legally required. It is not sold, shared between tenants, used for advertising or profiling, disclosed to data brokers or information resellers, used for credit or lending decisions, or used to create unrelated databases.</p>
+          <p>Madar does not use Google Workspace API data to develop, improve, or train generalized or non-personalized artificial intelligence or machine-learning models. Madar's use and transfer of information received from Google APIs complies with the <a class="font-semibold text-blue-700 underline" href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>, including its Limited Use requirements.</p>
+        `,
+      },
+      {
         title: "How We Use Your Data",
         body: `
           <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mt-2 mb-1 uppercase tracking-wider">To Operate the Platform</h3>
@@ -108,6 +134,9 @@ const content = {
           
           <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">Meta (WhatsApp API)</h3>
           <p class="mb-3">Data is transmitted to and from Meta's servers as part of the WhatsApp Cloud API integration, governed by WhatsApp's Business Policy and Meta's Platform Terms.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">Google (Gmail API)</h3>
+          <p class="mb-3">When you request an email send, the sender identity, recipient, subject, message content, and required technical metadata are transmitted to Google through the Gmail API. Google data is otherwise shared only with processors necessary to operate and secure Madar, or where disclosure is legally required.</p>
           
           <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">Business Users & Customers</h3>
           <p>Madar is a multi-tenant platform. Each business user can only access their own data. Data from one business tenant is not shared with or accessible to other tenants.</p>
@@ -138,8 +167,9 @@ const content = {
           <ul class="list-disc list-inside space-y-1">
             <li>Encryption of data in transit using TLS/HTTPS</li>
             <li>Encryption of sensitive credentials at rest</li>
+            <li>Google OAuth refresh tokens remain on the server and are never exposed in frontend responses</li>
             <li>Access controls restricting employee access to production data</li>
-            <li>Multi-tenant data isolation</li>
+            <li>Owner-level authorization and multi-tenant data isolation for connected Gmail accounts</li>
           </ul>
           <p class="mt-3 text-xs italic">While we take commercially reasonable measures to protect your data, no system is completely immune to security risks. We cannot guarantee absolute security.</p>
         `,
@@ -151,16 +181,32 @@ const content = {
             <li>Order and commerce data: up to 7 years for financial compliance</li>
             <li>WhatsApp message history: retained until conversation or account deletion</li>
             <li>Meta access tokens: retained only while the account is connected</li>
+            <li>Google OAuth credentials: retained while the Gmail account is connected. On disconnect, Madar requests token revocation and removes the stored credential after revocation processing.</li>
+            <li>Minimal Google connection identity metadata may be retained for account ownership integrity, security, fraud prevention, and legal obligations.</li>
+            <li>Email campaign and sending records are retained only as long as needed to operate and secure the service, maintain audit records, resolve delivery issues, and meet legal obligations.</li>
           </ul>
+          <p class="mt-3">You may request access to or deletion of applicable Google data by emailing <a class="font-semibold text-blue-700 underline" href="mailto:info@getmadar.net">info@getmadar.net</a>. Some information may be retained where necessary for security, fraud prevention, legal compliance, dispute resolution, or recordkeeping.</p>
         `,
       },
 
+      {
+        title: "Your Rights",
+        body: `
+          <p>Subject to applicable law, you may request <strong>access, correction, deletion, portability, restriction, objection,</strong> or <strong>withdrawal of consent</strong>. To exercise these rights, email <a class="font-semibold text-blue-700 underline" href="mailto:info@getmadar.net">info@getmadar.net</a>.</p>
+        `,
+      },
+      {
+        title: "Changes to This Policy",
+        body: `
+          <p>We keep this policy current. If we materially change how Madar accesses, uses, stores, or shares Google user data, we will update the date above and notify affected users through the application or by email before the change takes effect where required.</p>
+        `,
+      },
       {
         title: "Contact Us",
         body: `
           <div class="bg-white/50 p-4 rounded-xl border border-gray-100 space-y-2">
             <p class="text-xs flex items-center gap-2"><span class="font-mono text-gray-400 w-16 uppercase">Platform</span> Madar — getmadar.net</p>
-            <p class="text-xs flex items-center gap-2"><span class="font-mono text-gray-400 w-16 uppercase">Support</span> getmadar.net/en/auth</p>
+            <p class="text-xs flex items-center gap-2"><span class="font-mono text-gray-400 w-16 uppercase">Privacy</span> <a class="text-blue-700 underline" href="mailto:info@getmadar.net">info@getmadar.net</a></p>
           </div>
         `,
       },
@@ -169,9 +215,9 @@ const content = {
   },
   ar: {
     title: "سياسة الخصوصية",
-    updated: "آخر تحديث: 2 يونيو 2026",
+    updated: "آخر تحديث: 19 أكتوبر 2026",
     intro:
-      "تعد منصة مدار (المتاحة عبر getmadar.net) منصة متعددة المستخدمين لإدارة عمليات التجارة الإلكترونية وإدارة علاقات العملاء عبر واتساب. نحن نساعد الشركات على إدارة اتصالات العملاء والطلبات والشحن والمنتجات والموردين وعمليات المتجر من لوحة تحكم واحدة.",
+      "تعد منصة مدار (المتاحة عبر getmadar.net) منصة متعددة المستخدمين لإدارة عمليات التجارة الإلكترونية وعلاقات العملاء عبر واتساب وحملات البريد الإلكتروني. نحن نساعد الشركات على إدارة اتصالات العملاء والطلبات والشحن والمنتجات والموردين وعمليات المتجر من لوحة تحكم واحدة.",
     sections: [
       {
         title: "من نحن",
@@ -240,6 +286,32 @@ const content = {
         `,
       },
       {
+        title: "بيانات Google وGmail",
+        body: `
+          <p>تتيح مدار للمستخدم المصرح له ربط حساب Gmail وإرسال حملات بريد إلكتروني أو رسائل اختبار من هذا الحساب. يستخدم الربط نطاقات الصلاحية <code class="text-xs font-mono bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">openid</code> و<code class="text-xs font-mono bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">email</code> و<code class="text-xs font-mono bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">https://www.googleapis.com/auth/gmail.send</code>.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-4 mb-1 uppercase tracking-wider">بيانات Google التي نصل إليها ونخزنها</h3>
+          <ul class="list-disc list-inside space-y-1 mb-4">
+            <li>معرف حساب Google وعنوان البريد الإلكتروني المؤكد واسم العرض إذا قدمته Google ونطاقات OAuth الممنوحة</li>
+            <li>رمز تحديث OAuth مشفر أثناء التخزين ومحفوظ على خوادم مدار فقط لإرسال الرسائل المطلوبة من الحساب المربوط</li>
+            <li>سجلات الإرسال التقنية، ومنها المرسل المربوط والمستلم وحالة التسليم ومعرف رسالة Gmail عند إرجاعه</li>
+          </ul>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">كيف نستخدم بيانات Google</h3>
+          <p class="mb-3">نستخدم هوية Google فقط للتعرف على المرسل المربوط وعرضه وربطه بالمستخدم ومساحة العمل الصحيحة في مدار. ونستخدم صلاحية Gmail فقط لإرسال رسائل الاختبار والحملات التي ينشئها مستخدم مصرح له ويبدأ إرسالها عبر مدار.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">بيانات لا نصل إليها</h3>
+          <p class="mb-3">لا تقرأ مدار رسائل صندوق الوارد أو الرسائل المستلمة أو المسودات أو جهات الاتصال أو المرفقات أو التصنيفات أو سجل صندوق البريد، ولا تعرضها أو تنزلها أو تحذفها أو تعدلها.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">تحكمك في الاتصال</h3>
+          <p class="mb-3">أنت من يختار السماح بربط حساب Gmail. تدعم مدار قطع اتصال الحساب وإلغاء رمز Google الخاص به، ويمكنك إلغاء وصول مدار في أي وقت من أذونات حساب Google.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">المشاركة والاستخدام المحدود</h3>
+          <p class="mb-3">لا تُفصح بيانات Google إلا إلى Google وGmail لتنفيذ الإرسال المطلوب عبر مدار، أو إلى مزودي البنية التحتية الذين يعالجونها نيابة عنا عند الحاجة لتشغيل الخدمة وتأمينها، أو عندما يفرض القانون ذلك. لا نبيع هذه البيانات، ولا نشاركها بين مساحات العمل، ولا نستخدمها للإعلانات أو إنشاء الملفات التعريفية، ولا نفصح عنها لوسطاء البيانات أو بائعي المعلومات، ولا نستخدمها لقرارات الائتمان أو الإقراض أو لإنشاء قواعد بيانات غير مرتبطة بالخدمة.</p>
+          <p>لا تستخدم مدار بيانات واجهات Google Workspace لتطوير نماذج ذكاء اصطناعي أو تعلم آلي عامة أو غير مخصصة أو تحسينها أو تدريبها. يلتزم استخدام مدار للمعلومات المستلمة من واجهات Google ونقلها بـ<a class="font-semibold text-blue-700 underline" href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">سياسة بيانات مستخدمي خدمات Google API</a>، بما في ذلك متطلبات الاستخدام المحدود.</p>
+        `,
+      },
+      {
         title: "كيف نستخدم بياناتك",
         body: `
           <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mt-2 mb-1 uppercase tracking-wider">لتشغيل المنصة</h3>
@@ -274,6 +346,9 @@ const content = {
           
           <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">ميتا (واجهة برمجة تطبيقات واتساب)</h3>
           <p class="mb-3">يتم نقل البيانات من وإلى خوادم ميتا كجزء من تكامل واتساب السحابي، وهو ما يخضع لسياسة واتساب للأعمال وشروط منصة ميتا.</p>
+
+          <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">Google (واجهة Gmail API)</h3>
+          <p class="mb-3">عندما تطلب إرسال رسالة بريد إلكتروني، يُنقل إلى Google عبر واجهة Gmail كل من هوية المرسل والمستلم والعنوان ومحتوى الرسالة والبيانات التقنية اللازمة. ولا تُشارك بيانات Google فيما عدا ذلك إلا مع الجهات المعالجة اللازمة لتشغيل مدار وتأمينها، أو عندما يفرض القانون الإفصاح.</p>
           
           <h3 class="text-sm font-bold text-gray-800 mt-3 mb-1 uppercase tracking-wider">مستخدمو الأعمال والعملاء</h3>
           <p>مدار منصة متعددة المستخدمين. يمكن لكل مستخدم أعمال الوصول فقط إلى بياناته الخاصة. بيانات مستخدم أعمال واحد لا تتم مشاركتها أو الوصول إليها من قبل مستخدمين آخرين.</p>
@@ -304,8 +379,9 @@ const content = {
           <ul class="list-disc list-inside space-y-1">
             <li>تشفير البيانات أثناء النقل باستخدام TLS/HTTPS</li>
             <li>تشفير بيانات الاعتماد الحساسة عند التخزين</li>
+            <li>تبقى رموز تحديث Google OAuth على الخادم ولا تظهر مطلقاً في استجابات الواجهة الأمامية</li>
             <li>ضوابط الوصول التي تقيد وصول الموظفين إلى بيانات الإنتاج</li>
-            <li>عزل بيانات المستخدمين المتعددين</li>
+            <li>تفويض على مستوى المالك وعزل بيانات مساحات العمل للحسابات المرتبطة بـGmail</li>
           </ul>
           <p class="mt-3 text-xs italic">بينما نتخذ تدابير معقولة تجارياً لحماية بياناتك، لا يوجد نظام محصن تماماً ضد المخاطر الأمنية. لا يمكننا ضمان الأمن المطلق.</p>
         `,
@@ -317,13 +393,23 @@ const content = {
             <li>بيانات الطلبات والتجارة: حتى 7 سنوات للامتثال المالي</li>
             <li>سجل رسائل واتساب: يتم الاحتفاظ به حتى حذف المحادثة أو الحساب</li>
             <li>رموز وصول ميتا: يتم الاحتفاظ بها فقط طالما أن الحساب متصل</li>
+            <li>بيانات اعتماد Google OAuth: يُحتفظ بها أثناء اتصال حساب Gmail. وعند قطع الاتصال، تطلب مدار إلغاء الرمز وتحذف بيانات الاعتماد المخزنة بعد اكتمال معالجة الإلغاء.</li>
+            <li>قد نحتفظ بالحد الأدنى من بيانات هوية اتصال Google لحماية ملكية الحساب والأمان ومنع الاحتيال والوفاء بالالتزامات القانونية.</li>
+            <li>يُحتفظ بسجلات حملات البريد والإرسال فقط للمدة اللازمة لتشغيل الخدمة وتأمينها والاحتفاظ بسجلات التدقيق ومعالجة مشكلات التسليم والوفاء بالالتزامات القانونية.</li>
           </ul>
+          <p class="mt-3">يمكنك طلب الوصول إلى بيانات Google المنطبقة أو حذفها عبر البريد <a class="font-semibold text-blue-700 underline" href="mailto:info@getmadar.net">info@getmadar.net</a>. وقد نحتفظ ببعض المعلومات عند الحاجة للأمان أو منع الاحتيال أو الامتثال القانوني أو حل النزاعات أو حفظ السجلات.</p>
         `,
       },
       {
         title: "حقوقك",
         body: `
-          <p>وفقاً للقانون المعمول به، لديك الحق في <strong>الوصول، التصحيح، الحذف، النقل، التقييد، الاعتراض،</strong> و<strong>سحب الموافقة</strong>. لممارسة هذه الحقوق، اتصل بنا على التفاصيل أدناه.</p>
+          <p>وفقاً للقانون المعمول به، لديك الحق في <strong>الوصول، التصحيح، الحذف، النقل، التقييد، الاعتراض،</strong> و<strong>سحب الموافقة</strong>. لممارسة هذه الحقوق، راسلنا عبر <a class="font-semibold text-blue-700 underline" href="mailto:info@getmadar.net">info@getmadar.net</a>.</p>
+        `,
+      },
+      {
+        title: "التغييرات على هذه السياسة",
+        body: `
+          <p>نحافظ على تحديث هذه السياسة. إذا أجرينا تغييراً جوهرياً على كيفية وصول مدار إلى بيانات مستخدم Google أو استخدامها أو تخزينها أو مشاركتها، فسنحدث التاريخ أعلاه ونبلغ المستخدمين المتأثرين داخل التطبيق أو عبر البريد الإلكتروني قبل سريان التغيير عندما يكون ذلك مطلوباً.</p>
         `,
       },
       {
@@ -331,7 +417,7 @@ const content = {
         body: `
           <div class="bg-white/50 p-4 rounded-xl border border-gray-100 space-y-2">
             <p class="text-xs flex items-center gap-2 text-left" dir="ltr"><span class="font-mono text-gray-400 w-16 uppercase">Platform</span> Madar — getmadar.net</p>
-            <p class="text-xs flex items-center gap-2 text-left" dir="ltr"><span class="font-mono text-gray-400 w-16 uppercase">Support</span> getmadar.net/en/auth</p>
+            <p class="text-xs flex items-center gap-2 text-left" dir="ltr"><span class="font-mono text-gray-400 w-16 uppercase">Privacy</span> <a class="text-blue-700 underline" href="mailto:info@getmadar.net">info@getmadar.net</a></p>
           </div>
         `,
       },

@@ -22,7 +22,7 @@ import {
 import {
   EMAIL_GUIDELINE_SOURCES,
   EMAIL_SENDING_GUIDELINES,
-} from "./emailSendingGuidelines";
+} from "./emailSendingGuidelinesConfig";
 describe("email campaign integration", () => {
   it("keeps every sending guideline and source bilingual", () => {
     expect(EMAIL_SENDING_GUIDELINES.length).toBeGreaterThan(0);

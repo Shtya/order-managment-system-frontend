@@ -10414,7 +10414,8 @@
       "about": "About the Platform",
       "contact": "Contact Us"
     },
-    "copyright": "All rights reserved to the platform @2026"
+    "copyright": "All rights reserved to the platform @2026",
+    "privacy": "Privacy Policy"
   },
   "auth": {
     "logout": {
@@ -19083,7 +19084,8 @@
       "statusConnected": "Connected",
       "statusReconnect": "Reconnect required",
       "statusSuspended": "Suspended",
-      "statusDisconnected": "Disconnected"
+      "statusDisconnected": "Disconnected",
+      "privacy": "How Madar uses Google data"
     },
     "inboxPreview": {
       "inboxPreview": "Inbox preview",

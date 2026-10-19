@@ -10,7 +10,7 @@ import {
   EMAIL_GUIDELINE_SOURCES,
   EMAIL_GUIDELINE_TYPES,
   EMAIL_SENDING_GUIDELINES,
-} from "./emailSendingGuidelines";
+} from "./emailSendingGuidelinesConfig";
 
 const TYPE_STYLE = {
   required: "border-red-100 bg-red-50 text-red-700",

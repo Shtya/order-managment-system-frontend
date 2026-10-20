@@ -10,11 +10,13 @@ import {
   Download,
   Eye,
   LayoutTemplate,
+  MailPlus,
   Maximize2,
   Minimize2,
   Monitor,
   Redo2,
   Send,
+  Server,
   Smartphone,
   Undo2,
 } from "lucide-react";
@@ -55,7 +57,8 @@ import {
 } from "./document";
 import ReactCanvas from "./ReactCanvas";
 import { Label } from "@/components/ui/label";
-import EmailEnvelope, { InboxPreview } from "./EmailEnvelope";
+import EmailEnvelope, { GmailIcon, InboxPreview } from "./EmailEnvelope";
+import SmtpConnectionDialog from "./SmtpConnectionDialog";
 import EmailBlocksPanel from "./EmailBlocksPanel";
 import EmailProperties from "./EmailProperties";
 import {
@@ -101,6 +104,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
     [assets, setAssets] = useState({}),
     [preview, setPreview] = useState(null),
     [dialog, setDialog] = useState(null),
+    [senderDialog, setSenderDialog] = useState(null),
     [previewMobile, setPreviewMobile] = useState(false),
     [mobile, setMobile] = useState(false),
     [full, setFull] = useState(false),
@@ -269,7 +273,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
       if (event.key !== "email-oauth-complete" || !event.newValue) return;
       try {
         handleCompletion(JSON.parse(event.newValue));
-      } catch {}
+      } catch { }
     };
     const channel =
       typeof BroadcastChannel === "function"
@@ -342,12 +346,12 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
     const popupLeft = Math.max(
       0,
       (window.screenX ?? window.screenLeft ?? 0) +
-        Math.round((window.outerWidth - popupWidth) / 2),
+      Math.round((window.outerWidth - popupWidth) / 2),
     );
     const popupTop = Math.max(
       0,
       (window.screenY ?? window.screenTop ?? 0) +
-        Math.round((window.outerHeight - popupHeight) / 2),
+      Math.round((window.outerHeight - popupHeight) / 2),
     );
     popupRef.current = window.open(
       "about:blank",
@@ -377,6 +381,22 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
     } catch (error) {
       popupRef.current?.close();
       toast.error(error.response?.data?.message || t("feedback.loadError"));
+    }
+  }
+  async function disconnectSender() {
+    const id = senderDialog?.accountId;
+    if (!id) return;
+    setBusy(true);
+    try {
+      await api.delete(`/email/accounts/${id}`);
+      if (accountId === id) patchEmail({ accountId: "", accountStatus: null });
+      setSenderDialog(null);
+      await loadAccounts();
+      toast.success(t("smtp.disconnected"));
+    } catch (error) {
+      toast.error(error.response?.data?.message || t("feedback.loadError"));
+    } finally {
+      setBusy(false);
     }
   }
   async function perform(action) {
@@ -526,9 +546,9 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
           ? { content: tableDocument() }
           : type === "text"
             ? {
-                content: richText(t("defaults.text")),
-                style: { lineHeight: 1.7 },
-              }
+              content: richText(t("defaults.text")),
+              style: { lineHeight: 1.7 },
+            }
             : type === "button"
               ? {
                 label: t("defaults.button"),
@@ -686,6 +706,9 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
           samples={samples}
           continuation={continuation}
           onConnect={connect}
+          onAddSender={() => setSenderDialog({ type: "choose" })}
+          onEdit={(item) => setSenderDialog({ type: "smtp", accountId: item.id })}
+          onDisconnect={(item) => setSenderDialog({ type: "disconnect", accountId: item.id })}
           errors={errors}
           onClearError={(field) => clearErrors?.(`email.${field}`)}
         />
@@ -698,8 +721,8 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
             <div className="p-5">
               <div className="mb-3.5 flex items-center justify-between gap-2">
                 <Label description={t("test.samplesHint")} classN="text-[13px] font-semibold text-foreground">
-                {t("test.samples")}
-              </Label>
+                  {t("test.samples")}
+                </Label>
               </div>
               <div className="space-y-3.5">
                 {["customer.name", "customer.number"].map((key) => (
@@ -729,20 +752,20 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
                 description={t("descriptions.testRecipient")}
                 error={testToError}
               >
-              <Input
-                id="email-test-to"
-                data-test-recipient
-                type="email"
-                required
-                dir="ltr"
-                aria-label={t("test.recipient")}
-                placeholder="you@example.com"
-                value={testTo}
-                onChange={(e) => {
-                  setTestTo(e.target.value);
-                  setTestToError("");
-                }}
-              />
+                <Input
+                  id="email-test-to"
+                  data-test-recipient
+                  type="email"
+                  required
+                  dir="ltr"
+                  aria-label={t("test.recipient")}
+                  placeholder="you@example.com"
+                  value={testTo}
+                  onChange={(e) => {
+                    setTestTo(e.target.value);
+                    setTestToError("");
+                  }}
+                />
               </Field>
               <Button
                 type="button"
@@ -769,7 +792,11 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
                     variant="outline"
                     size="sm"
                     label={t("envelope.reconnect")}
-                    onClick={() => connect(true)}
+                    onClick={() =>
+                      account?.provider === "smtp"
+                        ? setSenderDialog({ type: "smtp", accountId: account.id })
+                        : connect(true)
+                    }
                   />
                 )}
               </div>
@@ -779,150 +806,248 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
       </div>
 
       <FullscreenPortal active={full}>
-      <div
-        data-email-builder-fullscreen={full || undefined}
-        className={cn(
-          "overflow-hidden rounded-xl border border-border bg-card",
-          full &&
-            "fixed inset-0 flex h-screen w-screen flex-col rounded-none",
-          full && (dialog ? "z-40" : "z-[9999]"),
-        )}
-      >
-        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-3 py-2.5">
-          <IconButton
-            label={t("actions.undo")}
-            icon={Undo2}
-            onClick={() => applyHistory("undo")}
-            disabled={!history.current.past.length}
-          />
-          <IconButton
-            label={t("actions.redo")}
-            icon={Redo2}
-            onClick={() => applyHistory("redo")}
-            disabled={!history.current.future.length}
-          />
-          <span className="mx-1 h-6 w-px bg-border" />
-          <div className="ms-auto flex flex-wrap items-center gap-2">
-            <Segmented
-              value={mobile ? "mobile" : "desktop"}
-              onChange={(v) => setMobile(v === "mobile")}
-              options={[
-                { value: "desktop", label: t("preview.desktop"), icon: Monitor },
-                { value: "mobile", label: t("preview.mobile"), icon: Smartphone },
-              ]}
-            />
-            <button
-              type="button"
-              className="btn btn-sm btn-ghost"
-              disabled={busy}
-              onClick={openSource}
-            >
-              <Code2 size={15} />
-              {t("preview.html")}
-            </button>
-            <IconButton
-              label={full ? t("preview.close") : t("preview.full")}
-              icon={full ? Minimize2 : Maximize2}
-              onClick={() => setFull(!full)}
-            />
-            <button
-              type="button"
-              className="btn btn-sm btn-solid"
-              disabled={busy}
-              onClick={openPreview}
-            >
-              <Eye size={15} />
-              {t("preview.preview")}
-            </button>
-          </div>
-        </div>
-
         <div
-          data-email-history
+          data-email-builder-fullscreen={full || undefined}
           className={cn(
-            "grid grid-cols-1 lg:grid-cols-[230px_minmax(0,1fr)_320px]",
-            full && "min-h-0 flex-1 overflow-auto",
+            "overflow-hidden rounded-xl border border-border bg-card",
+            full &&
+            "fixed inset-0 flex h-screen w-screen flex-col rounded-none",
+            full && (dialog ? "z-40" : "z-[9999]"),
           )}
         >
-          <EmailBlocksPanel
-            elements={elements}
-            selected={selected}
-            onSelect={select}
-            onAdd={add}
-            onAddImage={addImage}
-            onAddLayout={addLayout}
-            onDelete={(id) => blockAction(id, "delete")}
-            onToggleHidden={(id) => blockAction(id, "hide")}
-            tablesEnabled={tablesEnabled}
-          />
-          <div className="min-w-0 bg-muted/40">
-            <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2 text-[11px] text-muted-foreground">
-              <span className="font-semibold">{t("preview.approximate")}</span>
-            </div>
-            <div className="overflow-auto p-4 lg:max-h-[740px]">
-              <div
-                className="relative mx-auto transition-[max-width] duration-300"
-                style={{ maxWidth: mobile ? 420 : 900 }}
+          <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-3 py-2.5">
+            <IconButton
+              label={t("actions.undo")}
+              icon={Undo2}
+              onClick={() => applyHistory("undo")}
+              disabled={!history.current.past.length}
+            />
+            <IconButton
+              label={t("actions.redo")}
+              icon={Redo2}
+              onClick={() => applyHistory("redo")}
+              disabled={!history.current.future.length}
+            />
+            <span className="mx-1 h-6 w-px bg-border" />
+            <div className="ms-auto flex flex-wrap items-center gap-2">
+              <Segmented
+                value={mobile ? "mobile" : "desktop"}
+                onChange={(v) => setMobile(v === "mobile")}
+                options={[
+                  { value: "desktop", label: t("preview.desktop"), icon: Monitor },
+                  { value: "mobile", label: t("preview.mobile"), icon: Smartphone },
+                ]}
+              />
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                disabled={busy}
+                onClick={openSource}
               >
-                <ReactCanvas
-                  document={doc}
-                  assets={assets}
-                  variables={variableOptions}
-                  variableValues={previewSamples}
-                  envelope={envelope}
-                  selected={selected}
-                  invalidElementIds={diagnostics
-                    .map((item) => item.elementId)
-                    .filter(Boolean)}
-                  onSelect={select}
-                  onAction={blockAction}
-                  onChange={(next) => commit(next)}
-                />
-              </div>
-              <p className="mx-auto mt-3 max-w-[680px] text-center text-[11px] text-muted-foreground">
-                {t("preview.approximate")}
-              </p>
+                <Code2 size={15} />
+                {t("preview.html")}
+              </button>
+              <IconButton
+                label={full ? t("preview.close") : t("preview.full")}
+                icon={full ? Minimize2 : Maximize2}
+                onClick={() => setFull(!full)}
+              />
+              <button
+                type="button"
+                className="btn btn-sm btn-solid"
+                disabled={busy}
+                onClick={openPreview}
+              >
+                <Eye size={15} />
+                {t("preview.preview")}
+              </button>
             </div>
           </div>
-          <EmailProperties
-            doc={doc}
-            current={current}
-            elements={elements}
-            assets={assets}
-            busy={busy}
-            tablesEnabled={tablesEnabled}
-            onDeselect={() => select(null)}
-            onCommitDoc={(next) => commit(next)}
-            onChange={change}
-            onStyle={changeStyle}
-            onContainerStyle={changeContainerStyle}
-            onColumns={setColumns}
-            onMoveToColumn={(column) =>
-              commit(moveToColumn(doc, selected, column))
-            }
-            onUpload={(file) => perform(() => upload(file))}
-            onRichChange={(content, typing) =>
-              commit(
-                updateNode(history.current.value, selected, { content }),
-                typing ? `text:${selected}` : null,
-              )
-            }
-            onTableChange={(content, typing) =>
-              commit(
-                updateNode(history.current.value, selected, { content }),
-                typing ? `table:${selected}` : null,
-              )
-            }
-            onAsset={(asset) =>
-              setAssets((prev) => ({ ...prev, [asset.id]: asset }))
-            }
-            onError={(error) => toast.error(error)}
-            focusRequest={focusRequest}
-            onFocusHandled={() => setFocusRequest(null)}
-          />
+
+          <div
+            data-email-history
+            className={cn(
+              "grid grid-cols-1 lg:grid-cols-[230px_minmax(0,1fr)_320px]",
+              full && "min-h-0 flex-1 overflow-auto",
+            )}
+          >
+            <EmailBlocksPanel
+              elements={elements}
+              selected={selected}
+              onSelect={select}
+              onAdd={add}
+              onAddImage={addImage}
+              onAddLayout={addLayout}
+              onDelete={(id) => blockAction(id, "delete")}
+              onToggleHidden={(id) => blockAction(id, "hide")}
+              tablesEnabled={tablesEnabled}
+            />
+            <div className="min-w-0 bg-muted/40">
+              <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2 text-[11px] text-muted-foreground">
+                <span className="font-semibold">{t("preview.approximate")}</span>
+              </div>
+              <div className="overflow-auto p-4 lg:max-h-[740px]">
+                <div
+                  className="relative mx-auto transition-[max-width] duration-300"
+                  style={{ maxWidth: mobile ? 420 : 900 }}
+                >
+                  <ReactCanvas
+                    document={doc}
+                    assets={assets}
+                    variables={variableOptions}
+                    variableValues={previewSamples}
+                    envelope={envelope}
+                    selected={selected}
+                    invalidElementIds={diagnostics
+                      .map((item) => item.elementId)
+                      .filter(Boolean)}
+                    onSelect={select}
+                    onAction={blockAction}
+                    onChange={(next) => commit(next)}
+                  />
+                </div>
+                <p className="mx-auto mt-3 max-w-[680px] text-center text-[11px] text-muted-foreground">
+                  {t("preview.approximate")}
+                </p>
+              </div>
+            </div>
+            <EmailProperties
+              doc={doc}
+              current={current}
+              elements={elements}
+              assets={assets}
+              busy={busy}
+              tablesEnabled={tablesEnabled}
+              onDeselect={() => select(null)}
+              onCommitDoc={(next) => commit(next)}
+              onChange={change}
+              onStyle={changeStyle}
+              onContainerStyle={changeContainerStyle}
+              onColumns={setColumns}
+              onMoveToColumn={(column) =>
+                commit(moveToColumn(doc, selected, column))
+              }
+              onUpload={(file) => perform(() => upload(file))}
+              onRichChange={(content, typing) =>
+                commit(
+                  updateNode(history.current.value, selected, { content }),
+                  typing ? `text:${selected}` : null,
+                )
+              }
+              onTableChange={(content, typing) =>
+                commit(
+                  updateNode(history.current.value, selected, { content }),
+                  typing ? `table:${selected}` : null,
+                )
+              }
+              onAsset={(asset) =>
+                setAssets((prev) => ({ ...prev, [asset.id]: asset }))
+              }
+              onError={(error) => toast.error(error)}
+              focusRequest={focusRequest}
+              onFocusHandled={() => setFocusRequest(null)}
+            />
+          </div>
         </div>
-      </div>
       </FullscreenPortal>
+
+      <Dialog
+        open={senderDialog?.type === "choose"}
+        onOpenChange={(open) => !open && setSenderDialog(null)}
+      >
+        <DialogContent
+          className="overflow-hidden bg-card p-0 sm:rounded-[24px]"
+          style={{ width: "min(92vw, 600px)", maxWidth: "1100px" }}
+        >
+          <DialogHeader className="border-b border-border px-4 py-4 md:px-6">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <MailPlus className="h-5 w-5" />
+              </span>
+
+              <div className="flex flex-col gap-1 text-start">
+                <DialogTitle className="text-lg font-bold">
+                  {t("smtp.addSender")}
+                </DialogTitle>
+                <DialogDescription className="text-sm text-muted-foreground">
+                  {t("smtp.chooseMethod")}
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+
+          <div className="space-y-5 p-4 pt-0! md:p-6">
+            {/* <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-foreground">{t("smtp.methodTitle")}</h3>
+              <p className="text-xs leading-5 text-muted-foreground">{t("smtp.methodHint")}</p>
+            </div> */}
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <button
+                type="button"
+                className="group flex min-h-[210px] w-full flex-col items-start justify-between rounded-2xl border-2 border-border bg-card p-5 text-start transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary/5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onClick={() => {
+                  setSenderDialog(null);
+                  connect(false);
+                }}
+              >
+                <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted transition-colors group-hover:bg-background [&>svg]:scale-[1.8]">
+                  <GmailIcon />
+                </span>
+
+                <span className="mt-4 block w-full">
+                  <strong className="block text-base font-bold md:text-lg">{t("smtp.google")}</strong>
+                  <span className="mt-2 block text-sm leading-6 text-muted-foreground">{t("smtp.googleHint")}</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="group flex min-h-[210px] w-full flex-col items-start justify-between rounded-2xl border-2 border-border bg-card p-5 text-start transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary/5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onClick={() => setSenderDialog({ type: "smtp" })}
+              >
+                <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <Server className="h-8 w-8" />
+                </span>
+
+                <span className="mt-4 block w-full">
+                  <strong className="block text-base font-bold md:text-lg">{t("smtp.custom")}</strong>
+                  <span className="mt-2 block text-sm leading-6 text-muted-foreground">{t("smtp.customHint")}</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <SmtpConnectionDialog
+        open={senderDialog?.type === "smtp"}
+        account={accounts.find((item) => item.id === senderDialog?.accountId)}
+        onOpenChange={(open) => !open && setSenderDialog(null)}
+        onSaved={async (saved) => {
+          await loadAccounts();
+          patchEmail({ accountId: saved.id, accountStatus: saved.status });
+        }}
+      />
+
+      <Dialog
+        open={senderDialog?.type === "disconnect"}
+        onOpenChange={(open) => !open && setSenderDialog(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("smtp.disconnectTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("smtp.disconnectHint")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setSenderDialog(null)}>{t("smtp.cancel")}</Button>
+            <Button type="button" variant="destructive" disabled={busy} onClick={disconnectSender}>{t("smtp.disconnect")}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={dialog === "preview" && !!preview}

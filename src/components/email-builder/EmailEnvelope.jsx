@@ -1,5 +1,5 @@
 "use client";
-import { Inbox, Plus, RefreshCw } from "lucide-react";
+import { Inbox, MoreVertical, Pencil, Plus, RefreshCw, Server, Unplug } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +16,7 @@ import { VariablePreviewText } from "@/components/ui/VariableChip";
 import { getCampaignPlaceholderChips } from "@/app/[locale]/campaigns/atoms/campaignPlaceholders";
 import { Field, SectionTitle } from "./parts";
 import { Link } from "@/i18n/navigation";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const STATUS_TONES = {
   connected: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10",
@@ -82,6 +83,10 @@ export function GmailIcon() {
   );
 }
 
+export function EmailProviderIcon({ provider }) {
+  return provider === "smtp" ? <Server className="h-5 w-5 shrink-0 text-primary" /> : <GmailIcon />;
+}
+
 export default function EmailEnvelope({
   email,
   patchEmail,
@@ -90,6 +95,9 @@ export default function EmailEnvelope({
   samples,
   continuation,
   onConnect,
+  onAddSender,
+  onEdit,
+  onDisconnect,
   errors,
   onClearError,
 }) {
@@ -125,7 +133,7 @@ export default function EmailEnvelope({
                         <span className="truncate" dir="ltr">
                           {account.email}
                         </span>
-                        <GmailIcon />
+                        <EmailProviderIcon provider={account.provider} />
                         <StatusBadge status={account.status} />
                       </span>
                     )}
@@ -138,23 +146,30 @@ export default function EmailEnvelope({
                         <span className="truncate" dir="ltr">
                           {a.email}
                         </span>
-                        <GmailIcon />
+                        <EmailProviderIcon provider={a.provider} />
                         <StatusBadge status={a.status} />
                       </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <button
-                type="button"
-                className="btn btn-md btn-ghost !px-3"
-                aria-label={t("envelope.reconnect")}
-                title={t("envelope.reconnect")}
-                disabled={!email.accountId}
-                onClick={() => onConnect(true)}
-              >
-                <RefreshCw size={16} />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button type="button" className="btn btn-md btn-ghost !px-3" aria-label="Sender actions" disabled={!account}>
+                    <MoreVertical size={16} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {account?.provider === "smtp" ? (
+                    <DropdownMenuItem onSelect={() => onEdit(account)} className="cursor-pointer">
+                      <Pencil /> {t("smtp.edit")}
+                      </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem className="cursor-pointer" onSelect={() => onConnect(true)}><RefreshCw /> {t("envelope.reconnect")}</DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem  className="cursor-pointer" variant="destructive" onSelect={() => onDisconnect(account)}><Unplug /> {t("smtp.disconnect")}</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             {!accounts.length && (
               <p className="text-[11px] text-muted-foreground">{t("envelope.noAccounts")}</p>
@@ -163,10 +178,10 @@ export default function EmailEnvelope({
               <button
                 type="button"
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-                onClick={() => onConnect(false)}
+                onClick={onAddSender}
               >
                 <Plus size={14} />
-                {accounts.length ? t("envelope.connectAnother") : t("envelope.connect")}
+                {accounts.length ? t("smtp.addAnother") : t("smtp.addSender")}
               </button>
               {continuation && (
                 <a

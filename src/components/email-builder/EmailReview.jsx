@@ -8,7 +8,7 @@ import api from "@/utils/api";
 import { combineScheduledAt } from "@/app/[locale]/campaigns/atoms/wizard/wizardSchema";
 import { emailContentPayload } from "./document";
 import { EmailClientFrame } from "./parts";
-import { GmailIcon, InboxPreview } from "./EmailEnvelope";
+import { EmailProviderIcon, InboxPreview } from "./EmailEnvelope";
 import { VariablePreviewText } from "@/components/ui/VariableChip";
 import {
   CAMPAIGN_PREVIEW_VALUES,
@@ -96,7 +96,7 @@ export default function EmailReview({ getValues }) {
               <dd className="break-words font-medium text-start">
                 {label === t("envelope.sender") && account?.email ? (
                   <span className="inline-flex items-center gap-2" dir="ltr">
-                    <GmailIcon />
+                    <EmailProviderIcon provider={account.provider} />
                     {account.email}
                   </span>
                 ) : label === t("envelope.subject") ? (

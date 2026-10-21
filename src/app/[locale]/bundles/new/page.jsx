@@ -129,7 +129,6 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 	const t = useTranslations('addProduct');
 	const navigate = useRouter();
 	const locale = useLocale();
-	const { isTestUser } = useAuth();
 	const [stores, setStores] = useState([]);
 	const [categories, setCategories] = useState([]);
 	const [storeProviders, setStoreProviders] = useState([]);
@@ -662,7 +661,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 						</motion.div>
 
 						{/* AI Card */}
-						{isTestUser && (<motion.div variants={fadeUp}>
+						{(<motion.div variants={fadeUp}>
 							<div className="bg-card rounded-2xl border border-slate-100 dark:border-slate-800 p-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
 								<div className="mb-6">
 									<h3 className="text-[15px] font-semibold text-gray-800 dark:text-slate-100 flex items-center gap-3">

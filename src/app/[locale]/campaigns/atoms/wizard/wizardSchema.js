@@ -2,6 +2,10 @@
 
 import * as yup from "yup";
 import {
+  findIncompleteEmailMedia,
+  hasPendingEmailMediaUploads,
+} from "@/components/email-builder/media-state";
+import {
   inspectTemplateOrderLink,
 } from "../campaignOrderUrl";
 
@@ -211,6 +215,10 @@ export function validateStepMessage(data) {
       errors["email.businessIdentity"] = "validation.emailIdentityRequired";
     if (!data.email?.document?.blocks?.length)
       errors["email.document"] = "validation.emailContentRequired";
+    else if (hasPendingEmailMediaUploads())
+      errors["email.document"] = "validation.emailMediaUploading";
+    else if (findIncompleteEmailMedia(data.email.document))
+      errors["email.document"] = "validation.emailMediaSourceRequired";
     return errors;
   }
   if ((data.channel || "whatsapp") === "whatsapp") {

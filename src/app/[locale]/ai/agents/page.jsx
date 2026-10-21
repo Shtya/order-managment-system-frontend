@@ -338,7 +338,6 @@ const AgentsTab = forwardRef(function AgentsTab(
   const [assignOpen, setAssignOpen] = useState(false);
   const [assigningAgent, setAssigningAgent] = useState(null);
   const [whatsappSettingsOpen, setWhatsappSettingsOpen] = useState(false);
-  const { isTestUser } = useAuth();
   const tryMe = useTryMe();
 
   useEffect(() => {
@@ -649,7 +648,7 @@ const AgentsTab = forwardRef(function AgentsTab(
         statsLoading={statsLoading}
         buttons={
           <>
-            {isTestUser ? (
+            
               <Button_
                 size="sm"
                 label={t("actions.settings")}
@@ -658,7 +657,7 @@ const AgentsTab = forwardRef(function AgentsTab(
                 onClick={() => setWhatsappSettingsOpen(true)}
                 icon={<Settings size={18} />}
               />
-            ) : null}
+            
             <Button_
               size="sm"
               label={t("actions.new")}

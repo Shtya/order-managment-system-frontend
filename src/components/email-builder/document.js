@@ -258,7 +258,7 @@ export function tableDocument() {
     ],
   };
 }
-export function imageIds(document, visibleOnly = false) {
+export function mediaAssetIds(document, visibleOnly = false) {
   const ids = new Set();
   const rich = (n) => {
     if (n.type === "image" && n.attrs?.assetId) ids.add(n.attrs.assetId);
@@ -267,7 +267,7 @@ export function imageIds(document, visibleOnly = false) {
   const walk = (nodes) => {
     for (const n of nodes) {
       if (visibleOnly && n.hidden) continue;
-      if (n.type === "image" && n.assetId) ids.add(n.assetId);
+      if (["image", "video", "document"].includes(n.type) && n.sourceType !== "remote" && n.assetId) ids.add(n.assetId);
       if (n.type === "table") rich(n.content);
       if (n.children) walk(n.children);
     }
@@ -275,6 +275,7 @@ export function imageIds(document, visibleOnly = false) {
   walk(document.blocks);
   return [...ids];
 }
+export const imageIds = mediaAssetIds;
 
 export function isTypingTransaction(transaction) {
   return (

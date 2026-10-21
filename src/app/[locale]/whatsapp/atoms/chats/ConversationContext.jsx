@@ -32,7 +32,7 @@ export const ConversationProvider = ({ children }) => {
     const [accountsLoading, setAccountsLoading] = useState(false);
     const [replyTo, setReplyTo] = useState(null);
     const { subscribe, isConnected } = useSocket();
-    const { user, isTestUser } = useAuth();
+    const { user } = useAuth();
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [mobileView, setMobileView] = useState("list"); // 'list', 'chat', 'details'
     const [showDetails, setShowDetails] = useState(false);
@@ -246,7 +246,7 @@ export const ConversationProvider = ({ children }) => {
         }
         const gen = ++listFetchGen.current;
         try {
-            const effectiveTab = tab === "humanHandoff" && !isTestUser ? "all" : tab;
+            const effectiveTab = tab === "humanHandoff" ? "all" : tab;
             const params = {
                 limit: PAGE_LIMIT,
                 search: searchQuery,
@@ -280,7 +280,7 @@ export const ConversationProvider = ({ children }) => {
                 setIsLoadingMore(false);
             }
         }
-    }, [activeTab, cursor, isTestUser]);
+    }, [activeTab, cursor]);
 
     const fetchTabCounts = useCallback(async () => {
         try {

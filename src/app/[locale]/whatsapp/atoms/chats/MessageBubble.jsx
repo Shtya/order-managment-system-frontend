@@ -47,7 +47,6 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
     const account = useMemo(() => accounts.find((acc) => acc.id === message.accountId), [accounts, message.accountId]);
     const t = useTranslations("chats");
     const locale = useLocale();
-    const { isTestUser } = useAuth();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [audioProgress, setAudioProgress] = useState(0);
@@ -865,7 +864,7 @@ function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, 
             isHighlighted && "bg-whatsapp-message/20 rounded-lg"
         )}>
             <div className="relative flex items-start gap-2">
-                {isTestUser && sender && (
+                {sender && (
                     <div title={sender.name} aria-label={sender.name} className="shrink-0 mt-0.5">
                         <Avatar className="w-7 h-7 shadow-sm border border-black/5">
                             {sender.kind === "user" && (

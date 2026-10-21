@@ -9,6 +9,8 @@ import {
   Eye,
   EyeOff,
   Image,
+  Video,
+  FileText,
   Minus,
   MousePointerClick,
   MoveVertical,
@@ -21,11 +23,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 export const BLOCK_ICONS = {
   text: Type,
   button: MousePointerClick,
   image: Image,
+  video: Video,
+  document: FileText,
   divider: Minus,
   spacer: MoveVertical,
   table: Table,
@@ -111,7 +116,6 @@ export default function EmailBlocksPanel({
   selected,
   onSelect,
   onAdd,
-  onAddImage,
   onAddLayout,
   onDelete,
   onToggleHidden,
@@ -124,15 +128,23 @@ export default function EmailBlocksPanel({
   const [layerQuery, setLayerQuery] = useState("");
   const [open, setOpen] = useState({});
   const treeRef = useRef(null);
-  const content = [
-    ["text", Type],
-    // ["image", Image],
-    ["button", MousePointerClick],
-    ["divider", Minus],
-    ["spacer", MoveVertical],
-    ...(tablesEnabled ? [["table", Table]] : []),
-    ["wrapper", Box],
-  ];
+ const { isTestUser } = useAuth();
+
+const content = [
+  ["text", Type],
+  ...(isTestUser
+    ? [
+        ["image", Image],
+        ["video", Video],
+        ["document", FileText],
+      ]
+    : []),
+  ["button", MousePointerClick],
+  ["divider", Minus],
+  ["spacer", MoveVertical],
+  ...(tablesEnabled ? [["table", Table]] : []),
+  ["wrapper", Box],
+];
   const contentItems = content;
   const layouts = [
     [1, t("panel.oneColumn")],
@@ -408,7 +420,7 @@ export default function EmailBlocksPanel({
                     key={type}
                     icon={icon}
                     label={t(`blockTypes.${type}`)}
-                    onClick={() => (type === "image" ? onAddImage() : onAdd(type))}
+                    onClick={() => onAdd(type)}
                   />
                 ))}
               </div>

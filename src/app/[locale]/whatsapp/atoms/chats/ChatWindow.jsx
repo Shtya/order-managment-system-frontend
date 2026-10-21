@@ -46,7 +46,6 @@ import api from "@/utils/api";
 
 // Skeleton message component with config
 function MessageSkeleton() {
-    const { isTestUser } = useAuth();
     // Array config for skeleton messages
     const skeletonConfig = [
         { type: "outbound", lines: ["w-32", "w-48", "w-24"] },
@@ -66,7 +65,7 @@ function MessageSkeleton() {
                     key={index}
                     className={cn("flex items-start gap-2", config.type === "outbound" ? "justify-start" : "justify-end")}
                 >
-                    {isTestUser && config.type === "outbound" && (
+                    {config.type === "outbound" && (
                         <div className="w-7 h-7 mt-0.5 shrink-0 rounded-full bg-[#eef3f5] dark:bg-[#6B7C85] animate-pulse" />
                     )}
                     <div className={cn(
@@ -98,7 +97,7 @@ function MessageSkeleton() {
 
 export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const t = useTranslations("chats");
-    const { hasPermission, isTestUser } = useAuth();
+    const { hasPermission } = useAuth();
 
     const {
         selectedAccount,
@@ -568,7 +567,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                         {t("ai.resumeNow")}
                                     </DropdownMenuItem>
                                 )}
-                                {isTestUser && canUpdateConversation && (
+                                {canUpdateConversation && (
                                     <DropdownMenuItem
                                         onClick={() => {
                                             setAiModeDraft(selectedConversation?.aiMode === "disabled" ? "disabled" : "inherit");

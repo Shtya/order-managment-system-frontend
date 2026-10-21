@@ -1,4 +1,3 @@
-import { testEmails } from '@/config/sidebarMenu';
 import { ShoppingCart, MessageSquare, RefreshCw, Zap, GitBranch, Users, MessageCircle, PackagePlus, Truck, Hourglass, AlertTriangle, Bot, UserX, UserPlus, MapPin } from 'lucide-react';
 
 /**
@@ -137,7 +136,6 @@ export const BASE_CONFIG = {
                         configComponent: 'AiAddressCorrectionConfig',
                         className: 'max-w-xl!',
                         hasCustom: true,
-                        allowedEmails: testEmails,
                     },
                     {
                         id: 'assign_shipping_provider',
@@ -146,7 +144,6 @@ export const BASE_CONFIG = {
                         configComponent: 'AssignShippingProviderConfig',
                         className: 'max-w-xl!',
                         hasCustom: true,
-                        allowedEmails: testEmails,
                     },
                     {
                         id: 'send_whatsapp_template',
@@ -233,7 +230,6 @@ export const BASE_CONFIG = {
                         configComponent: 'AiAddressCompletenessConfig',
                         className: 'max-w-xl!',
                         hasCustom: true,
-                        allowedEmails: testEmails,
                     }
                 ]
             }

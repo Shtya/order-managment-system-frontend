@@ -262,7 +262,6 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
           labelKey: "shippingAssigning",
           permission: "shipping-assigning.read",
           href: "/shipping-assigning",
-          allowedEmails: testEmails,
         },
         {
           icon: Store,
@@ -409,7 +408,6 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
       icon: Bot,
       labelKey: "ai",
       href: "/ai",
-      allowedEmails: testEmails,
       children: [
         {
           icon: Bot,
@@ -447,7 +445,6 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
           labelKey: "ai-reports",
           href: "/reports/ai-reports",
           permission: "dashboard.read",
-          allowedEmails: testEmails,
         },
         {
           icon: Truck,

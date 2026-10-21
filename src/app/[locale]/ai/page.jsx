@@ -1651,7 +1651,7 @@ export default function AiPage() {
     const t = useTranslations("ai");
     const tMcp = useTranslations("settings.mcp");
     const locale = useLocale();
-    const { hasPermission, isTestUser } = useAuth();
+    const { hasPermission } = useAuth();
 
     // ── Data State ────────────────────────────────────────────
     const [providers, setProviders] = useState([]);
@@ -2127,8 +2127,8 @@ export default function AiPage() {
     const headerItems = useMemo(() => [
         { id: "providers", label: t("tabs.providers") },
         { id: "allModels", label: t("tabs.allModels") || "All Models" },
-        ...(isTestUser ? [{ id: "mcp", label: t("tabs.mcp") }] : []),
-    ], [t, isTestUser]);
+        { id: "mcp", label: t("tabs.mcp") },
+    ], [t]);
 
     const headerButtons = useMemo(() => (
         <Fragment>
@@ -2508,7 +2508,7 @@ export default function AiPage() {
                         </AnimatePresence>
                     </div>
                 </div>
-            ) : mainTab === "mcp" && isTestUser ? (
+            ) : mainTab === "mcp" ? (
                 <div className="mb-4">
                     <McpConnectionsTab guideOpen={mcpGuideOpen} onGuideOpenChange={setMcpGuideOpen} onGrantsChange={fetchMcpStats} />
                 </div>

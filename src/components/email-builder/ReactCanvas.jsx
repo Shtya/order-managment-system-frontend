@@ -28,6 +28,7 @@ import {
   EyeOff,
   GripVertical,
   ImagePlus,
+  FileText,
   Lock,
   Trash2,
 } from "lucide-react";
@@ -282,7 +283,7 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
     ? undefined
     : {
         ...boxStyle(containerStyle),
-        textAlign: node.type === "image" ? style.align || "center" : undefined,
+        textAlign: ["image", "video", "document"].includes(node.type) ? style.align || "center" : undefined,
       };
   return (
     <div
@@ -405,14 +406,15 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
         })()
       )}
       {node.type === "image" &&
-        (assets[node.assetId] ? (
+        ((node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.variants?.at(-1)?.url) ? (
           <img
             alt={node.alt || ""}
-            src={assets[node.assetId].variants.at(-1).url}
+            src={node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId].variants.at(-1).url}
             style={{
               width: style.width || "100%",
               maxWidth: "100%",
-              height: "auto",
+              height: style.height || "auto",
+              objectFit: style.height ? "cover" : undefined,
               padding: style.padding,
               paddingTop: style.paddingTop,
               paddingRight: style.paddingRight,
@@ -432,6 +434,44 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
             {t("canvas.dropImage")}
           </div>
         ))}
+      {node.type === "video" && (() => {
+        const href = node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.url;
+        return (
+          <div style={{ textAlign: style.align || "center" }}>
+            <video
+              src={href || undefined}
+              controls
+              playsInline
+              preload="metadata"
+              style={{
+                display: "inline-block",
+                boxSizing: "border-box",
+                width: style.width || 600,
+                maxWidth: "100%",
+                height: style.height,
+                border: `${style.borderWidth ?? 1}px solid ${style.borderColor || "#d5dfd8"}`,
+                borderRadius: style.borderRadius ?? 6,
+                background: style.backgroundColor || "#f8fafc",
+              }}
+            >
+              {href ? <a href={href} target="_blank" rel="noreferrer">{t("canvas.watchVideo")}</a> : null}
+            </video>
+            {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
+            {!href ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{t("canvas.addVideo")}</div> : null}
+          </div>
+        );
+      })()}
+      {node.type === "document" && (() => {
+        const href = node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.url;
+        return href ? (
+          <div style={{ textAlign: style.align || "center" }}>
+            <a href={href} target="_blank" rel="noreferrer" style={{ width: style.width || 600, maxWidth: "100%", height: style.height, display: "inline-flex", boxSizing: "border-box", alignItems: "center", gap: 10, padding: node.style?.padding ?? 16, border: `${style.borderWidth ?? 1}px solid ${style.borderColor || "#d5dfd8"}`, borderRadius: style.borderRadius ?? 6, background: style.backgroundColor || "#f8fafc", color: "#176c51", fontFamily: `${style.fontFamily || "Cairo"}, sans-serif`, fontSize: style.fontSize || 16, fontWeight: style.fontWeight || 700, lineHeight: style.lineHeight || 1.2, textDecoration: "none" }}>
+              <span aria-hidden style={{ fontSize: 22, lineHeight: 1 }}>▣</span><span>{node.title || assets[node.assetId]?.originalName || t("blockTypes.document")}</span>
+            </a>
+            {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
+          </div>
+        ) : <div className="email-image-placeholder"><FileText size={22} />{t("canvas.addDocument")}</div>;
+      })()}
       {node.type === "divider" && (
         <div style={boxStyle(style)}>
           <hr

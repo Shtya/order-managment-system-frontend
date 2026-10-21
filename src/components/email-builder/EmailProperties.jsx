@@ -47,7 +47,8 @@ function showNumeric(key, type) {
   if (["paragraphSpacing", "indent"].includes(key)) return type === "text";
   if (key === "spacing" || key === "minHeight") return type === "button";
   if (key === "width")
-    return ["button", "image", "column", "table", "divider"].includes(type);
+    return ["button", "image", "video", "document", "column", "table", "divider"].includes(type);
+  if (key === "height") return ["image", "video", "document"].includes(type);
   if (["fontSize", "fontWeight", "lineHeight", "letterSpacing"].includes(key))
     return ["text", "button", "table"].includes(type);
   if (["borderWidth", "borderRadius"].includes(key))
@@ -271,63 +272,64 @@ function ContentPane({
           </Field>
         </>
       )}
-      {type === "image" && (
+      {["image", "video", "document"].includes(type) && (
         <>
-          <label className="block cursor-pointer space-y-2 rounded-xl border-2 border-dashed border-border p-5 text-center transition hover:border-primary">
+          <Field label={t("properties.source")} description={t(`descriptions.${type}`)}>
+            <Segmented
+              className="w-full"
+              label={t("properties.source")}
+              value={current.sourceType || "upload"}
+              onChange={(sourceType) => onChange({ sourceType, ...(sourceType === "remote" ? { assetId: "" } : { sourceUrl: "" }) })}
+              options={[{ value: "upload", label: t("properties.upload") }, { value: "remote", label: t("properties.directLink"), icon: Link }]}
+            />
+          </Field>
+          {(current.sourceType || "upload") === "upload" ? <label className="block cursor-pointer space-y-2 rounded-xl border-2 border-dashed border-border p-5 text-center transition hover:border-primary">
             <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary">
               <UploadCloud size={20} />
             </span>
             <p className="text-sm font-semibold">
-              {asset ? t("properties.replaceImage") : t("canvas.dropImage")}
+              {asset ? t("properties.replaceFile") : t("properties.chooseFile")}
             </p>
-            <p className="text-[11px] text-muted-foreground">{t("properties.imageTypes")}</p>
+            <p className="text-[11px] text-muted-foreground">{t(`properties.${type}Types`)}</p>
             <input
               type="file"
               className="sr-only"
               aria-label={t("properties.upload")}
-              accept="image/jpeg,image/png,image/gif"
+              accept={type === "image" ? "image/jpeg,image/png,image/gif,image/webp" : type === "video" ? "video/mp4,video/webm,video/quicktime" : ".pdf,.docx,.xlsx,.pptx,.csv,.txt"}
               disabled={busy}
               onChange={(e) => {
-                onUpload(e.target.files?.[0]);
+                onUpload(e.target.files?.[0], type);
                 e.target.value = "";
               }}
             />
-          </label>
+          </label> : <TextField id="email-prop-source-url" label={t("properties.directLink")} type="url" placeholder="https://" value={current.sourceUrl} onChange={(sourceUrl) => onChange({ sourceUrl })} />}
           {asset && (
             <div className="space-y-1 rounded-lg bg-muted/50 px-3 py-2 text-xs">
               <div className="flex justify-between gap-2">
-                <span dir="ltr">
-                  {asset.sourceWidth}×{asset.sourceHeight}
-                </span>
-                <span
-                  className={
-                    asset.variants.at(-1).bytes > 500 * 1024
-                      ? "font-semibold text-amber-600"
-                      : "font-semibold text-emerald-600"
-                  }
-                >
-                  {Math.round(asset.variants.at(-1).bytes / 1024)} KB
-                </span>
+                <span className="truncate" dir="auto">{asset.originalName || asset.format}</span>
+                <span className="shrink-0 font-semibold text-primary">{Math.round((asset.bytes || asset.variants?.at(-1)?.bytes || 0) / 1024)} KB</span>
               </div>
-              {asset.sourceWidth < (current.style?.width || 600) * 2 && (
+              {type === "image" && asset.sourceWidth < (current.style?.width || 600) * 2 && (
                 <p className="text-amber-600">{t("feedback.retina")}</p>
               )}
             </div>
           )}
-          <TextField
+          {type === "image" && <TextField
             id="email-prop-alt"
             label={t("properties.alt")}
             value={current.alt}
             onChange={(alt) => onChange({ alt })}
-          />
-          <TextField
+          />}
+          {type === "document" && <TextField id="email-prop-title" label={t("properties.title")} value={current.title} onChange={(title) => onChange({ title })} />}
+          <TextField id="email-prop-caption" label={t("properties.caption")} value={current.caption} onChange={(caption) => onChange({ caption })} />
+          {type === "image" && <TextField
             id="email-prop-image-url"
             label={t("properties.imageLink")}
             type="url"
             placeholder="https://"
             value={current.url}
             onChange={(url) => onChange({ url: url || undefined })}
-          />
+          />}
         </>
       )}
       {type === "spacer" && (
@@ -423,7 +425,7 @@ function StylePane({ current, onStyle, onContainerStyle, onChange }) {
     style = current.style || {},
     containerStyle = current.containerStyle || {};
   const typography = ["text", "button", "table"].includes(type);
-  const alignable = ["text", "button", "image", "divider", "table"].includes(type);
+  const alignable = ["text", "button", "image", "video", "document", "divider", "table"].includes(type);
   const borderable = showNumeric("borderWidth", type) || type === "divider";
   if (type === "spacer")
     return <p className="text-xs text-muted-foreground">{t("panel.noContentSettings")}</p>;
@@ -550,7 +552,7 @@ function StylePane({ current, onStyle, onContainerStyle, onChange }) {
           />
         </Field>
       )}
-      {(showNumeric("width", type) || showNumeric("minHeight", type)) && (
+      {(showNumeric("width", type) || showNumeric("height", type) || showNumeric("minHeight", type)) && (
         <div className="space-y-3">
           <SectionTitle>{t("properties.size")}</SectionTitle>
           {showNumeric("width", type) && (
@@ -561,6 +563,16 @@ function StylePane({ current, onStyle, onContainerStyle, onChange }) {
               max={1600}
               value={style.width}
               onChange={(v) => onStyle("width", v)}
+            />
+          )}
+          {showNumeric("height", type) && (
+            <NumberField
+              id="email-style-height"
+              label={t("properties.height")}
+              min={1}
+              max={1600}
+              value={style.height}
+              onChange={(v) => onStyle("height", v)}
             />
           )}
           {showNumeric("minHeight", type) && (

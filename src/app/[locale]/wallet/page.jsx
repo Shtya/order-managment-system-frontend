@@ -64,7 +64,6 @@ export default function WalletPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [txCategory, setTxCategory] = useState("all");
   const { rate, fetchRate } = useCurrencyRate();
-  const { isTestUser } = useAuth();
   // Fetch wallet data
   useEffect(() => {
     fetchWallet();
@@ -125,13 +124,13 @@ export default function WalletPage() {
       icon: WalletIcon,
       color: "#8b5cf6",
     },
-    ...(!isTestUser ? [] : [{
+    {
       id: "aiBalance",
       name: t("stats.aiBalance"),
       value: formatCurrency(wallet?.aiBalance || 0, dollor, dollorSign),
       icon: ({ size = 16 }) => <Bot size={size} />,
       color: "#0ea5e9",
-    }]),
+    },
     {
       id: "totalCharged",
       name: t("stats.totalCharged"),
@@ -176,13 +175,13 @@ export default function WalletPage() {
               tone="primary"
               size="sm"
             />
-            {isTestUser && <Button_
+            <Button_
               icon={<Bot size={13} />}
               onClick={() => setShowTransferModal(true)}
               label={t("actions.transferToAiTitle")}
               tone="secondary"
               size="sm"
-            />}
+            />
             <Button_
               size="sm"
               label={t("actions.openSettings")}

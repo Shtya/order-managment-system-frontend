@@ -73,6 +73,12 @@ import Button_ from "@/components/atoms/Button";
 import { getCampaignPlaceholderChips } from "@/app/[locale]/campaigns/atoms/campaignPlaceholders";
 import { VariablePreviewText } from "@/components/ui/VariableChip";
 import EmailSendingGuidelines from "./EmailSendingGuidelines";
+import {
+  beginEmailMediaUpload,
+  endEmailMediaUpload,
+  findIncompleteEmailMedia,
+  hasPendingEmailMediaUploads,
+} from "./media-state";
 const tablesEnabled = process.env.NEXT_PUBLIC_EMAIL_TABLES_ENABLED === "true";
 const TEMPLATES = ["blank", "announcement", "promotion", "product"];
 
@@ -109,6 +115,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
     [mobile, setMobile] = useState(false),
     [full, setFull] = useState(false),
     [busy, setBusy] = useState(false),
+    [mediaUploads, setMediaUploads] = useState(0),
     [testTo, setTestTo] = useState(""),
     [testToError, setTestToError] = useState(""),
     [message, setMessage] = useState(""),
@@ -435,6 +442,16 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
     const selectedAccount = accounts.find((item) => item.id === accountId);
     clearErrors?.("email");
     onGlobalError?.("");
+    if (mediaUploads > 0 || hasPendingEmailMediaUploads()) {
+      toast.error(t("feedback.mediaUploadingBlocked"));
+      return;
+    }
+    const incompleteMedia = findIncompleteEmailMedia(doc);
+    if (incompleteMedia) {
+      select(incompleteMedia.id);
+      toast.error(t("feedback.mediaSourceRequired"));
+      return;
+    }
     let invalid = false;
     const requireField = (field, missing, message) => {
       if (!missing) return;
@@ -530,6 +547,15 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
       },
     });
   const add = (type) => {
+    if (["image", "video", "document"].includes(type)) {
+      const rows = flatten(history.current.value);
+      const media = rows.filter((item) => ["image", "video", "document"].includes(item.type));
+      const perType = { image: 8, video: 2, document: 5 };
+      if (media.length >= 10 || media.filter((item) => item.type === type).length >= perType[type]) {
+        toast.error(t("feedback.mediaLimit"));
+        return;
+      }
+    }
     const next = JSON.parse(JSON.stringify(history.current.value));
     if (type === "section")
       next.blocks.push(section([node("text", { content: richText("") })]));
@@ -574,6 +600,30 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
               }
               : type === "spacer"
                 ? { height: 20 }
+                : ["image", "video", "document"].includes(type)
+                  ? {
+                    sourceType: "upload",
+                    assetId: "",
+                    sourceUrl: "",
+                    caption: "",
+                    ...(type === "image" ? { alt: "", url: "" } : {}),
+                    ...(type === "document" ? { title: t("defaults.document") } : {}),
+                    style: {
+                      width: 600,
+                      align: "center",
+                      borderRadius: 6,
+                      ...(type === "document"
+                        ? {
+                          backgroundColor: "#f8fafc",
+                          borderColor: "#d5dfd8",
+                          borderWidth: 1,
+                          fontSize: 16,
+                          fontWeight: 700,
+                          padding: 16,
+                        }
+                        : {}),
+                    },
+                  }
                 : {},
       );
       const column =
@@ -600,11 +650,6 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
     }
     commit(next);
   };
-  const addImage = () => {
-    const next = section([node("image", { assetId: "", alt: "" })]);
-    commit({ ...doc, blocks: [...doc.blocks, next] });
-    select(next.children[0].children[0].id);
-  };
   const addLayout = (count) => {
     const next = columnLayout(count, t("defaults.columnText"));
     commit({ ...doc, blocks: [...doc.blocks, next] });
@@ -627,16 +672,58 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
       commit(updateNode(history.current.value, id, { hidden: !target?.hidden }));
       return;
     }
-    commit(structural(history.current.value, id, action));
+    const target = elements.find((item) => item.id === id);
+    const next = structural(history.current.value, id, action);
+    commit(next);
+    if (action === "delete" && target?.assetId && !imageIds(next).includes(target.assetId))
+      api.delete(`/email/assets/${target.assetId}`).catch(() => {});
     if (action === "delete") select(null);
   };
-  async function upload(file) {
+  async function upload(file, kind = current?.type) {
     if (!file) return;
+    const targetId = current?.id;
+    const oldId = current?.assetId;
+    const typeLabel = t(`blockTypes.${kind}`);
+    const toastId = toast.loading(
+      t("feedback.uploadingMedia", { type: typeLabel }),
+    );
+    beginEmailMediaUpload();
+    setMediaUploads((count) => count + 1);
     const form = new FormData();
     form.append("file", file);
-    const { data } = await api.post("/email/assets", form);
-    setAssets((prev) => ({ ...prev, [data.id]: data }));
-    change({ assetId: data.id, alt: current?.alt || "" });
+    form.append("kind", kind);
+    try {
+      const { data } = await api.post("/email/assets", form);
+      if (!flatten(history.current.value).some((item) => item.id === targetId)) {
+        api.delete(`/email/assets/${data.id}`).catch(() => {});
+        toast.dismiss(toastId);
+        return;
+      }
+      setAssets((prev) => ({ ...prev, [data.id]: data }));
+      commit(
+        updateNode(history.current.value, targetId, (item) => ({
+          sourceType: "upload",
+          sourceUrl: "",
+          assetId: data.id,
+          alt: item.alt || "",
+        })),
+      );
+      if (oldId && oldId !== data.id)
+        api.delete(`/email/assets/${oldId}`).catch(() => {});
+      toast.success(t("feedback.uploadMediaSuccess", { type: typeLabel }), {
+        id: toastId,
+      });
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          t("feedback.uploadMediaFailed", { type: typeLabel }),
+        { id: toastId },
+      );
+    } finally {
+      endEmailMediaUpload();
+      if (live.current)
+        setMediaUploads((count) => Math.max(0, count - 1));
+    }
   }
   const openPreview = () =>
     perform(async () => {
@@ -770,7 +857,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
               <Button
                 type="button"
                 className="mt-3 w-full"
-                disabled={busy || testPending}
+                disabled={busy || testPending || mediaUploads > 0}
                 onClick={() => perform(sendTest)}
               >
                 <Send size={15} />
@@ -876,7 +963,6 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
               selected={selected}
               onSelect={select}
               onAdd={add}
-              onAddImage={addImage}
               onAddLayout={addLayout}
               onDelete={(id) => blockAction(id, "delete")}
               onToggleHidden={(id) => blockAction(id, "hide")}
@@ -916,7 +1002,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
               current={current}
               elements={elements}
               assets={assets}
-              busy={busy}
+              busy={busy || mediaUploads > 0}
               tablesEnabled={tablesEnabled}
               onDeselect={() => select(null)}
               onCommitDoc={(next) => commit(next)}
@@ -927,7 +1013,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
               onMoveToColumn={(column) =>
                 commit(moveToColumn(doc, selected, column))
               }
-              onUpload={(file) => perform(() => upload(file))}
+              onUpload={upload}
               onRichChange={(content, typing) =>
                 commit(
                   updateNode(history.current.value, selected, { content }),

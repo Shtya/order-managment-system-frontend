@@ -15353,6 +15353,8 @@
         "emailSubjectRequired": "Enter the email subject.",
         "emailIdentityRequired": "Enter the business name and postal address.",
         "emailContentRequired": "Add content to the email message.",
+        "emailMediaUploading": "Wait for all email media uploads to finish.",
+        "emailMediaSourceRequired": "Add a source to every image, video, and document before continuing.",
         "emailAccountSuspended": "This sender account is suspended. Choose another account or reconnect this account before continuing.",
         "variablesRequired": "Fill all template variables.",
         "orderLinkUnavailable": "The campaign message does not contain an order link. Add the Order link field to the WhatsApp template or email message.",
@@ -19194,7 +19196,13 @@
       "externalLegacy": "Legacy images must be uploaded before this design can be saved in the new builder.",
       "fixComponent": "Fix this",
       "reconnectRequired": "Reconnect this Gmail account before sending the test email.",
-      "accountSuspended": "This sender account is suspended. Choose another account or reconnect this account before sending a test."
+      "accountSuspended": "This sender account is suspended. Choose another account or reconnect this account before sending a test.",
+      "mediaLimit": "This email reached its media limit (10 total, 8 images, 2 videos, or 5 documents).",
+      "uploadingMedia": "Uploading {type}…",
+      "uploadMediaSuccess": "{type} uploaded successfully.",
+      "uploadMediaFailed": "Could not upload {type}.",
+      "mediaUploadingBlocked": "Wait for all media uploads to finish before testing or continuing.",
+      "mediaSourceRequired": "Add an upload or direct HTTPS link to every image, video, and document."
     },
     "manualEmail": {
       "manualEmail": "Add email addresses",
@@ -19241,6 +19249,8 @@
       "text": "Text",
       "button": "Button",
       "image": "Image",
+      "video": "Video",
+      "document": "Document",
       "divider": "Divider",
       "spacer": "Spacer",
       "section": "Section",
@@ -19252,7 +19262,8 @@
     "defaults": {
       "text": "Write your message here…",
       "button": "Click here",
-      "columnText": "Add content here…"
+      "columnText": "Add content here…",
+      "document": "Open document"
     },
     "actions": {
       "undo": "Undo",
@@ -19318,6 +19329,9 @@
     },
     "canvas": {
       "dropImage": "Drop an image or browse",
+      "addVideo": "Upload a video or add its direct link",
+      "watchVideo": "Watch video",
+      "addDocument": "Upload a document or add its direct link",
       "autoFooter": "Auto footer",
       "unsubscribe": "Unsubscribe"
     },
@@ -19340,6 +19354,7 @@
       "paddingRight": "Right padding",
       "spacing": "Spacing",
       "width": "Width",
+      "height": "Height",
       "minHeight": "Minimum height",
       "borderWidth": "Border width",
       "borderRadius": "Border radius",
@@ -19348,7 +19363,13 @@
       "defaults": "Default styles",
       "label": "Button text",
       "alt": "Image description",
-      "upload": "Upload JPEG, PNG or GIF (5 MiB max)",
+      "upload": "Upload",
+      "source": "Source",
+      "directLink": "Direct HTTPS link",
+      "chooseFile": "Choose a file",
+      "replaceFile": "Replace file",
+      "caption": "Caption (optional)",
+      "title": "Document title",
       "columns": "Columns",
       "moveToColumn": "Move to column",
       "typography": "Typography",
@@ -19358,7 +19379,9 @@
       "orderPage": "Order page",
       "customUrl": "Custom URL",
       "orderPageHint": "Links each customer to their personal order page. Requires the purchase page in the Offer step.",
-      "imageTypes": "JPG, PNG or GIF · max 5 MB",
+      "imageTypes": "JPG, JPEG, PNG, GIF or WebP · max 5 MB",
+      "videoTypes": "MP4, WebM or MOV · max 50 MB",
+      "documentTypes": "PDF, DOCX, XLSX, PPTX, CSV or TXT · max 10 MB",
       "replaceImage": "Replace image",
       "imageLink": "Link (optional)",
       "innerPadding": "Inner padding (px)",
@@ -19388,7 +19411,10 @@
       "subject": "The subject line customers see in their inbox. You can add variables such as the customer name.",
       "sampleName": "A sample value used in the preview and the test email only.",
       "testRecipient": "The address that receives the test email. It is also used as the customer email value.",
-      "buttonLabel": "The text shown on the button. You can add variables such as the customer name."
+      "buttonLabel": "The text shown on the button. You can add variables such as the customer name.",
+      "image": "Show an image in the email. Upload it here or use a public HTTPS link.",
+      "video": "Email apps rarely play video inside a message. This adds a clear card that opens the uploaded video or public HTTPS link.",
+      "document": "Adds a document card that customers can click to open. Upload the document or use a public HTTPS link."
     }
   }
 }

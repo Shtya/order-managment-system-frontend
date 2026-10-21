@@ -656,7 +656,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		main: { general: '', specific: {} },
 		other: { general: '', specific: {} }
 	});
-	const { isTestUser } = useAuth();
 	const navigate = useRouter();
 	const [categories, setCategories] = useState([]);
 	const [stores, setStores] = useState([]);
@@ -1888,7 +1887,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							</Card>
 						</motion.div>
 
-						{isTestUser && (<motion.div variants={fadeUp}>
+						{(<motion.div variants={fadeUp}>
 							<Card>
 								<SectionHeader title={t('ai.title')} description={t('ai.description')} />
 								<div className="space-y-4">

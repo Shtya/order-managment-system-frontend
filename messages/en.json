@@ -15355,6 +15355,7 @@
         "emailContentRequired": "Add content to the email message.",
         "emailMediaUploading": "Wait for all email media uploads to finish.",
         "emailMediaSourceRequired": "Add a source to every image, video, and document before continuing.",
+        "emailVideoThumbnailRequired": "Add the custom thumbnail selected for the video before continuing.",
         "emailAccountSuspended": "This sender account is suspended. Choose another account or reconnect this account before continuing.",
         "variablesRequired": "Fill all template variables.",
         "orderLinkUnavailable": "The campaign message does not contain an order link. Add the Order link field to the WhatsApp template or email message.",
@@ -19202,7 +19203,8 @@
       "uploadMediaSuccess": "{type} uploaded successfully.",
       "uploadMediaFailed": "Could not upload {type}.",
       "mediaUploadingBlocked": "Wait for all media uploads to finish before testing or continuing.",
-      "mediaSourceRequired": "Add an upload or direct HTTPS link to every image, video, and document."
+      "mediaSourceRequired": "The selected media block has no file or direct HTTPS link. Add its source before continuing.",
+      "videoThumbnailRequired": "The video is ready, but its selected custom thumbnail is missing. Upload a thumbnail or enter its direct HTTPS image link."
     },
     "manualEmail": {
       "manualEmail": "Add email addresses",
@@ -19263,7 +19265,8 @@
       "text": "Write your message here…",
       "button": "Click here",
       "columnText": "Add content here…",
-      "document": "Open document"
+      "document": "Open document",
+      "videoAlt": "Watch video"
     },
     "actions": {
       "undo": "Undo",
@@ -19404,7 +19407,16 @@
       "weightLight": "Light",
       "fontWeightNormal": "Regular",
       "fontWeightBold": "Bold",
-      "resetFont": "Reset font"
+      "resetFont": "Reset font",
+      "thumbnail": "Video thumbnail",
+      "thumbnailHint": "This image is shown in the email. Clicking it opens the video in the browser.",
+      "thumbnailUrl": "Thumbnail image URL",
+      "chooseThumbnail": "Choose a thumbnail",
+      "automatic": "Automatic",
+      "objectFit": "Thumbnail fit",
+      "fitCover": "Cover",
+      "fitContain": "Contain",
+      "fitFill": "Stretch"
     },
     "descriptions": {
       "sender": "The Gmail account the email is sent from.",
@@ -19413,7 +19425,7 @@
       "testRecipient": "The address that receives the test email. It is also used as the customer email value.",
       "buttonLabel": "The text shown on the button. You can add variables such as the customer name.",
       "image": "Show an image in the email. Upload it here or use a public HTTPS link.",
-      "video": "Email apps rarely play video inside a message. This adds a clear card that opens the uploaded video or public HTTPS link.",
+      "video": "Adds a clickable video thumbnail that opens the uploaded video or public HTTPS link in the browser.",
       "document": "Adds a document card that customers can click to open. Upload the document or use a public HTTPS link."
     }
   }

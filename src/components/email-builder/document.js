@@ -271,6 +271,8 @@ export function mediaAssetIds(document, visibleOnly = false) {
     for (const n of nodes) {
       if (visibleOnly && n.hidden) continue;
       if (["image", "video", "document"].includes(n.type) && n.sourceType !== "remote" && n.assetId) ids.add(n.assetId);
+      if (n.type === "video" && n.thumbnailSourceType === "upload" && n.thumbnailAssetId)
+        ids.add(n.thumbnailAssetId);
       if (n.type === "table") rich(n.content);
       if (n.children) walk(n.children);
     }

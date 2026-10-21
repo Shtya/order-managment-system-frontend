@@ -449,7 +449,9 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
     const incompleteMedia = findIncompleteEmailMedia(doc);
     if (incompleteMedia) {
       select(incompleteMedia.id);
-      toast.error(t("feedback.mediaSourceRequired"));
+      toast.error(t(incompleteMedia.incompleteReason === "thumbnail"
+        ? "feedback.videoThumbnailRequired"
+        : "feedback.mediaSourceRequired"));
       return;
     }
     let invalid = false;
@@ -607,6 +609,14 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
                     sourceUrl: "",
                     caption: "",
                     ...(type === "image" ? { alt: "", url: "" } : {}),
+                    ...(type === "video"
+                      ? {
+                        alt: t("defaults.videoAlt"),
+                        thumbnailSourceType: "auto",
+                        thumbnailAssetId: "",
+                        thumbnailUrl: "",
+                      }
+                      : {}),
                     ...(type === "document"
                       ? { content: richText(`▣ ${t("defaults.document")}`) }
                       : {}),
@@ -614,6 +624,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
                       width: 600,
                       align: "center",
                       borderRadius: 6,
+                      ...(type === "video" ? { height: 338, objectFit: "cover" } : {}),
                       ...(type === "document"
                         ? {
                           backgroundColor: "#f8fafc",
@@ -677,15 +688,20 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
     const target = elements.find((item) => item.id === id);
     const next = structural(history.current.value, id, action);
     commit(next);
-    if (action === "delete" && target?.assetId && !imageIds(next).includes(target.assetId))
-      api.delete(`/email/assets/${target.assetId}`).catch(() => {});
+    if (action === "delete") {
+      const remaining = new Set(imageIds(next));
+      for (const assetId of imageIds(history.current.value))
+        if (!remaining.has(assetId))
+          api.delete(`/email/assets/${assetId}`).catch(() => {});
+    }
     if (action === "delete") select(null);
   };
-  async function upload(file, kind = current?.type) {
+  async function upload(file, kind = current?.type, role = "source") {
     if (!file) return;
     const targetId = current?.id;
-    const oldId = current?.assetId;
-    const typeLabel = t(`blockTypes.${kind}`);
+    const thumbnail = role === "thumbnail";
+    const oldId = thumbnail ? current?.thumbnailAssetId : current?.assetId;
+    const typeLabel = thumbnail ? t("properties.thumbnail") : t(`blockTypes.${kind}`);
     const toastId = toast.loading(
       t("feedback.uploadingMedia", { type: typeLabel }),
     );
@@ -702,15 +718,20 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
         return;
       }
       setAssets((prev) => ({ ...prev, [data.id]: data }));
-      commit(
-        updateNode(history.current.value, targetId, (item) => ({
+      const nextDocument = updateNode(history.current.value, targetId, (item) => thumbnail
+        ? {
+          thumbnailSourceType: "upload",
+          thumbnailUrl: "",
+          thumbnailAssetId: data.id,
+        }
+        : {
           sourceType: "upload",
           sourceUrl: "",
           assetId: data.id,
           alt: item.alt || "",
-        })),
-      );
-      if (oldId && oldId !== data.id)
+        });
+      commit(nextDocument);
+      if (oldId && oldId !== data.id && !imageIds(nextDocument).includes(oldId))
         api.delete(`/email/assets/${oldId}`).catch(() => {});
       toast.success(t("feedback.uploadMediaSuccess", { type: typeLabel }), {
         id: toastId,

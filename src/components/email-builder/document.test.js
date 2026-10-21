@@ -113,4 +113,16 @@ describe("draft privacy and image references", () => {
     expect(imageIds(doc)).toEqual(["asset"]);
     expect(imageIds(doc, true)).toEqual([]);
   });
+  it("retains a custom uploaded video thumbnail with its video asset", () => {
+    const doc = emptyDocument();
+    doc.blocks[0].children[0].children = [{
+      id: "video",
+      type: "video",
+      sourceType: "upload",
+      assetId: "video-asset",
+      thumbnailSourceType: "upload",
+      thumbnailAssetId: "thumbnail-asset",
+    }];
+    expect(imageIds(doc)).toEqual(["video-asset", "thumbnail-asset"]);
+  });
 });

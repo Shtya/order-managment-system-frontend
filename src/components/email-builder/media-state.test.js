@@ -4,7 +4,7 @@ import {
   endEmailMediaUpload,
   findIncompleteEmailMedia,
   hasPendingEmailMediaUploads,
-  youtubeEmbedUrl,
+  youtubeThumbnailUrl,
 } from "./media-state";
 
 afterEach(() => {
@@ -23,7 +23,7 @@ describe("email media completion", () => {
     const document = {
       blocks: [{ children: [{ children: [{ id: "video", type: "video", sourceType: "remote", sourceUrl: "https://" }] }] }],
     };
-    expect(findIncompleteEmailMedia(document)?.id).toBe("video");
+    expect(findIncompleteEmailMedia(document)).toMatchObject({ id: "video", incompleteReason: "source" });
     document.blocks[0].children[0].children[0].sourceUrl = "https://cdn.example.com/video.mp4";
     expect(findIncompleteEmailMedia(document)).toBeNull();
   });
@@ -31,16 +31,29 @@ describe("email media completion", () => {
   it("accepts an uploaded asset id and rejects a missing one", () => {
     const media = { id: "document", type: "document", sourceType: "upload", assetId: "" };
     const document = { blocks: [{ children: [{ children: [media] }] }] };
-    expect(findIncompleteEmailMedia(document)?.id).toBe("document");
+    expect(findIncompleteEmailMedia(document)).toMatchObject({ id: "document", incompleteReason: "source" });
     media.assetId = "asset-id";
     expect(findIncompleteEmailMedia(document)).toBeNull();
   });
 
-  it("converts common YouTube links to privacy-enhanced embed links", () => {
-    expect(youtubeEmbedUrl("https://youtu.be/dQw4w9WgXcQ"))
-      .toBe("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
-    expect(youtubeEmbedUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"))
-      .toBe("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
-    expect(youtubeEmbedUrl("https://example.com/video.mp4")).toBeNull();
+  it("requires a selected custom video thumbnail source", () => {
+    const video = { id: "video", type: "video", sourceType: "upload", assetId: "video-id", thumbnailSourceType: "upload", thumbnailAssetId: "" };
+    const document = { blocks: [{ children: [{ children: [video] }] }] };
+    expect(findIncompleteEmailMedia(document)).toMatchObject({ id: "video", incompleteReason: "thumbnail" });
+    video.thumbnailAssetId = "thumbnail-id";
+    expect(findIncompleteEmailMedia(document)).toBeNull();
+    video.thumbnailSourceType = "remote";
+    video.thumbnailUrl = "https://";
+    expect(findIncompleteEmailMedia(document)).toMatchObject({ id: "video", incompleteReason: "thumbnail" });
+    video.thumbnailUrl = "https://cdn.example.com/poster.jpg";
+    expect(findIncompleteEmailMedia(document)).toBeNull();
+  });
+
+  it("converts common YouTube links to thumbnail links", () => {
+    expect(youtubeThumbnailUrl("https://youtu.be/dQw4w9WgXcQ"))
+      .toBe("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+    expect(youtubeThumbnailUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"))
+      .toBe("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+    expect(youtubeThumbnailUrl("https://example.com/video.mp4")).toBeNull();
   });
 });

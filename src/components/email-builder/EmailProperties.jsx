@@ -177,6 +177,7 @@ function ContentPane({
   const type = current.type;
   const columns = elements.filter((n) => n.type === "column");
   const asset = assets[current.assetId];
+  const thumbnailAsset = assets[current.thumbnailAssetId];
   const orderMode = current.url === ORDER_URL;
   useEffect(() => {
     if (!focusRequested || type !== "button") return;
@@ -311,6 +312,65 @@ function ContentPane({
               </div>
             </div>
           )}
+          {type === "video" && (
+            <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
+              <Field label={t("properties.thumbnail")} description={t("properties.thumbnailHint")}>
+                <Segmented
+                  className="w-full"
+                  label={t("properties.thumbnail")}
+                  value={current.thumbnailSourceType || "auto"}
+                  onChange={(thumbnailSourceType) => onChange({
+                    thumbnailSourceType,
+                    ...(thumbnailSourceType === "upload" ? { thumbnailUrl: "" } : {}),
+                    ...(thumbnailSourceType === "remote" ? { thumbnailAssetId: "" } : {}),
+                  })}
+                  options={[
+                    { value: "auto", label: t("properties.automatic") },
+                    { value: "upload", label: t("properties.upload") },
+                    { value: "remote", label: t("properties.directLink"), icon: Link },
+                  ]}
+                />
+              </Field>
+              {(current.thumbnailSourceType || "auto") === "upload" && (
+                <label className="block cursor-pointer space-y-2 rounded-xl border-2 border-dashed border-border p-4 text-center transition hover:border-primary">
+                  <span className="mx-auto grid h-9 w-9 place-items-center rounded-full bg-primary/10 text-primary">
+                    <UploadCloud size={18} />
+                  </span>
+                  <p className="text-sm font-semibold">
+                    {thumbnailAsset ? t("properties.replaceImage") : t("properties.chooseThumbnail")}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">{t("properties.imageTypes")}</p>
+                  <input
+                    type="file"
+                    className="sr-only"
+                    aria-label={t("properties.thumbnail")}
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    disabled={busy}
+                    onChange={(e) => {
+                      onUpload(e.target.files?.[0], "image", "thumbnail");
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              )}
+              {current.thumbnailSourceType === "remote" && (
+                <TextField
+                  id="email-prop-thumbnail-url"
+                  label={t("properties.thumbnailUrl")}
+                  type="url"
+                  placeholder="https://"
+                  value={current.thumbnailUrl}
+                  onChange={(thumbnailUrl) => onChange({ thumbnailUrl })}
+                />
+              )}
+            </div>
+          )}
+          {type === "video" && <TextField
+            id="email-prop-video-alt"
+            label={t("properties.alt")}
+            value={current.alt}
+            onChange={(alt) => onChange({ alt })}
+          />}
           {type === "image" && <TextField
             id="email-prop-alt"
             label={t("properties.alt")}
@@ -546,6 +606,18 @@ function StylePane({ current, onStyle, onContainerStyle, onChange }) {
                 : []),
             ]}
           />
+        </Field>
+      )}
+      {type === "video" && (
+        <Field label={t("properties.objectFit")}>
+          <Select value={style.objectFit || "cover"} onValueChange={(v) => onStyle("objectFit", v)}>
+            <SelectTrigger aria-label={t("properties.objectFit")}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cover">{t("properties.fitCover")}</SelectItem>
+              <SelectItem value="contain">{t("properties.fitContain")}</SelectItem>
+              <SelectItem value="fill">{t("properties.fitFill")}</SelectItem>
+            </SelectContent>
+          </Select>
         </Field>
       )}
       {(showNumeric("width", type) || showNumeric("height", type) || showNumeric("minHeight", type)) && (

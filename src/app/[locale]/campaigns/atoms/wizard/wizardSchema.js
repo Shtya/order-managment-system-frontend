@@ -217,8 +217,13 @@ export function validateStepMessage(data) {
       errors["email.document"] = "validation.emailContentRequired";
     else if (hasPendingEmailMediaUploads())
       errors["email.document"] = "validation.emailMediaUploading";
-    else if (findIncompleteEmailMedia(data.email.document))
-      errors["email.document"] = "validation.emailMediaSourceRequired";
+    else {
+      const incompleteMedia = findIncompleteEmailMedia(data.email.document);
+      if (incompleteMedia)
+        errors["email.document"] = incompleteMedia.incompleteReason === "thumbnail"
+          ? "validation.emailVideoThumbnailRequired"
+          : "validation.emailMediaSourceRequired";
+    }
     return errors;
   }
   if ((data.channel || "whatsapp") === "whatsapp") {

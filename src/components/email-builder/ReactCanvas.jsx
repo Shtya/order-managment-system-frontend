@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { copy, flatten, moveToColumn } from "./document";
-import { youtubeEmbedUrl } from "./media-state";
+import { youtubeThumbnailUrl } from "./media-state";
 import {
   boxStyle,
   buttonRenderStyles,
@@ -209,10 +209,10 @@ function Rich({ node, variables, variableValues }) {
       style={
         node.type.startsWith("table")
           ? {
-              border: "1px solid #dddddd",
-              padding: 8,
-              backgroundColor: node.attrs?.backgroundColor,
-            }
+            border: "1px solid #dddddd",
+            padding: 8,
+            backgroundColor: node.attrs?.backgroundColor,
+          }
           : undefined
       }
     >
@@ -269,9 +269,9 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
     ...(["wrapper", "section", "column"].includes(node.type)
       ? {}
       : outerSpacingStyle(
-          containerStyle,
-          node.type === "button" ? style.spacing : undefined,
-        )),
+        containerStyle,
+        node.type === "button" ? style.spacing : undefined,
+      )),
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.25 : node.hidden ? 0.35 : 1,
@@ -283,9 +283,9 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
   )
     ? undefined
     : {
-        ...boxStyle(containerStyle),
-        textAlign: ["image", "video", "document"].includes(node.type) ? style.align || "center" : undefined,
-      };
+      ...boxStyle(containerStyle),
+      textAlign: ["image", "video", "document"].includes(node.type) ? style.align || "center" : undefined,
+    };
   return (
     <div
       ref={setNodeRef}
@@ -331,181 +331,201 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
       </div>
       {isSelected && <Tools node={node} onAction={onAction} />}
       <div className="email-block-container" style={renderedContainerStyle}>
-      {node.children ? (
-        <SortableContext
-          items={node.children.map((n) => n.id)}
-          strategy={
-            node.type === "section"
-              ? rectSortingStrategy
-              : verticalListSortingStrategy
-          }
-        >
+        {node.children ? (
+          <SortableContext
+            items={node.children.map((n) => n.id)}
+            strategy={
+              node.type === "section"
+                ? rectSortingStrategy
+                : verticalListSortingStrategy
+            }
+          >
+            <div
+              className={node.type === "section" ? "email-columns" : "email-stack"}
+              style={{
+                ...structuralStyle(style, node.type),
+                "--email-columns": node.children.length,
+              }}
+            >
+              {node.children.map((n) => (
+                <Block
+                  key={n.id}
+                  node={n}
+                  defaults={defaults}
+                  assets={assets}
+                  variables={variables}
+                  variableValues={variableValues}
+                  onSelect={onSelect}
+                  onAction={onAction}
+                  selected={selected}
+                  invalidIds={invalidIds}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        ) : null}
+        {node.type === "text" && (
           <div
-            className={node.type === "section" ? "email-columns" : "email-stack"}
+            className="email-rich"
             style={{
-              ...structuralStyle(style, node.type),
-              "--email-columns": node.children.length,
+              ...boxStyle(style),
+              ...typographyStyle(style),
+              textIndent: style.indent,
+              "--email-paragraph": `${style.paragraphSpacing || 0}px`,
             }}
           >
-            {node.children.map((n) => (
-              <Block
-                key={n.id}
-                node={n}
-                defaults={defaults}
-                assets={assets}
-                variables={variables}
-                variableValues={variableValues}
-                onSelect={onSelect}
-                onAction={onAction}
-                selected={selected}
-                invalidIds={invalidIds}
-              />
-            ))}
+            <Rich node={node.content} variables={variables} variableValues={variableValues} />
           </div>
-        </SortableContext>
-      ) : null}
-      {node.type === "text" && (
-        <div
-          className="email-rich"
-          style={{
-            ...boxStyle(style),
-            ...typographyStyle(style),
-            textIndent: style.indent,
-            "--email-paragraph": `${style.paragraphSpacing || 0}px`,
-          }}
-        >
-          <Rich node={node.content} variables={variables} variableValues={variableValues} />
-        </div>
-      )}
-      {node.type === "table" && (
-        <div
-          className="overflow-x-auto"
-          style={{
-            ...boxStyle(style),
-            ...typographyStyle(style),
-          }}
-        >
-          <Rich node={node.content} variables={variables} variableValues={variableValues} />
-        </div>
-      )}
-      {node.type === "button" && (
-        (() => {
-          const button = buttonRenderStyles(style);
-          return (
-            <table role="presentation" style={button.table}>
-              <tbody><tr><td style={button.cell}>
-                <span style={button.link}>
-                  <VariablePreviewText
-                    text={node.label}
-                    variables={variables}
-                    values={variableValues}
-                  />
-                </span>
-              </td></tr></tbody>
-            </table>
-          );
-        })()
-      )}
-      {node.type === "image" &&
-        ((node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.variants?.at(-1)?.url) ? (
-          <div style={{ textAlign: style.align || "center" }}>
-          <img
-            alt={node.alt || ""}
-            src={node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId].variants.at(-1).url}
+        )}
+        {node.type === "table" && (
+          <div
+            className="overflow-x-auto"
             style={{
-              width: style.width || "100%",
-              maxWidth: "100%",
-              height: style.height || "auto",
-              objectFit: style.height ? "cover" : undefined,
-              padding: style.padding,
-              paddingTop: style.paddingTop,
-              paddingRight: style.paddingRight,
-              paddingBottom: style.paddingBottom,
-              paddingLeft: style.paddingLeft,
-              backgroundColor: style.backgroundColor,
-              borderRadius: style.borderRadius,
-              border: style.borderWidth
-                ? `${style.borderWidth}px solid ${style.borderColor || "#222222"}`
-                : undefined,
-              display: "inline-block",
+              ...boxStyle(style),
+              ...typographyStyle(style),
             }}
-          />
-          {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
+          >
+            <Rich node={node.content} variables={variables} variableValues={variableValues} />
           </div>
-        ) : (
-          <div className="email-image-placeholder">
-            <ImagePlus size={22} className="text-slate-400" />
-            {t("canvas.dropImage")}
-          </div>
-        ))}
-      {node.type === "video" && (() => {
-        const href = node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.url;
-        const youtube = youtubeEmbedUrl(href);
-        return (
-          <div style={{ textAlign: style.align || "center" }}>
-            {youtube ? (
-              <iframe
-                src={youtube}
-                title={node.caption || t("canvas.watchVideo")}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
+        )}
+        {node.type === "button" && (
+          (() => {
+            const button = buttonRenderStyles(style);
+            return (
+              <table role="presentation" style={button.table}>
+                <tbody><tr><td style={button.cell}>
+                  <span style={button.link}>
+                    <VariablePreviewText
+                      text={node.label}
+                      variables={variables}
+                      values={variableValues}
+                    />
+                  </span>
+                </td></tr></tbody>
+              </table>
+            );
+          })()
+        )}
+        {node.type === "image" &&
+          ((node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.variants?.at(-1)?.url) ? (
+            <div style={{ textAlign: style.align || "center" }}>
+              <img
+                alt={node.alt || ""}
+                src={node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId].variants.at(-1).url}
                 style={{
+                  width: style.width || "100%",
+                  maxWidth: "100%",
+                  height: style.height || "auto",
+                  objectFit: style.height ? "cover" : undefined,
+                  padding: style.padding,
+                  paddingTop: style.paddingTop,
+                  paddingRight: style.paddingRight,
+                  paddingBottom: style.paddingBottom,
+                  paddingLeft: style.paddingLeft,
+                  backgroundColor: style.backgroundColor,
+                  borderRadius: style.borderRadius,
+                  border: style.borderWidth
+                    ? `${style.borderWidth}px solid ${style.borderColor || "#222222"}`
+                    : undefined,
+                  display: "inline-block",
+                }}
+              />
+              {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
+            </div>
+          ) : (
+            <div className="email-image-placeholder">
+              <ImagePlus size={22} className="text-slate-400" />
+              {t("canvas.dropImage")}
+            </div>
+          ))}
+        {node.type === "video" && (() => {
+          const href = node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.url;
+          const thumbnailSource = node.thumbnailSourceType || "auto";
+          const thumbnailAsset = assets[node.thumbnailAssetId];
+          const thumbnailUrl = thumbnailSource === "remote"
+            ? node.thumbnailUrl
+            : thumbnailSource === "upload"
+              ? thumbnailAsset?.variants?.at(-1)?.url
+              : node.sourceType === "upload"
+                ? assets[node.assetId]?.variants?.at(-1)?.url
+                : youtubeThumbnailUrl(href);
+          return (
+            <div style={{ textAlign: style.align || "center" }}>
+              <a
+                href={href || undefined}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={node.alt || t("canvas.watchVideo")}
+                style={{
+                  position: "relative",
                   display: "inline-block",
                   boxSizing: "border-box",
                   width: style.width || 600,
                   maxWidth: "100%",
                   height: style.height || 338,
+                  overflow: "hidden",
                   border: `${style.borderWidth ?? 1}px solid ${style.borderColor || "#d5dfd8"}`,
                   borderRadius: style.borderRadius ?? 6,
                   background: style.backgroundColor || "#f8fafc",
+                  textDecoration: "none",
                 }}
-              />
-            ) : <video
-              src={href || undefined}
-              controls
-              playsInline
-              preload="metadata"
+              >
+                {thumbnailUrl ? <img src={thumbnailUrl} alt={node.alt || ""} style={{ width: "100%", height: "100%", display: "block", objectFit: style.objectFit || "cover" }} /> : null}
+                <span
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      display: "grid",
+                      width: 64,
+                      height: 44,
+                      placeItems: "center",
+                      borderRadius: 12,
+                      background: "rgba(35, 35, 35, 0.85)",
+                      color: "#fff",
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
+                      backdropFilter: "blur(4px)",
+                    }}
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+                      <path d="M8 5.5v13l10-6.5z" />
+                    </svg>
+                  </span>
+                </span>
+              </a>
+              {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
+              {!href ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{t("canvas.addVideo")}</div> : null}
+            </div>
+          );
+        })()}
+        {node.type === "document" && (() => {
+          const href = node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.url;
+          return href ? (
+            <div style={{ textAlign: style.align || "center" }}>
+              <a href={href} target="_blank" rel="noreferrer" style={{ width: style.width || 600, maxWidth: "100%", height: style.height, display: "inline-block", boxSizing: "border-box", padding: node.style?.padding ?? 16, border: `${style.borderWidth ?? 1}px solid ${style.borderColor || "#d5dfd8"}`, borderRadius: style.borderRadius ?? 6, background: style.backgroundColor || "#f8fafc", color: "#176c51", fontFamily: `${style.fontFamily || "Cairo"}, sans-serif`, fontSize: style.fontSize || 16, fontWeight: style.fontWeight || 400, lineHeight: style.lineHeight || 1.2, textAlign: style.align || "center", textDecoration: "none" }}>
+                <span className="email-rich"><Rich node={node.content} variables={variables} variableValues={variableValues} /></span>
+              </a>
+              {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
+            </div>
+          ) : <div className="email-image-placeholder"><FileText size={22} />{t("canvas.addDocument")}</div>;
+        })()}
+        {node.type === "divider" && (
+          <div style={boxStyle(style)}>
+            <hr
               style={{
-                display: "inline-block",
-                boxSizing: "border-box",
-                width: style.width || 600,
-                maxWidth: "100%",
-                height: style.height,
-                border: `${style.borderWidth ?? 1}px solid ${style.borderColor || "#d5dfd8"}`,
-                borderRadius: style.borderRadius ?? 6,
-                background: style.backgroundColor || "#f8fafc",
+                margin: 0,
+                border: 0,
+                borderTop: `${style.borderWidth || 1}px solid ${style.borderColor || "#d5dfd8"}`,
               }}
-            >
-              {href ? <a href={href} target="_blank" rel="noreferrer">{t("canvas.watchVideo")}</a> : null}
-            </video>}
-            {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
-            {!href ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{t("canvas.addVideo")}</div> : null}
+            />
           </div>
-        );
-      })()}
-      {node.type === "document" && (() => {
-        const href = node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.url;
-        return href ? (
-          <div style={{ textAlign: style.align || "center" }}>
-            <a href={href} target="_blank" rel="noreferrer" style={{ width: style.width || 600, maxWidth: "100%", height: style.height, display: "inline-block", boxSizing: "border-box", padding: node.style?.padding ?? 16, border: `${style.borderWidth ?? 1}px solid ${style.borderColor || "#d5dfd8"}`, borderRadius: style.borderRadius ?? 6, background: style.backgroundColor || "#f8fafc", color: "#176c51", fontFamily: `${style.fontFamily || "Cairo"}, sans-serif`, fontSize: style.fontSize || 16, fontWeight: style.fontWeight || 400, lineHeight: style.lineHeight || 1.2, textAlign: style.align || "center", textDecoration: "none" }}>
-              <span className="email-rich"><Rich node={node.content} variables={variables} variableValues={variableValues} /></span>
-            </a>
-            {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
-          </div>
-        ) : <div className="email-image-placeholder"><FileText size={22} />{t("canvas.addDocument")}</div>;
-      })()}
-      {node.type === "divider" && (
-        <div style={boxStyle(style)}>
-          <hr
-            style={{
-              margin: 0,
-              border: 0,
-              borderTop: `${style.borderWidth || 1}px solid ${style.borderColor || "#d5dfd8"}`,
-            }}
-          />
-        </div>
-      )}
-      {node.type === "spacer" && <div style={{ height: node.height }} />}
+        )}
+        {node.type === "spacer" && <div style={{ height: node.height }} />}
       </div>
     </div>
   );
@@ -515,7 +535,7 @@ export default function ReactCanvas({
   document,
   onChange,
   onSelect,
-  onAction = () => {},
+  onAction = () => { },
   selected = null,
   assets = {},
   variables = [],
@@ -607,64 +627,64 @@ export default function ReactCanvas({
         onClick={() => onSelect(null)}
       >
         <ShadowSurface>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={({ active }) => setActiveId(active.id)}
-          onDragCancel={() => setActiveId(null)}
-          onDragEnd={(event) => {
-            move(event);
-            setActiveId(null);
-          }}
-        >
-          <SortableContext
-            items={document.blocks.map((n) => n.id)}
-            strategy={verticalListSortingStrategy}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={({ active }) => setActiveId(active.id)}
+            onDragCancel={() => setActiveId(null)}
+            onDragEnd={(event) => {
+              move(event);
+              setActiveId(null);
+            }}
           >
-            <div
-              dir={document.direction}
-              className="email-canvas space-y-1 bg-white text-[#222222] shadow-sm"
-              style={{
-                maxWidth: document.width,
-                margin: "auto",
-                containerType: "inline-size",
-              }}
+            <SortableContext
+              items={document.blocks.map((n) => n.id)}
+              strategy={verticalListSortingStrategy}
             >
-              {document.blocks.map((n) => (
-                <Block
-                  key={n.id}
-                  node={n}
-                  defaults={document.defaults}
-                  assets={assets}
-                  variables={flattenedVariables}
-                  variableValues={variableValues}
-                  onSelect={onSelect}
-                  onAction={onAction}
-                  selected={selected}
-                  invalidIds={invalidIds}
-                />
-              ))}
-              <div className="email-footer">
-                {/* <span className="absolute end-2 top-2 inline-flex h-5 items-center gap-1 rounded-full bg-slate-200/70 px-2 text-[10px] font-semibold text-slate-500">
+              <div
+                dir={document.direction}
+                className="email-canvas space-y-1 bg-white text-[#222222] shadow-sm"
+                style={{
+                  maxWidth: document.width,
+                  margin: "auto",
+                  containerType: "inline-size",
+                }}
+              >
+                {document.blocks.map((n) => (
+                  <Block
+                    key={n.id}
+                    node={n}
+                    defaults={document.defaults}
+                    assets={assets}
+                    variables={flattenedVariables}
+                    variableValues={variableValues}
+                    onSelect={onSelect}
+                    onAction={onAction}
+                    selected={selected}
+                    invalidIds={invalidIds}
+                  />
+                ))}
+                <div className="email-footer">
+                  {/* <span className="absolute end-2 top-2 inline-flex h-5 items-center gap-1 rounded-full bg-slate-200/70 px-2 text-[10px] font-semibold text-slate-500">
                   <Lock size={11} />
                   {t("canvas.autoFooter")}
                 </span> */}
-                {envelope?.businessIdentity || "—"}
-                <br />
-                {/* <span className="underline">{t("canvas.unsubscribe")}</span> */}
+                  {envelope?.businessIdentity || "—"}
+                  <br />
+                  {/* <span className="underline">{t("canvas.unsubscribe")}</span> */}
+                </div>
               </div>
-            </div>
-          </SortableContext>
-          <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
-            {activeNode ? (
-              <div className="email-drag-overlay">
-                {t.has(`blockTypes.${activeNode.type}`)
-                  ? t(`blockTypes.${activeNode.type}`)
-                  : activeNode.type}
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+            </SortableContext>
+            <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
+              {activeNode ? (
+                <div className="email-drag-overlay">
+                  {t.has(`blockTypes.${activeNode.type}`)
+                    ? t(`blockTypes.${activeNode.type}`)
+                    : activeNode.type}
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </ShadowSurface>
       </div>
     </div>

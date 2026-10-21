@@ -2005,7 +2005,7 @@ function WhatsappDialog({ open, onOpenChange, user, credentials }) {
 
 	const buttonDisabledReason = useMemo(() => {
 		if (!email) return t("whatsapp.missingEmail") || "Email is required to send WhatsApp.";
-		if (!phoneNumber.trim()) return t("whatsapp.missingPhone") || "Phone number is required.";
+		// if (!phoneNumber.trim()) return t("whatsapp.missingPhone") || "Phone number is required.";
 		// if (includePassword && !password) return t("whatsapp.missingPassword") || "Password is required to include it in the WhatsApp message.";
 		return "";
 	}, [email, phoneNumber, password, includePassword, t]);

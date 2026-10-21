@@ -128,17 +128,13 @@ export default function EmailBlocksPanel({
   const [layerQuery, setLayerQuery] = useState("");
   const [open, setOpen] = useState({});
   const treeRef = useRef(null);
- const { isTestUser } = useAuth();
+ 
 
 const content = [
   ["text", Type],
-  ...(isTestUser
-    ? [
-        ["image", Image],
-        ["video", Video],
-        ["document", FileText],
-      ]
-    : []),
+  ["image", Image],
+  ["video", Video],
+  ["document", FileText],
   ["button", MousePointerClick],
   ["divider", Minus],
   ["spacer", MoveVertical],

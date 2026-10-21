@@ -49,10 +49,18 @@ export function findIncompleteEmailMedia(document) {
           ? validRemoteUrl(node.sourceUrl)
           : Boolean(node.assetId);
         if (!complete) return { ...node, incompleteReason: "source" };
-        if (node.type === "video" && node.thumbnailSourceType === "upload" && !node.thumbnailAssetId)
-          return { ...node, incompleteReason: "thumbnail" };
-        if (node.type === "video" && node.thumbnailSourceType === "remote" && !validRemoteUrl(node.thumbnailUrl))
-          return { ...node, incompleteReason: "thumbnail" };
+        if (node.type === "video") {
+          const thumbnailSource = node.thumbnailSourceType || "auto";
+          const automaticThumbnail = node.sourceType === "remote"
+            ? youtubeThumbnailUrl(node.sourceUrl)
+            : validRemoteUrl(node.thumbnailUrl);
+          if (thumbnailSource === "auto" && !automaticThumbnail)
+            return { ...node, incompleteReason: "thumbnail" };
+          if (thumbnailSource === "upload" && !node.thumbnailAssetId)
+            return { ...node, incompleteReason: "thumbnail" };
+          if (thumbnailSource === "remote" && !validRemoteUrl(node.thumbnailUrl))
+            return { ...node, incompleteReason: "thumbnail" };
+        }
       }
       const child = visit(node?.children);
       if (child) return child;

@@ -25,6 +25,9 @@ describe("email media completion", () => {
     };
     expect(findIncompleteEmailMedia(document)).toMatchObject({ id: "video", incompleteReason: "source" });
     document.blocks[0].children[0].children[0].sourceUrl = "https://cdn.example.com/video.mp4";
+    expect(findIncompleteEmailMedia(document)).toMatchObject({ id: "video", incompleteReason: "thumbnail" });
+    document.blocks[0].children[0].children[0].thumbnailSourceType = "remote";
+    document.blocks[0].children[0].children[0].thumbnailUrl = "https://cdn.example.com/poster.jpg";
     expect(findIncompleteEmailMedia(document)).toBeNull();
   });
 
@@ -46,6 +49,24 @@ describe("email media completion", () => {
     video.thumbnailUrl = "https://";
     expect(findIncompleteEmailMedia(document)).toMatchObject({ id: "video", incompleteReason: "thumbnail" });
     video.thumbnailUrl = "https://cdn.example.com/poster.jpg";
+    expect(findIncompleteEmailMedia(document)).toBeNull();
+  });
+
+  it("accepts generated uploaded-video and YouTube automatic thumbnails", () => {
+    const video = {
+      id: "video",
+      type: "video",
+      sourceType: "upload",
+      assetId: "video-id",
+      thumbnailSourceType: "auto",
+      thumbnailUrl: "https://api.example.com/uploads/video-thumbnail.jpg",
+    };
+    const document = { blocks: [{ children: [{ children: [video] }] }] };
+    expect(findIncompleteEmailMedia(document)).toBeNull();
+    video.sourceType = "remote";
+    video.assetId = "";
+    video.sourceUrl = "https://youtu.be/dQw4w9WgXcQ";
+    video.thumbnailUrl = "";
     expect(findIncompleteEmailMedia(document)).toBeNull();
   });
 

@@ -15355,7 +15355,7 @@
         "emailContentRequired": "Add content to the email message.",
         "emailMediaUploading": "Wait for all email media uploads to finish.",
         "emailMediaSourceRequired": "Add a source to every image, video, and document before continuing.",
-        "emailVideoThumbnailRequired": "Add the custom thumbnail selected for the video before continuing.",
+        "emailVideoThumbnailRequired": "A video thumbnail must be added before continuing.",
         "emailAccountSuspended": "This sender account is suspended. Choose another account or reconnect this account before continuing.",
         "variablesRequired": "Fill all template variables.",
         "orderLinkUnavailable": "The campaign message does not contain an order link. Add the Order link field to the WhatsApp template or email message.",
@@ -19204,7 +19204,7 @@
       "uploadMediaFailed": "Could not upload {type}.",
       "mediaUploadingBlocked": "Wait for all media uploads to finish before testing or continuing.",
       "mediaSourceRequired": "The selected media block has no file or direct HTTPS link. Add its source before continuing.",
-      "videoThumbnailRequired": "The video is ready, but its selected custom thumbnail is missing. Upload a thumbnail or enter its direct HTTPS image link."
+      "videoThumbnailRequired": "Add a video thumbnail before sending the test."
     },
     "manualEmail": {
       "manualEmail": "Add email addresses",

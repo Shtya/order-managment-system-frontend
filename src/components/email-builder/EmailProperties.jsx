@@ -280,7 +280,13 @@ function ContentPane({
               className="w-full"
               label={t("properties.source")}
               value={current.sourceType || "upload"}
-              onChange={(sourceType) => onChange({ sourceType, ...(sourceType === "remote" ? { assetId: "" } : { sourceUrl: "" }) })}
+              onChange={(sourceType) => onChange({
+                sourceType,
+                ...(sourceType === "remote" ? { assetId: "" } : { sourceUrl: "" }),
+                ...(type === "video" && (current.thumbnailSourceType || "auto") === "auto"
+                  ? { thumbnailUrl: "" }
+                  : {}),
+              })}
               options={[{ value: "upload", label: t("properties.upload") }, { value: "remote", label: t("properties.directLink"), icon: Link }]}
             />
           </Field>

@@ -729,6 +729,9 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
           sourceUrl: "",
           assetId: data.id,
           alt: item.alt || "",
+          ...(kind === "video" && (item.thumbnailSourceType || "auto") === "auto"
+            ? { thumbnailUrl: data.variants?.at(-1)?.url || "" }
+            : {}),
         });
       commit(nextDocument);
       if (oldId && oldId !== data.id && !imageIds(nextDocument).includes(oldId))

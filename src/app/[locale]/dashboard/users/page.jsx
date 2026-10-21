@@ -105,7 +105,11 @@ export const COUNTRIES = [
 	{
 		key: "EG",
 		dialCode: "+20",
-		phone: { min: 10, max: 10, regex: /^(10|11|12|15)\d{8}$/ },
+		phone: {
+			min: 10,
+			max: 12,
+			regex: /^(?:0|2)?(?:10|11|12|15)\d{8}$/,
+		},
 		placeholder: "10xxxxxxxx",
 	},
 	{
@@ -182,8 +186,14 @@ function digitsOnly(v) {
 	return (v || "").replace(/\D/g, "");
 }
 
-
-
+function normalizePhoneForCountry(rawDigits, country) {
+	const value = digitsOnly(rawDigits);
+	if (!value) return "";
+	if (country?.key === "EG") {
+		return value.replace(/^20/, "");
+	}
+	return value;
+}
 
 function copyToClipboard(text, t) {
 	try {
@@ -432,11 +442,11 @@ export default function SuperAdminUsersPage() {
 			if (filters.startDate) params.startDate = filters.startDate;
 			if (filters.endDate) params.endDate = filters.endDate;
 
-			const res = await api.get("/users/super-admin/export/csv", {
+			const res = await api.get("/users/super-admin/export", {
 				params,
 				responseType: "blob",
 			});
-			downloadBlob(res.data, "users.csv");
+			downloadBlob(res.data, "users.xlsx");
 		} catch (e) {
 			setError(getApiMsg(e, tCommon));
 		}
@@ -763,40 +773,40 @@ export default function SuperAdminUsersPage() {
 									},
 									variant: "primary",
 								},
-							{
-								icon: <KeyRound size={16} />,
-								tooltip: t("actions.manualReset"),
-								onClick: (r) => {
-									setSelectedUser(r);
-									setCredentials(null);
-									setCredAllowChange(true);
-									setCredOpen(true);
+								{
+									icon: <KeyRound size={16} />,
+									tooltip: t("actions.manualReset"),
+									onClick: (r) => {
+										setSelectedUser(r);
+										setCredentials(null);
+										setCredAllowChange(true);
+										setCredOpen(true);
+									},
+									variant: "primary",
+									hidden: !isAdmin,
 								},
-								variant: "primary",
-								hidden: !isAdmin,
-							},
-							{
-								icon: <ListChecks size={16} />,
-								tooltip: t("actions.viewGettingStarted"),
-								onClick: (r) => {
-									router.push(`/dashboard/getting-started?userId=${r.id}`);
+								{
+									icon: <ListChecks size={16} />,
+									tooltip: t("actions.viewGettingStarted"),
+									onClick: (r) => {
+										router.push(`/dashboard/getting-started?userId=${r.id}`);
+									},
+									variant: "primary",
 								},
-								variant: "primary",
-							},
-							{
-								icon: <LogIn size={16} />,
-								tooltip: t("actions.loginAs"),
-								onClick: async (r) => {
-									try {
-										const res = await api.post(`/auth/super-admin-login`, { email: r.email });
-										await handleAuthSuccess(res.data);
-									} catch (e) {
-										toast.error(getApiMsg(e, tCommon));
-									}
+								{
+									icon: <LogIn size={16} />,
+									tooltip: t("actions.loginAs"),
+									onClick: async (r) => {
+										try {
+											const res = await api.post(`/auth/super-admin-login`, { email: r.email });
+											await handleAuthSuccess(res.data);
+										} catch (e) {
+											toast.error(getApiMsg(e, tCommon));
+										}
+									},
+									variant: "blue",
+									hidden: !isSuperAdmin,
 								},
-								variant: "blue",
-								hidden: !isSuperAdmin,
-							},
 								{
 									icon: row.isActive ? <PowerOff size={16} /> : <Power size={16} />,
 									tooltip: row.isActive ? t("actions.deactivate") : t("actions.activate"),
@@ -891,7 +901,7 @@ export default function SuperAdminUsersPage() {
 			)}
 
 			<Table
-        tableKey="dashboard-users"
+				tableKey="dashboard-users"
 				// search
 				searchValue={search}
 				onSearchChange={setSearch}
@@ -1942,25 +1952,29 @@ function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, 
 	);
 }
 
-function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
+function WhatsappDialog({ open, onOpenChange, user, credentials }) {
+	const tPhone = useTranslations("inputPhone");
+	const tCountries = useTranslations("countries");
+	const t = useTranslations("users");
 	const [countryKey, setCountryKey] = useState("EG");
 	const [phoneNumber, setPhoneNumber] = useState("");
 	const [error, setError] = useState("");
 	const [includePassword, setIncludePassword] = useState(true);
 
 	useEffect(() => {
-		if (!open) {
-			setCountryKey("EG");
-			setPhoneNumber("");
+		if (open) {
+			setPhoneNumber(digitsOnly(user?.phone || ""));
 			setError("");
 			setIncludePassword(true);
+			return;
 		}
-	}, [open]);
 
+		setCountryKey("EG");
+		setPhoneNumber("");
+		setError("");
+		setIncludePassword(true);
+	}, [open, user?.phone]);
 
-
-	const tPhone = useTranslations("inputPhone");
-	const tCountries = useTranslations("countries");
 	const selectedCountry = useMemo(() => {
 		return COUNTRIES.find((c) => c.key === countryKey) || COUNTRIES[0];
 	}, [countryKey]);
@@ -1979,23 +1993,36 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 		return lines.join("\n");
 	}, [user, email, password, includePassword, t]);
 
-	const isValidPhone = useMemo(
-		() => !validatePhone(phoneNumber, selectedCountry, tPhone),
-		[phoneNumber, selectedCountry, tPhone]
+	const normalizedPhone = useMemo(
+		() => normalizePhoneForCountry(phoneNumber, selectedCountry),
+		[phoneNumber, selectedCountry]
 	);
+
+	const isValidPhone = useMemo(
+		() => !validatePhone(normalizedPhone, selectedCountry, tPhone),
+		[normalizedPhone, selectedCountry, tPhone]
+	);
+
+	const buttonDisabledReason = useMemo(() => {
+		if (!email) return t("whatsapp.missingEmail") || "Email is required to send WhatsApp.";
+		if (!phoneNumber.trim()) return t("whatsapp.missingPhone") || "Phone number is required.";
+		// if (includePassword && !password) return t("whatsapp.missingPassword") || "Password is required to include it in the WhatsApp message.";
+		return "";
+	}, [email, phoneNumber, password, includePassword, t]);
 
 	const waLink = useMemo(() => {
 		const dial = digitsOnly(selectedCountry.dialCode);
-		const p = digitsOnly(phoneNumber);
+		const p = normalizedPhone;
 		const full = `${dial}${p}`;
 		const text = encodeURIComponent(message);
 		return `https://wa.me/${full}?text=${text}`;
-	}, [selectedCountry, phoneNumber, message]);
+	}, [selectedCountry, normalizedPhone, message]);
 
 	const handleCountryChange = (newKey) => {
 		setCountryKey(newKey);
 		const newCountry = COUNTRIES.find((c) => c.key === newKey) || COUNTRIES[0];
-		const msg = validatePhone(phoneNumber, newCountry, tPhone);
+		const normalized = normalizePhoneForCountry(phoneNumber, newCountry);
+		const msg = validatePhone(normalized, newCountry, tPhone);
 		if (phoneNumber.length > 0) setError(msg);
 		else setError("");
 	};
@@ -2003,11 +2030,11 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 	const handlePhoneChange = (e) => {
 		const value = digitsOnly(e.target.value);
 		setPhoneNumber(value);
-		const msg = validatePhone(value, selectedCountry, tPhone);
+		const normalized = normalizePhoneForCountry(value, selectedCountry);
+		const msg = validatePhone(normalized, selectedCountry, tPhone);
 		if (value.length > 0) setError(msg);
 		else setError("");
 	};
-
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-2xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
@@ -2059,6 +2086,11 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 								{error}
 							</div>
 						)}
+						{buttonDisabledReason && (
+							<div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2 text-right">
+								{buttonDisabledReason}
+							</div>
+						)}
 					</div>
 
 					{password && (<div className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
@@ -2098,7 +2130,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 						<Button
 							className="rounded-full btn-primary1"
 							onClick={() => window.open(waLink, "_blank", "noopener,noreferrer")}
-							disabled={!email || !isValidPhone || (includePassword && !password)}
+							disabled={!email || !phoneNumber.trim()}
 						>
 							<span className="flex items-center gap-2">
 								<Send size={18} />
@@ -2121,15 +2153,17 @@ function validatePhone(rawDigits, country, t) {
 	const value = digitsOnly(rawDigits);
 	if (!value) return t("validation.required");
 
-	if (value.length < country.phone.min || value.length > country.phone.max) {
-		if (country.phone.min === country.phone.max) {
-			return t("validation.exact", { min: country.phone.min });
+	const minLength = country.key === "EG" ? 10 : country.phone.min;
+	const maxLength = country.key === "EG" ? 11 : country.phone.max;
+
+	if (value.length < minLength || value.length > maxLength) {
+		if (minLength === maxLength) {
+			return t("validation.exact", { min: minLength });
 		}
-		return t("validation.range", { min: country.phone.min, max: country.phone.max });
+		return t("validation.range", { min: minLength, max: maxLength });
 	}
 
 	if (
-		value.length === country.phone.max &&
 		country.phone.regex &&
 		!country.phone.regex.test(value)
 	) {

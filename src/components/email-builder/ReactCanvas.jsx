@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { copy, flatten, moveToColumn } from "./document";
+import { youtubeEmbedUrl } from "./media-state";
 import {
   boxStyle,
   buttonRenderStyles,
@@ -407,6 +408,7 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
       )}
       {node.type === "image" &&
         ((node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.variants?.at(-1)?.url) ? (
+          <div style={{ textAlign: style.align || "center" }}>
           <img
             alt={node.alt || ""}
             src={node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId].variants.at(-1).url}
@@ -428,6 +430,8 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
               display: "inline-block",
             }}
           />
+          {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
+          </div>
         ) : (
           <div className="email-image-placeholder">
             <ImagePlus size={22} className="text-slate-400" />
@@ -436,9 +440,27 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
         ))}
       {node.type === "video" && (() => {
         const href = node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.url;
+        const youtube = youtubeEmbedUrl(href);
         return (
           <div style={{ textAlign: style.align || "center" }}>
-            <video
+            {youtube ? (
+              <iframe
+                src={youtube}
+                title={node.caption || t("canvas.watchVideo")}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                style={{
+                  display: "inline-block",
+                  boxSizing: "border-box",
+                  width: style.width || 600,
+                  maxWidth: "100%",
+                  height: style.height || 338,
+                  border: `${style.borderWidth ?? 1}px solid ${style.borderColor || "#d5dfd8"}`,
+                  borderRadius: style.borderRadius ?? 6,
+                  background: style.backgroundColor || "#f8fafc",
+                }}
+              />
+            ) : <video
               src={href || undefined}
               controls
               playsInline
@@ -455,7 +477,7 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
               }}
             >
               {href ? <a href={href} target="_blank" rel="noreferrer">{t("canvas.watchVideo")}</a> : null}
-            </video>
+            </video>}
             {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
             {!href ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{t("canvas.addVideo")}</div> : null}
           </div>
@@ -465,8 +487,8 @@ function Block({ node, defaults, assets, variables, variableValues, onSelect, on
         const href = node.sourceType === "remote" ? node.sourceUrl : assets[node.assetId]?.url;
         return href ? (
           <div style={{ textAlign: style.align || "center" }}>
-            <a href={href} target="_blank" rel="noreferrer" style={{ width: style.width || 600, maxWidth: "100%", height: style.height, display: "inline-flex", boxSizing: "border-box", alignItems: "center", gap: 10, padding: node.style?.padding ?? 16, border: `${style.borderWidth ?? 1}px solid ${style.borderColor || "#d5dfd8"}`, borderRadius: style.borderRadius ?? 6, background: style.backgroundColor || "#f8fafc", color: "#176c51", fontFamily: `${style.fontFamily || "Cairo"}, sans-serif`, fontSize: style.fontSize || 16, fontWeight: style.fontWeight || 700, lineHeight: style.lineHeight || 1.2, textDecoration: "none" }}>
-              <span aria-hidden style={{ fontSize: 22, lineHeight: 1 }}>▣</span><span>{node.title || assets[node.assetId]?.originalName || t("blockTypes.document")}</span>
+            <a href={href} target="_blank" rel="noreferrer" style={{ width: style.width || 600, maxWidth: "100%", height: style.height, display: "inline-flex", boxSizing: "border-box", alignItems: "center", gap: 10, padding: node.style?.padding ?? 16, border: `${style.borderWidth ?? 1}px solid ${style.borderColor || "#d5dfd8"}`, borderRadius: style.borderRadius ?? 6, background: style.backgroundColor || "#f8fafc", color: "#176c51", fontFamily: `${style.fontFamily || "Cairo"}, sans-serif`, fontSize: style.fontSize || 16, fontWeight: style.fontWeight || 400, lineHeight: style.lineHeight || 1.2, textDecoration: "none" }}>
+              <span className="email-rich"><Rich node={node.content} variables={variables} variableValues={variableValues} /></span>
             </a>
             {node.caption ? <div style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>{node.caption}</div> : null}
           </div>

@@ -366,7 +366,7 @@ export function EmailClientFrame({
           <div className="min-h-0 flex-1 bg-[#f4f4f7] pt-8">
             <iframe
               title={title}
-              sandbox=""
+              sandbox="allow-scripts allow-same-origin allow-presentation"
               srcDoc={html}
               className="h-full w-full bg-white"
             />
@@ -414,7 +414,7 @@ export function EmailClientFrame({
       <div className="min-h-[560px] flex-1 bg-[#f4f4f7]">
         <iframe
           title={title}
-          sandbox=""
+          sandbox="allow-scripts allow-same-origin allow-presentation"
           srcDoc={html}
           className="h-full min-h-[528px] w-full bg-white pt-8"
         />

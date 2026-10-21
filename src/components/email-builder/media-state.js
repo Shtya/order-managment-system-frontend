@@ -12,6 +12,24 @@ export function hasPendingEmailMediaUploads() {
   return pendingUploads > 0;
 }
 
+export function youtubeEmbedUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    let videoId = "";
+    if (host === "youtu.be") videoId = url.pathname.split("/").filter(Boolean)[0] || "";
+    if (["youtube.com", "m.youtube.com", "music.youtube.com"].includes(host)) {
+      if (url.pathname === "/watch") videoId = url.searchParams.get("v") || "";
+      else if (/^\/(embed|shorts)\//.test(url.pathname)) videoId = url.pathname.split("/")[2] || "";
+    }
+    return /^[A-Za-z0-9_-]{6,20}$/.test(videoId)
+      ? `https://www.youtube-nocookie.com/embed/${videoId}`
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export function findIncompleteEmailMedia(document) {
   const validRemoteUrl = (value) => {
     try {

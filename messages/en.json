@@ -19362,7 +19362,7 @@
       "direction": "Email direction",
       "defaults": "Default styles",
       "label": "Button text",
-      "alt": "Image description",
+      "alt": "Alternative text",
       "upload": "Upload",
       "source": "Source",
       "directLink": "Direct HTTPS link",

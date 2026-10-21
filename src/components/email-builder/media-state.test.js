@@ -4,6 +4,7 @@ import {
   endEmailMediaUpload,
   findIncompleteEmailMedia,
   hasPendingEmailMediaUploads,
+  youtubeEmbedUrl,
 } from "./media-state";
 
 afterEach(() => {
@@ -33,5 +34,13 @@ describe("email media completion", () => {
     expect(findIncompleteEmailMedia(document)?.id).toBe("document");
     media.assetId = "asset-id";
     expect(findIncompleteEmailMedia(document)).toBeNull();
+  });
+
+  it("converts common YouTube links to privacy-enhanced embed links", () => {
+    expect(youtubeEmbedUrl("https://youtu.be/dQw4w9WgXcQ"))
+      .toBe("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+    expect(youtubeEmbedUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"))
+      .toBe("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+    expect(youtubeEmbedUrl("https://example.com/video.mp4")).toBeNull();
   });
 });

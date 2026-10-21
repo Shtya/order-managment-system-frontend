@@ -607,7 +607,9 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
                     sourceUrl: "",
                     caption: "",
                     ...(type === "image" ? { alt: "", url: "" } : {}),
-                    ...(type === "document" ? { title: t("defaults.document") } : {}),
+                    ...(type === "document"
+                      ? { content: richText(`▣ ${t("defaults.document")}`) }
+                      : {}),
                     style: {
                       width: 600,
                       align: "center",
@@ -618,7 +620,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
                           borderColor: "#d5dfd8",
                           borderWidth: 1,
                           fontSize: 16,
-                          fontWeight: 700,
+                          fontWeight: 400,
                           padding: 16,
                         }
                         : {}),

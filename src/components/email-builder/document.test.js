@@ -9,6 +9,7 @@ import {
   imageIds,
   columnLayout,
   sampleVariables,
+  upgradeDocument,
 } from "./document";
 
 describe("email document and canvas proof", () => {
@@ -70,6 +71,17 @@ describe("email document and canvas proof", () => {
   it("uses a valid absolute order URL for preview rendering", () => {
     const url = new URL(sampleVariables["campaign.orderUrl"]);
     expect(url.protocol).toBe("https:");
+  });
+  it("migrates a fixed document title and icon into editable rich text", () => {
+    const doc = emptyDocument();
+    doc.blocks[0].children[0].children = [
+      { id: "document", type: "document", title: "Open invoice", style: {} },
+    ];
+    const upgraded = upgradeDocument(doc);
+    expect(upgraded.blocks[0].children[0].children[0].content).toMatchObject({
+      type: "doc",
+      content: [{ content: [{ text: "▣ Open invoice" }] }],
+    });
   });
 });
 

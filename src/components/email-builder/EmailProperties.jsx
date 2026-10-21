@@ -203,7 +203,7 @@ function ContentPane({
   }, [focusRequested, onFocusHandled, type]);
   return (
     <div className="space-y-4">
-      {type === "text" && (
+      {["text", "document"].includes(type) && (
         <RichText
           key={current.id}
           value={current.content}
@@ -309,9 +309,6 @@ function ContentPane({
                 <span className="truncate" dir="auto">{asset.originalName || asset.format}</span>
                 <span className="shrink-0 font-semibold text-primary">{Math.round((asset.bytes || asset.variants?.at(-1)?.bytes || 0) / 1024)} KB</span>
               </div>
-              {type === "image" && asset.sourceWidth < (current.style?.width || 600) * 2 && (
-                <p className="text-amber-600">{t("feedback.retina")}</p>
-              )}
             </div>
           )}
           {type === "image" && <TextField
@@ -320,7 +317,6 @@ function ContentPane({
             value={current.alt}
             onChange={(alt) => onChange({ alt })}
           />}
-          {type === "document" && <TextField id="email-prop-title" label={t("properties.title")} value={current.title} onChange={(title) => onChange({ title })} />}
           <TextField id="email-prop-caption" label={t("properties.caption")} value={current.caption} onChange={(caption) => onChange({ caption })} />
           {type === "image" && <TextField
             id="email-prop-image-url"

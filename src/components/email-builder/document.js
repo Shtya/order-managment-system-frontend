@@ -75,6 +75,9 @@ export function upgradeDocument(input) {
           };
           delete item.style.spacing;
         }
+        if (item.type === "document" && !item.content) {
+          item.content = richText(`▣ ${item.title || "Open document"}`);
+        }
         if (item.children) migrateSpacing(item.children);
       });
     migrateSpacing(upgraded.blocks || []);

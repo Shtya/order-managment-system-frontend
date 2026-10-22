@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { X, UserMinus, Loader2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 
 export default function CancelAssignmentsModal({
@@ -32,7 +32,7 @@ export default function CancelAssignmentsModal({
       onClose();
     } catch (e) {
       console.error(e);
-      toast.error(t("failedToCancelAssignments"));
+      handleApiError(e, t("failedToCancelAssignments"));
     } finally {
       setCancelLoading(false);
     }

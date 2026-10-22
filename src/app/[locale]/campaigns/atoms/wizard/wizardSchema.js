@@ -6,6 +6,7 @@ import {
   hasPendingEmailMediaUploads,
 } from "@/components/email-builder/media-state";
 import {
+  inspectEmailOrderLink,
   inspectTemplateOrderLink,
 } from "../campaignOrderUrl";
 
@@ -248,7 +249,10 @@ export function validateStepMessage(data) {
 }
 
 export function validateStepOffer(data) {
-  const inspect = data.channel === "email" ? { orderLinkAvailable: /\{\{\s*campaign\.orderUrl\s*\}\}/.test(JSON.stringify(data.email || {})), hasQuickReply: false, qrOnly: false } : inspectTemplateOrderLink(data.whatsapp);
+  const inspect =
+    data.channel === "email"
+      ? inspectEmailOrderLink(data.email)
+      : inspectTemplateOrderLink(data.whatsapp);
   const errors = {};
   if (!data.enablePurchasePage) return errors;
   if (!inspect.orderLinkAvailable) {
@@ -305,7 +309,10 @@ export function buildCampaignPayload(data, opts = {}) {
       price: Number(p.price || 0),
       sortOrder: index,
     }));
-    const inspect = data.channel === "email" ? { orderLinkAvailable: /\{\{\s*campaign\.orderUrl\s*\}\}/.test(JSON.stringify(data.email || {})), hasQuickReply: false, qrOnly: false } : inspectTemplateOrderLink(data.whatsapp);
+    const inspect =
+      data.channel === "email"
+        ? inspectEmailOrderLink(data.email)
+        : inspectTemplateOrderLink(data.whatsapp);
     const followupOn = inspect.qrOnly ? true : !!data.orderReplyFollowupEnabled;
     payload.orderReplyFollowupEnabled = followupOn;
     if (followupOn && inspect.hasQuickReply) {

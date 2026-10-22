@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useSocket } from "@/context/SocketContext";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
@@ -368,9 +368,6 @@ export const ConversationProvider = ({ children }) => {
         setMessagesCursor(null);
 
         if (selectedConversation.id !== previousConversationId.current) {
-            setMessageSearch("");
-            setMessageStatus("all");
-            setMessageAccount("all");
             setReplyTo(null);
             markAsRead(selectedConversation.id);
 
@@ -447,7 +444,7 @@ export const ConversationProvider = ({ children }) => {
             const res = await api.patch(`/conversation/${id}/ai/resume`);
             applyConversationAi(id, { agentPausedUntil: res.data?.agentPausedUntil ?? null });
         } catch (error) {
-            toast.error(t("chatFailed"));
+            handleApiError(error, t("chatFailed"));
         }
     }, [selectedConversation?.id, applyConversationAi, t]);
 
@@ -461,7 +458,7 @@ export const ConversationProvider = ({ children }) => {
                 agentPausedUntil: res.data?.agentPausedUntil ?? null,
             });
         } catch (error) {
-            toast.error(t("chatFailed"));
+            handleApiError(error, t("chatFailed"));
         }
     }, [selectedConversation?.id, applyConversationAi, t]);
 
@@ -493,7 +490,7 @@ export const ConversationProvider = ({ children }) => {
                 router.replace(pathname, { scroll: false });
             } catch (error) {
                 if (!cancelled) {
-                    toast.error(t("chatFailed"));
+                    handleApiError(error, t("chatFailed"));
                 }
             }
         })();
@@ -1033,7 +1030,7 @@ export const ConversationProvider = ({ children }) => {
                     : m
             ));
 
-            toast.error(t("reactionFailed"));
+            handleApiError(error, t("reactionFailed"));
         }
     }, [selectedConversation, selectedAccount, t]);
 

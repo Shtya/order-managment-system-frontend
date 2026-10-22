@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Loader2, Tags } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import { useAuth } from "@/context/AuthContext";
@@ -94,7 +94,7 @@ export function ClientTagsEditor({ clientId, className }) {
           setAssignable(list);
         }
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -166,7 +166,7 @@ export function ClientTagsEditor({ clientId, className }) {
       setBaseline(next);
       setOpen(false);
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setSaving(false);
     }

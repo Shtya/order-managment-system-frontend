@@ -23,7 +23,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Flatpickr from "react-flatpickr";
 import { setDocumentTitle } from '@/utils/documentTitle';
 
@@ -345,7 +345,7 @@ export default function OrderCollectionPage() {
 			});
 		} catch (e) {
 			console.error(e);
-			toast.error(t("errors.fetchStatsFailed"));
+			handleApiError(e, t("errors.fetchStatsFailed"));
 		}
 	}, [t]);
 
@@ -366,7 +366,7 @@ export default function OrderCollectionPage() {
 				});
 			} catch (e) {
 				console.error(e);
-				toast.error(t("errors.fetchFailed"));
+				handleApiError(e, t("errors.fetchFailed"));
 			} finally {
 				setLoading(false);
 			}

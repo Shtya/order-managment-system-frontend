@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { useDebounce } from "@/hook/useDebounce";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 
@@ -78,7 +78,7 @@ export default function ConnectOrderClientDialog({
         setNextCursor(res.data?.nextCursor || null);
       } catch (error) {
         if (requestId !== requestIdRef.current) return;
-        toast.error(normalizeAxiosError(error));
+        handleApiError(error, normalizeAxiosError(error));
         if (!append) {
           setClients([]);
           setNextCursor(null);
@@ -120,7 +120,7 @@ export default function ConnectOrderClientDialog({
       onConnected?.(selectedClient);
       onOpenChange(false);
     } catch (error) {
-      toast.error(normalizeAxiosError(error));
+      handleApiError(error, normalizeAxiosError(error));
     } finally {
       setConnecting(false);
     }

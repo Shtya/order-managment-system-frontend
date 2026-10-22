@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslations } from 'next-intl';
 import AddBundlePage from '../../new/page';
-import api from '@/utils/api';
+import api, { handleApiError } from '@/utils/api';
 import { setDocumentTitle } from '@/utils/documentTitle';
 
 function normalizeAxiosError(err) {
@@ -35,7 +35,7 @@ export default function EditBundlePage() {
 				const res = await api.get(`/bundles/${bundleId}`);
 				setBundle(res.data);
 			} catch (err) {
-				toast.error(normalizeAxiosError(err));
+				handleApiError(err, normalizeAxiosError(err));
 			} finally {
 				setLoading(false);
 			}

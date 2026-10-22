@@ -1,7 +1,7 @@
 'use client'
 import OrdersTab from "../../orders/tabs/OrderTab";
 import { useEffect, useState } from "react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 
@@ -24,7 +24,7 @@ export default function Orders() {
             setStats(response.data || []);
         } catch (error) {
             console.error("Error fetching stats:", error);
-            toast.error(t("messages.errorFetchingStats"));
+            handleApiError(error, t("messages.errorFetchingStats"));
         } finally {
             if (!silent) setStatsLoading(false);
         }

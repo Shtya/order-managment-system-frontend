@@ -58,7 +58,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ActionButtons } from "@/components/atoms/Actions";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import SafeSelect from "@/components/molecules/SafeSelect";
 import SafeAmountPreviewCard from "@/components/molecules/SafeAmountPreviewCard";
 import { useExport } from "@/hook/useExport";
@@ -203,7 +203,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
       onOpenChange(false);
     } catch (err) {
       console.error("Error saving expense:", err);
-      toast.error(err?.response?.data?.message || t("manualExpenses.messages.error"));
+      handleApiError(err, err?.response?.data?.message || t("manualExpenses.messages.error"));
     } finally {
       setLoading(false);
     }
@@ -551,7 +551,7 @@ export default function ManualExpensesTab({
       });
     } catch (err) {
       console.error("Error fetching expenses:", err);
-      toast.error(t("manualExpenses.messages.fetchError"));
+      handleApiError(err, t("manualExpenses.messages.fetchError"));
     } finally {
       setLoading(false);
     }
@@ -916,7 +916,7 @@ export default function ManualExpensesTab({
             fetchExpenses();
           } catch (err) {
             console.error("Error deleting expense:", err);
-            toast.error(err?.response?.data?.message || t("manualExpenses.messages.deleteError"));
+            handleApiError(err, err?.response?.data?.message || t("manualExpenses.messages.deleteError"));
             throw err;
           }
         }}
@@ -966,7 +966,7 @@ export function CategoryFormModal({ open, onOpenChange, editingCategory, onSave 
       onOpenChange(false);
     } catch (err) {
       console.error("Error saving category:", err);
-      toast.error(err?.response?.data?.message || t("messages.categoryError") || "Error saving category");
+      handleApiError(err, err?.response?.data?.message || t("messages.categoryError") || "Error saving category");
     } finally {
       setLoading(false);
     }

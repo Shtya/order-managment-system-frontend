@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import AddProductPage, { canonicalKey, makeId, slugifyKey } from "../../new/page";
@@ -36,7 +36,7 @@ export default function ImportExternalProductPage() {
                 const mapped = transformExternalToLocal(externalData);
                 setMappedProduct(mapped);
             } catch (e) {
-                toast.error(normalizeAxiosError(e));
+                handleApiError(e, normalizeAxiosError(e));
             } finally {
                 setLoading(false);
             }

@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { setDocumentTitle } from "@/utils/documentTitle";
 
 import OrdersTab, { OrderStatus } from "./tabs/OrderTab";
@@ -140,7 +140,7 @@ export default function Orders() {
 			setStats(response.data || []);
 		} catch (error) {
 			console.error("Error fetching stats:", error);
-			toast.error(t("messages.errorFetchingStats"));
+			handleApiError(error, t("messages.errorFetchingStats"));
 		} finally {
 			if (!silent)
 				setStatsLoading(false);

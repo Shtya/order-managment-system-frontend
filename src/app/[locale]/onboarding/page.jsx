@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -638,7 +638,7 @@ export default function OnboardingPage() {
     } catch (err) {
       console.error("Error advancing onboarding step:", err);
       const msg = err.response?.data?.message || t("unexpected_error");
-      toast.error(msg);
+      handleApiError(err, msg);
     } finally {
       setNextLoading(false); // stop loading
     }
@@ -2351,7 +2351,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
       onNext();
     } catch (err) {
       const msg = err.response?.data?.message || t("toasts.save_error");
-      toast.error(Array.isArray(msg) ? msg[0] : msg);
+      handleApiError(err, Array.isArray(msg) ? msg[0] : msg);
     }
   };
 
@@ -2677,7 +2677,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
       await api.patch(`/stores/${store.id}`, { isActive: !store.isActive });
       toast.success(t("messages.statusUpdated"));
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     }
     fetchTableStores();
   };
@@ -2725,7 +2725,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
       toast.success(t("messages.syncStarted"));
       await fetchStores();
     } catch (e) {
-      toast.error(e?.response?.data?.message || e?.message || "Unexpected error");
+      handleApiError(e, e?.response?.data?.message || e?.message || "Unexpected error");
     }
   };
 
@@ -2749,7 +2749,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
         await fetchStores();
         toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       } finally {
         setCancelling(false);
       }

@@ -46,7 +46,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WhatsAppTab } from "../../settings/page";
 import { Settings2 } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import { useSocket } from "@/context/SocketContext";
@@ -916,7 +916,7 @@ function ManualAddAccountModal({ open, onOpenChange, onSuccess, account }) {
       onSuccess();
       reset();
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setLoading(false);
     }
@@ -1028,7 +1028,7 @@ function ReplaceAccessTokenModal({ open, onOpenChange, onSuccess, account }) {
       onSuccess();
       reset();
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setLoading(false);
     }
@@ -1875,7 +1875,7 @@ export default function WhatsAppAccountsPage() {
         records: res.data?.records ?? [],
       });
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setLoading(false);
     }
@@ -1920,7 +1920,7 @@ export default function WhatsAppAccountsPage() {
       await fetchAccounts({ page: pager.current_page, per_page: pager.per_page });
       fetchStats();
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setToggling(false);
     }
@@ -1935,7 +1935,7 @@ export default function WhatsAppAccountsPage() {
       await fetchAccounts({ page: pager.current_page, per_page: pager.per_page });
       fetchStats();
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setDeleting(false);
     }

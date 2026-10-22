@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Plus, User2 } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { PrimaryBtn } from "@/components/atoms/Button";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
@@ -76,7 +76,7 @@ export function AddEditSenderModal({ provider, integrationId, sender, open, onCl
             onSaved?.();
             onClose?.();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         }
     }, [isEdit, sender, onClose, onSaved, t]);
 

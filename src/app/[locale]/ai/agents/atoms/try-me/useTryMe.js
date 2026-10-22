@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { RotateCcw, Sparkles, X } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useSocket } from "@/context/SocketContext";
 import Button_ from "@/components/atoms/Button";
@@ -512,7 +512,7 @@ export default function useTryMe() {
         setCustomer(null);
         await startSession(full, null);
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("tryMe.sessionFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("tryMe.sessionFailed"));
         setIsOpen(false);
       } finally {
         setSessionLoading(false);
@@ -581,7 +581,7 @@ export default function useTryMe() {
         setCustomer(null);
         await startSession(snapshot, null);
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("tryMe.sessionFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("tryMe.sessionFailed"));
         setIsOpen(false);
       } finally {
         setSessionLoading(false);
@@ -598,7 +598,7 @@ export default function useTryMe() {
         await startSession(snapshot, customerId);
         toast.success(t("tryMe.refreshed"));
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("tryMe.sessionFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("tryMe.sessionFailed"));
       } finally {
         setSessionLoading(false);
       }
@@ -640,7 +640,7 @@ export default function useTryMe() {
     try {
       await startSession(agent, customerId);
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("tryMe.sessionFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("tryMe.sessionFailed"));
     } finally {
       setSessionLoading(false);
     }
@@ -654,7 +654,7 @@ export default function useTryMe() {
       await startSession(res.data, customerId);
       toast.success(t("tryMe.refreshed"));
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("tryMe.sessionFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("tryMe.sessionFailed"));
     } finally {
       setSessionLoading(false);
     }
@@ -688,7 +688,7 @@ export default function useTryMe() {
       try {
         await startSession(agent, nextId);
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("tryMe.sessionFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("tryMe.sessionFailed"));
       } finally {
         setSessionLoading(false);
       }
@@ -747,7 +747,7 @@ export default function useTryMe() {
           status: "failed",
           error: message,
         }));
-        toast.error(message);
+        handleApiError(error, message);
       } finally {
         setSending(false);
       }

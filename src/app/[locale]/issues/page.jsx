@@ -20,7 +20,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import { normalizeAxiosError } from "@/utils/axios";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { cn } from "@/utils/cn";
 
 import FiltersCard from "./atoms/FiltersCard";
@@ -419,7 +419,7 @@ export default function ManageIssuesPage() {
       setBoardColumns((prev) =>
         moveIssue(prev, oldStatusId, { ...target, statusId: oldStatusId }),
       );
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     }
   };
 

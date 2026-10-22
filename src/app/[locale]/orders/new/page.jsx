@@ -24,7 +24,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 
 import { useLocale, useTranslations } from "next-intl";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import PageHeader from "@/components/atoms/Pageheader";
 import { cn } from "@/utils/cn";
@@ -747,7 +747,7 @@ export default function CreateOrderPageComplete({
 				setExistingOrder(res.data);
 			} catch (e) {
 				console.error(`Duplicate fetch: ${normalizeAxiosError(e)}`);
-				toast.error(t("invalidOrderId"));
+				handleApiError(e, t("invalidOrderId"));
 			} finally {
 				setIsDuplicating(false);
 				setInitialLoading(false);
@@ -1225,10 +1225,8 @@ export default function CreateOrderPageComplete({
 			navigate.push("/orders");
 		} catch (error) {
 			console.error(`Failed to ${isEditMode ? "update" : "create"} order:`, error);
-			toast.error(
-				error.response?.data?.message ||
-				(isEditMode ? t("messages.updateFailed") : t("messages.createFailed"))
-			);
+			handleApiError(error, error.response?.data?.message ||
+				(isEditMode ? t("messages.updateFailed") : t("messages.createFailed")));
 		} finally {
 			setLoading(false);
 		}

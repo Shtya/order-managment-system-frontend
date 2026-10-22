@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import {
@@ -149,7 +149,7 @@ export default function SegmentForm({ mode = "create", segmentId, variant = "seg
         if (cancelled) return;
         setMetadata(metaRes.data?.entities ? metaRes.data : metaRes.data?.data || metaRes.data);
       } catch (error) {
-        toast.error(normalizeAxiosError(error));
+        handleApiError(error, normalizeAxiosError(error));
       }
     })();
     return () => {
@@ -219,7 +219,7 @@ export default function SegmentForm({ mode = "create", segmentId, variant = "seg
           audienceFilter: fromApiFilter(row.audienceFilter),
         });
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("toast.loadFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("toast.loadFailed"));
         router.push(listPath);
       } finally {
         if (!cancelled) setPageLoading(false);
@@ -288,7 +288,7 @@ export default function SegmentForm({ mode = "create", segmentId, variant = "seg
       ]);
       setPreviewCount(countRes.data?.count ?? countRes.data?.data?.count ?? 0);
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.previewFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.previewFailed"));
       setPreviewSamples([]);
       setPreviewHasMore(false);
       setPreviewNextCursor(null);
@@ -303,7 +303,7 @@ export default function SegmentForm({ mode = "create", segmentId, variant = "seg
     try {
       await fetchPreviewRecipients({ cursor: previewNextCursor, append: true });
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.previewFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.previewFailed"));
     } finally {
       setPreviewLoadingMore(false);
     }
@@ -332,7 +332,7 @@ export default function SegmentForm({ mode = "create", segmentId, variant = "seg
       toast.success(t("toast.frozen"));
       await reloadSegment();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.freezeFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.freezeFailed"));
     } finally {
       setFreezeLoading(false);
     }
@@ -346,7 +346,7 @@ export default function SegmentForm({ mode = "create", segmentId, variant = "seg
       toast.success(t("toast.unfrozen"));
       await reloadSegment();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.unfreezeFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.unfreezeFailed"));
     } finally {
       setFreezeLoading(false);
     }
@@ -414,7 +414,7 @@ export default function SegmentForm({ mode = "create", segmentId, variant = "seg
       }
       goList();
     } catch (error) {
-      toast.error(normalizeAxiosError(error));
+      handleApiError(error, normalizeAxiosError(error));
     }
   });
 

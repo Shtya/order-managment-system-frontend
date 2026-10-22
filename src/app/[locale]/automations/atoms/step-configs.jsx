@@ -10,7 +10,7 @@ import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
 import { OrderPropertySelector, useOrderProperties } from "./OrderPropertySelector";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useTranslations, useLocale } from "next-intl";
 import { Link as LocaleLink } from "@/i18n/navigation";
@@ -155,7 +155,7 @@ export function OrderCreatedConfig({ value, onChange, errors, setDisabled, onClo
                 const res = await api.get("/lookups/stores", { params: { limit: 200, isActive: true } });
                 setStores(res.data || []);
             } catch (e) {
-                toast.error(normalizeAxiosError(e));
+                handleApiError(e, normalizeAxiosError(e));
             } finally {
                 setLoading(false);
             }
@@ -223,7 +223,7 @@ export function OrderStatusUpdatedConfig({ value, onChange, errors, setDisabled 
                 setStatuses(Array.isArray(data) ? data : data.records || []);
             } catch (error) {
                 console.error("Failed to fetch statuses:", error);
-                toast.error(normalizeAxiosError(error));
+                handleApiError(error, normalizeAxiosError(error));
             } finally {
                 setLoading(false);
             }
@@ -383,7 +383,7 @@ export function ShipmentStatusUpdatedConfig({ value, onChange, errors, setDisabl
                 setShipmentStatuses(data.statuses || []);
             } catch (error) {
                 console.error("Failed to fetch shipment statuses:", error);
-                toast.error(normalizeAxiosError(error));
+                handleApiError(error, normalizeAxiosError(error));
             } finally {
                 setLoading(false);
             }
@@ -469,7 +469,7 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
                 setStatuses(Array.isArray(data) ? data : data.records || []);
             } catch (error) {
                 console.error("Failed to fetch statuses:", error);
-                toast.error(normalizeAxiosError(error));
+                handleApiError(error, normalizeAxiosError(error));
             } finally {
                 setLoading(false);
             }
@@ -489,7 +489,7 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
                 setCancelCauses(data?.records || []);
             } catch (error) {
                 console.error("Failed to fetch cancel causes:", error);
-                toast.error(normalizeAxiosError(error));
+                handleApiError(error, normalizeAxiosError(error));
                 setCancelCauses([]);
             } finally {
                 setLoadingCauses(false);
@@ -670,7 +670,7 @@ export function AiAddressCorrectionConfig({ isOpen, value, onChange, errors, set
                     : hostedRes.data?.records || [];
                 setHostedModels(hostedRows.filter((row) => row?.isActive !== false));
             } catch (e) {
-                toast.error(normalizeAxiosError(e));
+                handleApiError(e, normalizeAxiosError(e));
             } finally {
                 setLoading(false);
             }
@@ -1161,7 +1161,7 @@ export function AssignShippingProviderConfig({ isOpen, value, onChange, errors, 
                 const integrations = Array.isArray(data?.integrations) ? data.integrations : Array.isArray(data) ? data : [];
                 setShippingCompanies(integrations);
             } catch (e) {
-                toast.error(normalizeAxiosError(e));
+                handleApiError(e, normalizeAxiosError(e));
             } finally {
                 setLoading(false);
             }
@@ -3563,7 +3563,7 @@ export function QuickOrderStatusConfig({ value, onChange, errors, setDisabled })
                 setStatuses(Array.isArray(data) ? data : data.records || []);
             } catch (error) {
                 console.error("Failed to fetch statuses:", error);
-                toast.error(normalizeAxiosError(error));
+                handleApiError(error, normalizeAxiosError(error));
             } finally {
                 setLoading(false);
             }
@@ -3648,7 +3648,7 @@ export function CreateIssueConfig({ isOpen, value, onChange, errors, setDisabled
                     locale,
                 });
             } catch (e) {
-                toast.error(normalizeAxiosError(e));
+                handleApiError(e, normalizeAxiosError(e));
             } finally {
                 setLoading(false);
             }

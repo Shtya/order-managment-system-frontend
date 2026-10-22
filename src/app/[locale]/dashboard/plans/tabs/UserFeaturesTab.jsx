@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
@@ -61,7 +61,7 @@ export default function UserFeaturesTab() {
                 records: Array.isArray(data.records) ? data.records : [],
             });
         } catch (error) {
-            toast.error(error?.response?.data?.message || tf("messages.fetchFailed"));
+            handleApiError(error, error?.response?.data?.message || tf("messages.fetchFailed"));
         } finally {
             setLoading(false);
         }

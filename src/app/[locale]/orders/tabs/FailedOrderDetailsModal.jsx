@@ -35,7 +35,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import { Badge } from "@/components/ui/badge";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Flatpickr from "react-flatpickr";
 import {
     Dialog,
@@ -178,7 +178,7 @@ export function FailedOrderDetailsModal({
 
                 setSelectedSkus(oosSkus || []);
             } catch (err) {
-                toast.error(t('errors.fetchFailed'));
+                handleApiError(err, t('errors.fetchFailed'));
             } finally {
                 setLoading(false);
             }
@@ -211,7 +211,7 @@ export function FailedOrderDetailsModal({
             onRetrySuccess?.();
             onOpenChange(false);
         } catch (error) {
-            toast.error(t('messages.retryFailed'));
+            handleApiError(error, t('messages.retryFailed'));
         } finally {
             setRetrying(false);
         }
@@ -235,7 +235,7 @@ export function FailedOrderDetailsModal({
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, data: res.data } }));
         } catch (err) {
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, error: true } }));
-            toast.error(t('errors.externalFetchFailed'));
+            handleApiError(err, t('errors.externalFetchFailed'));
         }
     };
 

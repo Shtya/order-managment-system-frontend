@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import {
@@ -146,7 +146,7 @@ export default function WhatsAppStatisticsPage() {
 
     } catch (err) {
       console.error("Failed to fetch whatsapp dashboard data:", err);
-      toast.error(t("overview.messages.fetchError"));
+      handleApiError(err, t("overview.messages.fetchError"));
     } finally {
       setLoading(false);
     }

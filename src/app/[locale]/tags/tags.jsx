@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useExport } from "@/hook/useExport";
 import { setDocumentTitle } from "@/utils/documentTitle";
@@ -172,7 +172,7 @@ export default function TagsPage({ target = "order", i18nNamespace = "tags" }) {
           records: unwrapList(res.data),
         });
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       } finally {
         setLoading(false);
       }
@@ -249,7 +249,7 @@ export default function TagsPage({ target = "order", i18nNamespace = "tags" }) {
       toast.success(t("toast.deleted"));
       afterMutate();
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setDeleting(false);
     }
@@ -280,7 +280,7 @@ export default function TagsPage({ target = "order", i18nNamespace = "tags" }) {
         toast.success(t("toast.saved"));
         fetchStats();
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       } finally {
         setTogglingKey(null);
       }
@@ -302,7 +302,7 @@ export default function TagsPage({ target = "order", i18nNamespace = "tags" }) {
         toast.success(t("toast.saved"));
         fetchStats();
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       } finally {
         setTogglingKey(null);
       }
@@ -323,7 +323,7 @@ export default function TagsPage({ target = "order", i18nNamespace = "tags" }) {
         toast.success(t("toast.saved"));
         fetchStats();
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       } finally {
         setTogglingKey(null);
       }

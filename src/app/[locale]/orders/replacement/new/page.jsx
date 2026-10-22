@@ -63,7 +63,7 @@ import {
 } from "@/components/ui/select";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import { Button } from "@/components/ui/button";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Button_ from "@/components/atoms/Button";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { BreadcrumbBar } from "@/components/atoms/Breadcrumb";
@@ -2315,14 +2315,12 @@ export default function CreateReplacementPage({
       router.push("/orders?tab=replacement");
     } catch (err) {
       const msg = err?.response?.data?.message;
-      toast.error(
-        Array.isArray(msg)
+      handleApiError(err, Array.isArray(msg)
           ? msg.join(", ")
           : msg ||
           (isEditMode
             ? t("messages.updateFailed")
-            : t("messages.createFailed")),
-      );
+            : t("messages.createFailed")));
     } finally {
       setSubmitting(false);
     }

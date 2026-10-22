@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { useExport } from "@/hook/useExport";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import { cn } from "@/utils/cn";
@@ -168,7 +168,7 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
         setPage(Number(res.data?.current_page || p));
         setLimit(Number(res.data?.per_page || l));
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
       } finally {
         setLoading(false);
       }
@@ -294,7 +294,7 @@ export default function CampaignsPage({ channel: channelProp } = {}) {
       closeConfirm();
       refresh();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.actionFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.actionFailed"));
     } finally {
       setMutatingId(null);
       setConfirmLoading(false);

@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { avatarSrc } from "@/components/atoms/UserSelect";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 
 function getContacts(client) {
   return Array.isArray(client?.contacts) ? client.contacts : [];
@@ -127,7 +127,7 @@ export default function ClientModal({ open, onOpenChange, client, onSave }) {
       onOpenChange(false);
     } catch (error) {
       const message = error.response?.data?.message || error.message || t("toast.saveFailed");
-      toast.error(Array.isArray(message) ? message[0] : message);
+      handleApiError(error, Array.isArray(message) ? message[0] : message);
     } finally {
       setSaving(false);
     }

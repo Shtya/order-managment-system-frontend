@@ -50,7 +50,7 @@ import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import { WhatsAppAgentSettingsDialog } from "@/components/molecules/WhatsAppAgentSettings";
 import { useAuth } from "@/context/AuthContext";
 import { useExport } from "@/hook/useExport";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import { useRouter } from "@/i18n/navigation";
@@ -100,7 +100,7 @@ function KnowledgeAssignDialog({ open, onOpenChange, agent, onSuccess }) {
         if (!cancelled) setSelected(res.data?.knowledgeIds || []);
       } catch (error) {
         if (!cancelled) {
-          toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
+          handleApiError(error, normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
         }
       }
     };
@@ -132,7 +132,7 @@ function KnowledgeAssignDialog({ open, onOpenChange, agent, onSuccess }) {
         }
       } catch (error) {
         if (!cancelled) {
-          toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
+          handleApiError(error, normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -179,7 +179,7 @@ function KnowledgeAssignDialog({ open, onOpenChange, agent, onSuccess }) {
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("knowledge.toast.saveFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("knowledge.toast.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -392,7 +392,7 @@ const AgentsTab = forwardRef(function AgentsTab(
         setPage(Number(res.data?.current_page || p));
         setLimit(Number(res.data?.per_page || l));
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
       } finally {
         setLoading(false);
       }
@@ -489,7 +489,7 @@ const AgentsTab = forwardRef(function AgentsTab(
       setTogglingAgent(null);
       refresh();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
     } finally {
       setToggleLoading(false);
     }
@@ -505,7 +505,7 @@ const AgentsTab = forwardRef(function AgentsTab(
       setDeletingAgent(null);
       refresh();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.deleteFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.deleteFailed"));
     } finally {
       setDeleteLoading(false);
     }
@@ -888,7 +888,7 @@ const KnowledgeTab = forwardRef(function KnowledgeTab(
         setKPage(Number(res.data?.current_page || p));
         setKLimit(Number(res.data?.per_page || l));
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
       } finally {
         setKLoading(false);
       }
@@ -984,7 +984,7 @@ const KnowledgeTab = forwardRef(function KnowledgeTab(
       setKToggling(null);
       refreshKnowledge();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
     } finally {
       setKToggleLoading(false);
     }
@@ -1000,7 +1000,7 @@ const KnowledgeTab = forwardRef(function KnowledgeTab(
       setKDeleting(null);
       refreshKnowledge();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("knowledge.toast.deleteFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("knowledge.toast.deleteFailed"));
     } finally {
       setKDeleteLoading(false);
     }

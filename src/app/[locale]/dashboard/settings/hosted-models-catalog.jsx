@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Loader2, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { cn } from "@/utils/cn";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -88,7 +88,7 @@ export default function HostedModelsCatalog() {
       const { data } = await api.get("/ai/hosted-models");
       setRows(Array.isArray(data) ? data : listRecords(data));
     } catch (err) {
-      toast.error(axiosMessage(err, t("toast.loadError")));
+      handleApiError(err, axiosMessage(err, t("toast.loadError")));
     } finally {
       setLoading(false);
     }
@@ -151,7 +151,7 @@ export default function HostedModelsCatalog() {
       );
       setModels(list);
     } catch (err) {
-      toast.error(axiosMessage(err, t("aiHosted.catalog.loadModelsFailed")));
+      handleApiError(err, axiosMessage(err, t("aiHosted.catalog.loadModelsFailed")));
       setModels([]);
     } finally {
       setModelsLoading(false);
@@ -188,7 +188,7 @@ export default function HostedModelsCatalog() {
     } catch (err) {
       setIntLoading(false);
       setIntResolved(true);
-      toast.error(axiosMessage(err, t("toast.loadError")));
+      handleApiError(err, axiosMessage(err, t("toast.loadError")));
     }
   };
 
@@ -220,7 +220,7 @@ export default function HostedModelsCatalog() {
     } catch (err) {
       setIntLoading(false);
       setIntResolved(true);
-      toast.error(axiosMessage(err, t("toast.loadError")));
+      handleApiError(err, axiosMessage(err, t("toast.loadError")));
     }
   };
 
@@ -349,7 +349,7 @@ export default function HostedModelsCatalog() {
       setDeleteRow(null);
       await loadRows();
     } catch (err) {
-      toast.error(axiosMessage(err, t("toast.saveError")));
+      handleApiError(err, axiosMessage(err, t("toast.saveError")));
     } finally {
       setDeleting(false);
     }

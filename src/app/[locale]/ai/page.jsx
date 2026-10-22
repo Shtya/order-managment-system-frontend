@@ -41,7 +41,7 @@ import ActionButtons from "@/components/atoms/Actions";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/utils/cn";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useDebounce } from "@/hook/useDebounce";
 import McpConnectionsTab from "./McpConnectionsTab";
@@ -1733,7 +1733,7 @@ export default function AiPage() {
                 setSelectedProviderId(list[0].id);
             }
         } catch (e) {
-            toast.error(t("error.loadProvidersFailed") + ": " + normalizeAxiosError(e));
+            handleApiError(e, t("error.loadProvidersFailed") + ": " + normalizeAxiosError(e));
         } finally {
             setProvidersLoading(false);
         }
@@ -1759,7 +1759,7 @@ export default function AiPage() {
 
             setModels(list);
         } catch (e) {
-            toast.error(t("error.loadModelsFailed") + ": " + normalizeAxiosError(e));
+            handleApiError(e, t("error.loadModelsFailed") + ": " + normalizeAxiosError(e));
         } finally {
             setModelsLoading(false);
         }

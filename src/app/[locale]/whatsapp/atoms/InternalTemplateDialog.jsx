@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/FloatingSelect";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { toast } from "react-hot-toast";
 import { useDebounce } from "@/hook/useDebounce";
 import { motion, AnimatePresence } from "framer-motion";
@@ -83,7 +83,7 @@ export function InternalTemplateDialog({ title, open, onOpenChange, defaultAccou
             setTemplates(Array.isArray(res.data?.records) ? res.data.records : []);
         } catch (e) {
             console.error(e);
-            toast.error(t("fetchError"));
+            handleApiError(e, t("fetchError"));
         } finally {
             setLoading(false);
         }

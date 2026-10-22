@@ -7,7 +7,7 @@ import * as yup from "yup";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { MessageSquare, Phone, Send, User2 } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { PrimaryBtn } from "@/components/atoms/Button";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
@@ -130,7 +130,7 @@ export function SendSmsModal({
             }
             onClose?.();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         }
     }, [integrationId, onClose, onSubmitProp, provider, provider?.code, t]);
 

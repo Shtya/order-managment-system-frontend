@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import KnowledgeFormDialog from "../KnowledgeFormDialog";
 
@@ -52,7 +52,7 @@ export default function StepKnowledge({ watch, setValue, onRecordsChange, onReco
       onRecordsChange?.(records);
       return records;
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("knowledge.toast.fetchFailed"));
       return [];
     } finally {
       setLoading(false);
@@ -145,7 +145,7 @@ export default function StepKnowledge({ watch, setValue, onRecordsChange, onReco
       setDeleteOpen(false);
       setDeleting(null);
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("knowledge.toast.deleteFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("knowledge.toast.deleteFailed"));
     } finally {
       setDeleteLoading(false);
     }

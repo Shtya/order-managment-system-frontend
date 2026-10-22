@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import api, { BASE_URL } from "@/utils/api";
+import api, { BASE_URL, handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useSocket } from "@/context/SocketContext";
 
@@ -85,7 +85,7 @@ export function useSupportTickets(scope = "tenant") {
         setTotalRecords(data.total_records || 0);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         return null;
       } finally {
         setLoading(false);
@@ -103,7 +103,7 @@ export function useSupportTickets(scope = "tenant") {
         setStats(data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         return null;
       }
     },
@@ -117,7 +117,7 @@ export function useSupportTickets(scope = "tenant") {
         const { data } = await api.get(`${base}/${ticketId}`);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         return null;
       } finally {
         setLoading(false);
@@ -170,7 +170,7 @@ export function useSupportTickets(scope = "tenant") {
         callbacks.onSuccess?.(data?.data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }
@@ -187,7 +187,7 @@ export function useSupportTickets(scope = "tenant") {
         callbacks.onSuccess?.(data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }
@@ -206,7 +206,7 @@ export function useSupportTickets(scope = "tenant") {
         callbacks.onSuccess?.(data?.data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }
@@ -224,7 +224,7 @@ export function useSupportTickets(scope = "tenant") {
         callbacks.onSuccess?.(data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }
@@ -242,7 +242,7 @@ export function useSupportTickets(scope = "tenant") {
         callbacks.onSuccess?.(data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }
@@ -257,7 +257,7 @@ export function useSupportTickets(scope = "tenant") {
         callbacks.onSuccess?.(data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }
@@ -276,7 +276,7 @@ export function useSupportTickets(scope = "tenant") {
         callbacks.onSuccess?.(data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }
@@ -294,7 +294,7 @@ export function useSupportTickets(scope = "tenant") {
         callbacks.onSuccess?.(data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }

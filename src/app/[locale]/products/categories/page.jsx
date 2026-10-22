@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
@@ -168,7 +168,7 @@ function CategoryFormDialog({ open, onOpenChange, category, onSuccess }) {
 			onSuccess();
 			onOpenChange(false);
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 		}
 	};
 
@@ -326,7 +326,7 @@ export default function CategoriesPage() {
 				records: res.data?.records ?? [],
 			});
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 		} finally {
 			setLoading(false);
 		}
@@ -376,7 +376,7 @@ export default function CategoriesPage() {
 			await fetchCategories({ page: pager.current_page, per_page: pager.per_page });
 			toast.success(t("toast.deleted"));
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 		} finally {
 			setDeleting(false);
 		}
@@ -397,7 +397,7 @@ export default function CategoriesPage() {
 			await fetchCategories({ page: pager.current_page, per_page: pager.per_page });
 			toast.success(t("toast.duplicated"));
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 		} finally {
 			setDuplicating(false);
 		}

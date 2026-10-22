@@ -30,7 +30,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast from "react-hot-toast";
 import { cn } from "@/utils/cn";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { setDocumentTitle } from "@/utils/documentTitle";
 
 import { Input } from "@/components/ui/input";
@@ -502,7 +502,7 @@ export default function CollectOrderPage() {
           setValue("amount", remaining);
         }
       } catch (error) {
-        toast.error(t("errors.fetchFailed"));
+        handleApiError(error, t("errors.fetchFailed"));
         router.push("/orders/collections");
       } finally {
         setInitialLoading(false);
@@ -560,7 +560,7 @@ export default function CollectOrderPage() {
       toast.success(t("messages.success"));
       router.push("/orders/collections");
     } catch (err) {
-      toast.error(err?.response?.data?.message || t("errors.createFailed"));
+      handleApiError(err, err?.response?.data?.message || t("errors.createFailed"));
     } finally {
       setLoading(false);
     }

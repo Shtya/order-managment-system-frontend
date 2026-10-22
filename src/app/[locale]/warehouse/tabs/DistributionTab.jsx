@@ -65,7 +65,7 @@ import { useExport } from "@/hook/useExport";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import ProductFilter from "@/components/atoms/ProductFilter";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 // ─────────────────────────────────────────────
 // CARRIER BRAND STYLES
 // ─────────────────────────────────────────────
@@ -647,7 +647,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
       });
     } catch (e) {
       console.error("Error fetching orders", e);
-      toast.error(t("messages.errorFetchingOrders") || "Error fetching orders");
+      handleApiError(e, t("messages.errorFetchingOrders") || "Error fetching orders");
     } finally {
       setOrdersLoading(false);
     }
@@ -1169,7 +1169,7 @@ function AssignedOrdersSubtab({
       });
     } catch (e) {
       console.error("Error fetching orders", e);
-      toast.error(t("messages.errorFetchingOrders") || "Error fetching orders");
+      handleApiError(e, t("messages.errorFetchingOrders") || "Error fetching orders");
     } finally {
       setOrdersLoading(false);
     }

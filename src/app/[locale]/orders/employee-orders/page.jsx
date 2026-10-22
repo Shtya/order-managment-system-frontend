@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import DataTable from "@/components/atoms/DataTable";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { cn } from "@/utils/cn";
 import { generateBgColors, getIconForStatus, getPercentTrendLabel } from "../page";
 import InfoCard from "@/components/atoms/InfoCard";
@@ -145,7 +145,7 @@ export default function MyAssignedOrdersPage() {
 			});
 		} catch (error) {
 			console.error("Error fetching assigned orders:", error);
-			toast.error(t("messages.errorFetchingOrders"));
+			handleApiError(error, t("messages.errorFetchingOrders"));
 		} finally {
 			setLoading(false);
 		}

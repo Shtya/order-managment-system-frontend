@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
 import ActionButtons from "@/components/atoms/Actions";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import Table, { FilterField, TablePagination, TableToolbar } from "@/components/atoms/Table";
 import { format } from "date-fns";
@@ -158,7 +158,7 @@ export default function SafesTab({ onRefresh }) {
             });
         } catch (err) {
             console.error(`Error fetching accounts:`, err);
-            if (!silent) toast.error(t(`safes.messages.fetchError`) || "Error fetching data");
+            if (!silent) handleApiError(err, t(`safes.messages.fetchError`) || "Error fetching data");
         } finally {
             if (!silent) setLoading(false);
         }
@@ -190,7 +190,7 @@ export default function SafesTab({ onRefresh }) {
             });
         } catch (err) {
             console.error(`Error fetching transactions:`, err);
-            if (!silent) toast.error(t(`safes.messages.fetchError`) || "Error fetching data");
+            if (!silent) handleApiError(err, t(`safes.messages.fetchError`) || "Error fetching data");
         } finally {
             if (!silent) setLoading(false);
         }
@@ -214,7 +214,7 @@ export default function SafesTab({ onRefresh }) {
             });
         } catch (err) {
             console.error(`Error fetching transfers:`, err);
-            if (!silent) toast.error(t(`safes.messages.fetchError`) || "Error fetching data");
+            if (!silent) handleApiError(err, t(`safes.messages.fetchError`) || "Error fetching data");
         } finally {
             if (!silent) setLoading(false);
         }
@@ -286,7 +286,7 @@ export default function SafesTab({ onRefresh }) {
             setToggleConfirm({ open: false, account: null });
             fetchAccounts(pager.current_page, pager.per_page, true);
         } catch (err) {
-            toast.error(err.response?.data?.message || "Error");
+            handleApiError(err, err.response?.data?.message || "Error");
         }
     };
 
@@ -990,7 +990,7 @@ function TransactionsViewerModal({ open, onOpenChange, account }) {
                 per_page: res.data.per_page || limit,
             });
         } catch (err) {
-            toast.error(t("safes.messages.fetchError"));
+            handleApiError(err, t("safes.messages.fetchError"));
         } finally {
             setLoading(false);
         }
@@ -1297,7 +1297,7 @@ export function AccountModal({ open, onOpenChange, editingAccount, onSave }) {
             }
             onSave();
             onOpenChange(false);
-        } catch (err) { toast.error(err.response?.data?.message || t("safes.messages.fetchError")); } finally { setLoading(false); }
+        } catch (err) { handleApiError(err, err.response?.data?.message || t("safes.messages.fetchError")); } finally { setLoading(false); }
     };
 
     return (
@@ -1453,10 +1453,8 @@ function TransactionModal({ open, onOpenChange, direction, initialAccountId, acc
             onSave();
             onOpenChange(false);
         } catch (err) {
-            toast.error(
-                err.response?.data?.message ||
-                t("safes.messages.fetchError")
-            );
+            handleApiError(err, err.response?.data?.message ||
+                t("safes.messages.fetchError"));
         } finally {
             setLoading(false);
         }
@@ -1587,7 +1585,7 @@ function TransferModal({ open, onOpenChange, accounts, initialAccountId, onSave 
             toast.success(t("safes.transfers.success"));
             onSave();
             onOpenChange(false);
-        } catch (err) { toast.error(err.response?.data?.message || t("safes.messages.fetchError")); } finally { setLoading(false); }
+        } catch (err) { handleApiError(err, err.response?.data?.message || t("safes.messages.fetchError")); } finally { setLoading(false); }
     };
 
     return (

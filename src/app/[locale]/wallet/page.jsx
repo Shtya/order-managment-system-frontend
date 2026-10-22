@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { Loader2, Plus, Bot, Settings, Settings2, Wallet as WalletLucide } from "lucide-react";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
@@ -77,7 +77,7 @@ export default function WalletPage() {
       setWallet(data);
     } catch (error) {
       console.error("Error fetching wallet:", error);
-      toast.error(t("errors.fetchWalletFailed"));
+      handleApiError(error, t("errors.fetchWalletFailed"));
     } finally {
       setLoading(false);
     }

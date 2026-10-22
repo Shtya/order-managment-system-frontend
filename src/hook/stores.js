@@ -1,6 +1,6 @@
 
 
-import api, { BASE_URL } from '@/utils/api';
+import api, { BASE_URL, handleApiError } from '@/utils/api';
 import { normalizeAxiosError } from '@/utils/axios';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
@@ -704,7 +704,7 @@ export function useStoreWebhook({ store, provider, onClose, open }) {
             setStoreData(res.data);
             mapFields(res.data);
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setLoading(false);
         }
@@ -742,7 +742,7 @@ export function useStoreWebhook({ store, provider, onClose, open }) {
             mapFields(res.data);
             onClose?.()
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setSaving(false);
         }
@@ -759,7 +759,7 @@ export function useStoreWebhook({ store, provider, onClose, open }) {
             setStoreData(res.data);
             toast.success(t("messages.secretsRegenerated"));
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setRotating(false);
         }
@@ -911,7 +911,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                     setMasks(newMasks);
                     setSystemSecrets(newSystemSecrets);
                 } catch (e) {
-                    toast.error(normalizeAxiosError(e));
+                    handleApiError(e, normalizeAxiosError(e));
                     onClose();
                 } finally {
                     setFetchingStore(false);
@@ -942,7 +942,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
 
             toast.success(t("messages.secretsRegenerated"));
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setRegeneratingSecrets(false);
         }
@@ -1049,7 +1049,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
             await fetchStores();
         } catch (e) {
             const msg = normalizeAxiosError(e);
-            toast.error(msg);
+            handleApiError(e, msg);
         }
     };
 

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import WhatsAppTemplateFormPage  from "../../add/page";
 
@@ -32,7 +32,7 @@ export default function EditWhatsAppTemplatePage({superAdmin}) {
 				const res = await api.get(`/whatsapp-templates/${templateId}`);
 				setTemplate(res.data);
 			} catch (e) {
-				toast.error(normalizeAxiosError(e));
+				handleApiError(e, normalizeAxiosError(e));
 				setTemplate(null);
 			} finally {
 				setLoading(false);

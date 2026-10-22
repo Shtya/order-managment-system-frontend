@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Eye, FileDown, Loader2, Building2, Calendar, DollarSign, Wallet, FileText } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -85,7 +85,7 @@ export default function SupplierPaymentsTable({ supplierId: initialSupplierId, o
             setPager(res.data);
         } catch (err) {
             console.error("Error fetching payments:", err);
-            toast.error(t("messages.fetchFailed"));
+            handleApiError(err, t("messages.fetchFailed"));
         } finally {
             setLoading(false);
         }
@@ -122,7 +122,7 @@ export default function SupplierPaymentsTable({ supplierId: initialSupplierId, o
             router.replace(`?${params.toString()}`, { scroll: false });
         } catch (err) {
             console.error("Error fetching payment details:", err);
-            toast.error(t("messages.fetchFailed"));
+            handleApiError(err, t("messages.fetchFailed"));
             setDetailsModalOpen(false);
         } finally {
             setLoadingDetails(false);
@@ -159,7 +159,7 @@ export default function SupplierPaymentsTable({ supplierId: initialSupplierId, o
             link.remove();
         } catch (err) {
             console.error("Error exporting payments:", err);
-            toast.error(t("messages.exportFailed"));
+            handleApiError(err, t("messages.exportFailed"));
         }
     };
 

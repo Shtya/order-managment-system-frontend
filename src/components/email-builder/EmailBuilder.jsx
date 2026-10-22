@@ -20,7 +20,7 @@ import {
   Smartphone,
   Undo2,
 } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { cn } from "@/utils/cn";
 import { Input } from "@/components/ui/input";
 import {
@@ -387,7 +387,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
       else setContinuation(target.href);
     } catch (error) {
       popupRef.current?.close();
-      toast.error(error.response?.data?.message || t("feedback.loadError"));
+      handleApiError(error, error.response?.data?.message || t("feedback.loadError"));
     }
   }
   async function disconnectSender() {
@@ -401,7 +401,7 @@ export default function EmailBuilder({ watch, setValue, historyRef, errors, setE
       await loadAccounts();
       toast.success(t("smtp.disconnected"));
     } catch (error) {
-      toast.error(error.response?.data?.message || t("feedback.loadError"));
+      handleApiError(error, error.response?.data?.message || t("feedback.loadError"));
     } finally {
       setBusy(false);
     }

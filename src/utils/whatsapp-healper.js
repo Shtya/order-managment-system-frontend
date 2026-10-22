@@ -165,12 +165,16 @@ export const MESSAGE_STATUS = {
     RECEIVED: 'received',
     DELETED: 'deleted',
     UNSUPPORTED: 'unsupported',
+    REPLIED: 'replied',
 };
 
 export const MESSAGE_STATUS_LIST = [
+    { value: MESSAGE_STATUS.ACCEPTED, label: "Accepted", color: "text-slate-400" },
     { value: MESSAGE_STATUS.SENT, label: "Sent", color: "text-gray-400" },
     { value: MESSAGE_STATUS.DELIVERED, label: "Delivered", color: "text-blue-400" },
     { value: MESSAGE_STATUS.READ, label: "Read", color: "text-green-500" },
+    // { value: MESSAGE_STATUS.PLAYED, label: "Played", color: "text-violet-500" },
+    { value: MESSAGE_STATUS.REPLIED, label: "Replied", color: "text-emerald-500" },
     { value: MESSAGE_STATUS.FAILED, label: "Failed", color: "text-red-500" },
 ];
 

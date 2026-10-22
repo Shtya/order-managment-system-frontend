@@ -56,7 +56,7 @@ import { collectRuleFields } from "@/components/audience-filter/audience-filter.
 import { useRouter } from "@/i18n/navigation";
 import { useSocket } from "@/context/SocketContext";
 import ActionButtons from "@/components/atoms/Actions";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { buildNewCampaignHref } from "../atoms/campaignChannel";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
@@ -143,7 +143,7 @@ export default function CampaignDetailsPage() {
       const row = res.data?.id ? res.data : res.data?.data;
       setCampaign(row);
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
     } finally {
       setLoading(false);
     }
@@ -175,7 +175,7 @@ export default function CampaignDetailsPage() {
         
         if (summaryBody) setSummary(summaryBody);
       } catch (error) {
-        if (!silent) toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+        if (!silent) handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
       } finally {
         if (!silent) setTableLoading(false);
       }
@@ -384,7 +384,7 @@ export default function CampaignDetailsPage() {
       fetchRecipients({ page: 1 });
       fetchPerformance({ silent: true });
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.actionFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.actionFailed"));
     } finally {
       setActing(false);
     }

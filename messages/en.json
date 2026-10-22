@@ -2212,7 +2212,8 @@
       "email": "Email",
       "phone": "Phone Number",
       "password": "Password",
-      "role": "Type",
+      "employeeType": "Type",
+      "role": "Role",
       "status": "Status",
       "active": "Active",
       "inactive": "Inactive",
@@ -3238,6 +3239,7 @@
       "agents_delete": "Delete AI agents"
     },
     "group": {
+      "agents": "Agents",
       "accounting": "Accounting",
       "admin-settings": "Admin Settings",
       "assets": "Assets",
@@ -3354,6 +3356,8 @@
     "permissions": {
       "title": "Permissions",
       "filterPlaceholder": "Filter permissions...",
+      "groupFilter": "Permission group",
+      "allGroups": "All groups",
       "noMatch": "No permissions match your search.",
       "selectedOutOf": "{checked} / {total} selected"
     },
@@ -15906,6 +15910,17 @@
     "title": "Conversations",
     "search": "Search conversations...",
     "filter": "Filter",
+    "resetFilters": "Reset filters",
+    "sendNumber": "Send number",
+    "messageStatuses": {
+      "accepted": "Accepted",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read",
+      "played": "Played",
+      "replied": "Customer Replied",
+      "failed": "Failed"
+    },
     "tabs": {
       "all": "All",
       "unread": "Unread",

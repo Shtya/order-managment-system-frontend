@@ -12,7 +12,7 @@ import Button_, { PrimaryBtn } from "@/components/atoms/Button";
 import { Bone } from "@/components/atoms/BannerSkeleton";
 import { cn } from "@/utils/cn";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import EmailDraftRecovery from "@/components/email-builder/EmailDraftRecovery";
@@ -203,7 +203,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
         // (unique) name, which the user must enter fresh.
         reset(isCopy ? { ...mapped, name: "" } : mapped);
       } catch (error) {
-        if (!cancelled) toast.error(normalizeAxiosError(error) || t("loadFailed"));
+        if (!cancelled) handleApiError(error, normalizeAxiosError(error) || t("loadFailed"));
       } finally {
         if (!cancelled) setPageLoading(false);
       }
@@ -361,7 +361,7 @@ export default function CampaignWizard({ mode = "create", campaignId = null, cop
       toast.success(t("saved"));
       router.push(campaignListHref(values.channel));
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("saveFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("saveFailed"));
     } finally {
       setSaving(false);
     }

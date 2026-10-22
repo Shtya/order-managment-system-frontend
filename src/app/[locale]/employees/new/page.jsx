@@ -25,7 +25,7 @@ import * as yup from "yup";
 import toast, { Toaster } from "react-hot-toast";
 
 // api (axios instance)
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { COUNTRIES } from "../../dashboard/users/page";
 import PageHeader from "@/components/atoms/Pageheader";
 import { validatePhone } from "@/components/atoms/InputPhone";
@@ -246,11 +246,11 @@ export default function AddEmployeePage() {
 
 			// limit reached message from backend
 			if (String(msg).toLowerCase().includes("users limit")) {
-				toast.error(t("toasts.limitReached"));
+				handleApiError(e, t("toasts.limitReached"));
 				return;
 			}
 
-			toast.error(msg || t("toasts.createFailed"));
+			handleApiError(e, msg || t("toasts.createFailed"));
 		}
 	};
 

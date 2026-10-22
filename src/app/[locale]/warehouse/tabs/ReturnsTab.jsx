@@ -54,7 +54,7 @@ import ActionButtons from "@/components/atoms/Actions";
 import { toast } from "react-hot-toast";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { useDebounce } from "@/hook/useDebounce";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -1136,7 +1136,7 @@ function ReturnsOrdersSlidePanel({ open, onClose, orders, loading, selectedOrder
       onClose();
     } catch (error) {
       console.error("Failed to create return manifest", error);
-      toast.error(error.response?.data?.message || t("scan.messages.manifestCreatedFailed"));
+      handleApiError(error, error.response?.data?.message || t("scan.messages.manifestCreatedFailed"));
     } finally {
       setCreatingManifest(false);
     }
@@ -1416,7 +1416,7 @@ export function ScanReturnsSubtab({
       setSubtab("files", { manifestId: data?.id || data?.manifestId });
     } catch (error) {
       console.error("Failed to create return manifest", error);
-      toast.error(error.response?.data?.message || t("scan.messages.manifestCreatedFailed"));
+      handleApiError(error, error.response?.data?.message || t("scan.messages.manifestCreatedFailed"));
     } finally {
       setCreatingManifest(false);
     }
@@ -1747,7 +1747,7 @@ export function ScanReturnsSubtab({
       }, 1000);
     } catch (error) {
       console.error("Failed to save return request", error);
-      toast.error(error.response?.data?.message || "Failed to save return request");
+      handleApiError(error, error.response?.data?.message || "Failed to save return request");
       if (soundEnabled) playBeep("error");
     } finally {
       setIsSaving(false);
@@ -2260,7 +2260,7 @@ function ReturnsFilesSubtab({
 
     } catch (error) {
       console.error("Error downloading return manifest", error);
-      toast.error(t("scan.messages.errorLoadingFile"));
+      handleApiError(error, t("scan.messages.errorLoadingFile"));
     } finally {
       setDownloading((p) => ({ ...p, [id]: false }));
     }

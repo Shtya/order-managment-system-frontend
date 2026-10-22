@@ -31,7 +31,7 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
 import { setDocumentTitle } from "@/utils/documentTitle";
@@ -100,7 +100,7 @@ function CategoryFormDialog({ open, onOpenChange, category, onSuccess, t }) {
 			onSuccess();
 			onOpenChange(false);
 		} catch (error) {
-			toast.error(normalizeAxiosError(error));
+			handleApiError(error, normalizeAxiosError(error));
 		}
 	};
 
@@ -328,7 +328,7 @@ export default function SupplierCategoriesPage() {
 					records: res.data?.records ?? [],
 				});
 			} catch (e) {
-				toast.error(normalizeAxiosError(e));
+				handleApiError(e, normalizeAxiosError(e));
 			} finally {
 				setLoading(false);
 			}
@@ -372,7 +372,7 @@ export default function SupplierCategoriesPage() {
 			await fetchCategories({ page: pager.current_page, per_page: pager.per_page });
 			toast.success(t("delete.success"));
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 		} finally {
 			setDeleting(false);
 		}

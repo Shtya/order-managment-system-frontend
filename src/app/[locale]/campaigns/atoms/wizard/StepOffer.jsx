@@ -17,7 +17,10 @@ import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearch
 import Button_ from "@/components/atoms/Button";
 import VariableInput from "@/components/ui/VariableInput";
 import { FieldTooltip } from "@/components/ui/field-tooltip";
-import { inspectTemplateOrderLink } from "../campaignOrderUrl";
+import {
+  inspectEmailOrderLink,
+  inspectTemplateOrderLink,
+} from "../campaignOrderUrl";
 import { getCampaignPlaceholderChips } from "../campaignPlaceholders";
 
 export default function StepOffer({ watch, setValue }) {
@@ -28,7 +31,13 @@ export default function StepOffer({ watch, setValue }) {
   const enablePurchasePage = watch("enablePurchasePage");
   const products = watch("products") || [];
   const followups = watch("orderReplyFollowups") || [];
-  const inspect = useMemo(() => isEmail ? { orderLinkAvailable: /\{\{\s*campaign\.orderUrl\s*\}\}/.test(JSON.stringify(email || {})), hasQuickReply: false, qrOnly:false, quickReplies:[] } : inspectTemplateOrderLink(whatsapp), [whatsapp, email, isEmail]);
+  const inspect = useMemo(
+    () =>
+      isEmail
+        ? inspectEmailOrderLink(email)
+        : inspectTemplateOrderLink(whatsapp),
+    [whatsapp, email, isEmail],
+  );
   // Same button variants as today (custom + quick-reply), keyed by
   // index + text so template changes reconcile the reply list below.
   const buttons = inspect.quickReplies;

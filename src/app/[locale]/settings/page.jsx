@@ -65,7 +65,7 @@ import Table, { FilterField } from "@/components/atoms/Table";
 import { ActionButtons } from "@/components/atoms/Actions";
 import { Controller } from "react-hook-form";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import WhatsAppAgentSettings from "@/components/molecules/WhatsAppAgentSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -815,7 +815,7 @@ function CityConfigFormDialog({ open, onOpenChange, city, onSuccess, t }) {
     } catch (e) {
       const msg = e?.response?.data?.message ?? e?.response?.data?.error ?? e?.message ?? "Unexpected error";
       const errorMsg = Array.isArray(msg) ? msg.join(", ") : String(msg);
-      toast.error(errorMsg);
+      handleApiError(e, errorMsg);
     }
   };
 
@@ -924,7 +924,7 @@ function CitiesTab() {
     } catch (e) {
       const msg = e?.response?.data?.message ?? e?.response?.data?.error ?? e?.message ?? "Unexpected error";
       const errorMsg = Array.isArray(msg) ? msg.join(", ") : String(msg);
-      toast.error(errorMsg);
+      handleApiError(e, errorMsg);
     } finally {
       setLoading(false);
     }
@@ -952,7 +952,7 @@ function CitiesTab() {
     } catch (e) {
       const msg = e?.response?.data?.message ?? e?.response?.data?.error ?? e?.message ?? "Unexpected error";
       const errorMsg = Array.isArray(msg) ? msg.join(", ") : String(msg);
-      toast.error(errorMsg);
+      handleApiError(e, errorMsg);
     }
   };
 
@@ -990,7 +990,7 @@ function CitiesTab() {
       link.click();
       link.remove();
     } catch (e) {
-      toast.error(t("messages.exportFailed"));
+      handleApiError(e, t("messages.exportFailed"));
     }
   };
 
@@ -1308,7 +1308,7 @@ function CompanyTab() {
       toast.success(t("company.saveSuccess"));
     } catch (err) {
       const msg = err.response?.data?.message || t("common.error");
-      toast.error(Array.isArray(msg) ? msg[0] : msg);
+      handleApiError(err, Array.isArray(msg) ? msg[0] : msg);
     }
   };
   function onErrors(errs) {
@@ -1743,7 +1743,7 @@ function CategoriesTab() {
           : [];
       setCategories(list);
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setLoading(false);
     }
@@ -1838,7 +1838,7 @@ function CategoriesTab() {
       await loadCategories();
       toast.success(t("toast.deleted"));
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     }
   }
 
@@ -2236,7 +2236,7 @@ function AccountTab() {
       );
       setAvatarPreview(null);
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setLoading(false);
     }
@@ -2576,7 +2576,7 @@ function PasswordSection({ t }) {
       setUser(p => ({ ...p, hasPassword: true }));
       setData({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
-      toast.error(err?.response?.data?.message || t("errors.failed"));
+      handleApiError(err, err?.response?.data?.message || t("errors.failed"));
     } finally {
       setLoading(false);
     }
@@ -2644,9 +2644,7 @@ function EmailSection({ t }) {
       toast.success(t("email_otp_sent"));
       setStep(2);
     } catch (err) {
-      toast.error(
-        err?.response?.data?.message || t("errors.failedSendEmailOTP"),
-      );
+      handleApiError(err, err?.response?.data?.message || t("errors.failedSendEmailOTP"));
     } finally {
       setLoading(false);
     }
@@ -2722,7 +2720,7 @@ function EmailOtpStep({ email, t, onVerified }) {
       onVerified(data);
       setOtpErr(false);
     } catch (err) {
-      toast.error(err?.response?.data?.message || t("signup.otp_wrong"));
+      handleApiError(err, err?.response?.data?.message || t("signup.otp_wrong"));
       setOtpErr(true);
       setOtp("");
     } finally {

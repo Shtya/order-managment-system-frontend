@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { Loader2, RefreshCw } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
 import { Bone } from "@/components/atoms/BannerSkeleton";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import {
   AudienceFilterBuilder,
@@ -48,7 +48,7 @@ export default function FilterRecipients({ setValue, getValues }) {
         const res = await api.get("/audience-filter/entities");
         if (!cancelled) setMetadata(res.data?.entities ? res.data : res.data?.data || res.data);
       } catch (error) {
-        toast.error(normalizeAxiosError(error));
+        handleApiError(error, normalizeAxiosError(error));
       } finally {
         setLoading(false);
       }
@@ -115,7 +115,7 @@ export default function FilterRecipients({ setValue, getValues }) {
       setCount(res.data?.count ?? res.data?.data?.count ?? 0);
       setValue("audienceFilter", serialized, { shouldDirty: true });
     } catch (error) {
-      toast.error(normalizeAxiosError(error));
+      handleApiError(error, normalizeAxiosError(error));
     } finally {
       setCountLoading(false);
     }

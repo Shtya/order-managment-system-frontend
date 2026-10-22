@@ -37,7 +37,7 @@ import {
 import UserSelect, { avatarSrc } from "@/components/atoms/UserSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { OrderStatus } from "../tabs/OrderTab";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 
@@ -717,7 +717,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 				onSuccess?.();
 				handleClose();
 			} catch (err) {
-				toast.error(err.response?.data?.message || t("messages.errorUpdatingStatus"));
+				handleApiError(err, err.response?.data?.message || t("messages.errorUpdatingStatus"));
 			} finally { setAssigning(false); }
 		} else {
 			if (!selectedStatuses.length || seletOpen) { toast.error(t("distribution.selectStatusToLoadOrders")); return; }
@@ -737,7 +737,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 				onSuccess?.();
 				setTimeout(() => { handleClose(); setAutoAssignResult(null); }, 2000);
 			} catch (err) {
-				toast.error(err.response?.data?.message || t("distribution.autoAssignFailed"));
+				handleApiError(err, err.response?.data?.message || t("distribution.autoAssignFailed"));
 			} finally { setAssigning(false); }
 		}
 	};

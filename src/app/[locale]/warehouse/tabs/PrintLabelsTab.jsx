@@ -30,7 +30,7 @@ import { useExport } from "@/hook/useExport";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import ProductFilter from "@/components/atoms/ProductFilter";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useSocket } from "@/context/SocketContext";
 import { toast } from "react-hot-toast";
 import { OrderDetailModal } from "./DistributionTab";
@@ -170,7 +170,7 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
         toast.error(res.data.error || t("common.errorWaybill"));
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || t("common.errorWaybill"));
+      handleApiError(error, error.response?.data?.message || t("common.errorWaybill"));
     } finally {
       setLoading(false);
     }

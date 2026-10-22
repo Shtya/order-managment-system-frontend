@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { useExport } from "@/hook/useExport";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import { cn } from "@/utils/cn";
@@ -143,7 +143,7 @@ export default function CustomerSegmentsPage() {
         setPage(Number(res.data?.current_page || p));
         setLimit(Number(res.data?.per_page || l));
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
       } finally {
         setLoading(false);
       }
@@ -250,7 +250,7 @@ export default function CustomerSegmentsPage() {
       setTogglingSegment(null);
       refresh();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
     } finally {
       setToggleLoading(false);
     }
@@ -266,7 +266,7 @@ export default function CustomerSegmentsPage() {
       setDeletingSegment(null);
       refresh();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.deleteFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.deleteFailed"));
     } finally {
       setDeleteLoading(false);
     }
@@ -279,7 +279,7 @@ export default function CustomerSegmentsPage() {
       toast.success(t("toast.frozen"));
       refresh();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.freezeFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.freezeFailed"));
     } finally {
       setMutatingId(null);
     }
@@ -292,7 +292,7 @@ export default function CustomerSegmentsPage() {
       toast.success(t("toast.unfrozen"));
       refresh();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.unfreezeFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.unfreezeFailed"));
     } finally {
       setMutatingId(null);
     }

@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     MoreVertical, Phone, Video, Bot, Headphones, Undo2,
-    Search, Star, Info, MessageCircleOff, X, Edit, UserMinus, UserCheck, Loader2, ChevronLeft, ChevronDown
+    Search, Star, Info, MessageCircleOff, X, Edit, UserMinus, UserCheck, Loader2, ChevronLeft, ChevronDown, ListFilter,Filter
 } from "lucide-react";
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
@@ -17,13 +17,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
 import WhatsAppAccountSelect from "../WhatsAppAccountSelect";
 import CustomerModal from "../../../customers/atoms/CustomerModal";
 import MediaPreviewOverlay from "./MediaPreviewOverlay";
@@ -36,7 +29,6 @@ import TemplateMessageModal from "./TemplateMessageModal";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { useConversation } from "./ConversationContext";
 import { MESSAGE_STATUS_LIST } from "@/utils/whatsapp-healper";
-import { useDebounce } from "@/hook/useDebounce";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
@@ -109,8 +101,6 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         initialMessagesLoading,
         hasMoreMessages,
         loadMoreMessages,
-        messageSearch,
-        setMessageSearch,
         messageStatus,
         setMessageStatus,
         messageAccount,
@@ -144,7 +134,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
     const locale = useLocale();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [localSearch, setLocalSearch] = useState("");
+    const activeFilterCount = Number(messageStatus !== "all") + Number(messageAccount !== "all");
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
@@ -190,17 +180,6 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             cancelled = true;
         };
     }, []);
-    // Sync local search with messageSearch when it changes (e.g. when conversation changes)
-    useEffect(() => {
-        setLocalSearch(messageSearch);
-    }, [messageSearch]);
-
-    // Debounce message search
-    useDebounce({
-        value: localSearch,
-        onDebounce: (val) => setMessageSearch(val)
-    });
-
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
 
     const customer = selectedConversation?.customer;
@@ -411,61 +390,6 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                 onOpenChange={setShowTemplateModal}
             />
 
-            {/* Filter Bar (Animated) */}
-            {isFilterOpen && (
-                <div className="absolute top-16 left-0 right-0 bg-card border-b border-border p-4 z-20 shadow-md animate-in slide-in-from-top duration-300 flex flex-col md:flex-row items-stretch md:items-center gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-                        <input
-                            type="text"
-                            value={localSearch}
-                            onChange={(e) => setLocalSearch(e.target.value)}
-                            placeholder={t("search")}
-                            className="w-full pl-9 pr-4 py-2 bg-muted border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus-visible:outline-none! text-foreground placeholder:text-muted-foreground/50"
-                        />
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-4 items-stretch md:items-center">
-                        <div className="w-full md:w-48">
-                            <WhatsAppAccountSelect
-                                label={null}
-                                value={messageAccount}
-                                onChange={setMessageAccount}
-                                allowAll={true}
-                            />
-                        </div>
-                        <div className="w-full md:w-40 flex flex-col gap-2">
-                            <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                                {t("status")}
-                            </Label>
-                            <Select value={messageStatus} onValueChange={setMessageStatus}>
-                                <SelectTrigger className="h-10 bg-muted border-border rounded-lg text-sm text-foreground">
-                                    <SelectValue placeholder={t("allStatuses")} />
-                                </SelectTrigger>
-                                <SelectContent className="bg-card border-border">
-                                    <SelectItem value="all">{t("allStatuses")}</SelectItem>
-                                    {MESSAGE_STATUS_LIST.map(status => (
-                                        <SelectItem key={status.value} value={status.value}>
-                                            {status.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => {
-                            setIsFilterOpen(false);
-                            setLocalSearch("");
-                            setMessageStatus("all");
-                            setMessageAccount("all");
-                        }}
-                        className="absolute top-2 right-2 md:relative md:top-auto md:right-auto p-2 hover:bg-accent/50 rounded-full transition-colors"
-                    >
-                        <X className="w-5 h-5 text-muted-foreground" />
-                    </button>
-                </div>
-            )}
-
             {/* Header */}
             <div className="h-16 flex-shrink-0 bg-card border-b border-border px-4 md:px-6 flex items-center justify-between z-10">
                 <div className="flex items-center gap-2 md:gap-3">
@@ -516,15 +440,84 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
                 <div className="flex items-center gap-1 md:gap-2">
                     <div className="flex items-center">
-                        <button
-                            onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className={cn(
-                                "p-2 hover:bg-accent/50 rounded-md transition-all text-muted-foreground",
-                                isFilterOpen && "bg-wa-green/10 text-wa-green"
-                            )}
-                        >
-                            <Search className="w-5 h-5" />
-                        </button>
+                        <DropdownMenu open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    aria-label={t("filter")}
+                                    className={cn(
+                                        "relative p-2 hover:bg-accent/50 rounded-md transition-all text-muted-foreground",
+                                        isFilterOpen && "bg-wa-green/10 text-wa-green"
+                                    )}
+                                >
+                                    <Filter className="w-5 h-5" />
+                                    {activeFilterCount > 0 && (
+                                        <span className="absolute -end-1 -top-1 flex min-w-4 h-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
+                                            {activeFilterCount}
+                                        </span>
+                                    )}
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align={locale === "ar" ? "start" : "end"}
+                                sideOffset={10}
+                                dir={locale === "ar" ? "rtl" : "ltr"}
+                                className={cn(
+                                    "w-[min(20rem,calc(100vw-2rem))] rounded-xl border-border bg-card p-4 shadow-xl",
+                                    locale === "ar" ? "text-right" : "text-left"
+                                )}
+                            >
+                                <div className="mb-4 flex items-center justify-between gap-4">
+                                    <p className="text-sm font-semibold text-foreground">{t("filter")}</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setMessageStatus("all");
+                                            setMessageAccount("all");
+                                        }}
+                                        className="text-xs font-medium text-primary hover:underline"
+                                    >
+                                        {t("resetFilters")}
+                                    </button>
+                                </div>
+
+                                <WhatsAppAccountSelect
+                                    label={t("sendNumber")}
+                                    value={messageAccount}
+                                    onChange={setMessageAccount}
+                                    allowAll={true}
+                                />
+
+                                <div className="mt-4 space-y-2">
+                                    <Label className="text-xs font-medium text-muted-foreground">
+                                        {t("status")}
+                                    </Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[{ value: "all", label: t("allStatuses") }, ...MESSAGE_STATUS_LIST.map((status) => ({
+                                            value: status.value,
+                                            label: t(`messageStatuses.${status.value}`)
+                                        }))].map((status) => {
+                                            const selected = messageStatus === status.value;
+                                            return (
+                                                <button
+                                                    key={status.value}
+                                                    type="button"
+                                                    aria-pressed={selected}
+                                                    onClick={() => setMessageStatus(status.value)}
+                                                    className={cn(
+                                                        "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                                                        selected
+                                                            ? "border-primary bg-primary/10 text-primary"
+                                                            : "border-border bg-background text-foreground hover:bg-accent"
+                                                    )}
+                                                >
+                                                    {status.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <button
                             onClick={() => {
                                 onToggleDetails();
@@ -656,15 +649,13 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             <Search className="w-8 h-8 text-muted-foreground/60" />
                         </div>
                         <p className="text-sm font-medium text-muted-foreground">
-                            {messageSearch || messageStatus !== "all" || messageAccount !== "all"
+                            {messageStatus !== "all" || messageAccount !== "all"
                                 ? t("noResultsFound")
                                 : t("noMessagesFound")}
                         </p>
-                        {(messageSearch || messageStatus !== "all" || messageAccount !== "all") && (
+                        {(messageStatus !== "all" || messageAccount !== "all") && (
                             <button
                                 onClick={() => {
-                                    setLocalSearch("");
-                                    setMessageSearch("");
                                     setMessageStatus("all");
                                     setMessageAccount("all");
                                 }}

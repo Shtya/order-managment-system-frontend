@@ -52,7 +52,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/utils/cn';
 
-import api, { BASE_URL } from '@/utils/api';
+import api, { BASE_URL, handleApiError } from '@/utils/api';
 import toast from 'react-hot-toast';
 
 /* =========================
@@ -144,7 +144,7 @@ export function MediaLibrary({
       setAssets(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Failed to load assets:', error);
-      toast.error(t('toast.loadFailed'));
+      handleApiError(error, t('toast.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -173,7 +173,7 @@ export function MediaLibrary({
       await loadAssets();
     } catch (error) {
       console.error('Upload failed:', error);
-      toast.error(normalizeAxiosError(error, t('toast.uploadFailed')));
+      handleApiError(error, normalizeAxiosError(error, t('toast.uploadFailed')));
     } finally {
       setUploading(false);
     }
@@ -196,7 +196,7 @@ export function MediaLibrary({
       await loadAssets();
     } catch (error) {
       console.error('Bulk upload failed:', error);
-      toast.error(normalizeAxiosError(error, t('toast.uploadFailed')));
+      handleApiError(error, normalizeAxiosError(error, t('toast.uploadFailed')));
     } finally {
       setUploading(false);
     }
@@ -275,7 +275,7 @@ export function MediaLibrary({
       setPendingDelete(null);
     } catch (error) {
       console.error('Delete failed:', error);
-      toast.error(normalizeAxiosError(error, t('toast.deleteFailed')));
+      handleApiError(error, normalizeAxiosError(error, t('toast.deleteFailed')));
     } finally {
       setDeleting(false);
     }

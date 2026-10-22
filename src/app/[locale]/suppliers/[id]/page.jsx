@@ -23,7 +23,7 @@ import {
     ReceiptText,
     Loader2,
 } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import PageHeader from "@/components/atoms/Pageheader";
 import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
@@ -107,7 +107,7 @@ export default function SupplierDetailsPage() {
             setSupplier(res.data);
         } catch (error) {
             //ar => فشل تحميل المورد
-            toast.error(error?.response?.data?.message || t("failedToFetchSupplier"));
+            handleApiError(error, error?.response?.data?.message || t("failedToFetchSupplier"));
         } finally {
             setLoading(false);
         }
@@ -231,7 +231,7 @@ export default function SupplierDetailsPage() {
             setPurchaseModal({ isOpen: true, invoice: res.data, loading: false });
         } catch (error) {
             //ar => فشل تحميل المورد
-            toast.error(error?.response?.data?.message || t("failedToLoadDetails"));
+            handleApiError(error, error?.response?.data?.message || t("failedToLoadDetails"));
         } finally {
             setPurchaseModal({ isOpen: false, invoice: null, loading: false });
         }
@@ -243,7 +243,7 @@ export default function SupplierDetailsPage() {
             const res = await api.get(`/purchases-return/${row.id}`);
             setReturnModal({ isOpen: true, invoice: res.data, loading: false });
         } catch (error) {
-            toast.error(t("failedToLoadDetails"));
+            handleApiError(error, t("failedToLoadDetails"));
             setReturnModal({ isOpen: false, invoice: null, loading: false });
         }
     };

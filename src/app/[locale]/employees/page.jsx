@@ -37,6 +37,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Button_ from "@/components/atoms/Button";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 import {
 	Dialog,
@@ -333,6 +340,10 @@ export default function EmployeesPage() {
 				name: payload.name?.trim(),
 				email: payload.email?.trim(),
 				phone: payload.phone?.trim(),
+				roleId: payload.roleId,
+				employeeType: payload.employeeType === "custom"
+					? payload.customType?.trim()
+					: payload.employeeType,
 			};
 			if (payload.password?.trim()) {
 				body.password = payload.password.trim();
@@ -523,10 +534,19 @@ export default function EmployeesPage() {
 			},
 			{
 				key: "type",
-				header: t("table.role"),
+				header: t("table.employeeType"),
 				cell: (row) => (
 					<Badge className={getTypeBadge(String(row.employeeType || row.type || ""))}>
 						{row.employeeType || row.type || "-"}
+					</Badge>
+				),
+			},
+			{
+				key: "role",
+				header: t("table.role"),
+				cell: (row) => (
+					<Badge variant="outline" className="rounded-xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/5">
+						{row.role?.name || row.roleName || "-"}
 					</Badge>
 				),
 			},
@@ -802,7 +822,7 @@ function ViewEmployeeDialog({ t, open, onOpenChange, data, loading }) {
 						</div>
 
 						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
-							<div className="text-xs text-gray-500">{t("table.role")}</div>
+							<div className="text-xs text-gray-500">{t("table.employeeType")}</div>
 							<div className="mt-1 text-gray-900 dark:text-white">
 								{data.employeeType || data.type || "-"}
 							</div>
@@ -830,33 +850,68 @@ function ViewEmployeeDialog({ t, open, onOpenChange, data, loading }) {
 }
 
 function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) {
-	const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+	const tAdd = useTranslations("addEmployee");
+	const emptyForm = { name: "", email: "", phone: "", password: "", roleId: "", employeeType: "", customType: "" };
+	const standardEmployeeTypes = ["data_entry", "warehouse", "customer_service"];
+	const employeeTypes = [
+		{ id: "data_entry", label: tAdd("roles.dataEntry") },
+		{ id: "warehouse", label: tAdd("roles.warehouse") },
+		{ id: "customer_service", label: tAdd("roles.customerService") },
+		{ id: "custom", label: tAdd("roles.custom") },
+	];
+	const [form, setForm] = useState(emptyForm);
 	const [showPass, setShowPass] = useState(false);
+	const [roles, setRoles] = useState([]);
+	const [rolesLoading, setRolesLoading] = useState(false);
+
+	useEffect(() => {
+		if (!open) return;
+		let cancelled = false;
+		setRolesLoading(true);
+		api.get("/lookups/roles")
+			.then(({ data }) => {
+				if (cancelled) return;
+				setRoles((Array.isArray(data) ? data : []).map((role) => ({
+					id: role?.id ?? role?.value ?? role?._id,
+					label: role?.name ?? role?.label ?? role?.title ?? String(role?.id ?? ""),
+				})).filter((role) => role.id != null));
+			})
+			.catch(() => !cancelled && setRoles([]))
+			.finally(() => !cancelled && setRolesLoading(false));
+		return () => { cancelled = true; };
+	}, [open]);
 
 	useEffect(() => {
 		if (open && initial) {
+			const currentType = initial.employeeType || initial.type || "";
+			const isStandardType = standardEmployeeTypes.includes(currentType);
 			setForm({
 				name: initial.name || "",
 				email: initial.email || "",
 				phone: initial.phone || "",
 				password: "",
+				roleId: String(initial.roleId || initial.role?.id || ""),
+				employeeType: isStandardType ? currentType : currentType ? "custom" : "",
+				customType: isStandardType ? "" : currentType,
 			});
 		}
 		if (!open) {
-			setForm({ name: "", email: "", phone: "", password: "" });
+			setForm(emptyForm);
 			setShowPass(false);
 		}
+		// The reset values are intentionally derived from the selected employee.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [open, initial]);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl rounded-xl">
-				<DialogHeader className="text-right">
+			<DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl p-0 gap-0">
+				<DialogHeader className="border-b border-border px-6 py-5 text-start">
 					<DialogTitle>{t("edit.title") || t("actions.edit")}</DialogTitle>
 					<DialogDescription>{initial ? `#${initial.id}` : ""}</DialogDescription>
 				</DialogHeader>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
 					<div>
 						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("table.name")}</Label>
 						<Input
@@ -905,16 +960,63 @@ function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) 
 							</button>
 						</div>
 					</div>
+
+					<div className="space-y-1.5">
+						<Label className="text-xs text-gray-500 dark:text-slate-400">{tAdd("fields.roleSelect")}</Label>
+						<Select value={form.roleId} onValueChange={(roleId) => setForm((p) => ({ ...p, roleId }))}>
+							<SelectTrigger className="w-full rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
+								<SelectValue placeholder={rolesLoading ? t("loading") : tAdd("placeholders.selectRole")} />
+							</SelectTrigger>
+							<SelectContent className="max-h-72">
+								{roles.map((role) => (
+									<SelectItem key={String(role.id)} value={String(role.id)}>{role.label}</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					<div className="space-y-1.5">
+						<Label className="text-xs text-gray-500 dark:text-slate-400">{tAdd("sections.employeeType")}</Label>
+						<Select
+							value={form.employeeType}
+							onValueChange={(employeeType) => setForm((p) => ({
+								...p,
+								employeeType,
+								customType: employeeType === "custom" ? p.customType : "",
+							}))}
+						>
+							<SelectTrigger className="w-full rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
+								<SelectValue placeholder={tAdd("validation.employeeTypeRequired")} />
+							</SelectTrigger>
+							<SelectContent>
+								{employeeTypes.map((type) => (
+									<SelectItem key={type.id} value={type.id}>{type.label}</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					{form.employeeType === "custom" && (
+						<div className="space-y-1.5 md:col-span-2">
+							<Label className="text-xs text-gray-500 dark:text-slate-400">{tAdd("roles.custom")}</Label>
+							<Input
+								value={form.customType}
+								onChange={(e) => setForm((p) => ({ ...p, customType: e.target.value }))}
+								placeholder={tAdd("placeholders.customType")}
+								className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+							/>
+						</div>
+					)}
 				</div>
 
-				<div className="mt-4 flex items-center justify-end gap-2">
+				<div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
 					<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)} disabled={saving}>
 						{t("actions.cancel") || "Cancel"}
 					</Button>
 					<Button
 						className="rounded-full btn-primary1"
 						onClick={() => onSave?.({ ...form })}
-						disabled={saving || !form.name.trim() || !form.email.trim()}
+						disabled={saving || !form.name.trim() || !form.email.trim() || !form.roleId || !form.employeeType || (form.employeeType === "custom" && !form.customType.trim())}
 					>
 						<span className="flex items-center gap-2">
 							{saving ? <Loader2 className="animate-spin" size={18} /> : <Edit2 size={18} />}

@@ -28,7 +28,7 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { cn } from "@/utils/cn";
 
 // ── Shared Table system (same as call-center roles tab) ─────────────────────
@@ -277,7 +277,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess, companies, stores
             onOpenChange(false);
         } catch (e) {
             console.error(e);
-            toast.error(e?.response?.data?.message || t("validation.saveError"));
+            handleApiError(e, e?.response?.data?.message || t("validation.saveError"));
         }
     };
 
@@ -717,7 +717,7 @@ function TestDialog({ open, onOpenChange, companies, stores, cities }) {
             setResults(res.data?.results || []);
         } catch (e) {
             console.error(e);
-            toast.error(e?.response?.data?.message || t("preview.error"));
+            handleApiError(e, e?.response?.data?.message || t("preview.error"));
         } finally {
             setLoading(false);
         }
@@ -1031,7 +1031,7 @@ export default function ShippingAssigningPage() {
                 });
             } catch (e) {
                 console.error(e);
-                toast.error(t("messages.fetchError"));
+                handleApiError(e, t("messages.fetchError"));
             } finally {
                 setLoading(false);
             }
@@ -1108,7 +1108,7 @@ export default function ShippingAssigningPage() {
             ]);
         } catch (e) {
             console.error(e);
-            toast.error(e?.response?.data?.message || t("delete.error"));
+            handleApiError(e, e?.response?.data?.message || t("delete.error"));
         } finally {
             setDeleteLoading(false);
         }
@@ -1141,7 +1141,7 @@ export default function ShippingAssigningPage() {
             ]);
         } catch (e) {
             console.error(e);
-            toast.error(e?.response?.data?.message || tCommon("error"));
+            handleApiError(e, e?.response?.data?.message || tCommon("error"));
         } finally {
             setTogglingId(null);
         }

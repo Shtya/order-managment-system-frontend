@@ -37,7 +37,7 @@ import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/utils/cn";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 
 // UI Components (adjust paths to match your project)
 import { Input } from "@/components/ui/input";
@@ -739,7 +739,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
             router.push(superAdmin ? "/dashboard/whatsapp/templates" : "/whatsapp/templates");
         } catch (e) {
-            toast.error(normalizeAxiosError(e) || tMsg("saveError"));
+            handleApiError(e, normalizeAxiosError(e) || tMsg("saveError"));
         }
     };
 

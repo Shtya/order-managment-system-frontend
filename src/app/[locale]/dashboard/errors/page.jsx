@@ -37,7 +37,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -237,7 +237,7 @@ export default function ServerErrorsPage() {
                 records: res.data?.records ?? [],
             });
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setLoading(false);
         }
@@ -259,7 +259,7 @@ export default function ServerErrorsPage() {
             fetchMeta();
             toast.success(t("messages.deleteSuccess"));
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setDeleteLoading(false);
             setDeleteDialog({ open: false, id: null });
@@ -275,7 +275,7 @@ export default function ServerErrorsPage() {
             toast.success(t("messages.bulkDeleteSuccess", { count: selectedErrors.length }));
             setSelectedErrors([]);
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setDeleteLoading(false);
             setBulkDeleteDialog({ open: false });

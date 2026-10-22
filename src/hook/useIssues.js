@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useSocket } from "@/context/SocketContext";
 
@@ -79,7 +79,7 @@ export function useIssues() {
       setTotalRecords(data.total_records || 0);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       return null;
     } finally {
       setLoading(false);
@@ -93,7 +93,7 @@ export function useIssues() {
       setStats(data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       return null;
     }
   }, []);
@@ -107,7 +107,7 @@ export function useIssues() {
       setStatuses(Array.isArray(data) ? data : []);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       return null;
     }
   }, []);
@@ -120,7 +120,7 @@ export function useIssues() {
       setCauses(Array.isArray(data) ? data : []);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       return null;
     }
   }, []);
@@ -138,7 +138,7 @@ export function useIssues() {
       setBoardColumns(Array.isArray(data?.columns) ? data.columns : []);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       return null;
     } finally {
       setBoardLoading(false);
@@ -170,7 +170,7 @@ export function useIssues() {
         );
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         return null;
       } finally {
         setBoardColumnLoading((prev) => ({ ...prev, [statusId]: false }));
@@ -185,7 +185,7 @@ export function useIssues() {
       const { data } = await api.get(`${BASE}/${issueId}`);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       return null;
     } finally {
       setLoading(false);
@@ -209,7 +209,7 @@ export function useIssues() {
       });
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       return null;
     }
   }, []);
@@ -219,7 +219,7 @@ export function useIssues() {
       const { data } = await api.get(`${BASE}/${issueId}/activity`);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       return null;
     }
   }, []);
@@ -238,7 +238,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -253,7 +253,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -269,7 +269,7 @@ export function useIssues() {
       callbacks.onSuccess?.();
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -285,7 +285,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -300,7 +300,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -315,7 +315,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -327,7 +327,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -344,7 +344,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -361,7 +361,7 @@ export function useIssues() {
         callbacks.onSuccess?.(data?.data);
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }
@@ -377,7 +377,7 @@ export function useIssues() {
         callbacks.onSuccess?.();
         return data;
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         callbacks.onError?.(e);
         return null;
       }
@@ -398,7 +398,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -413,7 +413,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -429,7 +429,7 @@ export function useIssues() {
       callbacks.onSuccess?.();
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -447,7 +447,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -461,7 +461,7 @@ export function useIssues() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -475,7 +475,7 @@ export function useIssues() {
       callbacks.onSuccess?.();
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }

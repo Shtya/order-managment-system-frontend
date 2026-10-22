@@ -22,7 +22,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -249,7 +249,7 @@ export default function SyncFailuresPage() {
       });
     } catch (error) {
       console.error(error);
-      toast.error("Failed to fetch logs");
+      handleApiError(error, "Failed to fetch logs");
     } finally {
       setLoading(false);
     }
@@ -279,7 +279,7 @@ export default function SyncFailuresPage() {
       link.remove();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to export logs");
+      handleApiError(error, "Failed to export logs");
     }
   };
 
@@ -290,7 +290,7 @@ export default function SyncFailuresPage() {
       setDetailsModal({ isOpen: true, log: res.data, isLoading: false });
     } catch (error) {
       console.error(error);
-      toast.error("Failed to fetch log details");
+      handleApiError(error, "Failed to fetch log details");
       setDetailsModal({ isOpen: false, log: null, isLoading: false });
     }
   };

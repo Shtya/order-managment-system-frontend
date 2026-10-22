@@ -17,7 +17,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textarea";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import { avatarSrc } from "@/components/atoms/UserSelect";
@@ -574,7 +574,7 @@ export default function OrderConfirmationWorkPage() {
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -801,7 +801,7 @@ export default function OrderConfirmationWorkPage() {
       toast.success(t("messages.updateSuccess"));
       const r = await api.get(`/order-assignment/employee/orders/next`);
       initOrder(r.data);
-    } catch (e) { toast.error(e.response?.data?.message || "حدث خطأ"); }
+    } catch (e) { handleApiError(e, e.response?.data?.message || "حدث خطأ"); }
     finally { setSaving(false); }
   };
 
@@ -860,7 +860,7 @@ export default function OrderConfirmationWorkPage() {
       setDecided(true); setNotes(""); setSelStatusId(null);
       setCancelCauseOpen(false); setPendingCancelStatusId(null);
       setSelectedCancelCauseId(""); setCustomCauseName("");
-    } catch (e) { toast.error(e.response?.data?.message || t("messages.errorUpdatingStatus")); setSelStatusId(null); setDecided(false); }
+    } catch (e) { handleApiError(e, e.response?.data?.message || t("messages.errorUpdatingStatus")); setSelStatusId(null); setDecided(false); }
     finally { setChangingStatus(false); setRefetching(false); }
   };
 

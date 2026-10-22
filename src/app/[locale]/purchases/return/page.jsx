@@ -64,7 +64,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import AssetPreview from "@/components/atoms/AssetPreview";
@@ -196,7 +196,7 @@ export default function PurchasesReturnPage() {
 			fetchStats();
 		} catch (error) {
 			console.error(error);
-			toast.error(error?.response?.data?.message || t("messages.paidAmountFailed"));
+			handleApiError(error, error?.response?.data?.message || t("messages.paidAmountFailed"));
 		}
 	};
 
@@ -230,7 +230,7 @@ export default function PurchasesReturnPage() {
 			}
 		} catch (error) {
 			console.error("Failed to fetch details:", error);
-			toast.error(t("messages.detailsFailed"));
+			handleApiError(error, t("messages.detailsFailed"));
 			setDetailsOpen(false);
 			updateUrlWithId(null);
 		} finally {
@@ -279,7 +279,7 @@ export default function PurchasesReturnPage() {
 			setStats(res.data);
 		} catch (error) {
 			console.error("Failed to fetch stats:", error);
-			toast.error(t("messages.statsError"));
+			handleApiError(error, t("messages.statsError"));
 		}
 	};
 
@@ -332,7 +332,7 @@ export default function PurchasesReturnPage() {
 			});
 		} catch (error) {
 			console.error("Failed to fetch returns:", error);
-			toast.error(t("messages.returnsError"));
+			handleApiError(error, t("messages.returnsError"));
 		} finally {
 			setLoading(false);
 		}
@@ -409,7 +409,7 @@ export default function PurchasesReturnPage() {
 			link.remove();
 		} catch (error) {
 			console.error(error);
-			toast.error(t("messages.exportError"));
+			handleApiError(error, t("messages.exportError"));
 		}
 	};
 
@@ -888,7 +888,7 @@ function LogsModal({ isOpen, onClose, invoiceId, t }) {
 				setLogs(res.data || []);
 			} catch (e) {
 				console.error(e);
-				toast.error(e?.response?.data?.message || t("messages.logsFailed"));
+				handleApiError(e, e?.response?.data?.message || t("messages.logsFailed"));
 			} finally {
 				setLoading(false);
 			}
@@ -1117,7 +1117,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 				}
 			} catch (e) {
 				console.error(e);
-				toast.error(e?.response?.data?.message || t("messages.previewFailed"));
+				handleApiError(e, e?.response?.data?.message || t("messages.previewFailed"));
 			} finally {
 				setLoading(false);
 			}

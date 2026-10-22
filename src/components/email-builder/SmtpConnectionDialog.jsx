@@ -7,7 +7,7 @@ import * as yup from "yup";
 import { useTranslations } from "next-intl";
 import { Loader2, Server, TestTube2 } from "lucide-react";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -104,7 +104,7 @@ export default function SmtpConnectionDialog({ open, account, onOpenChange, onSa
       setTested(true);
       toast.success(t("verified"));
     } catch (error) {
-      toast.error(error.response?.data?.message || t("verifyFailed"));
+      handleApiError(error, error.response?.data?.message || t("verifyFailed"));
     } finally {
       setTesting(false);
     }
@@ -124,7 +124,7 @@ export default function SmtpConnectionDialog({ open, account, onOpenChange, onSa
       await onSaved?.(response.data);
       onOpenChange(false);
     } catch (error) {
-      toast.error(error.response?.data?.message || t("saveFailed"));
+      handleApiError(error, error.response?.data?.message || t("saveFailed"));
     } finally {
       setPending(false);
     }

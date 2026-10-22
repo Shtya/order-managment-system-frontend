@@ -9,7 +9,7 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useExport } from "@/hook/useExport";
 import Table, { FilterField } from "@/components/atoms/Table";
 import { Badge } from "@/components/ui/badge";
@@ -97,7 +97,7 @@ export default function StorageLocationsTab({ stats: _stats, onStatsChange }) {
             });
         } catch (e) {
             console.error(e);
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setIsLoading(false);
         }
@@ -129,7 +129,7 @@ export default function StorageLocationsTab({ stats: _stats, onStatsChange }) {
             onStatsChange?.();
         } catch (e) {
             console.error(e);
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setTogglingId(null);
         }
@@ -294,7 +294,7 @@ export default function StorageLocationsTab({ stats: _stats, onStatsChange }) {
                             afterMutate();
                         } catch (e) {
                             console.error(e);
-                            toast.error(normalizeAxiosError(e));
+                            handleApiError(e, normalizeAxiosError(e));
                         }
                     }}
                 />
@@ -509,7 +509,7 @@ function StorageLocationFormDialog({ open, onOpenChange, location, onSuccess }) 
             onOpenChange(false);
         } catch (e) {
             console.error(e);
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         }
     };
 

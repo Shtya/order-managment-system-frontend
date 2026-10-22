@@ -27,7 +27,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { cn } from "@/utils/cn";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
@@ -340,7 +340,7 @@ function ContactsTab({ t }) {
           youtube: data.socials?.youtube || "",
         });
       } catch (err) {
-        toast.error(t("toast.loadError"));
+        handleApiError(err, t("toast.loadError"));
       } finally {
         setLoading(false);
       }
@@ -369,7 +369,7 @@ function ContactsTab({ t }) {
       toast.success(t("toast.saveSuccess"));
     } catch (err) {
       const msg = err.response?.data?.message || t("toast.saveError");
-      toast.error(Array.isArray(msg) ? msg[0] : msg);
+      handleApiError(err, Array.isArray(msg) ? msg[0] : msg);
     }
   };
 
@@ -512,7 +512,7 @@ function WhatsAppTab({ t }) {
         const data = res.data || {};
         setWhatsappIntegrationMode(data.whatsappIntegrationMode || "embedded_signup");
       } catch (err) {
-        toast.error(t("toast.loadError"));
+        handleApiError(err, t("toast.loadError"));
       } finally {
         setLoading(false);
       }
@@ -525,7 +525,7 @@ function WhatsAppTab({ t }) {
       toast.success(t("toast.saveSuccess"));
     } catch (err) {
       const msg = err.response?.data?.message || t("toast.saveError");
-      toast.error(Array.isArray(msg) ? msg[0] : msg);
+      handleApiError(err, Array.isArray(msg) ? msg[0] : msg);
     }
   };
 
@@ -702,7 +702,7 @@ function AiTab({ t }) {
           hostedUnits: hostedAllowance?.units ?? 0,
         });
       } catch (err) {
-        toast.error(t("toast.loadError"));
+        handleApiError(err, t("toast.loadError"));
       } finally {
         setLoading(false);
       }
@@ -753,7 +753,7 @@ function AiTab({ t }) {
       toast.success(t("toast.saveSuccess"));
     } catch (err) {
       const msg = err.response?.data?.message || t("toast.saveError");
-      toast.error(Array.isArray(msg) ? msg[0] : msg);
+      handleApiError(err, Array.isArray(msg) ? msg[0] : msg);
     }
   };
 

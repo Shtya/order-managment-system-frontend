@@ -16,7 +16,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -121,7 +121,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                 if (sub.includedOrders !== null) setShowCustomLimits(true);
             }
         } catch (error) {
-            toast.error(t("manageSubscription.errors.fetchFailed"));
+            handleApiError(error, t("manageSubscription.errors.fetchFailed"));
         } finally {
             setInitialLoading(false);
         }
@@ -168,7 +168,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
             onSaved();
         } catch (error) {
             console.error("Submission error:", error);
-            toast.error(error?.response?.data?.message || t("manageSubscription.errors.errorSaving"));
+            handleApiError(error, error?.response?.data?.message || t("manageSubscription.errors.errorSaving"));
         } finally {
             setLoading(false);
         }

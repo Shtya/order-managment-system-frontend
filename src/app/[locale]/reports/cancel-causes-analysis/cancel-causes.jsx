@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Button_ from "@/components/atoms/Button";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -257,7 +257,7 @@ export default function CancelCausesStatisticsPage() {
       // setPending(pendingRes.data);
     } catch (err) {
       console.error(err);
-      toast.error(t("fetchError"));
+      handleApiError(err, t("fetchError"));
     } finally {
       setLoading(false);
     }

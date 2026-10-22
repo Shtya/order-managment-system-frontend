@@ -2214,7 +2214,8 @@
       "email": "البريد الإلكتروني",
       "phone": "رقم الهاتف",
       "password": "كلمة المرور",
-      "role": "النوع",
+      "employeeType": "النوع",
+      "role": "الدور",
       "status": "الحالة",
       "active": "نشط",
       "inactive": "غير نشط",
@@ -3240,6 +3241,7 @@
       "agents_delete": "حذف وكلاء الذكاء الاصطناعي"
     },
     "group": {
+      "agents": "الوكلاء",
       "accounting": "المحاسبة",
       "admin-settings": "إعدادات الإدارة",
       "assets": "الأصول",
@@ -3356,6 +3358,8 @@
     "permissions": {
       "title": "الصلاحيات",
       "filterPlaceholder": "فلترة الصلاحيات...",
+      "groupFilter": "مجموعة الصلاحيات",
+      "allGroups": "كل المجموعات",
       "noMatch": "لا توجد صلاحيات تطابق بحثك.",
       "selectedOutOf": "{checked} / {total} محددة"
     },
@@ -15931,6 +15935,17 @@
     "title": "المحادثات",
     "search": "البحث في المحادثات...",
     "filter": "فلترة",
+    "resetFilters": "إعادة ضبط",
+    "sendNumber": "رقم الإرسال",
+    "messageStatuses": {
+      "accepted": "تم القبول",
+      "sent": "تم الإرسال",
+      "delivered": "تم التسليم",
+      "read": "تمت القراءة",
+      "played": "تم التشغيل",
+      "replied": "تم رد العميل",
+      "failed": "فشل الإرسال"
+    },
     "tabs": {
       "all": "الكل",
       "unread": "غير مقروء",

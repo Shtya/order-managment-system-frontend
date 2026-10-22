@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Plus, Download, Loader2, Edit2, Trash2, Power, PowerOff, Star, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useExport } from "@/hook/useExport";
 import { useDebounce } from "@/hook/useDebounce";
@@ -79,7 +79,7 @@ export default function SmsSenders() {
                 per_page: res.data.per_page ?? limit,
             });
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setIsLoading(false);
         }
@@ -114,7 +114,7 @@ export default function SmsSenders() {
             fetchData(pagination.current_page, pagination.per_page);
             fetchStats();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setTogglingId(null);
         }
@@ -127,7 +127,7 @@ export default function SmsSenders() {
             fetchData(pagination.current_page, pagination.per_page);
             fetchStats();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         }
     }, [tc, fetchData, pagination.current_page, pagination.per_page]);
 
@@ -312,7 +312,7 @@ export default function SmsSenders() {
                             setDeleteOpen(false);
                             afterMutate();
                         } catch (e) {
-                            toast.error(normalizeAxiosError(e));
+                            handleApiError(e, normalizeAxiosError(e));
                         }
                     }}
                 />

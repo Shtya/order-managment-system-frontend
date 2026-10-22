@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
@@ -399,7 +399,7 @@ export default function AiReportsPage() {
       ]);
     } catch (e) {
       console.error(e);
-      toast.error(t("error"));
+      handleApiError(e, t("error"));
     } finally {
       setLoading(false);
     }

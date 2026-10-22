@@ -41,7 +41,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 
 // ── Shared Table system ──────────────────────────────────────────────────────
 import Table, { FilterField } from "@/components/atoms/Table";
@@ -325,7 +325,7 @@ export function FailedOrdersTab() {
         });
       } catch (e) {
         console.error(e);
-        toast.error(t("failedOrders.messages.fetchFailed"));
+        handleApiError(e, t("failedOrders.messages.fetchFailed"));
       } finally {
         setLoading(false);
       }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Wallet, ArrowUpCircle, ArrowDownCircle, History, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +31,7 @@ export default function ManageWalletModal({ isOpen, onClose, user, onRefresh }) 
             const res = await api.get(`/wallet/admin/user-wallet/${user.id}`);
             setWallet(res.data);
         } catch (error) {
-            toast.error(t("errors.fetchWalletFailed"));
+            handleApiError(error, t("errors.fetchWalletFailed"));
         } finally {
             setLoading(false);
         }
@@ -53,7 +53,7 @@ export default function ManageWalletModal({ isOpen, onClose, user, onRefresh }) 
             onClose();
             setForm({ amount: "", note: "" });
         } catch (error) {
-            toast.error(error?.response?.data?.message || t("errors.adjustBalanceFailed"));
+            handleApiError(error, error?.response?.data?.message || t("errors.adjustBalanceFailed"));
         } finally {
             setSaving(false);
         }

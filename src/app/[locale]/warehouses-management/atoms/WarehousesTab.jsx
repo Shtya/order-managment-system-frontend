@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useExport } from "@/hook/useExport";
 import { useDebounce } from "@/hook/useDebounce";
 import Table, { FilterField } from "@/components/atoms/Table";
@@ -71,7 +71,7 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
             });
         } catch (e) {
             console.error(e);
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setIsLoading(false);
         }
@@ -103,7 +103,7 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
             onStatsChange?.();
         } catch (e) {
             console.error(e);
-            toast.error(tc("api.error"));
+            handleApiError(e, tc("api.error"));
         } finally {
             setTogglingId(null);
         }
@@ -235,7 +235,7 @@ export default function WarehousesTab({ stats: _stats, onStatsChange }) {
                             afterMutate();
                         } catch (e) {
                             console.error(e);
-                            toast.error(normalizeAxiosError(e));
+                            handleApiError(e, normalizeAxiosError(e));
                         }
                     }}
                 />
@@ -283,7 +283,7 @@ function WarehouseFormDialog({ open, onOpenChange, warehouse, onSuccess }) {
             onOpenChange(false);
         } catch (e) {
             console.error(e);
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         }
     };
 

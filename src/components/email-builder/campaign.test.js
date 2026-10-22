@@ -23,6 +23,7 @@ import {
   EMAIL_GUIDELINE_SOURCES,
   EMAIL_SENDING_GUIDELINES,
 } from "./emailSendingGuidelinesConfig";
+import { inspectEmailOrderLink } from "@/app/[locale]/campaigns/atoms/campaignOrderUrl";
 describe("email campaign integration", () => {
   it("keeps every sending guideline and source bilingual", () => {
     expect(EMAIL_SENDING_GUIDELINES.length).toBeGreaterThan(0);
@@ -78,6 +79,45 @@ describe("email campaign integration", () => {
     expect(
       validateStepOffer({ ...data, email: { subject: "No link" } }),
     ).toHaveProperty("enablePurchasePage");
+  });
+  it("recognizes the order URL variable stored as a rich-text node", () => {
+    const email = {
+      subject: "Offer",
+      document: {
+        version: 2,
+        blocks: [
+          {
+            id: "text-1",
+            type: "text",
+            content: {
+              type: "doc",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    { type: "text", text: "Complete your order: " },
+                    {
+                      type: "variable",
+                      attrs: { id: "campaign.orderUrl" },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    expect(inspectEmailOrderLink(email).orderLinkAvailable).toBe(true);
+    expect(
+      validateStepOffer({
+        ...initialWizardData,
+        channel: "email",
+        email,
+        enablePurchasePage: true,
+        products: [{ variantId: "variant" }],
+      }),
+    ).toEqual({});
   });
   it("blocks a suspended sender locally and omits its UI status from payloads", () => {
     const data = {

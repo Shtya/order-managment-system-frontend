@@ -16,6 +16,13 @@ import { cn } from "@/utils/cn";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import Button_ from "@/components/atoms/Button";
 import {
 	Dialog, DialogContent,
@@ -32,7 +39,7 @@ import {
 	Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 
 import PageHeader from "@/components/atoms/Pageheader";
@@ -58,7 +65,7 @@ export function useRolesApi() {
 			setRoles(data);
 			return data;
 		} catch (err) {
-			toast.error(err.response?.data?.message || t("toasts.fetchRolesError"));
+			handleApiError(err, err.response?.data?.message || t("toasts.fetchRolesError"));
 			throw err;
 		} finally {
 			setLoading(false);
@@ -72,7 +79,7 @@ export function useRolesApi() {
 			setPermissions(data.map(p => p.name));
 			return data;
 		} catch (err) {
-			toast.error(err.response?.data?.message || t("toasts.fetchPermissionsError"));
+			handleApiError(err, err.response?.data?.message || t("toasts.fetchPermissionsError"));
 			throw err;
 		}
 	}, [t]);
@@ -84,7 +91,7 @@ export function useRolesApi() {
 			toast.success(t("toasts.createRoleSuccess"));
 			return data;
 		} catch (err) {
-			toast.error(err.response?.data?.message || t("toasts.createRoleError"));
+			handleApiError(err, err.response?.data?.message || t("toasts.createRoleError"));
 			throw err;
 		} finally { setLoading(false); }
 	}, [t]);
@@ -96,7 +103,7 @@ export function useRolesApi() {
 			toast.success(t("toasts.updateRoleSuccess"));
 			return data;
 		} catch (err) {
-			toast.error(err.response?.data?.message || t("toasts.updateRoleError"));
+			handleApiError(err, err.response?.data?.message || t("toasts.updateRoleError"));
 			throw err;
 		} finally { setLoading(false); }
 	}, [t]);
@@ -107,7 +114,7 @@ export function useRolesApi() {
 			await api.delete(`/roles/${id}`);
 			toast.success(t("toasts.deleteRoleSuccess"));
 		} catch (err) {
-			toast.error(err.response?.data?.message || t("toasts.deleteRoleError"));
+			handleApiError(err, err.response?.data?.message || t("toasts.deleteRoleError"));
 			throw err;
 		} finally { setLoading(false); }
 	}, [t]);
@@ -250,6 +257,7 @@ function ActionBtn({ onClick, disabled, locked, icon: Icon, color, tooltip, perm
 ═══════════════════════════════════════════════════════════════ */
 function PermissionsSelector({ permissions = [], selected = [], onChange, disabled }) {
 	const [search, setSearch] = useState("");
+	const [groupFilter, setGroupFilter] = useState("all");
 	const [collapsed, setCollapsed] = useState({});
 
 	const t = useTranslations("roles-client")
@@ -265,15 +273,22 @@ function PermissionsSelector({ permissions = [], selected = [], onChange, disabl
 	}, [permissions]);
 
 	const filtered = useMemo(() => {
-		if (!search.trim()) return groups;
-		const q = search.toLowerCase();
+		const q = search.trim().toLocaleLowerCase();
 		const out = {};
 		Object.entries(groups).forEach(([grp, ps]) => {
-			const hits = ps.filter(p => p.toLowerCase().includes(q));
+			if (groupFilter !== "all" && grp !== groupFilter) return;
+			const groupLabel = t(`group.${grp}`).toLocaleLowerCase();
+			const groupMatches = q && (grp.toLocaleLowerCase().includes(q) || groupLabel.includes(q));
+			const hits = !q || groupMatches
+				? ps
+				: ps.filter((permission) => {
+					const permissionLabel = t(`permissionsItems.${permission.replace(/\./g, '_')}`).toLocaleLowerCase();
+					return permission.toLocaleLowerCase().includes(q) || permissionLabel.includes(q);
+				});
 			if (hits.length) out[grp] = hits;
 		});
 		return out;
-	}, [groups, search]);
+	}, [groups, groupFilter, search, t]);
 
 	const togglePerm = (p) => { if (disabled) return; onChange(selected.includes(p) ? selected.filter(x => x !== p) : [...selected, p]); };
 	const toggleGroup = (grp, ps) => { if (disabled) return; const allOn = ps.every(p => selected.includes(p)); onChange(allOn ? selected.filter(p => !ps.includes(p)) : [...new Set([...selected, ...ps])]); };
@@ -303,26 +318,46 @@ function PermissionsSelector({ permissions = [], selected = [], onChange, disabl
 				</div>
 			</div>
 
+			<div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_220px] gap-3">
+				<div className="relative">
+					{/* <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /> */}
+					<Input
+						startIcon={<Search className="h-4 w-4 text-muted-foreground"  />}
+						value={search}
+						onChange={(event) => setSearch(event.target.value)}
+						placeholder={t("permissions.filterPlaceholder")}
+						className="h-10 rounded-xl bg-background"
+					/>
+				</div>
+				<Select value={groupFilter} onValueChange={setGroupFilter}>
+					<SelectTrigger className="h-10 w-full rounded-xl bg-background">
+						<SelectValue placeholder={t("permissions.groupFilter")} />
+					</SelectTrigger>
+					<SelectContent className="max-h-72">
+						<SelectItem value="all">{t("permissions.allGroups")}</SelectItem>
+						{Object.keys(groups).map((group) => (
+							<SelectItem key={group} value={group}>{t(`group.${group}`)}</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+
 			{/* Groups */}
-			<div className="space-y-2 max-h-[300px] overflow-y-auto pe-1">
+			<div className="space-y-2 max-h-[360px] overflow-y-auto pe-1">
 				{Object.entries(filtered).map(([grp, ps]) => {
-					const allOn = ps.every(p => selected.includes(p));
-					const someOn = !allOn && ps.some(p => selected.includes(p));
+					const completeGroup = groups[grp];
+					const allOn = completeGroup.every(p => selected.includes(p));
+					const someOn = !allOn && completeGroup.some(p => selected.includes(p));
 					const open = !collapsed[grp];
 
 					return (
-						<div key={grp} className="rounded-lg border border-border overflow-hidden" style={{ background: "var(--card)" }}>
+						<div key={grp} className="rounded-xl border border-border overflow-hidden" style={{ background: "var(--card)" }}>
 							{/* Group header */}
-							<button
-								type="button"
-								onClick={() => toggleCol(grp)}
-								className="w-full flex items-center gap-3 px-4 py-2.5 text-start
-                  hover:bg-[color-mix(in_oklab,var(--muted)_60%,transparent)] transition-colors duration-150"
-							>
+							<div className="flex w-full items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors duration-150">
 								{/* select-all micro checkbox */}
 								<button
 									type="button"
-									onClick={e => { e.stopPropagation(); toggleGroup(grp, ps); }}
+									onClick={() => toggleGroup(grp, completeGroup)}
 									disabled={disabled}
 									className="w-4 h-4 rounded flex items-center justify-center shrink-0 border transition-all duration-150"
 									style={{
@@ -334,14 +369,16 @@ function PermissionsSelector({ permissions = [], selected = [], onChange, disabl
 									{someOn && <div className="w-1.5 h-0.5 rounded-full" style={{ background: "var(--primary)" }} />}
 								</button>
 
-								<span className="flex-1 text-[12px] font-bold capitalize text-foreground/80">{t(`group.${grp}`)}</span>
-								<span className="text-[10px] text-muted-foreground tabular-nums me-1">
-									{ps.filter(p => selected.includes(p)).length}/{ps.length}
-								</span>
-								<motion.span animate={{ rotate: open ? 90 : 0 }} transition={{ duration: 0.18 }} className="text-muted-foreground">
-									<ChevronRight size={13} />
-								</motion.span>
-							</button>
+								<button type="button" onClick={() => toggleCol(grp)} className="flex min-w-0 flex-1 items-center gap-3 text-start">
+									<span className="flex-1 text-[12px] font-bold capitalize text-foreground/80">{t(`group.${grp}`)}</span>
+									<span className="text-[10px] text-muted-foreground tabular-nums me-1">
+										{completeGroup.filter(p => selected.includes(p)).length}/{completeGroup.length}
+									</span>
+									<motion.span animate={{ rotate: open ? 90 : 0 }} transition={{ duration: 0.18 }} className="text-muted-foreground">
+										<ChevronRight size={13} />
+									</motion.span>
+								</button>
+							</div>
 
 							{/* Chips */}
 							<AnimatePresence initial={false}>
@@ -416,14 +453,18 @@ function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent className="!max-w-3xl max-h-[92vh] overflow-y-auto " data-getting-started="roles.create_dialog" data-getting-started-type="dialog">
-				<DialogHeader>
-					<DialogTitle> {role ? t("dialog.editRole") : t("dialog.addRole")} </DialogTitle>
-					<DialogDescription> {t("dialog.roleDescription")}</DialogDescription>
+			<DialogContent className="max-w-4xl! w-[calc(100vw-2rem)] h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col gap-0 overflow-hidden rounded-2xl bg-card p-0" data-getting-started="roles.create_dialog" data-getting-started-type="dialog">
+				<DialogHeader className="shrink-0 border-b border-border px-6 py-5 text-start">
+					<DialogTitle className="flex items-center gap-2 text-xl">
+						<Shield className="h-5 w-5 text-primary" />
+						{role ? t("dialog.editRole") : t("dialog.addRole")}
+					</DialogTitle>
+					<DialogDescription>{t("dialog.roleDescription")}</DialogDescription>
 				</DialogHeader>
 
 				{/* Form */}
-				<form onSubmit={e => { e.preventDefault(); onSubmit(formData); }} className=" pt-4 space-y-5">
+				<form onSubmit={e => { e.preventDefault(); onSubmit(formData); }} className="flex min-h-0 flex-1 flex-col">
+					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
 
 					{/* Global notice */}
 					{isGlobal && (
@@ -476,9 +517,10 @@ function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading
 						onChange={v => setFormData({ ...formData, permissionNames: v })}
 						disabled={loading || isGlobal}
 					/>
+					</div>
 
 					{/* Footer */}
-					<div className="flex items-center justify-between gap-3 pt-1 pb-1">
+					<div className="flex shrink-0 items-center justify-end gap-3 border-t border-border bg-muted/20 px-6 py-4">
 						<button
 							type="button"
 							onClick={onClose}

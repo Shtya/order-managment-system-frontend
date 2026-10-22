@@ -6,7 +6,7 @@ import { Loader2, MessageCircle, Send } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -141,7 +141,7 @@ export default function OrderInternalNotesDialog({
       setHasMore(!!data?.hasMore);
     } catch (err) {
       setNotes([]);
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setLoading(false);
       scrollToBottom();
@@ -164,7 +164,7 @@ export default function OrderInternalNotesDialog({
         if (el) el.scrollTop = el.scrollHeight - prevHeight;
       });
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setLoadingMore(false);
     }
@@ -241,7 +241,7 @@ export default function OrderInternalNotesDialog({
       applyUnread(0);
       scrollToBottom();
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setSending(false);
       focusInput();

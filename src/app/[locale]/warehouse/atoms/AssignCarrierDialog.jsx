@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import * as yup from "yup";
 import { toast } from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { OrderStatus } from "../../orders/tabs/OrderTab";
 //cityId - districtId - customerName - phoneNumber - address - packageType - size
 // --- Carrier Configuration ---    
@@ -535,9 +535,9 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                 });
 
                 setApiErrors(newApiErrors);
-                toast.error(responseData.message || t("assign.fixErrorsDetected"));
+                handleApiError(error, responseData.message || t("assign.fixErrorsDetected"));
             } else {
-                toast.error(error.message || t("common.error"));
+                handleApiError(error, error.message || t("common.error"));
             }
         } finally {
             setUpdating(false);
@@ -567,7 +567,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
             onClose();
             onConfirm?.(orderIds, res?.data);
         } catch (error) {
-            toast.error(error.response?.data?.message || t("modal.assignFailed"));
+            handleApiError(error, error.response?.data?.message || t("modal.assignFailed"));
         } finally {
             setLoading(false);
         }

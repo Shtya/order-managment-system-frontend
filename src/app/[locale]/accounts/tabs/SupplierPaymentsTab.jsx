@@ -13,7 +13,7 @@ import {
     Wallet,
     CheckCircle2
 } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 
 import Button_ from "@/components/atoms/Button";
@@ -114,7 +114,7 @@ export default function SupplierPaymentsTab({ onRefresh }) {
             onRefresh?.();
         } catch (err) {
             console.error("Error creating payment:", err);
-            toast.error(err.response?.data?.message || t("messages.saveFailed"));
+            handleApiError(err, err.response?.data?.message || t("messages.saveFailed"));
         }
     };
 

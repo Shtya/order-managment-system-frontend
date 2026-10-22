@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Button_ from "@/components/atoms/Button";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -211,7 +211,7 @@ export default function EmployeePerformanceDashboardPage() {
       });
     } catch (error) {
       console.error(error);
-      toast.error(t("errors.fetchFailed"));
+      handleApiError(error, t("errors.fetchFailed"));
     } finally {
       setLoading(false);
     }

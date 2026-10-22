@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 
 /**
  * Reusable hook for exporting data as Excel (Blob) from the server.
@@ -55,7 +55,7 @@ export function useExport() {
 			console.error("Export failed:", error);
 			toast.dismiss(toastId);
 			const errorMsg = error.response?.data?.message || t("failed") || "Export failed";
-			toast.error(errorMsg);
+			handleApiError(error, errorMsg);
 		} finally {
 			setExportLoading(false);
 		}

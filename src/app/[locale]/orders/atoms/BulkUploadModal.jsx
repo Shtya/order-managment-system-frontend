@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { cn } from "@/utils/cn";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 
 /* ─── Step indicator dot ─────────────────────────────────────────────────── */
@@ -72,7 +72,7 @@ export default function BulkUploadModal({
 			URL.revokeObjectURL(url);
 			toast.success(tx("templateDownloaded"));
 		} catch (err) {
-			toast.error(err.response?.data?.message || tx("templateDownloadFailed"));
+			handleApiError(err, err.response?.data?.message || tx("templateDownloadFailed"));
 		} finally {
 			setDownloadLoading(false);
 		}
@@ -148,7 +148,7 @@ export default function BulkUploadModal({
 			} catch {
 				/* keep fallback */
 			}
-			toast.error(errorMessage);
+			handleApiError(err, errorMessage);
 		} finally {
 			setUploading(false);
 		}

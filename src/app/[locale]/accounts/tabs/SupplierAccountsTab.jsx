@@ -21,7 +21,7 @@ import {
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
@@ -91,7 +91,7 @@ export default function SupplierAccountsTab() {
       });
     } catch (err) {
       console.error("Error fetching suppliers:", err);
-      toast.error(t("supplierAccounts.fetchError"));
+      handleApiError(err, t("supplierAccounts.fetchError"));
     } finally {
       setLoading(false)
     }
@@ -604,7 +604,7 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, rou
       });
     } catch (err) {
       console.error("Error fetching closing preview:", err);
-      toast.error(t("supplierAccounts.fetchInvoicesError"));
+      handleApiError(err, t("supplierAccounts.fetchInvoicesError"));
     } finally {
       setLoading(false);
     }
@@ -628,7 +628,7 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, rou
       onClose();
     } catch (err) {
       console.error("Error closing period:", err);
-      toast.error(err?.response?.data?.message || tCommon("error"));
+      handleApiError(err, err?.response?.data?.message || tCommon("error"));
     } finally {
       setClosingLoading(false);
     }
@@ -710,7 +710,7 @@ function ClosingHistoryModal({ supplier, onClose, t, tCommon }) {
       setHistory(res.data.records || []);
     } catch (err) {
       console.error("Error fetching closing history:", err);
-      toast.error(t("supplierAccounts.fetchError"));
+      handleApiError(err, t("supplierAccounts.fetchError"));
     } finally {
       setLoading(false);
     }
@@ -762,7 +762,7 @@ function ClosingHistoryModal({ supplier, onClose, t, tCommon }) {
 
     } catch (err) {
       console.error("Error fetching/printing closing details:", err);
-      toast.error(t("supplierAccounts.fetchInvoicesError"));
+      handleApiError(err, t("supplierAccounts.fetchInvoicesError"));
     } finally {
       setPrintingId(null);
     }

@@ -14,7 +14,7 @@ import Button_ from "@/components/atoms/Button";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import ActionButtons from "@/components/atoms/Actions";
 import { Button } from "@/components/ui/button";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import toast from "react-hot-toast";
@@ -329,7 +329,7 @@ export default function RejectedTab({ resetToken }) {
         fetchOrders();
       } catch (error) {
         console.error("Error retrying order", error);
-        toast.error(error.response?.data?.message || t("messages.retryError") || "Error re-confirming order");
+        handleApiError(error, error.response?.data?.message || t("messages.retryError") || "Error re-confirming order");
       } finally {
         setRetrying((prev) => ({ ...prev, [order.id]: false }));
       }

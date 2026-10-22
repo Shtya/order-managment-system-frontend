@@ -1,4 +1,4 @@
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -45,7 +45,7 @@ export function useSmsIntegration(provider, integrationStatus, onRefreshStatus) 
             await api.post(`/sms/integrations/${provider.code}/toggle-active`, { isActive: newStatus });
             onRefreshStatus?.();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setToggling(false);
         }
@@ -133,7 +133,7 @@ export function useSmsSettings(providerCode, { onClose, onSaved } = {}) {
         } catch (e) {
             const msg = normalizeAxiosError(e);
             setError(msg);
-            toast.error(msg);
+            handleApiError(e, msg);
         } finally {
             setSaving(false);
         }

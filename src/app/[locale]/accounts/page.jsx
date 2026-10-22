@@ -11,7 +11,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/atoms/Pageheader";
 import { Info, BarChart2, DollarSign, Wallet, CheckCircle, Plus, Building2, TrendingUp, Calendar, Package, Settings, RefreshCw, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Flatpickr from "react-flatpickr";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 // Import tabs
@@ -335,7 +335,7 @@ export default function Accounts() {
                         fetchCategories();
                     } catch (err) {
                         console.error("Error deleting category:", err);
-                        toast.error(err?.response?.data?.message || t("manualExpenses.messages.categoryDeleteError") || "Error deleting category");
+                        handleApiError(err, err?.response?.data?.message || t("manualExpenses.messages.categoryDeleteError") || "Error deleting category");
                         throw err;
                     }
                 }}

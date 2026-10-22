@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useExport } from "@/hook/useExport";
 import { useDebounce } from "@/hook/useDebounce";
@@ -87,7 +87,7 @@ export default function ManageCausesPage() {
                     per_page: res.data.per_page ?? limit,
                 });
             } catch (e) {
-                toast.error(normalizeAxiosError(e));
+                handleApiError(e, normalizeAxiosError(e));
             } finally {
                 setIsLoading(false);
             }
@@ -136,7 +136,7 @@ export default function ManageCausesPage() {
             toast.success(t("toast.deleted"));
             afterMutate();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setDeleting(false);
         }

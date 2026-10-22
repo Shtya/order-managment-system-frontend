@@ -32,7 +32,7 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 import { useExport } from "@/hook/useExport";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatMessagePreview } from "@/utils/whatsapp-healper";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import ClientModal from "./atoms/ClientModal";
 import BulkUploadModal from "../orders/atoms/BulkUploadModal";
@@ -125,7 +125,7 @@ export default function CustomersPage() {
         setLimit(Number(res.data?.per_page || l));
       } catch (error) {
         const message = error.response?.data?.message || t("toast.fetchFailed");
-        toast.error(Array.isArray(message) ? message[0] : message);
+        handleApiError(error, Array.isArray(message) ? message[0] : message);
       } finally {
         setLoading(false);
       }
@@ -213,7 +213,7 @@ export default function CustomersPage() {
       refresh({ page, limit });
     } catch (error) {
       const message = error.response?.data?.message || t("toast.deleteFailed");
-      toast.error(Array.isArray(message) ? message[0] : message);
+      handleApiError(error, Array.isArray(message) ? message[0] : message);
     } finally {
       setDeleteLoading(false);
     }

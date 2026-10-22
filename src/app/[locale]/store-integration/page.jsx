@@ -28,7 +28,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import { useSocket } from "@/context/SocketContext";
@@ -195,7 +195,7 @@ export default function StoresIntegrationPage() {
       toast.success(t("messages.syncStarted"));
       await fetchStores(lastTableParams.current);
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     }
   };
 
@@ -204,7 +204,7 @@ export default function StoresIntegrationPage() {
       await api.patch(`/stores/${store.id}`, { isActive: !store.isActive });
       toast.success(t("messages.statusUpdated"));
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     }
     fetchStores(lastTableParams.current);
   };
@@ -217,7 +217,7 @@ export default function StoresIntegrationPage() {
         if (cancelEndpoint) await api.patch(cancelEndpoint);
         toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       }
       fetchStores(lastTableParams.current);
     } else {
@@ -236,7 +236,7 @@ export default function StoresIntegrationPage() {
       toast.success(t("messages.deleteSuccess"));
       fetchStores(lastTableParams.current);
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     }
   };
 

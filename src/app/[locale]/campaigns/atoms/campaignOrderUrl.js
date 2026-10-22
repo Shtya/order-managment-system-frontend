@@ -3,6 +3,7 @@ export const ORDER_TOKEN_PLACEHOLDER = "{{campaign.orderToken}}";
 export const ORDER_URL_PLACEHOLDER = "{{campaign.orderUrl}}";
 
 const ORDER_LINK_VAR_RE = /\{\{\s*campaign\.(orderToken|orderUrl)\s*\}\}/i;
+const EMAIL_ORDER_URL_VAR_RE = /\{\{\s*campaign\.orderUrl\s*\}\}/i;
 const CUSTOM_BUTTON_TYPES = new Set(["CUSTOM", "QUICK_REPLY"]);
 
 function rawVarValue(input) {
@@ -25,6 +26,37 @@ export function campaignOrderPageBaseUrl() {
 export function textHasOrderLinkVariable(text) {
   const value = String(text ?? "");
   return ORDER_LINK_VAR_RE.test(value) || value.includes(ORDER_FOLLOWUP_URL_PLACEHOLDER);
+}
+
+function emailValueHasOrderUrl(value, visited = new Set()) {
+  if (typeof value === "string")
+    return (
+      EMAIL_ORDER_URL_VAR_RE.test(value) ||
+      value.includes(ORDER_FOLLOWUP_URL_PLACEHOLDER)
+    );
+  if (!value || typeof value !== "object" || visited.has(value)) return false;
+  visited.add(value);
+  if (
+    value.type === "variable" &&
+    String(value.attrs?.id || "").toLowerCase() === "campaign.orderurl"
+  )
+    return true;
+  return Object.values(value).some((item) =>
+    emailValueHasOrderUrl(item, visited),
+  );
+}
+
+export function inspectEmailOrderLink(email) {
+  const hasOrderUrlVariable = emailValueHasOrderUrl(email);
+  return {
+    hasOrderUrlVariable,
+    hasOrderUrlSlot: hasOrderUrlVariable,
+    quickReplies: [],
+    hasQuickReply: false,
+    orderLinkAvailable: hasOrderUrlVariable,
+    qrOnly: false,
+    urlOnly: hasOrderUrlVariable,
+  };
 }
 
 function collectVariableValues(vars) {

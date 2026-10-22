@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Plus, User2 } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AddEditSenderModal } from "./AddEditSenderModal";
@@ -31,7 +31,7 @@ export function SenderSelect({ provider, integrationId, showIntegrationSelect = 
             const list = Array.isArray(data) ? data : data?.integrations || [];
             setIntegrations(list);
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setLoadingIntegrations(false);
         }
@@ -50,7 +50,7 @@ export function SenderSelect({ provider, integrationId, showIntegrationSelect = 
                 if (def?.id) onChange(def.id);
             }
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setLoading(false);
         }

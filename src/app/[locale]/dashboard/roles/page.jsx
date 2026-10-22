@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import PermissionsSelector from "@/components/atoms/PermissionsSelector";
 
@@ -397,7 +397,7 @@ export function useRoles() {
 			setRoles(data);
 			return data;
 		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to fetch roles');
+			handleApiError(error, error.response?.data?.message || 'Failed to fetch roles');
 			throw error;
 		} finally {
 			setLoading(false);
@@ -415,7 +415,7 @@ export function useRoles() {
 			setPermissions(data);
 			return data;
 		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to fetch permissions');
+			handleApiError(error, error.response?.data?.message || 'Failed to fetch permissions');
 			throw error;
 		}t
 	}, []);
@@ -431,7 +431,7 @@ export function useRoles() {
 			toast.success(t("createRoleSuccess"));
 			return data;
 		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to create role');
+			handleApiError(error, error.response?.data?.message || 'Failed to create role');
 			throw error;
 		} finally {
 			setLoading(false);
@@ -446,7 +446,7 @@ export function useRoles() {
 			toast.success(t("updateRoleSuccess"));
 			return data;
 		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to update role');
+			handleApiError(error, error.response?.data?.message || 'Failed to update role');
 			throw error;
 		} finally {
 			setLoading(false);
@@ -460,7 +460,7 @@ export function useRoles() {
 			await api.delete(`/roles/${id}`);
 			toast.success(t("deleteRoleSuccess"));
 		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to delete role');
+			handleApiError(error, error.response?.data?.message || 'Failed to delete role');
 			throw error;
 		} finally {
 			setLoading(false);

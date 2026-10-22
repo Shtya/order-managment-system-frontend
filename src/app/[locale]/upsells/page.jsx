@@ -35,7 +35,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import ProductFilter from "@/components/atoms/ProductFilter";
@@ -138,7 +138,7 @@ export default function UpsellsPage() {
       setStats(res.data);
     } catch (error) {
       console.error(error);
-      toast.error(t("messages.statsFailed"));
+      handleApiError(error, t("messages.statsFailed"));
     }
   };
   useEffect(() => {
@@ -159,7 +159,7 @@ export default function UpsellsPage() {
       });
     } catch (e) {
       console.error(e)
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setLoading(false);
     }

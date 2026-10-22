@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 
 function unwrapTemplates(data) {
@@ -56,7 +56,7 @@ export default function SegmentTemplatePickerDialog({ open, onOpenChange, onSele
       try {
         await fetchTemplates({ next: null, append: false });
       } catch (error) {
-        if (!cancelled) toast.error(normalizeAxiosError(error) || t("toast.templatesFailed"));
+        if (!cancelled) handleApiError(error, normalizeAxiosError(error) || t("toast.templatesFailed"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -72,7 +72,7 @@ export default function SegmentTemplatePickerDialog({ open, onOpenChange, onSele
     try {
       await fetchTemplates({ next: cursor, append: true });
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.templatesFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.templatesFailed"));
     } finally {
       setLoadingMore(false);
     }
@@ -85,7 +85,7 @@ export default function SegmentTemplatePickerDialog({ open, onOpenChange, onSele
         const res = await api.get(`/client-segment-templates/${tpl.id}`);
         row = res.data?.id ? res.data : res.data?.data || res.data;
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("toast.templatesFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("toast.templatesFailed"));
         return;
       }
     }

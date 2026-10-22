@@ -11,7 +11,7 @@ import Button_, { PrimaryBtn } from "@/components/atoms/Button";
 import { Bone } from "@/components/atoms/BannerSkeleton";
 import { cn } from "@/utils/cn";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import StepGeneral from "./StepGeneral";
@@ -110,7 +110,7 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
         if (cancelled) return;
         reset(mapAgentToForm(row));
       } catch (error) {
-        if (!cancelled) toast.error(normalizeAxiosError(error) || t("wizard.loadFailed"));
+        if (!cancelled) handleApiError(error, normalizeAxiosError(error) || t("wizard.loadFailed"));
       } finally {
         if (!cancelled) setPageLoading(false);
       }
@@ -171,7 +171,7 @@ export default function AgentWizard({ mode = "create", agentId = null }) {
       toast.success(t("wizard.saved"));
       router.push(LIST_HREF);
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("wizard.saveFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("wizard.saveFailed"));
     } finally {
       setSaving(false);
     }

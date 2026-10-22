@@ -66,7 +66,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import Flatpickr from "react-flatpickr";
 
@@ -136,7 +136,7 @@ function LogsModal({ isOpen, onClose, invoiceId, t }) {
 				setLogs(res.data || []);
 			} catch (e) {
 				console.error(e);
-				toast.error(e?.response?.data?.message || t("messages.logsFailed"));
+				handleApiError(e, e?.response?.data?.message || t("messages.logsFailed"));
 			} finally {
 				setLoading(false);
 			}
@@ -384,7 +384,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 				setSafe(res.data.invoice?.safe);
 			} catch (e) {
 				console.error(e);
-				toast.error(e?.response?.data?.message || t("messages.previewFailed"));
+				handleApiError(e, e?.response?.data?.message || t("messages.previewFailed"));
 			} finally {
 				setLoading(false);
 			}
@@ -1424,7 +1424,7 @@ export default function PurchasesPage() {
 			setStats(res.data);
 		} catch (error) {
 			console.error(error);
-			toast.error(t("messages.statsFailed"));
+			handleApiError(error, t("messages.statsFailed"));
 		}
 	};
 
@@ -1459,7 +1459,7 @@ export default function PurchasesPage() {
 			});
 		} catch (error) {
 			console.error(error);
-			toast.error(t("messages.fetchFailed"));
+			handleApiError(error, t("messages.fetchFailed"));
 		} finally {
 			setLoading(false);
 		}
@@ -1514,7 +1514,7 @@ export default function PurchasesPage() {
 			fetchPurchases(pager.current_page, pager.per_page);
 		} catch (error) {
 			console.error(error);
-			toast.error(t("messages.paidAmountFailed"));
+			handleApiError(error, t("messages.paidAmountFailed"));
 		}
 	};
 
@@ -1539,7 +1539,7 @@ export default function PurchasesPage() {
 			link.remove();
 		} catch (error) {
 			console.error(error);
-			toast.error(t("messages.exportFailed"));
+			handleApiError(error, t("messages.exportFailed"));
 		}
 	};
 
@@ -1558,7 +1558,7 @@ export default function PurchasesPage() {
 			}
 		} catch (error) {
 			console.error(error);
-			toast.error(t("messages.fetchDetailsFailed"));
+			handleApiError(error, t("messages.fetchDetailsFailed"));
 			// Close modal or just stop loading on error
 			setDetailsModal(prev => ({ ...prev, isLoading: false }));
 			updateUrlWithId(null);

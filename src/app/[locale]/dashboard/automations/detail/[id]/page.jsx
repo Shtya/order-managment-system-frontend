@@ -7,7 +7,7 @@ import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 import { useTranslations } from "next-intl";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useFlowStore } from "@/hook/useFlowStore";
 import { TopToolbar } from "@/app/[locale]/automations/atoms/TopToolbar";
@@ -131,7 +131,7 @@ export default function ViewAutomationPage() {
       } catch (err) {
         console.error("Failed to fetch automation:", err);
         setError(t("toolbar.failedToLoadData"));
-        toast.error(t("toolbar.failedToLoadData"));
+        handleApiError(err, t("toolbar.failedToLoadData"));
       } finally {
         setLoading(false);
       }

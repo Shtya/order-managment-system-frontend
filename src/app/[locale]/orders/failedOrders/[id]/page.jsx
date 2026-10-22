@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
@@ -424,7 +424,7 @@ export default function FailedOrderDetailsPage() {
             setSelectedSkus(oosSkus || []);
         } catch (err) {
             const message = error?.response?.data?.message || t('errors.fetchFailed');
-            toast.error(message);
+            handleApiError(err, message);
         } finally {
             setLoading(false);
         }
@@ -453,7 +453,7 @@ export default function FailedOrderDetailsPage() {
             fetchData();
         } catch (error) {
             const message = error?.response?.data?.message || t('messages.retryFailed');
-            toast.error(message);
+            handleApiError(error, message);
         } finally {
             setRetrying(false);
         }
@@ -472,7 +472,7 @@ export default function FailedOrderDetailsPage() {
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, data: res.data } }));
         } catch (err) {
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, error: true } }));
-            toast.error(normalizeAxiosError(err) || t('errors.externalFetchFailed'));
+            handleApiError(err, normalizeAxiosError(err) || t('errors.externalFetchFailed'));
         }
     };
 
@@ -492,7 +492,7 @@ export default function FailedOrderDetailsPage() {
             setSkuSelectorModal(prev => ({ ...prev, loading: false, product: res.data }));
         } catch (err) {
             setSkuSelectorModal(prev => ({ ...prev, loading: false, error: normalizeAxiosError(err) }));
-            toast.error(normalizeAxiosError(err) || t('errors.fetchProductFailed'));
+            handleApiError(err, normalizeAxiosError(err) || t('errors.fetchProductFailed'));
         }
     };
 

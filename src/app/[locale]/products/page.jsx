@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 
 import useProductsTab, { ProductViewModal, SkuPrintModal, ProductOrdersByStatusModal, ProductCancelCausesModal } from "./ProductsTab";
@@ -304,7 +304,7 @@ export default function ProductsPage() {
 			try {
 				await loadLookups();
 			} catch (e) {
-				toast.error(normalizeAxiosError(e));
+				handleApiError(e, normalizeAxiosError(e));
 			}
 		})();
 	}, []);
@@ -338,7 +338,7 @@ export default function ProductsPage() {
 			const res = await api.get(`${endpoint}/${id}`);
 			setViewProduct(res.data);
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 			setViewOpen(false);
 		} finally {
 			setViewLoading(false);
@@ -369,7 +369,7 @@ export default function ProductsPage() {
 				current.fetchData({ page: 1, per_page: current.pager.per_page });
 			}
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 		} finally {
 			setDeleting(false);
 		}
@@ -483,7 +483,7 @@ export default function ProductsPage() {
 			setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, data: res.data } }));
 		} catch (err) {
 			setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, error: true } }));
-			toast.error(normalizeAxiosError(err) || tFailed('errors.externalFetchFailed'));
+			handleApiError(err, normalizeAxiosError(err) || tFailed('errors.externalFetchFailed'));
 		}
 	};
 
@@ -857,7 +857,7 @@ function ExportToStoreModal({ open, onOpenChange, selectedIds, activeTab = "prod
 			setStores(storesRes.data || []);
 			setItems(itemsRes.data?.records || []);
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 		} finally {
 			setLoading(false);
 		}

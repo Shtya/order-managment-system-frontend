@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddProductPage from '../../new/page';
-import api from '@/utils/api';
+import api, { handleApiError } from '@/utils/api';
 import { useTranslations } from 'next-intl';
 import { setDocumentTitle } from '@/utils/documentTitle';
 
@@ -32,7 +32,7 @@ export default function EditProductPage() {
 				const res = await api.get(`/products/${productId}`);
 				setProduct(res.data);
 			} catch (e) {
-				toast.error(normalizeAxiosError(e));
+				handleApiError(e, normalizeAxiosError(e));
 			} finally {
 				setLoading(false);
 			}

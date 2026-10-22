@@ -7,7 +7,7 @@ import { CheckCircle, XCircle } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { PrimaryBtn, GhostBtn } from "@/components/atoms/Button";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
@@ -78,7 +78,7 @@ export function ReviewCauseDialog({ cause, mode, open, onClose, onSaved }) {
                 onSaved?.();
                 onClose?.();
             } catch (e) {
-                toast.error(normalizeAxiosError(e));
+                handleApiError(e, normalizeAxiosError(e));
             }
         },
         [cause, isAccept, onClose, onSaved, t],

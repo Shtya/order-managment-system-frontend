@@ -4,7 +4,7 @@ import { Edit3, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -42,7 +42,7 @@ export default function FeaturesTab() {
             const { data } = await api.get("/extra-features/features");
             setFeatures(data);
         } catch (error) {
-            toast.error(tf("messages.fetchFailed"));
+            handleApiError(error, tf("messages.fetchFailed"));
         } finally {
             setLoading(false);
         }
@@ -83,7 +83,7 @@ export default function FeaturesTab() {
             setIsEditOpen(false);
             fetchFeatures(); // Refresh list
         } catch (error) {
-            toast.error(error?.response?.data?.message || tf("messages.updateFailed"));
+            handleApiError(error, error?.response?.data?.message || tf("messages.updateFailed"));
         } finally {
             setSaving(false);
         }

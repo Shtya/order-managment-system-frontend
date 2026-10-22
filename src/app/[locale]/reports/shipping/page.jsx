@@ -17,7 +17,7 @@ import {
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import toast from "react-hot-toast";
@@ -95,7 +95,7 @@ export default function ShippingReport() {
             });
         } catch (err) {
             console.error("Error fetching city report:", err);
-            toast.error(tCommon("manualExpenses.messages.fetchError"));
+            handleApiError(err, tCommon("manualExpenses.messages.fetchError"));
         } finally {
             setLoading(false);
         }

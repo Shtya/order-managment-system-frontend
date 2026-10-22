@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -507,7 +507,7 @@ export default function GettingStartedStatisticsPage() {
             setOverview(data);
         } catch (err) {
             console.error("Overview fetch error:", err);
-            toast.error(tCommon("api.error"));
+            handleApiError(err, tCommon("api.error"));
         } finally {
             setOverviewLoading(false);
         }
@@ -520,7 +520,7 @@ export default function GettingStartedStatisticsPage() {
             setItems(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error("Items fetch error:", err);
-            toast.error(tCommon("api.error"));
+            handleApiError(err, tCommon("api.error"));
         } finally {
             setItemsLoading(false);
         }
@@ -533,7 +533,7 @@ export default function GettingStartedStatisticsPage() {
             setAllSteps(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error("Steps fetch error:", err);
-            toast.error(tCommon("api.error"));
+            handleApiError(err, tCommon("api.error"));
         } finally {
             setStepsLoading(false);
         }

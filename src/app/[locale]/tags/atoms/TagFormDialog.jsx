@@ -7,7 +7,7 @@ import { Loader2, Pencil, Tags } from "lucide-react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import { PrimaryBtn, GhostBtn } from "@/components/atoms/Button";
@@ -167,7 +167,7 @@ export function TagFormDialog({ tag, open, onClose, onSaved, target = "order", n
         onSaved?.();
         onClose?.();
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       }
     },
     [isEdit, tag, onClose, onSaved, t, target],

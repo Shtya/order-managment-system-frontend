@@ -7,7 +7,7 @@ import { Check, Copy, Image as ImageIcon, Info, Link2, Puzzle, Trash2, X } from 
 import { cn } from "@/utils/cn";
 import { ImagePreviewModal } from "@/components/atoms/ImagePreviewModal";
 import { motion } from "framer-motion";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Table from "@/components/atoms/Table";
 import { ActionButtons } from "@/components/atoms/Actions";
 import Button_ from "@/components/atoms/Button";
@@ -386,7 +386,7 @@ export default function McpConnectionsTab({ guideOpen = false, onGuideOpenChange
         e?.response?.data?.error ??
         e?.message ??
         t("loadFailed");
-      toast.error(Array.isArray(msg) ? msg.join(", ") : String(msg));
+      handleApiError(e, Array.isArray(msg) ? msg.join(", ") : String(msg));
     } finally {
       setLoading(false);
     }
@@ -417,7 +417,7 @@ export default function McpConnectionsTab({ guideOpen = false, onGuideOpenChange
         e?.response?.data?.error ??
         e?.message ??
         t("revokeFailed");
-      toast.error(Array.isArray(msg) ? msg.join(", ") : String(msg));
+      handleApiError(e, Array.isArray(msg) ? msg.join(", ") : String(msg));
     } finally {
       setRevoking(false);
     }

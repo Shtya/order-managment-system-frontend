@@ -10,7 +10,7 @@ import {
     CreditCard
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import Table from "@/components/atoms/Table";
 import { ActionButtons } from "@/components/atoms/Actions";
@@ -42,7 +42,7 @@ export default function PurchasedFeaturesTab() {
             const { data } = await api.get("/extra-features/user");
             setFeatures(data);
         } catch (error) {
-            toast.error(tf("messages.fetchFailed") || "Error fetching features");
+            handleApiError(error, tf("messages.fetchFailed") || "Error fetching features");
         } finally {
             setLoading(false);
         }
@@ -65,7 +65,7 @@ export default function PurchasedFeaturesTab() {
                 toast.error(t("purchasedFeaturesTab.messages.checkoutUrlNotFound"));
             }
         } catch (error) {
-            toast.error(error?.response?.data?.message || t("purchasedFeaturesTab.messages.purchaseFailed"));
+            handleApiError(error, error?.response?.data?.message || t("purchasedFeaturesTab.messages.purchaseFailed"));
         } finally {
             setPurchasingId(null);
         }

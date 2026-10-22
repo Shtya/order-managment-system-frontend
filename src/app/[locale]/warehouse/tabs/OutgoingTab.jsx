@@ -44,7 +44,7 @@ import ActionButtons from "@/components/atoms/Actions";
 import { toast } from "react-hot-toast";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { useDebounce } from "@/hook/useDebounce";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useClipboard } from "@/hook/useClipboard";
 import { useAuth } from "@/context/AuthContext";
@@ -1294,7 +1294,7 @@ export function ScanOutgoingSubtab({
 		} catch (error) {
 			toast.dismiss();
 			console.error("Failed to create manifest", error);
-			toast.error(error.response?.data?.message || t("scan.messages.errorOccurred"));
+			handleApiError(error, error.response?.data?.message || t("scan.messages.errorOccurred"));
 		}
 	};
 
@@ -1734,7 +1734,7 @@ function OutgoingFilesSubtab({
         
     } catch (error) {
         console.error("Error downloading manifest", error);
-        toast.error(t("messages.errorDownloadingManifest") || "Error downloading manifest");
+        handleApiError(error, t("messages.errorDownloadingManifest") || "Error downloading manifest");
     } finally {
         setDownloading((p) => ({ ...p, [id]: false }));
     }

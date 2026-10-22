@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 
 const knowledgeSchema = (t) =>
@@ -95,7 +95,7 @@ export default function KnowledgeFormDialog({
         }
       } catch (error) {
         if (!cancelled) {
-          toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+          handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
         }
       } finally {
         if (!cancelled) setAgentsLoading(false);
@@ -141,7 +141,7 @@ export default function KnowledgeFormDialog({
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("knowledge.toast.saveFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("knowledge.toast.saveFailed"));
     }
   };
 

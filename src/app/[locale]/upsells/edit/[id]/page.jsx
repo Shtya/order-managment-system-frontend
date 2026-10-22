@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import UpsellsAddPage from "../../add/page";
 
@@ -32,7 +32,7 @@ export default function UpsellEditPage() {
         const res = await api.get(`/upsells/${upsellId}`);
         setUpsell(res.data);
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
         setUpsell(null);
       } finally {
         setLoading(false);

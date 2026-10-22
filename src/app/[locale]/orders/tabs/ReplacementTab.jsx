@@ -15,7 +15,7 @@ import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Flatpickr from "react-flatpickr";
 
 
@@ -231,7 +231,7 @@ export function ReplacementTab({ statuses }) {
 				});
 			} catch (e) {
 				console.error(e);
-				toast.error(t("replacement.errors.fetchFailed"));
+				handleApiError(e, t("replacement.errors.fetchFailed"));
 			} finally {
 				setLoading(false);
 			}

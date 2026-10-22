@@ -9,7 +9,7 @@ import { formatDateWithFormat, useDateLang, getNaturalDayName } from "@/componen
 import { ListMessageForm } from "../../whatsapp/atoms/chats/ListMessageModal";
 import { InteractiveMessageForm } from "../../whatsapp/atoms/chats/InteractiveMessageModal";
 import { businessMessageBuilders } from "./businessMessageBuilders";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -107,7 +107,7 @@ function CancelCausesConfigField({ field, value, onChange, error, t }) {
             } catch (err) {
                 console.error("Failed to fetch cancel causes:", err);
                 if (!cancelled) {
-                    toast.error(t("businessConfig.cancelCausesLoadError"));
+                    handleApiError(err, t("businessConfig.cancelCausesLoadError"));
                     setAvailableCauses([]);
                 }
             } finally {

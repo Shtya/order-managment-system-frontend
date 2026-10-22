@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useRouter } from "@/i18n/navigation";
 import ActionButtons from "@/components/atoms/Actions";
@@ -77,7 +77,7 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
       });
     } catch (e) {
       if (reqId !== requestIdRef.current) return;
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       setPager((p) => ({ ...p, records: [] }));
     } finally {
       if (reqId === requestIdRef.current) setLoading(false);

@@ -1,4 +1,4 @@
-import api, { getOnboardingStatus } from "@/utils/api";
+import api, { getOnboardingStatus, handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useTranslations } from "next-intl";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
@@ -327,7 +327,7 @@ export function OrdersSettingsProvider({ children }) {
       
     } catch (e) {
       console.error(e);
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setSaving(false);
     }
@@ -351,7 +351,7 @@ export function OrdersSettingsProvider({ children }) {
         onSuccess?.();
       
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setSaving(false);
     }

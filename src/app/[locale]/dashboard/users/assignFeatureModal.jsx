@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CreditCard, CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,7 +43,7 @@ export default function AssignFeatureModal({ isOpen, onClose, user, onRefresh })
             setAllFeatures(allRes.data);
             setUserFeatures(userRes.data.records || []);
         } catch (error) {
-            toast.error(tf("messages.fetchFailed"));
+            handleApiError(error, tf("messages.fetchFailed"));
         } finally {
             setLoadingData(false);
         }
@@ -72,7 +72,7 @@ export default function AssignFeatureModal({ isOpen, onClose, user, onRefresh })
             onRefresh?.();
             onClose();
         } catch (error) {
-            toast.error(error?.response?.data?.message || tf("messages.assignFailed"));
+            handleApiError(error, error?.response?.data?.message || tf("messages.assignFailed"));
         } finally {
             setSaving(false);
         }

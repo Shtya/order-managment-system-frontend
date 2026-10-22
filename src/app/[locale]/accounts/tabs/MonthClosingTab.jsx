@@ -31,7 +31,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Button_ from "@/components/atoms/Button";
 import ActionButtons from "@/components/atoms/Actions";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
@@ -79,7 +79,7 @@ export default function MonthClosingTab() {
       });
     } catch (err) {
       console.error("Error fetching closings:", err);
-      toast.error(t("fetchError"));
+      handleApiError(err, t("fetchError"));
     } finally {
       setLoading(false);
     }
@@ -270,7 +270,7 @@ function NewClosingModal({ open, onClose, onSuccess, t, tCommon, formatCurrency 
       setPreview(res.data);
     } catch (err) {
       console.error("Error fetching preview:", err);
-      toast.error(err?.response?.data?.message || t("fetchPreviewError"));
+      handleApiError(err, err?.response?.data?.message || t("fetchPreviewError"));
     } finally {
       setLoading(false);
     }
@@ -577,7 +577,7 @@ function CompareMonthsModal({ open, onClose, t, tCommon, formatCurrency }) {
       setDataB(resB.data);
     } catch (err) {
       console.error("Error fetching comparison data:", err);
-      toast.error(t("compareError"));
+      handleApiError(err, t("compareError"));
     } finally {
       setLoading(false);
     }

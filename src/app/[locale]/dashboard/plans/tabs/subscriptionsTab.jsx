@@ -13,7 +13,7 @@ import {
   Infinity,
   Ban,
 } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Table, { FilterField } from "@/components/atoms/Table";
 import { ActionButtons } from "@/components/atoms/Actions";
 import { Badge } from "@/components/ui/badge";
@@ -118,9 +118,7 @@ export default function SubscriptionsTab() {
       });
     } catch (error) {
       console.error("Error fetching subscriptions:", error);
-      toast.error(
-        error?.response?.data?.message || t("messages.errorFetching"),
-      );
+      handleApiError(error, error?.response?.data?.message || t("messages.errorFetching"));
     } finally {
       setLoading(false);
     }
@@ -204,7 +202,7 @@ export default function SubscriptionsTab() {
 
       fetchSubscriptions();
     } catch (error) {
-      toast.error(t("messages.error"));
+      handleApiError(error, t("messages.error"));
     } finally {
       setIsCancelling(false);
     }

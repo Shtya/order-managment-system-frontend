@@ -21,7 +21,7 @@ import { TutorialSpotlight } from "@/components/atoms/TutorialSpotlight";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import Flatpickr from "react-flatpickr";
 
 
@@ -163,7 +163,7 @@ export function EmployeeStatisticsPage() {
 
         } catch (e) {
             console.error("Error fetching stats summary:", e);
-            toast.error(t("employeeStats.errors.fetchStatsFailed"));
+            handleApiError(e, t("employeeStats.errors.fetchStatsFailed"));
         }
     }, [t]);
 
@@ -182,7 +182,7 @@ export function EmployeeStatisticsPage() {
                 });
             } catch (e) {
                 console.error(e);
-                toast.error(t("employeeStats.errors.fetchFailed"));
+                handleApiError(e, t("employeeStats.errors.fetchFailed"));
             } finally {
                 setLoading(false);
             }

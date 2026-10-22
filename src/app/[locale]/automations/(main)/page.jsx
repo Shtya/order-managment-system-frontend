@@ -29,7 +29,7 @@ import {TutorialSpotlight} from "@/components/atoms/TutorialSpotlight";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import {
@@ -156,7 +156,7 @@ export default function AutomationsPage() {
         records: res.data?.records ?? [],
       });
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setLoading(false);
     }

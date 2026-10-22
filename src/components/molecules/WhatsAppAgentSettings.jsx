@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import Button_ from "@/components/atoms/Button";
 import AgentSelect from "@/components/molecules/AgentSelect";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 
@@ -151,7 +151,7 @@ export default function WhatsAppAgentSettings({ className }) {
             const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1 } });
             setAccounts(Array.isArray(res.data?.records) ? res.data.records : []);
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setAccountsLoading(false);
         }
@@ -224,7 +224,7 @@ export default function WhatsAppAgentSettings({ className }) {
             if (defaultDirty) refreshOrdersSettings();
             if (dirtyAccountIds.length) await fetchAccounts();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setSaving(false);
         }

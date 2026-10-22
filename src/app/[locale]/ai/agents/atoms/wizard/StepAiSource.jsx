@@ -17,7 +17,7 @@ import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { Link } from "@/i18n/navigation";
 import { dollor, dollorSign } from "@/utils/healpers";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import {
   AGENT_AI_SOURCE_HOSTED,
@@ -83,7 +83,7 @@ export default function StepAiSource({ control, watch, setValue }) {
       } catch (error) {
         if (!cancelled) {
           setProviders([]);
-          toast.error(normalizeAxiosError(error));
+          handleApiError(error, normalizeAxiosError(error));
         }
       } finally {
         if (!cancelled) setProvidersLoading(false);
@@ -107,7 +107,7 @@ export default function StepAiSource({ control, watch, setValue }) {
       } catch (error) {
         if (!cancelled) {
           setHostedModels([]);
-          toast.error(normalizeAxiosError(error));
+          handleApiError(error, normalizeAxiosError(error));
         }
       } finally {
         if (!cancelled) setHostedLoading(false);

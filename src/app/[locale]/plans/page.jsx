@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import TransactionTab from "../dashboard/plans/tabs/transactionTab";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -137,7 +137,7 @@ export function useSubscriptionsApi() {
         console.error(error);
         const message =
           error?.response?.data?.message || t("errors.subscribeFailed");
-        toast.error(Array.isArray(message) ? message[0] : message);
+        handleApiError(error, Array.isArray(message) ? message[0] : message);
         throw error;
       } finally {
         setLoading(false);
@@ -160,7 +160,7 @@ export function useSubscriptionsApi() {
       } catch (error) {
         const message =
           error?.response?.data?.message || t("errors.cancelFailed");
-        toast.error(Array.isArray(message) ? message[0] : message);
+        handleApiError(error, Array.isArray(message) ? message[0] : message);
         throw error;
       } finally {
         setLoading(false);

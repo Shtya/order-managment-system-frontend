@@ -33,7 +33,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDebounce } from "@/hook/useDebounce";
@@ -192,7 +192,7 @@ function RunningAutomationsContent() {
         per_page: res.data?.per_page || per_page,
       });
     } catch (e) {
-      toast.error(t("errorFetchingRuns"));
+      handleApiError(e, t("errorFetchingRuns"));
       console.error(e);
     } finally {
       setLoading(false);
@@ -234,7 +234,7 @@ function RunningAutomationsContent() {
       setError(null);
     } catch (e) {
       setSidebarCollapsed(false);
-      toast.error(t("errorFetchingDetails"));
+      handleApiError(e, t("errorFetchingDetails"));
       setError(t("errorFetchingDetails"));
       console.error(e);
     } finally {

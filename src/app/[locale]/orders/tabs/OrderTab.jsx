@@ -83,7 +83,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import api, { BASE_URL } from "@/utils/api";
+import api, { BASE_URL, handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import UserSelect, { avatarSrc } from "@/components/atoms/UserSelect";
 import Flatpickr from "react-flatpickr";
@@ -359,7 +359,7 @@ export default function OrdersTab({
       if (fetchStats) fetchStats();
     } catch (e) {
       console.error(e);
-      toast.error("Failed to cancel assignment");
+      handleApiError(e, "Failed to cancel assignment");
     } finally {
       setCancelLoading(false);
     }
@@ -372,7 +372,7 @@ export default function OrdersTab({
       callbacks.onSuccess?.(data?.data);
       return data;
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       callbacks.onError?.(e);
       return null;
     }
@@ -590,7 +590,7 @@ export default function OrdersTab({
       }
     } catch (e) {
       console.error("Error fetching orders", e);
-      toast.error(t("messages.errorFetchingOrders"));
+      handleApiError(e, t("messages.errorFetchingOrders"));
     } finally {
       setOrdersLoading(false);
     }
@@ -656,7 +656,7 @@ export default function OrdersTab({
       });
     } catch (e) {
       console.error("Error fetching grouped orders", e);
-      toast.error(t("messages.errorFetchingOrders"));
+      handleApiError(e, t("messages.errorFetchingOrders"));
     } finally {
       setGroupsLoading(false);
     }
@@ -742,7 +742,7 @@ export default function OrdersTab({
       });
     } catch (e) {
       console.error("Error fetching orders for date", e);
-      toast.error(t("messages.errorFetchingOrders"));
+      handleApiError(e, t("messages.errorFetchingOrders"));
       setDateOrders((prev) => ({
         ...prev,
         [date]: { ...(prev[date] || {}), loading: false },
@@ -3060,7 +3060,7 @@ function ShipmentLogsModal({ isOpen, onClose, order, shipment, logs, loading, on
       setPager(res.data);
     } catch (error) {
       console.error(error);
-      toast.error(t("messages.errorFetchingShipmentLogs"));
+      handleApiError(error, t("messages.errorFetchingShipmentLogs"));
     } finally {
       setLogsLoading(false);
     }
@@ -3208,7 +3208,7 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
       setPager(res.data);
     } catch (error) {
       console.error(error);
-      toast.error(t("messages.errorFetchingLogs") || "Failed to fetch automation runs.");
+      handleApiError(error, t("messages.errorFetchingLogs") || "Failed to fetch automation runs.");
     } finally {
       setLoading(false);
     }
@@ -3245,7 +3245,7 @@ export function OrderAutomationRunsModal({ isOpen, onClose, order }) {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Export Error:", error);
-      toast.error(tCommon("errorExporting") || "Export failed.");
+      handleApiError(error, tCommon("errorExporting") || "Export failed.");
     } finally {
       setExportLoading(false);
     }
@@ -3473,7 +3473,7 @@ export function OrderCancelCausesModal({ isOpen, onClose, order }) {
       setPager(res.data);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to fetch cancel causes history.");
+      handleApiError(error, "Failed to fetch cancel causes history.");
     } finally {
       setLoading(false);
     }
@@ -3647,7 +3647,7 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
       setPager(res.data);
     } catch (error) {
       console.error("Error fetching upsell history:", error);
-      toast.error(t("messages.errorFetching") || "Failed to fetch upsell history.");
+      handleApiError(error, t("messages.errorFetching") || "Failed to fetch upsell history.");
     } finally {
       setLoading(false);
     }
@@ -3683,7 +3683,7 @@ export function OrderUpsellHistoryModal({ isOpen, onClose, order }) {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Export Error:", error);
-      toast.error(tCommon("errorExporting") || "Export failed.");
+      handleApiError(error, tCommon("errorExporting") || "Export failed.");
     } finally {
       setExportLoading(false);
     }
@@ -4148,9 +4148,7 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
       onSuccess();
     } catch (error) {
       console.error("Error saving status:", error);
-      toast.error(
-        error.response?.data?.message || t("messages.errorSavingStatus"),
-      );
+      handleApiError(error, error.response?.data?.message || t("messages.errorSavingStatus"));
     } finally {
       setLoading(false);
     }
@@ -4321,7 +4319,7 @@ function OrderStatusHistoryModal({ isOpen, onClose, order }) {
         setHistory(response.data || []);
       } catch (err) {
         console.error("Error fetching order history:", err);
-        toast.error(t("messages.errorFetchingHistory") || "Error fetching history");
+        handleApiError(err, t("messages.errorFetchingHistory") || "Error fetching history");
       } finally {
         setLoading(false);
       }
@@ -4488,9 +4486,7 @@ function DeleteStatusModal({ isOpen, onClose, status, onSuccess }) {
       handleClose();
     } catch (error) {
       console.error("Error deleting status:", error);
-      toast.error(
-        error.response?.data?.message || t("messages.errorDeletingStatus"),
-      );
+      handleApiError(error, error.response?.data?.message || t("messages.errorDeletingStatus"));
     } finally {
       setLoading(false);
     }
@@ -4664,9 +4660,7 @@ function DeleteOrderModal({ isOpen, onClose, order, onSuccess }) {
       handleClose();
     } catch (error) {
       console.error("Error deleting order:", error);
-      toast.error(
-        error.response?.data?.message || t("messages.errorDeletingOrder"),
-      );
+      handleApiError(error, error.response?.data?.message || t("messages.errorDeletingOrder"));
     } finally {
       setLoading(false);
     }

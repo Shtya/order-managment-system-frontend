@@ -61,7 +61,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useLocale, useTranslations } from "next-intl";
 import TransactionTab from "./tabs/transactionTab";
@@ -178,7 +178,7 @@ function usePlans() {
 			return transformedPlans;
 		} catch (error) {
 			const message = error?.response?.data?.message || t("messages.fetchPlansFailed");
-			toast.error(message);
+			handleApiError(error, message);
 			throw error;
 		} finally {
 			setLoading(false);
@@ -236,7 +236,7 @@ function usePlans() {
 		} catch (error) {
 			// Handle validation errors or generic failures
 			const message = error?.response?.data?.message || t("messages.createPlanFailed");
-			toast.error(Array.isArray(message) ? message[0] : message);
+			handleApiError(error, Array.isArray(message) ? message[0] : message);
 			throw error;
 		} finally {
 			setLoading(false);
@@ -294,7 +294,7 @@ function usePlans() {
 			};
 		} catch (error) {
 			const message = error?.response?.data?.message || t("messages.updatePlanFailed");
-			toast.error(message);
+			handleApiError(error, message);
 			throw error;
 		} finally {
 			setLoading(false);
@@ -310,9 +310,9 @@ function usePlans() {
 		} catch (error) {
 			const message = error?.response?.data?.message || t("messages.deletePlanFailed");
 			if (String(message).includes("active transactions")) {
-				toast.error(t("messages.deletePlanHasActiveSubscriptions"));
+				handleApiError(error, t("messages.deletePlanHasActiveSubscriptions"));
 			} else {
-				toast.error(message);
+				handleApiError(error, message);
 			}
 			throw error;
 		} finally {

@@ -6,7 +6,7 @@ import { Loader2, ChevronRight, Layout } from "lucide-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useFlowStore } from "@/hook/useFlowStore";
 import { LeftSidebar } from "@/app/[locale]/automations/atoms/LeftSidebar";
@@ -202,7 +202,7 @@ export default function EditAutomationPage() {
       } catch (err) {
         console.error("Failed to fetch automation:", err);
         setError(t("toolbar.failedToLoadData"));
-        toast.error(t("toolbar.failedToLoadData"));
+        handleApiError(err, t("toolbar.failedToLoadData"));
       } finally {
         setLoading(false);
       }

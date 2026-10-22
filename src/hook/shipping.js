@@ -1,5 +1,5 @@
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useTranslations, useLocale } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -172,7 +172,7 @@ export function useShippingIntegration(company, integrationStatus, onRefreshStat
             onRefreshStatus?.();
             refreshShipping?.();
         } catch (e) {
-            toast.error(normalizeAxiosError(e));
+            handleApiError(e, normalizeAxiosError(e));
         } finally {
             setToggling(false);
         }
@@ -311,7 +311,7 @@ export function useShippingSettings(companyCode, callbacks = {}) {
             const nextStep = integrationData?.credentialsConfigured ? onClose : onFirstSetup;
             setTimeout(() => nextStep?.(), 900);
         } catch (e) {
-            toast.error(e?.response?.data?.message || t("settings.error"));
+            handleApiError(e, e?.response?.data?.message || t("settings.error"));
         } finally {
             setSaving(false);
         }
@@ -370,7 +370,7 @@ export function useShippingUsage(companyCode) {
                 }
             } catch (e) {
                 if (isMounted) {
-                    toast.error(e?.response?.data?.message || t("usage.error"));
+                    handleApiError(e, e?.response?.data?.message || t("usage.error"));
                 }
             } finally {
                 if (isMounted) setLoading(false);
@@ -411,7 +411,7 @@ export function useShippingWebhook(companyCode) {
             const res = await api.get(`/shipping/providers/${newCode || companyCode}/webhook-setup`);
             setData(res.data);
         } catch (e) {
-            toast.error(e?.response?.data?.message || t("webhook.errorFetch"));
+            handleApiError(e, e?.response?.data?.message || t("webhook.errorFetch"));
         } finally {
             setLoading(false);
         }
@@ -440,7 +440,7 @@ export function useShippingWebhook(companyCode) {
             await refreshShipping();
             toast.success(t("webhook.rotateSuccess"));
         } catch (e) {
-            toast.error(e?.response?.data?.message || t("webhook.errorRotate"));
+            handleApiError(e, e?.response?.data?.message || t("webhook.errorRotate"));
         } finally {
             setRotating(false);
         }

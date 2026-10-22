@@ -31,7 +31,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { cn } from "@/utils/cn";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -1166,7 +1166,7 @@ export function CampaignOrderPageTab({ settings, patch, t }) {
         );
       }
     } catch (error) {
-      toast.error(normalizeAxiosError(error));
+      handleApiError(error, normalizeAxiosError(error));
     } finally {
       setUploadingField("");
       if (input) input.value = "";
@@ -1813,7 +1813,7 @@ export function SyncSettingsTab({ settings, patch, tTutorial }) {
       const records = res.data?.records || [];
       setStores(Array.isArray(records) ? records : []);
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setStoresLoading(false);
     }
@@ -1839,7 +1839,7 @@ export function SyncSettingsTab({ settings, patch, tTutorial }) {
       );
       toast.success(t("sync.storeSyncUpdated"));
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setStoreSavingId(null);
     }

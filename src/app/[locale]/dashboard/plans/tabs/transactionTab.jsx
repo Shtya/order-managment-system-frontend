@@ -16,7 +16,7 @@ import toast from "react-hot-toast";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { avatarSrc } from "@/components/atoms/UserSelect";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
@@ -120,7 +120,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, catego
             });
         } catch (error) {
             console.error("Error fetching transactions:", error);
-            toast.error(error?.response?.data?.message || t("messages.errorFetchingTransactions"));
+            handleApiError(error, error?.response?.data?.message || t("messages.errorFetchingTransactions"));
         } finally {
             setLoading(false);
         }

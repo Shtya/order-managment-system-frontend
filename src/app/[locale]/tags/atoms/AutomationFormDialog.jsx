@@ -7,7 +7,7 @@ import { Check, ChevronDown, Eye, Loader2, Pencil, Plus, Trash2, Workflow } from
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import { PrimaryBtn, GhostBtn } from "@/components/atoms/Button";
@@ -345,7 +345,7 @@ export function AutomationFormDialog({
           shipmentStatuses,
         });
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       } finally {
         if (!cancelled) setLookupsLoading(false);
       }
@@ -426,7 +426,7 @@ export function AutomationFormDialog({
         onSaved?.();
         onClose?.();
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       }
     },
     [isEdit, automation, onClose, onSaved, t, readOnly],

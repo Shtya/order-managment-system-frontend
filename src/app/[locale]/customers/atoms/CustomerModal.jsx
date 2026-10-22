@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { User, Camera, UserPlus, UserCog, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { avatarSrc } from "@/components/atoms/UserSelect";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 
 const createSchema = (t) =>
   yup.object({
@@ -128,7 +128,7 @@ export default function CustomerModal({
         error.response?.data?.message ||
         error.message ||
         "Failed to save customer";
-      toast.error(Array.isArray(message) ? message[0] : message);
+      handleApiError(error, Array.isArray(message) ? message[0] : message);
     } finally {
       setIsSaving(false);
     }

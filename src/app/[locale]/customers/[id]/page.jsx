@@ -63,7 +63,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import OrderTab from "../../orders/tabs/OrderTab";
@@ -241,7 +241,7 @@ function AddressDialog({
       onSaved?.();
       onOpenChange(false);
     } catch (error) {
-      toast.error(normalizeAxiosError(error));
+      handleApiError(error, normalizeAxiosError(error));
     } finally {
       setSaving(false);
     }
@@ -654,7 +654,7 @@ export default function CustomerPage() {
       toast.success(td("addresses.toast.defaultUpdated"));
       fetchAddresses();
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setDefaultLoadingId(null);
     }
@@ -669,7 +669,7 @@ export default function CustomerPage() {
       setDeletingAddress(null);
       fetchAddresses();
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setDeleteLoading(false);
     }
@@ -688,7 +688,7 @@ export default function CustomerPage() {
       setContactDialogOpen(false);
       fetchCustomer();
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setContactSaving(false);
     }
@@ -702,7 +702,7 @@ export default function CustomerPage() {
       toast.success(td("contacts.toast.primaryUpdated"));
       fetchCustomer();
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setPrimaryContactLoadingId(null);
     }
@@ -716,7 +716,7 @@ export default function CustomerPage() {
       toast.success(td("contacts.toast.unlinked"));
       fetchCustomer();
     } catch (err) {
-      toast.error(normalizeAxiosError(err));
+      handleApiError(err, normalizeAxiosError(err));
     } finally {
       setUnlinkingContactId(null);
     }

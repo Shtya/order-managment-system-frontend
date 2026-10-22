@@ -7,7 +7,7 @@ import { CalendarDays, Edit2, Eye, QrCode, Trash2, Package, Tag, Hash, Store, Al
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useRouter } from "@/i18n/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -96,7 +96,7 @@ export default function useBundlesTab({ setExternalModal, searchDebounced, filte
       });
     } catch (e) {
       if (reqId !== requestIdRef.current) return;
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
       setPager((p) => ({ ...p, records: [] }));
     } finally {
       if (reqId === requestIdRef.current) setLoading(false);

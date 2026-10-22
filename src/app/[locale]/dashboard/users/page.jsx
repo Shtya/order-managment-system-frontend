@@ -72,7 +72,7 @@ import {
 	AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-import api, { BASE_URL } from "@/utils/api";
+import api, { BASE_URL, handleApiError } from "@/utils/api";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "@/i18n/navigation";
 import ManageSubscription from "./manageSubscription";
@@ -801,7 +801,7 @@ export default function SuperAdminUsersPage() {
 											const res = await api.post(`/auth/super-admin-login`, { email: r.email });
 											await handleAuthSuccess(res.data);
 										} catch (e) {
-											toast.error(getApiMsg(e, tCommon));
+											handleApiError(e, getApiMsg(e, tCommon));
 										}
 									},
 									variant: "blue",
@@ -816,7 +816,7 @@ export default function SuperAdminUsersPage() {
 											setApiMsg(r.isActive ? t("messages.userDeactivated") : t("messages.userActivated"));
 											await fetchUsers({ page: pagination.current_page, per_page: pagination.per_page });
 										} catch (e) {
-											toast.error(getApiMsg(e, tCommon));
+											handleApiError(e, getApiMsg(e, tCommon));
 										}
 									},
 									variant: row.isActive ? "orange" : "emerald",
@@ -1045,7 +1045,7 @@ export default function SuperAdminUsersPage() {
 						setCreateOpen(false);
 						await fetchUsers({ page: 1, per_page: pagination.per_page });
 					} catch (e) {
-						toast.error(getApiMsg(e, tCommon));
+						handleApiError(e, getApiMsg(e, tCommon));
 					} finally {
 						setCreateLoading(false);
 					}
@@ -1173,7 +1173,7 @@ export default function SuperAdminUsersPage() {
 						setDeactivateOpen(false);
 						await fetchUsers({ page: pagination.current_page, per_page: pagination.per_page });
 					} catch (e) {
-						toast.error(getApiMsg(e, tCommon));
+						handleApiError(e, getApiMsg(e, tCommon));
 					} finally {
 						setDeactivateLoading(false);
 					}
@@ -1845,7 +1845,7 @@ function CredentialsDialog({ t, tCommon, open, onOpenChange, user, credentials, 
 			setApiMsg(t("messages.userUpdated"));
 			setNewPassword("");
 		} catch (e) {
-			toast.error(getApiMsg(e, tCommon));
+			handleApiError(e, getApiMsg(e, tCommon));
 		} finally {
 			setIsChangingPassword(false);
 		}

@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import ActionButtons from "@/components/atoms/Actions";
 import Button_ from "@/components/atoms/Button";
@@ -409,7 +409,7 @@ export function RejectOrderModal({ open, onClose, order, onConfirm }) {
 			}
 		} catch (error) {
 			console.error("Error rejecting order", error);
-			toast.error(error.response?.data?.message || t("messages.errorRejectingOrder"));
+			handleApiError(error, error.response?.data?.message || t("messages.errorRejectingOrder"));
 		} finally {
 			setLoading(false);
 		}
@@ -1607,7 +1607,7 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 
 		} catch (error) {
 			console.error("Error downloading wrong log", error);
-			toast.error(t("messages.errorDownloadingLogs") || "Error downloading logs");
+			handleApiError(error, t("messages.errorDownloadingLogs") || "Error downloading logs");
 		} finally {
 			setDownloadingWrongLog((p) => ({ ...p, [row.id]: false }));
 		}

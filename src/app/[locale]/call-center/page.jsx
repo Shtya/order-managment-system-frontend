@@ -33,7 +33,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FieldTooltip } from "@/components/ui/field-tooltip";
@@ -453,7 +453,7 @@ function RuleFormDialog({ open, onOpenChange, rule, onSuccess }) {
             onOpenChange(false);
         } catch (e) {
             console.error(e);
-            toast.error(t("validation.saveError"));
+            handleApiError(e, t("validation.saveError"));
         }
     };
 
@@ -1274,7 +1274,7 @@ export default function CallCenterPage() {
 
         } catch (e) {
             console.error("Error fetching stats summary:", e);
-            toast.error(t("common.api.errorEmployee"));
+            handleApiError(e, t("common.api.errorEmployee"));
         }
     }, [t, today]);
 
@@ -1313,7 +1313,7 @@ export default function CallCenterPage() {
                 });
             } catch (e) {
                 console.error(e);
-                toast.error(t("common.api.errorEmployeeStatus"));
+                handleApiError(e, t("common.api.errorEmployeeStatus"));
             } finally {
                 setLoading(false);
             }
@@ -1337,7 +1337,7 @@ export default function CallCenterPage() {
                 });
             } catch (e) {
                 console.error(e);
-                toast.error(t("common.api.error"));
+                handleApiError(e, t("common.api.error"));
             } finally {
                 setLoading(false);
             }
@@ -1405,7 +1405,7 @@ export default function CallCenterPage() {
             ]);
         } catch (e) {
             console.error(e);
-            toast.error(t("callCenter.autoAssign.delete.error"));
+            handleApiError(e, t("callCenter.autoAssign.delete.error"));
         } finally {
             setDeleteLoading(false);
         }
@@ -1443,7 +1443,7 @@ export default function CallCenterPage() {
             fetchAutoRulesStats();
         } catch (e) {
             console.error(e);
-            toast.error(t("common.api.error"));
+            handleApiError(e, t("common.api.error"));
         }
     }, [fetchAutoAssignRules, fetchAutoRulesStats, t]);
 

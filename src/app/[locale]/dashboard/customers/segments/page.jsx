@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { useExport } from "@/hook/useExport";
 import { useRouter } from "@/i18n/navigation";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { setDocumentTitle } from "@/utils/documentTitle";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
@@ -122,7 +122,7 @@ export default function AdminSegmentTemplatesPage() {
         setPage(Number(res.data?.current_page || p));
         setLimit(Number(res.data?.per_page || l));
       } catch (error) {
-        toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+        handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
       } finally {
         setLoading(false);
       }
@@ -208,7 +208,7 @@ export default function AdminSegmentTemplatesPage() {
       setTogglingSegment(null);
       refresh();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.fetchFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.fetchFailed"));
     } finally {
       setToggleLoading(false);
     }
@@ -224,7 +224,7 @@ export default function AdminSegmentTemplatesPage() {
       setDeletingSegment(null);
       refresh();
     } catch (error) {
-      toast.error(normalizeAxiosError(error) || t("toast.deleteFailed"));
+      handleApiError(error, normalizeAxiosError(error) || t("toast.deleteFailed"));
     } finally {
       setDeleteLoading(false);
     }

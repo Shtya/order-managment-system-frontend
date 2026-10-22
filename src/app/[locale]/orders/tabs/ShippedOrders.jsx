@@ -16,7 +16,7 @@ import {
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { cn } from "@/utils/cn";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -862,7 +862,7 @@ export default function ShippedOrders({ statuses = [] }) {
         });
       } catch (e) {
         console.error(e);
-        toast.error(ts("messages.fetchFailed"));
+        handleApiError(e, ts("messages.fetchFailed"));
       } finally {
         setLoading(false);
       }
@@ -897,7 +897,7 @@ export default function ShippedOrders({ statuses = [] }) {
         });
       } catch (e) {
         console.error(e);
-        toast.error(ts("messages.fetchFailed"));
+        handleApiError(e, ts("messages.fetchFailed"));
       } finally {
         setGroupsLoading(false);
       }
@@ -969,7 +969,7 @@ export default function ShippedOrders({ statuses = [] }) {
       });
     } catch (e) {
       console.error(e);
-      toast.error(ts("messages.fetchFailed"));
+      handleApiError(e, ts("messages.fetchFailed"));
       setDateShipments((prev) => ({
         ...prev,
         [dateKey]: { ...(prev[dateKey] || {}), loading: false },
@@ -1082,7 +1082,7 @@ export default function ShippedOrders({ statuses = [] }) {
       setCompanyStats(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
       console.error(e);
-      toast.error(ts("messages.statsFailed"));
+      handleApiError(e, ts("messages.statsFailed"));
       setCompanyStats([]);
     } finally {
       setStatsLoading(false);

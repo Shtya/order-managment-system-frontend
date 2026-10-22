@@ -6,7 +6,7 @@ import { CalendarDays, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, St
 import { useExport } from "@/hook/useExport";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { Badge } from "@/components/ui/badge";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useRouter } from "@/i18n/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -365,7 +365,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 				const rec = Array.isArray(res.data?.records) ? res.data.records : [];
 				setProductOrdersModal((m) => ({ ...m, loading: false, orders: rec }));
 			} catch (e) {
-				toast.error(normalizeAxiosError(e));
+				handleApiError(e, normalizeAxiosError(e));
 				setProductOrdersModal((m) => ({ ...m, loading: false, orders: [] }));
 			}
 		},
@@ -410,7 +410,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 				total: res.data?.total || 0,
 			}));
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 			setProductCancelCausesModal((m) => ({ ...m, loading: false, records: [] }));
 		}
 	}, []);
@@ -507,7 +507,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 			});
 		} catch (e) {
 			if (reqId !== requestIdRef.current) return;
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 			setPager((p) => ({ ...p, records: [] }));
 		} finally {
 			if (reqId === requestIdRef.current) setLoading(false);

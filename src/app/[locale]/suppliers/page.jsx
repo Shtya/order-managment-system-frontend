@@ -48,7 +48,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import InputPhone, { validatePhone } from "@/components/atoms/InputPhone";
 
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
@@ -180,7 +180,7 @@ export default function SuppliersPage() {
 					records: res.data?.records ?? [],
 				});
 			} catch (e) {
-				toast.error(normalizeAxiosError(e));
+				handleApiError(e, normalizeAxiosError(e));
 			} finally {
 				setLoading(false);
 			}
@@ -223,7 +223,7 @@ export default function SuppliersPage() {
 			await fetchSuppliers({ page: pager.current_page, per_page: pager.per_page });
 			toast.success(t("delete.success"));
 		} catch (e) {
-			toast.error(normalizeAxiosError(e));
+			handleApiError(e, normalizeAxiosError(e));
 		} finally {
 			setDeleting(false);
 		}
@@ -238,7 +238,7 @@ export default function SuppliersPage() {
 			link.download = "suppliers.xlsx";
 			link.click();
 		} catch (error) {
-			toast.error(normalizeAxiosError(error));
+			handleApiError(error, normalizeAxiosError(error));
 		}
 	};
 
@@ -668,7 +668,7 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }) 
 			onSuccess();
 			onOpenChange(false);
 		} catch (error) {
-			toast.error(normalizeAxiosError(error));
+			handleApiError(error, normalizeAxiosError(error));
 		}
 	};
 
@@ -1191,7 +1191,7 @@ export function PaySupplierDialog({ open, onOpenChange, supplier, onSuccess }) {
 			onSuccess();
 			onOpenChange(false);
 		} catch (error) {
-			toast.error(normalizeAxiosError(error));
+			handleApiError(error, normalizeAxiosError(error));
 		} finally {
 			setLoading(false);
 		}

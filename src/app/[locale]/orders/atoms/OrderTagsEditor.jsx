@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Loader2, Tags } from "lucide-react";
-import api from "@/utils/api";
+import api, { handleApiError } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { cn } from "@/utils/cn";
 import { useAuth } from "@/context/AuthContext";
@@ -92,7 +92,7 @@ export function OrderTagsDialog({ order, open, onClose, onUpdated }) {
           : res.data?.records || res.data?.data || [];
         if (!cancelled) setAssignable(list);
       } catch (e) {
-        toast.error(normalizeAxiosError(e));
+        handleApiError(e, normalizeAxiosError(e));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -175,7 +175,7 @@ export function OrderTagsDialog({ order, open, onClose, onUpdated }) {
       applyRows(res.data);
       onClose?.();
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      handleApiError(e, normalizeAxiosError(e));
     } finally {
       setSaving(false);
     }

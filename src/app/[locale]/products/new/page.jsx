@@ -28,7 +28,7 @@ import { useForm, Controller, useFieldArray, useWatch } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
-import api from '@/utils/api';
+import api, { handleApiError } from '@/utils/api';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -767,7 +767,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				}
 
 				setWarehouses(Array.isArray(whRes.data) ? whRes.data : []);
-			} catch (e) { toast.error(normalizeAxiosError(e)); }
+			} catch (e) { handleApiError(e, normalizeAxiosError(e)); }
 		})();
 		return () => { mounted = false; };
 	}, [isEditMode, setValue]);

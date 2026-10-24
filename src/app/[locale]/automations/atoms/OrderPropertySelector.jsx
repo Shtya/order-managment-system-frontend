@@ -119,7 +119,6 @@ export function useOrderProperties(customOverrides = {}) {
                 },
                 { id: "global.companyEmail", label: t("companyEmail"), icon: Mail, example: t("examples.companyEmail"), path: "global.companyEmail" },
                 { id: "global.companyWebsite", label: t("companyWebsite"), icon: Globe, example: t("examples.companyWebsite"), path: "global.companyWebsite" },
-                { id: "global.companyPhone", label: t("companyPhone"), icon: Phone, example: t("examples.companyPhone"), path: "global.companyPhone" },
                 { id: "global.companyAddress", label: t("companyAddress"), icon: MapPin, example: t("examples.companyAddress"), path: "global.companyAddress" },
                 { id: "global.companyCurrency", label: t("companyCurrency"), icon: DollarSign, example: t("examples.companyCurrency"), path: "global.companyCurrency" }
             ]

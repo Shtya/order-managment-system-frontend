@@ -10818,6 +10818,7 @@
         "country_required": "الدولة مطلوبة",
         "currency_required": "العملة مطلوبة",
         "name_required": "الاسم مطلوب",
+        "phone_required": "رقم الهاتف مطلوب",
         "invalid_url": "رابط غير صالح"
       },
       "countries": {

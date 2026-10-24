@@ -10831,6 +10831,7 @@
         "country_required": "Country is required",
         "currency_required": "Currency is required",
         "name_required": "Name is required",
+        "phone_required": "Phone number is required",
         "invalid_url": "Invalid URL"
       },
       "countries": {

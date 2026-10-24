@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import api, { handleApiError } from "@/utils/api";
@@ -58,6 +58,11 @@ import { useSubscriptionsApi } from "../plans/page";
 import { cn } from "@/utils/cn";
 import { useAuth } from "@/context/AuthContext";
 import { MadarLogo } from "@/components/atoms/BrandLogo";
+import { PHONE_CODES } from "../auth/tabs/Signup";
+import {
+  COMPANY_COUNTRIES,
+  COMPANY_COUNTRY_DIAL,
+} from "@/constants/companyCountries";
 /* ─── CSS ─────────────────────────────────────────────────── */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -2246,21 +2251,43 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 }
 
 /* ─── Step 2: Company ─────────────────────────────────────── */
+function normalizeLocalPhone(phone, dial) {
+  let digits = String(phone || "").replace(/\D/g, "");
+  const dialDigits = String(dial || "").replace(/\D/g, "");
+
+  if (dialDigits && digits.startsWith(dialDigits) && digits.length > dialDigits.length) {
+    digits = digits.slice(dialDigits.length);
+  }
+
+  return digits.replace(/^0+/, "");
+}
+
+function splitPhoneWithDial(full) {
+  const raw = String(full || "").trim();
+  if (!raw) return { dial: "+20", local: "" };
+  const withPlus = raw.startsWith("+") ? raw : `+${raw}`;
+  const matches = PHONE_CODES.filter((c) => withPlus.startsWith(c.code));
+  if (matches.length) {
+    const best = matches.reduce((a, b) => (b.code.length > a.code.length ? b : a));
+    return {
+      dial: best.code,
+      local: normalizeLocalPhone(withPlus.slice(best.code.length), best.code),
+    };
+  }
+  return { dial: "+20", local: normalizeLocalPhone(raw, "+20") };
+}
+
 function CompanyStep({ onNext, onBack, open, nextLoading }) {
   const tp = useTranslations("onboarding.plans");
   const t = useTranslations("onboarding.company");
+  const tAuth = useTranslations("auth");
+  const tCountries = useTranslations("countries");
+  const { user, refreshUser } = useAuth();
 
-  const COUNTRIES_LIST = [
-    { value: "egypt", label: t("countries.egypt") },
-    { value: "saudi", label: t("countries.saudi") },
-    { value: "uae", label: t("countries.uae") },
-    { value: "kuwait", label: t("countries.kuwait") },
-    { value: "qatar", label: t("countries.qatar") },
-    { value: "bahrain", label: t("countries.bahrain") },
-    { value: "oman", label: t("countries.oman") },
-    { value: "jordan", label: t("countries.jordan") },
-    { value: "lebanon", label: t("countries.lebanon") },
-  ];
+  const COUNTRIES_LIST = COMPANY_COUNTRIES.map((value) => ({
+    value,
+    label: t(`countries.${value}`),
+  }));
 
   const CURRENCIES_LIST = [
     { code: "EGP", label: t("currencies.egp") },
@@ -2275,7 +2302,11 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
     name: yup.string().trim().required(t("validation.name_required")),
     tax: yup.string().trim().nullable(),
     commercial: yup.string().trim().nullable(),
-    phone: yup.string().trim().nullable(),
+    phone: yup
+      .string()
+      .trim()
+      .required(t("validation.phone_required"))
+      .matches(/^[0-9]{7,11}$/, tAuth("validation.phone_invalid")),
     address: yup.string().trim().nullable(),
     website: yup
       .string()
@@ -2291,6 +2322,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
     handleSubmit,
     formState: { errors, touchedFields, isSubmitting },
     reset,
+    watch
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -2299,17 +2331,22 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
       name: "",
       tax: null,
       commercial: null,
-      phone: null,
+      phone: splitPhoneWithDial(user?.phone).local,
       website: null,
       address: null,
     },
     shouldFocusError: false,
     mode: "onTouched",
   });
-
+  const watchedPhone = watch("phone")
+  const [dial, setDial] = useState(() => splitPhoneWithDial(user?.phone).dial);
+  const dialChosenRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
+    if (!dialChosenRef.current) {
+      setDial(splitPhoneWithDial(user?.phone).dial);
+    }
 
     const loadCompany = async () => {
       try {
@@ -2321,7 +2358,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
             name: res.data.name || "",
             tax: res.data.tax || null,
             commercial: res.data.commercial || null,
-            phone: res.data.phone || null,
+            phone: splitPhoneWithDial(user?.phone).local,
             website: res.data.website || null,
             address: res.data.address || null,
           });
@@ -2332,21 +2369,25 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
     };
 
     loadCompany();
-  }, [open, reset]);
+  }, [open, reset, user?.phone]);
 
   const onSubmit = async (data) => {
     try {
+      const localPhone = normalizeLocalPhone(data.phone, dial);
       const payload = {
         country: data.country || "",
         currency: data.currency || "",
         name: data.name || "",
         tax: data.tax || null,
         commercial: data.commercial || null,
-        phone: data.phone || null,
         website: data.website || null,
         address: data.address || null,
       }
-      await api.post("/users/company", payload);
+      await Promise.all([
+        api.post("/users/company", payload),
+        api.patch("/users/me", { phone: `${dial}${localPhone}` }),
+      ]);
+      await refreshUser();
       toast.success(t("toasts.save_success"));
       onNext();
     } catch (err) {
@@ -2410,7 +2451,18 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
             control={control}
             name="country"
             render={({ field }) => (
-              <ObSelect {...field} onBlur={() => field.onBlur()} icon="🌍">
+              <ObSelect
+                {...field}
+                onBlur={() => field.onBlur()}
+                icon="🌍"
+                onChange={(e) => {
+                  field.onChange(e);
+                  if (!dialChosenRef.current && !watchedPhone) {
+                    const nextDial = COMPANY_COUNTRY_DIAL[e?.target?.value];
+                    if (nextDial) setDial(nextDial);
+                  }
+                }}
+              >
                 <option value="">{t("placeholders.select_country")}</option>
                 {COUNTRIES_LIST.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -2460,6 +2512,97 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
 
       {/* Row 2 */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <Field
+          label={t("fields.phone")}
+          required
+          error={errors.phone ? errors.phone?.message : null}
+          style={{ gridColumn: "1 / -1" }}
+        >
+          <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ position: "relative", flex: "0 0 132px" }}>
+              <span
+                style={{
+                  position: "absolute",
+                  left: 8,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "var(--text-3)",
+                  display: "flex",
+                  pointerEvents: "none",
+                  zIndex: 1,
+                  paddingRight: 8,
+                  borderRight: "1px solid var(--border)",
+                  height: 20,
+                  alignItems: "center",
+                }}
+              >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </span>
+              <select
+                value={dial}
+                onChange={(e) => {
+                  dialChosenRef.current = true;
+                  setDial(e.target.value);
+                }}
+                style={{
+                  width: "100%",
+                  height: 48,
+                  padding: "0 10px 0 32px",
+                  background: "var(--surface2)",
+                  border: "1.5px solid var(--border)",
+                  borderRadius: "var(--radius-sm)",
+                  fontFamily: "var(--font)",
+                  fontSize: 13.5,
+                  color: "var(--text)",
+                  cursor: "pointer",
+                  outline: "none",
+                  appearance: "none",
+                }}
+              >
+                {PHONE_CODES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.flag} {tCountries(c.key)} ({c.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <InputWrap icon={<IcPhone />}>
+                <input
+                  className="ob-input"
+                  placeholder="011 1234 5678"
+                  {...register("phone", {
+                    setValueAs: (value) => normalizeLocalPhone(value, dial),
+                  })}
+                  style={{ direction: "ltr" }}
+                />
+              </InputWrap>
+            </div>
+          </div>
+        </Field>
+
+        <Field label={t("fields.website")} error={errors.website ? errors.website?.message : null}>
+          <InputWrap icon={<IcGlobe />}>
+            <input
+              className="ob-input"
+              placeholder="https://mystore.com"
+              {...register("website")}
+              style={{ textAlign: "left" }}
+            />
+          </InputWrap>
+        </Field>
+
         <Field label={t("fields.tax")}
           error={errors.tax ? errors.tax?.message : null}>
           <InputWrap
@@ -2485,27 +2628,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
           </InputWrap>
         </Field>
 
-        <Field label={t("fields.phone")}>
-          <InputWrap icon={<IcPhone />} error={errors.phone ? errors.phone?.message : null}>
-            <input
-              className="ob-input"
-              placeholder="+20 xxx xxxx"
-              {...register("phone")}
-              style={{ textAlign: "right" }}
-            />
-          </InputWrap>
-        </Field>
 
-        <Field label={t("fields.website")} error={errors.website ? errors.website?.message : null}>
-          <InputWrap icon={<IcGlobe />}>
-            <input
-              className="ob-input"
-              placeholder="https://mystore.com"
-              {...register("website")}
-              style={{ textAlign: "left" }}
-            />
-          </InputWrap>
-        </Field>
       </div>
 
       {/* Address */}
@@ -2611,6 +2734,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
 
   const [stores, setStores] = useState([]);
   const [listLoading, setListLoading] = useState(true);
+  const [hasLoadedStores, setHasLoadedStores] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
   const [tableLoading, setTableLoading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -2653,6 +2777,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
     } catch (e) {
       // toast.error(normalizeAxiosError(e));
     } finally {
+      setHasLoadedStores(true);
       setListLoading(false);
     }
   };
@@ -2799,7 +2924,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
         </p>
       </div>
 
-      {listLoading ? (
+      {listLoading && !hasLoadedStores ? (
         <ProvidersSkeleton />
       ) : (
         <AnimatePresence mode="wait">

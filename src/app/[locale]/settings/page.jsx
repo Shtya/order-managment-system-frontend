@@ -115,6 +115,7 @@ import { useTheme } from "next-themes";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { PRODUCT_CATEGORY_KEYS } from "../auth/tabs/Signup";
+import { COMPANY_COUNTRIES } from "@/constants/companyCountries";
 import { IconArrow, OtpInput, PasswordStrength } from "../auth/tabs/AuthUi";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
@@ -282,7 +283,7 @@ export const COUNTRIES = [
     key: "EG",
     nameAr: "مصر",
     dialCode: "+20",
-    phone: { min: 10, max: 10, regex: /^(10|11|12|15)\d{8}$/ },
+    phone: { min: 10, max: 11, regex: /^(10|11|12|15)\d{8}$/ },
     placeholder: "1XXXXXXXXX",
   },
   {
@@ -320,10 +321,47 @@ export const COUNTRIES = [
     phone: { min: 9, max: 9, regex: /^7\d{8}$/ },
     placeholder: "7XXXXXXXX",
   },
+  {
+    key: "OM",
+    nameAr: "عمان",
+    dialCode: "+968",
+    phone: { min: 8, max: 8, regex: /^[79]\d{7}$/ },
+    placeholder: "9XXXXXXX",
+  },
+  {
+    key: "LB",
+    nameAr: "لبنان",
+    dialCode: "+961",
+    phone: { min: 7, max: 8, regex: /^\d{7,8}$/ },
+    placeholder: "XXXXXXXX",
+  },
+  {
+    key: "US",
+    nameAr: "الولايات المتحدة",
+    dialCode: "+1",
+    phone: { min: 10, max: 10, regex: /^\d{10}$/ },
+    placeholder: "5551234567",
+  },
 ];
 
 function digitsOnly(v) {
   return (v || "").replace(/\D/g, "");
+}
+
+/* Accepts 011…, 11… or dial-prefixed 2011… and returns the bare local digits. */
+function normalizeLocalPhone(raw, country) {
+  let digits = digitsOnly(raw);
+  if (!digits) return "";
+  if (digits.startsWith("0")) digits = digits.replace(/^0+/, "");
+  const dial = digitsOnly(country?.dialCode);
+  if (
+    dial &&
+    digits.startsWith(dial) &&
+    digits.length - dial.length >= country.phone.min
+  ) {
+    digits = digits.slice(dial.length);
+  }
+  return digits;
 }
 
 function validatePhone(raw, country, t) {
@@ -397,10 +435,6 @@ const createAccountSchema = (t) => yup.object({
     .trim()
     .email(t("validation.emailInvalid"))
     .required(t("validation.emailRequired")),
-  phone: yup
-      .string()
-      .required(t("validation.required"))
-      .matches(/^[0-9]{7,11}$/, t("validation.phone_invalid")),
   employeeType: yup.string().trim().nullable(),
 });
 
@@ -414,7 +448,6 @@ const createCompanySchema = (t) =>
     businessType: yup
       .string()
       .required(t("company.validation.businessRequired")),
-    phone: yup.string().trim(),
     website: yup
       .string()
       .trim()
@@ -1248,6 +1281,7 @@ export function AutomationsTab({ hideAccount = false, onSave }) {
 ═══════════════════════════════════════════════════════════════ */
 function CompanyTab() {
   const tsignup = useTranslations("auth.signup");
+  const tOnboarding = useTranslations("onboarding.company");
   const t = useTranslations("settings");
   const [loading, setLoading] = useState(true);
   const [companyData, setCompanyData] = useState(null);
@@ -1268,7 +1302,6 @@ function CompanyTab() {
       tax: "",
       businessType: "",
       commercial: "",
-      phone: "",
       website: "",
       address: "",
     },
@@ -1288,7 +1321,6 @@ function CompanyTab() {
             name: res.data.name || "",
             tax: res.data.tax || "",
             commercial: res.data.commercial || "",
-            phone: res.data.phone || "",
             website: res.data.website || "",
             address: res.data.address || "",
           });
@@ -1352,7 +1384,11 @@ function CompanyTab() {
                     color: "var(--primary)",
                   }}
                 >
-                  {watch("country") || t("company.noCountry")}
+                  {watch("country")
+                    ? COMPANY_COUNTRIES.includes(watch("country"))
+                      ? tOnboarding(`countries.${watch("country")}`)
+                      : watch("country")
+                    : t("company.noCountry")}
                 </span>
                 <span className="inline-flex px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-muted/60 border border-border/50 text-muted-foreground">
                   {watch("currency") || "---"}
@@ -1413,19 +1449,15 @@ function CompanyTab() {
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {["Egypt", "Saudi Arabia", "UAE"].map((c) => (
+                      {COMPANY_COUNTRIES.map((c) => (
                         <SelectItem key={c} value={c}>
-                          {c}
+                          {tOnboarding(`countries.${c}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 )}
               />
-            </Field>
-
-            <Field label={t("company.form.phone")} error={errors.phone?.message}>
-              <Input {...register("phone")} dir="ltr" className="h-11" />
             </Field>
 
             <Field
@@ -2174,6 +2206,7 @@ function CategoryActionButtons({
    ACCOUNT TAB
 ═══════════════════════════════════════════════════════════════ */
 function AccountTab() {
+  const tCountries = useTranslations("countries");
   const t = useTranslations("settings.account");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -2216,23 +2249,22 @@ function AccountTab() {
       }
       const user = res.data?.user ?? res.data;
       setMe(user);
+      const parsed = parsePhoneToCountry(user?.phone);
+      const parsedCountry =
+        COUNTRIES.find((c) => c.key === parsed.countryKey) || COUNTRIES[0];
+      const localDigits = normalizeLocalPhone(parsed.localDigits, parsedCountry);
+
       reset({
         name: user?.name ?? "",
         email: user?.email ?? "",
         employeeType: user?.employeeType ?? "",
+        phone: localDigits,
       });
-      const parsed = parsePhoneToCountry(user?.phone);
+
       setCountryKey(parsed.countryKey);
-      setPhoneDigits(parsed.localDigits);
+      setPhoneDigits(localDigits);
       setPhoneError(
-        parsed.localDigits
-          ? validatePhone(
-            parsed.localDigits,
-            COUNTRIES.find((c) => c.key === parsed.countryKey) ||
-            COUNTRIES[0],
-            t,
-          )
-          : "",
+        localDigits ? validatePhone(localDigits, parsedCountry, t) : "",
       );
       setAvatarPreview(null);
     } catch (e) {
@@ -2246,16 +2278,20 @@ function AccountTab() {
     fetchMe();
   }, []);
 
-  function buildFullPhone() {
-    const local = digitsOnly(phoneDigits);
+  function buildFullPhone(phone = phoneDigits, country = selectedCountry) {
+    const local = normalizeLocalPhone(phone, country);
     if (!local) return null;
-    return `${selectedCountry?.dialCode || "+20"}${local}`;
+    return `${country?.dialCode || "+20"}${local}`;
   }
 
   async function onSave(values) {
     if (!me?.id) return;
     const phoneMsg = phoneDigits
-      ? validatePhone(phoneDigits, selectedCountry, t)
+      ? validatePhone(
+          normalizeLocalPhone(phoneDigits, selectedCountry),
+          selectedCountry,
+          t,
+        )
       : "";
     setPhoneError(phoneMsg);
     if (phoneMsg) {
@@ -2417,6 +2453,7 @@ function AccountTab() {
 
             {/* Phone */}
             <Field label={t("phone.label")} error={phoneError || errors.phone?.message}>
+
               <div className="flex gap-2">
                 <div className="w-40 shrink-0">
                   <Select
@@ -2426,7 +2463,13 @@ function AccountTab() {
                       const next =
                         COUNTRIES.find((c) => c.key === v) || COUNTRIES[0];
                       setPhoneError(
-                        phoneDigits ? validatePhone(phoneDigits, next) : "",
+                        phoneDigits
+                          ? validatePhone(
+                              normalizeLocalPhone(phoneDigits, next),
+                              next,
+                              t,
+                            )
+                          : "",
                       );
                     }}
                   >
@@ -2441,7 +2484,7 @@ function AccountTab() {
                     <SelectContent className="max-h-72">
                       {COUNTRIES.map((c) => (
                         <SelectItem key={c.key} value={c.key}>
-                          {c.dialCode} — {c.nameAr}
+                          {c.dialCode} — {tCountries(c.key)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -2454,7 +2497,15 @@ function AccountTab() {
                     const v = digitsOnly(e.target.value);
                     setValue("phone", v);
                     setPhoneDigits(v);
-                    setPhoneError(v ? validatePhone(v, selectedCountry) : "");
+                    setPhoneError(
+                      v
+                        ? validatePhone(
+                            normalizeLocalPhone(v, selectedCountry),
+                            selectedCountry,
+                            t,
+                          )
+                        : "",
+                    );
                   }}
                   placeholder={selectedCountry.placeholder}
                   className={cn(

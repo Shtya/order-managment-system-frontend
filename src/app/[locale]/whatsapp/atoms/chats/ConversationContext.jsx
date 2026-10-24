@@ -246,13 +246,14 @@ export const ConversationProvider = ({ children }) => {
         }
         const gen = ++listFetchGen.current;
         try {
-            const effectiveTab = tab === "humanHandoff" ? "all" : tab;
+            
+            
             const params = {
                 limit: PAGE_LIMIT,
                 search: searchQuery,
-                unreadOnly: effectiveTab === "unread" ? true : undefined,
-                humanHandoffOnly: effectiveTab === "humanHandoff" ? true : undefined,
-                status: effectiveTab === "all" || effectiveTab === "unread" || effectiveTab === "humanHandoff" ? undefined : effectiveTab.toUpperCase(),
+                unreadOnly: tab  === "unread" ? true : undefined,
+                humanHandoffOnly: tab  === "humanHandoff" ? true : undefined,
+                status: tab  === "all" || tab  === "unread" || tab  === "humanHandoff" ? undefined : effectiveTab.toUpperCase(),
                 sortBy: SORT_BY,
                 cursor: append ? cursor : undefined
             };

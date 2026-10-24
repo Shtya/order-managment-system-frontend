@@ -15911,7 +15911,8 @@
     "search": "Search conversations...",
     "filter": "Filter",
     "resetFilters": "Reset filters",
-    "sendNumber": "Send number",
+    "sendNumber": "Account number",
+    "MessageStatus": "Message status",
     "messageStatuses": {
       "accepted": "Accepted",
       "sent": "Sent",

@@ -15935,8 +15935,9 @@
     "title": "المحادثات",
     "search": "البحث في المحادثات...",
     "filter": "فلترة",
+    "MessageStatus": "حالة الرسالة",
     "resetFilters": "إعادة ضبط",
-    "sendNumber": "رقم الإرسال",
+    "sendNumber": "رقم الحساب",
     "messageStatuses": {
       "accepted": "تم القبول",
       "sent": "تم الإرسال",

@@ -759,7 +759,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
     const params = {
       page,
       limit: per_page,
-      status: 'printed',
+      status: 'printed,preparing,ready',
       includeProductLocation: true,
     };
 

@@ -299,7 +299,7 @@ export default function WarehouseFlowPage() {
 
   useEffect(() => {
     console.log("Direct Shipping Enabled:", isDirectShippingEnabled, activeTab);
-    if (isDirectShippingEnabled && activeTab !== "distribution") {
+    if (isDirectShippingEnabled && !["distribution", "outgoing"].includes(activeTab)) {
       router.replace("/warehouse?tab=distribution");
     }
   }, [isDirectShippingEnabled]);

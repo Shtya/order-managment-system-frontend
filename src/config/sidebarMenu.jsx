@@ -169,69 +169,54 @@ export function getSidebarMenuItems({ isDirectShippingEnabled = false } = {}) {
         },
       ],
     },
-    isDirectShippingEnabled
-      ? {
-        icon: Truck,
-        labelKey: "warehouseDistribution",
-        href: "/warehouse?tab=distribution",
-        children: [
-          {
-            icon: Truck,
-            labelKey: "warehouseDistribution",
-            href: "/warehouse?tab=distribution",
-            permission: "orders.distribution",
-          },
-          {
-            icon: ClipboardList,
-            labelKey: "warehouseLogs",
-            href: "/warehouse?tab=logs",
-            permission: "warehouses.read",
-          },
-        ],
-      }
-      : {
-        icon: Warehouse,
-        labelKey: "manageWarehouse",
-        href: "/warehouse",
-        children: [
-          {
-            icon: Truck,
-            labelKey: "warehouseDistribution",
-            href: "/warehouse?tab=distribution",
-            permission: "orders.distribution",
-          },
-          {
-            icon: Printer,
-            labelKey: "warehousePrint",
-            href: "/warehouse?tab=print",
-            permission: "warehouses.read",
-          },
-          {
-            icon: Package,
-            labelKey: "warehousePreparation",
-            href: "/warehouse?tab=preparation",
-            permission: "warehouses.scan-preparation",
-          },
-          {
-            icon: CheckCircle2,
-            labelKey: "warehouseOutgoing",
-            href: "/warehouse?tab=outgoing",
-            permission: "warehouses.scan-shipping",
-          },
-          {
-            icon: RefreshCw,
-            labelKey: "warehouseReturns",
-            href: "/warehouse?tab=returns",
-            permission: "warehouses.read",
-          },
-          {
-            icon: ClipboardList,
-            labelKey: "warehouseLogs",
-            href: "/warehouse?tab=logs",
-            permission: "warehouses.read",
-          },
-        ],
-      },
+    {
+      icon: Warehouse,
+      labelKey: "manageWarehouse",
+      href: "/warehouse",
+      children: [
+        {
+          icon: Truck,
+          labelKey: "warehouseDistribution",
+          href: "/warehouse?tab=distribution",
+          permission: "orders.distribution",
+        },
+        { 
+          icon: Printer,
+          labelKey: "warehousePrint",
+          href: "/warehouse?tab=print",
+          permission: "warehouses.read",
+        },
+        ...(!isDirectShippingEnabled
+          ? [
+            
+              {
+                icon: Package,
+                labelKey: "warehousePreparation",
+                href: "/warehouse?tab=preparation",
+                permission: "warehouses.scan-preparation",
+              },
+            ]
+            : []),
+            {
+              icon: CheckCircle2,
+              labelKey: "warehouseOutgoing",
+              href: "/warehouse?tab=outgoing",
+              permission: "warehouses.scan-shipping",
+            },
+            {
+          icon: RefreshCw,
+          labelKey: "warehouseReturns",
+          href: "/warehouse?tab=returns",
+          permission: "warehouses.read",
+        },
+        {
+          icon: ClipboardList,
+          labelKey: "warehouseLogs",
+          href: "/warehouse?tab=logs",
+          permission: "warehouses.read",
+        },
+      ],
+    },
     {
       icon: Package,
       labelKey: "products",

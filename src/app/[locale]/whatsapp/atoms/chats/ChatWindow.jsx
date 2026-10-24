@@ -587,7 +587,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             <div
                 ref={scrollRef}
                 className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-2 scroll-smooth relative">
-                {hasMoreMessages && (
+                {!initialMessagesLoading && hasMoreMessages && (
                     <div className="flex justify-center pb-4">
                         <button
                             onClick={loadMoreMessages}
@@ -609,7 +609,9 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                     </span>
                 </div> */}
 
-                {groupedMessages.length > 0 ? (
+                {initialMessagesLoading ? (
+                    <MessageSkeleton />
+                ) : groupedMessages.length > 0 ? (
                     groupedMessages.map((group, groupIndex) => (
                         <div
                             key={group.dateKey}
@@ -641,8 +643,6 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             ))}
                         </div>
                     ))
-                ) : isMessagesLoading ? (
-                    <MessageSkeleton />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center h-full opacity-60">
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-3">

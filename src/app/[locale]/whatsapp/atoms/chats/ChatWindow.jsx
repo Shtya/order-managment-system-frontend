@@ -489,7 +489,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
                                 <div className="mt-4 space-y-2">
                                     <Label className="text-xs font-medium text-muted-foreground">
-                                        {t("status")}
+                                        {t("MessageStatus")}
                                     </Label>
                                     <div className="flex flex-wrap gap-2">
                                         {[{ value: "all", label: t("allStatuses") }, ...MESSAGE_STATUS_LIST.map((status) => ({

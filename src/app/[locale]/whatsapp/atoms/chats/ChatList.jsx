@@ -4,7 +4,7 @@ import { useState, useMemo, useLayoutEffect } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { 
     Search, 
-    Filter, 
+    Filter,
     MoreVertical, 
     Check, 
     CheckCheck, 
@@ -142,6 +142,12 @@ export default function ChatList() {
         setActiveTab,
         unreadCount,
         humanHandoffCount,
+        allCount,
+        accounts,
+        accountsLoading,
+        accountFilter,
+        setAccountFilter,
+        setSelectedAccount,
     } = useConversation();
 
     const activeId = selectedConversation?.id;
@@ -168,7 +174,7 @@ export default function ChatList() {
     });
 
     const tabs = [
-        { id: "all", label: t("tabs.all") },
+        { id: "all", label: t("tabs.all"), count: allCount },
         { id: "unread", label: t("tabs.unread"), count: unreadCount },
         { id: "humanHandoff", label: t("tabs.humanHandoff"), count: humanHandoffCount },
     ];
@@ -184,12 +190,63 @@ export default function ChatList() {
                                 {t("title")}
                             </h1>
                             <div className="flex items-center gap-1 animate-in fade-in slide-in-from-right-4 duration-300">
-                                <button
+                                 <button
                                     onClick={() => setIsSearchOpen(true)}
                                     className="p-2 hover:bg-muted rounded-full transition-colors"
                                 >
                                     <Search className="w-5 h-5 text-muted-foreground" />
                                 </button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button
+                                            aria-label={t("filterByNumber")}
+                                            title={t("filterByNumber")}
+                                            className="relative p-2 hover:bg-muted rounded-full transition-colors"
+                                        >
+                                            <Filter className="w-5 h-5 text-muted-foreground" />
+                                            {accountFilter !== "all" && (
+                                                <span className="absolute end-1 top-1 h-2 w-2 rounded-full bg-wa-green ring-2 ring-card" />
+                                            )}
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="min-w-60 rounded-xl p-1.5">
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                setAccountFilter("all");
+                                                setSelectedConversation(null);
+                                            }}
+                                            className="flex cursor-pointer items-center justify-between gap-3 rounded-lg py-2.5"
+                                        >
+                                            <span>{t("allAccounts")}</span>
+                                            {accountFilter === "all" && <Check className="h-4 w-4 text-wa-green" />}
+                                        </DropdownMenuItem>
+                                        {accounts.map((account) => (
+                                            <DropdownMenuItem
+                                                key={account.id}
+                                                onClick={() => {
+                                                    setAccountFilter(account.id);
+                                                    setSelectedAccount(account);
+                                                    setSelectedConversation(null);
+                                                }}
+                                                className="flex cursor-pointer items-center justify-between gap-3 rounded-lg py-2.5"
+                                            >
+                                                <span className="flex min-w-0 flex-col">
+                                                    <span className="truncate font-medium">{account.name || account.mobileNumber}</span>
+                                                    {account.name && account.mobileNumber && (
+                                                        <span className="text-xs text-muted-foreground" dir="ltr">{account.mobileNumber}</span>
+                                                    )}
+                                                </span>
+                                                {accountFilter === account.id && <Check className="h-4 w-4 shrink-0 text-wa-green" />}
+                                            </DropdownMenuItem>
+                                        ))}
+                                        {accountsLoading && (
+                                            <div className="flex items-center justify-center p-3 text-muted-foreground">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            </div>
+                                        )}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                               
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button className="p-2 hover:bg-muted rounded-full transition-colors">
@@ -248,7 +305,7 @@ export default function ChatList() {
                         >
                             <span className="flex items-center gap-1.5">
                                 {tab.label}
-                                {tab.count > 0 && (
+                                {Number.isFinite(tab.count) && (
                                     <span className="bg-muted text-muted-foreground text-[10px] px-1.5 py-0.5 rounded-full">
                                         {tab.count}
                                     </span>

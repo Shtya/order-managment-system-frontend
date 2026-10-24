@@ -3041,6 +3041,7 @@
       "conversation_read": "View conversations",
       "conversation_update": "Update conversations",
       "customer_delete": "Delete customers",
+      "customer_getOnly": "View customers only",
       "customer_read": "View customers",
       "customer_update": "Update customers",
       "dashboard_read": "View dashboard",
@@ -4016,6 +4017,7 @@
         "readySubtitle": "Scan order barcode to start preparing products",
         "orderFound": "✓ Order {code} found",
         "orderNotFound": "Order not found — check the barcode",
+        "invalidOrderStatus": "Order status is currently [{currentStatus}] and is not in a status that allows scanning. It must be Printed or Preparing.",
         "barcodeNotFound": "Barcode \"{val}\" not found in this order",
         "alreadyScanned": "Required quantity for \"{name}\" already scanned",
         "itemScanned": "✓ \"{name}\" scanned successfully",
@@ -8604,6 +8606,22 @@
       "notes": "Notes",
       "orderSummary": "Order Summary",
       "address": "Address"
+    },
+    "clientLookup": {
+      "phoneLabel": "Phone Number",
+      "resultsTitle": "Existing clients",
+      "noResults": "No matching clients found",
+      "unnamed": "Unnamed client",
+      "addressCount": "{count, plural, =0 {No addresses} =1 {1 address} other {# addresses}}",
+      "chooseAddress": "Choose a delivery address",
+      "chooseAddressHint": "{name} has more than one saved address. Select one for this order.",
+      "savedAddress": "Saved address",
+      "defaultAddress": "Default",
+      "city": "City",
+      "area": "Area",
+      "streetAddress": "Street Address",
+      "landmark": "Landmark",
+      "close": "Close"
     },
     "bosta": {
       "sectionTitle": "Shipping Information (Bosta)",
@@ -15913,6 +15931,8 @@
     "filter": "Filter",
     "resetFilters": "Reset filters",
     "sendNumber": "Account number",
+    "filterByNumber": "Filter conversations by WhatsApp number",
+    "allAccounts": "All WhatsApp numbers",
     "MessageStatus": "Message status",
     "messageStatuses": {
       "accepted": "Sending",

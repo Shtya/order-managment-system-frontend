@@ -3042,6 +3042,7 @@
       "conversation_read": "عرض المحادثات",
       "conversation_update": "تعديل المحادثات",
       "customer_delete": "حذف العملاء",
+      "customer_getOnly": "عرض العملاء فقط",
       "customer_read": "عرض العملاء",
       "customer_update": "تعديل العملاء",
       "orders_confirm-incoming": "تأكيد الوارد",
@@ -4014,6 +4015,7 @@
         "readySubtitle": "امسح باركود الطلب للبدء في تحضير المنتجات",
         "orderFound": "✓ تم العثور على الطلب {code}",
         "orderNotFound": "لم يتم العثور على الطلب — تحقق من الباركود",
+        "invalidOrderStatus": "حالة الطلب حالياً  [{currentStatus}] وليس في حالة تسمح بالمسح. يجب أن تكون حالة الطلب \"تم الطباعة\" أو \"قيد التحضير\".",
         "barcodeNotFound": "الباركود \"{val}\" غير موجود في هذا الطلب",
         "alreadyScanned": "تم مسح الكمية المطلوبة من \"{name}\" بالفعل",
         "itemScanned": "✓ تم مسح \"{name}\" بنجاح",
@@ -8592,6 +8594,22 @@
       "notes": "الملاحظات",
       "orderSummary": "ملخص الطلب",
       "address": "العنوان"
+    },
+    "clientLookup": {
+      "phoneLabel": "رقم الهاتف",
+      "resultsTitle": "العملاء الحاليون",
+      "noResults": "لم يتم العثور على عملاء مطابقين",
+      "unnamed": "عميل بدون اسم",
+      "addressCount": "عدد العناوين: {count}",
+      "chooseAddress": "اختر عنوان التوصيل",
+      "chooseAddressHint": "لدى {name} أكثر من عنوان محفوظ. اختر عنواناً لهذا الطلب.",
+      "savedAddress": "عنوان محفوظ",
+      "defaultAddress": "الافتراضي",
+      "city": "المدينة",
+      "area": "المنطقة",
+      "streetAddress": "العنوان",
+      "landmark": "علامة مميزة",
+      "close": "إغلاق"
     },
     "bosta": {
       "sectionTitle": "بيانات الشحن (بوسطة)",
@@ -15939,6 +15957,8 @@
     "MessageStatus": "حالة الرسالة",
     "resetFilters": "إعادة ضبط",
     "sendNumber": "رقم الحساب",
+    "filterByNumber": "فلترة المحادثات حسب رقم واتساب",
+    "allAccounts": "جميع أرقام واتساب",
     "messageStatuses": {
       "accepted": "قيد الإرسال",
       "sent": "تم الإرسال",

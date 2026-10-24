@@ -3,7 +3,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Trash2, Plus, Minus, Loader2, Info, Save, Package, StickyNote } from "lucide-react";
+import { ChevronLeft, Trash2, Plus, Minus, Loader2, Info, Save, Package, StickyNote, Search } from "lucide-react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -12,6 +12,13 @@ import toast from "react-hot-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	Select,
 	SelectContent,
@@ -63,6 +70,8 @@ const createSchema = (t) =>
 		city: yup.string().required(t("validation.cityRequired")),
 		cityId: yup.string().optional(),
 		area: yup.string().optional(),
+		areaId: yup.string().optional(),
+		clientId: yup.string().optional(),
 		landmark: yup.string().optional(),
 		paymentMethod: yup.string().required(t("validation.paymentMethodRequired")),
 		paymentStatus: yup.string().optional(),
@@ -208,6 +217,185 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 	);
 }
 
+export function ClientPhoneLookup({ control, setValue, error, disabled = false }) {
+	const t = useTranslations("createOrder.clientLookup");
+	const tCreateOrder = useTranslations("createOrder");
+	const [results, setResults] = useState([]);
+	const [loading, setLoading] = useState(false);
+	const [open, setOpen] = useState(false);
+	const [selectedClient, setSelectedClient] = useState(null);
+	const [addressClient, setAddressClient] = useState(null);
+	const [searchActive, setSearchActive] = useState(false);
+	const requestRef = useRef(0);
+	const containerRef = useRef(null);
+	const phoneValue = useWatch({ control, name: "phoneNumber" });
+
+	useEffect(() => {
+		const onOutsideClick = (event) => {
+			if (!containerRef.current?.contains(event.target)) setOpen(false);
+		};
+		document.addEventListener("mousedown", onOutsideClick);
+		return () => document.removeEventListener("mousedown", onOutsideClick);
+	}, []);
+
+	useEffect(() => {
+		if (disabled || !searchActive || selectedClient || String(phoneValue || "").replace(/\D/g, "").length < 3) {
+			setResults([]);
+			setOpen(false);
+			return;
+		}
+
+		const requestId = ++requestRef.current;
+		const timer = setTimeout(async () => {
+			setLoading(true);
+			try {
+				const { data } = await api.get("/clients", {
+					params: { search: phoneValue, page: 1, limit: 5, includeAddresses: true, hasPhone: true },
+				});
+				if (requestId !== requestRef.current) return;
+				setResults(Array.isArray(data?.records) ? data.records.slice(0, 5) : []);
+				setOpen(true);
+			} catch (error) {
+				if (requestId === requestRef.current) setResults([]);
+			} finally {
+				if (requestId === requestRef.current) setLoading(false);
+			}
+		}, 300);
+
+		return () => clearTimeout(timer);
+	}, [disabled, phoneValue, searchActive, selectedClient]);
+
+	const fillAddress = useCallback((address) => {
+		setValue("address", address?.address || "", { shouldValidate: true, shouldDirty: true });
+		setValue("city", address?.city || address?.cityDetails?.nameEn || address?.cityDetails?.nameAr || "", { shouldValidate: true, shouldDirty: true });
+		setValue("cityId", address?.cityId || address?.cityDetails?.id || "", { shouldValidate: true, shouldDirty: true });
+		setValue("area", address?.area || address?.areaDetails?.nameEn || address?.areaDetails?.nameAr || "", { shouldValidate: true, shouldDirty: true });
+		setValue("areaId", address?.areaId || address?.areaDetails?.id || "", { shouldValidate: true, shouldDirty: true });
+		setValue("landmark", address?.landmark || "", { shouldValidate: true, shouldDirty: true });
+		setAddressClient(null);
+	}, [setValue]);
+
+	const selectClient = useCallback((client) => {
+		const contacts = Array.isArray(client.contacts) ? client.contacts : [];
+		const primary = client.primaryContact || contacts.find((contact) => contact.id === client.primaryContactId) || contacts[0];
+		const secondary = contacts.find((contact) => contact.id !== primary?.id);
+
+		setSelectedClient(client);
+		setSearchActive(false);
+		setOpen(false);
+		setValue("clientId", client.id, { shouldDirty: true });
+		setValue("customerName", client.name || primary?.name || "", { shouldValidate: true, shouldDirty: true });
+		setValue("phoneNumber", primary?.phoneNumber || client.phoneNumber || "", { shouldValidate: true, shouldDirty: true });
+		setValue("secondPhoneNumber", secondary?.phoneNumber || "", { shouldDirty: true });
+		setValue("email", client.email || "", { shouldValidate: true, shouldDirty: true });
+
+		const addresses = Array.isArray(client.addresses) ? client.addresses : [];
+		if (addresses.length === 1) fillAddress(addresses[0]);
+		else if (addresses.length > 1) setAddressClient(client);
+	}, [fillAddress, setValue]);
+
+	const clearSelection = useCallback(() => {
+		requestRef.current += 1;
+		setSelectedClient(null);
+		setSearchActive(false);
+		setAddressClient(null);
+		setResults([]);
+		setValue("clientId", "", { shouldDirty: true });
+	}, [setValue]);
+
+	return (
+		<>
+			<div ref={containerRef} className="relative space-y-2">
+				<Label className="text-sm text-gray-600 dark:text-slate-300">{t("phoneLabel")} *</Label>
+				<Controller
+					name="phoneNumber"
+					control={control}
+					render={({ field }) => (
+						<div className="relative">
+							<Input
+								{...field}
+								disabled={disabled}
+								autoComplete="off"
+								inputMode="tel"
+								placeholder={tCreateOrder("placeholders.phoneNumber")}
+								onFocus={() => {
+									setSearchActive(true);
+									if (results.length) setOpen(true);
+								}}
+								onChange={(event) => {
+									if (selectedClient) clearSelection();
+									setSearchActive(true);
+									field.onChange(event);
+								}}
+							/>
+							<span className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+								{loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+							</span>
+						</div>
+					)}
+				/>
+				{error && <p className="text-xs text-red-500">{error.message}</p>}
+
+				{open && (
+					<div className="absolute z-30 mt-1 w-full overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-xl">
+						<div className="border-b bg-muted/40 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("resultsTitle")}</div>
+						{results.length ? results.map((client) => {
+							const contacts = Array.isArray(client.contacts) ? client.contacts : [];
+							const primary = client.primaryContact || contacts[0];
+							return (
+								<button key={client.id} type="button" onClick={() => selectClient(client)} className="flex w-full items-center gap-3 border-b px-3 py-2.5 text-start last:border-0 hover:bg-primary/5">
+									<span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 font-bold text-primary">{String(client.name || "?").slice(0, 1).toUpperCase()}</span>
+									<span className="min-w-0 flex-1"><strong className="block truncate text-sm">{client.name || t("unnamed")}</strong><span className="block text-xs text-muted-foreground" dir="ltr">{primary?.phoneNumber || client.phoneNumber}</span></span>
+									<span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">{t("addressCount", { count: client.addresses?.length || 0 })}</span>
+								</button>
+							);
+						}) : <div className="px-3 py-5 text-center text-sm text-muted-foreground">{t("noResults")}</div>}
+					</div>
+				)}
+			</div>
+
+			<Dialog open={!!addressClient} onOpenChange={(nextOpen) => !nextOpen && setAddressClient(null)}>
+				<DialogContent className="sm:max-w-2xl overflow-hidden rounded-[24px] p-0 gap-0">
+					<DialogHeader className="border-b border-border p-6 pb-4">
+						<DialogTitle>{t("chooseAddress")}</DialogTitle>
+						<DialogDescription>
+							{addressClient ? t("chooseAddressHint", { name: addressClient.name }) : ""}
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="max-h-[65vh] space-y-3 overflow-y-auto p-5">
+						{addressClient?.addresses?.map((address) => (
+							<button
+								key={address.id}
+								type="button"
+								onClick={() => fillAddress(address)}
+								className="group relative w-full rounded-2xl border border-border bg-card p-4 text-start transition-colors hover:border-primary hover:bg-primary/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+							>
+								<div className="mb-4 flex items-center justify-between gap-3 pe-6">
+									<div className="flex min-w-0 flex-wrap items-center gap-2">
+										<strong className="truncate text-sm font-semibold text-foreground">{address.label || t("savedAddress")}</strong>
+										{address.isDefault && (
+											<span className="shrink-0 rounded bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase text-primary">{t("defaultAddress")}</span>
+										)}
+									</div>
+									<span className="absolute end-4 top-4 text-lg leading-none text-primary">›</span>
+								</div>
+
+								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+									<div><span className="block text-[11px] text-muted-foreground">{t("city")}</span><span className="mt-1 block text-sm text-foreground">{address.city || address.cityDetails?.nameEn || address.cityDetails?.nameAr || "—"}</span></div>
+									<div><span className="block text-[11px] text-muted-foreground">{t("area")}</span><span className="mt-1 block text-sm text-foreground">{address.area || address.areaDetails?.nameEn || address.areaDetails?.nameAr || "—"}</span></div>
+									<div className="sm:col-span-2"><span className="block text-[11px] text-muted-foreground">{t("streetAddress")}</span><span className="mt-1 block text-sm text-foreground">{address.address || "—"}</span></div>
+									<div className="border-t border-border pt-3 sm:col-span-2"><span className="block text-[11px] text-muted-foreground">{t("landmark")}</span><span className="mt-1 block text-sm text-foreground">{address.landmark || "—"}</span></div>
+								</div>
+							</button>
+						))}
+					</div>
+				</DialogContent>
+			</Dialog>
+		</>
+	);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Address section — Bosta mode (selects) vs Normal mode (text inputs)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -251,6 +439,7 @@ export function AddressSection({
 	const cityIdValue = useWatch({ control, name: "cityId" });
 	const cityValue = useWatch({ control, name: "city" });
 	const areaValue = useWatch({ control, name: "area" });
+	const areaIdValue = useWatch({ control, name: "areaId" });
 
 
 	const [areas, setAreas] = useState([]);
@@ -415,12 +604,13 @@ export function AddressSection({
 	// Find current area ID based on the area name
 	const currentAreaId = useMemo(() => {
 
+		if (areaIdValue) return areaIdValue;
 		if (!areaValue || !areas.length) return "";
 		const found = areas.find((a) => a.nameAr === areaValue || a.nameEn === areaValue);
 
 
 		return found ? found.id : "";
-	}, [areaValue, areas]);
+	}, [areaIdValue, areaValue, areas]);
 
 	// When user picks a city/zone/district — auto-fill the hidden RHF fields
 	const handleCityChange = useCallback(
@@ -438,7 +628,10 @@ export function AddressSection({
 				setValue("city", city[nameKey] || city.nameEn, { shouldValidate: true });
 				setValue("cityId", city.id, { shouldValidate: true });
 			}
-			if (resetArea) setValue("area", "", { shouldValidate: false });
+			if (resetArea) {
+				setValue("area", "", { shouldValidate: false });
+				setValue("areaId", "", { shouldValidate: false });
+			}
 		},
 		[providerCities, nameKey, setValue, providerLoading.cities, citiesLoading]
 	);
@@ -492,11 +685,13 @@ export function AddressSection({
 		(areaId) => {
 			if (!areaId) {
 				setValue("area", "", { shouldValidate: false });
+				setValue("areaId", "", { shouldValidate: false });
 				return;
 			}
 			const area = areas.find((a) => String(a.id) === areaId);
 			if (area) {
 				setValue("area", area[nameKey] || area.nameEn, { shouldValidate: false });
+				setValue("areaId", area.id, { shouldValidate: false });
 			}
 		},
 		[areas, nameKey, setValue]
@@ -611,6 +806,7 @@ export function AddressSection({
 					{/* Hidden: city & area — auto-filled, not shown */}
 					<input type="hidden" {...control.register?.("city")} />
 					<input type="hidden" {...control.register?.("area")} />
+					<input type="hidden" {...control.register?.("areaId")} />
 				</motion.div>
 			</AnimatePresence>
 		);
@@ -697,6 +893,7 @@ export function AddressSection({
 				</div>
 				<input type="hidden" {...control.register?.("city")} />
 				<input type="hidden" {...control.register?.("cityId")} />
+				<input type="hidden" {...control.register?.("areaId")} />
 			</motion.div>
 		</AnimatePresence>
 	);
@@ -782,6 +979,8 @@ export default function CreateOrderPageComplete({
 				city: existingOrder.city || "",
 				cityId: existingOrder.cityId ? String(existingOrder.cityId) : "",
 				area: existingOrder.area || "",
+				areaId: existingOrder.areaId ? String(existingOrder.areaId) : "",
+				clientId: existingOrder.clientId || existingOrder.client?.id || "",
 				landmark: existingOrder.landmark || "",
 				paymentMethod: !fromId ? existingOrder.paymentMethod || "cod" : "cod",
 				paymentStatus: !fromId ? existingOrder.paymentStatus || "pending" : "pending",
@@ -818,6 +1017,8 @@ export default function CreateOrderPageComplete({
 			city: "",
 			cityId: "",
 			area: "",
+			areaId: "",
+			clientId: "",
 			landmark: "",
 			paymentMethod: "cod",
 			paymentStatus: "pending",
@@ -1186,6 +1387,8 @@ export default function CreateOrderPageComplete({
 				city: data.city,
 				cityId: data.cityId || undefined,
 				area: data.area || undefined,
+				areaId: data.areaId || undefined,
+				clientId: data.clientId || undefined,
 				landmark: data.landmark || undefined,
 				paymentMethod: data.paymentMethod,
 				paymentStatus: data.paymentStatus || undefined,
@@ -1328,26 +1531,8 @@ export default function CreateOrderPageComplete({
 									)}
 								</div>
 
-								{/* Phone Number */}
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.phoneNumber")} *
-									</Label>
-									<Controller
-										name="phoneNumber"
-										control={control}
-										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.phoneNumber")}
-
-											/>
-										)}
-									/>
-									{errors.phoneNumber && (
-										<p className="text-xs text-red-500">{errors.phoneNumber.message}</p>
-									)}
-								</div>
+								{/* Phone Number / existing client lookup */}
+				<ClientPhoneLookup control={control} setValue={setValue} error={errors.phoneNumber} disabled={isEditMode} />
 
 								{/* Email */}
 								<div className="space-y-2">

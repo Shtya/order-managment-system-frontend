@@ -17,7 +17,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import WhatsAppAccountSelect from "../WhatsAppAccountSelect";
 import CustomerModal from "../../../customers/atoms/CustomerModal";
 import MediaPreviewOverlay from "./MediaPreviewOverlay";
 import InteractiveMessageModal from "./InteractiveMessageModal";
@@ -103,8 +102,6 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
         loadMoreMessages,
         messageStatus,
         setMessageStatus,
-        messageAccount,
-        setMessageAccount,
         handleRetryMessage: onRetry,
         handleReaction: onReaction,
         replyTo,
@@ -134,7 +131,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
 
     const locale = useLocale();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const activeFilterCount = Number(messageStatus !== "all") + Number(messageAccount !== "all");
+    const activeFilterCount = Number(messageStatus !== "all");
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
@@ -441,7 +438,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                 <div className="flex items-center gap-1 md:gap-2">
                     <div className="flex items-center">
                         <DropdownMenu open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                            <DropdownMenuTrigger asChild>
+                            {/* <DropdownMenuTrigger asChild>
                                 <button
                                     aria-label={t("filter")}
                                     className={cn(
@@ -456,7 +453,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                         </span>
                                     )}
                                 </button>
-                            </DropdownMenuTrigger>
+                            </DropdownMenuTrigger> */}
                             <DropdownMenuContent
                                 align={locale === "ar" ? "start" : "end"}
                                 sideOffset={10}
@@ -472,7 +469,6 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                         type="button"
                                         onClick={() => {
                                             setMessageStatus("all");
-                                            setMessageAccount("all");
                                         }}
                                         className="text-xs font-medium text-primary hover:underline"
                                     >
@@ -480,14 +476,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                     </button>
                                 </div>
 
-                                <WhatsAppAccountSelect
-                                    label={t("sendNumber")}
-                                    value={messageAccount}
-                                    onChange={setMessageAccount}
-                                    allowAll={true}
-                                />
-
-                                <div className="mt-4 space-y-2">
+                                <div className="space-y-2">
                                     <Label className="text-xs font-medium text-muted-foreground">
                                         {t("MessageStatus")}
                                     </Label>
@@ -649,15 +638,14 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                             <Search className="w-8 h-8 text-muted-foreground/60" />
                         </div>
                         <p className="text-sm font-medium text-muted-foreground">
-                            {messageStatus !== "all" || messageAccount !== "all"
+                            {messageStatus !== "all"
                                 ? t("noResultsFound")
                                 : t("noMessagesFound")}
                         </p>
-                        {(messageStatus !== "all" || messageAccount !== "all") && (
+                        {messageStatus !== "all" && (
                             <button
                                 onClick={() => {
                                     setMessageStatus("all");
-                                    setMessageAccount("all");
                                 }}
                                 className="mt-2 text-xs text-wa-green hover:underline font-medium"
                             >

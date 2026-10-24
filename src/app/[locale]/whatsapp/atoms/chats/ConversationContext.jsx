@@ -45,6 +45,8 @@ export const ConversationProvider = ({ children }) => {
 
     const [unreadCount, setUnreadCount] = useState(0);
     const [humanHandoffCount, setHumanHandoffCount] = useState(0);
+    const [allCount, setAllCount] = useState(0);
+    const [accountFilter, setAccountFilter] = useState("all");
     const lastUnreadRef = useRef(new Map());
     const lastHandoffRef = useRef(new Map());
 
@@ -152,7 +154,6 @@ export const ConversationProvider = ({ children }) => {
     const [messagesCursor, setMessagesCursor] = useState(null);
     const [messageSearch, setMessageSearch] = useState("");
     const [messageStatus, setMessageStatus] = useState("all");
-    const [messageAccount, setMessageAccount] = useState("all");
     const MESSAGES_LIMIT = 50;
     const previousConversationId = useRef(null);
     const isAutoScrolling = useRef(false);
@@ -163,6 +164,8 @@ export const ConversationProvider = ({ children }) => {
     activeConvIdRef.current = selectedConversation?.id;
     const activeTabRef = useRef(activeTab);
     activeTabRef.current = activeTab;
+    const accountFilterRef = useRef(accountFilter);
+    accountFilterRef.current = accountFilter;
     const messagesRef = useRef(messages);
     messagesRef.current = messages;
     const conversationsRef = useRef(conversations);
@@ -253,6 +256,7 @@ export const ConversationProvider = ({ children }) => {
                 search: searchQuery,
                 unreadOnly: tab  === "unread" ? true : undefined,
                 humanHandoffOnly: tab  === "humanHandoff" ? true : undefined,
+                accountId: accountFilter === "all" ? undefined : accountFilter,
                 status: tab  === "all" || tab  === "unread" || tab  === "humanHandoff" ? undefined : effectiveTab.toUpperCase(),
                 sortBy: SORT_BY,
                 cursor: append ? cursor : undefined
@@ -262,6 +266,10 @@ export const ConversationProvider = ({ children }) => {
             if (gen !== listFetchGen.current) return;
             const { records, hasMore: apiHasMore, nextCursor } = res.data || {};
             const list = Array.isArray(records) ? records : [];
+            if (!append) {
+                lastUnreadRef.current = new Map();
+                lastHandoffRef.current = new Map();
+            }
             list.forEach((conv) => {
                 if (!conv?.id) return;
                 lastUnreadRef.current.set(conv.id, conv.unreadCount || 0);
@@ -281,17 +289,20 @@ export const ConversationProvider = ({ children }) => {
                 setIsLoadingMore(false);
             }
         }
-    }, [activeTab, cursor]);
+    }, [activeTab, accountFilter, cursor]);
 
     const fetchTabCounts = useCallback(async () => {
         try {
-            const res = await api.get("/conversation/counts");
+            const res = await api.get("/conversation/counts", {
+                params: { accountId: accountFilter === "all" ? undefined : accountFilter }
+            });
+            setAllCount(typeof res.data?.all === "number" ? res.data.all : 0);
             setUnreadCount(typeof res.data?.unread === "number" ? res.data.unread : 0);
             setHumanHandoffCount(typeof res.data?.humanHandoff === "number" ? res.data.humanHandoff : 0);
         } catch (error) {
             console.error("Failed to fetch conversation tab counts:", error);
         }
-    }, []);
+    }, [accountFilter]);
 
     const fetchMessages = useCallback(async (conversationId, cursor, append = false) => {
         if (!conversationId) return;
@@ -308,7 +319,7 @@ export const ConversationProvider = ({ children }) => {
                 cursor: append ? cursor : undefined,
                 search: messageSearch || undefined,
                 status: messageStatus === "all" ? undefined : messageStatus,
-                accountId: messageAccount === "all" ? undefined : messageAccount
+                accountId: accountFilter === "all" ? undefined : accountFilter
             };
 
             const res = await api.get("/whatsapp/messages", { params });
@@ -335,11 +346,11 @@ export const ConversationProvider = ({ children }) => {
                 }
             }
         }
-    }, [messageSearch, messageAccount, messageStatus]);
+    }, [messageSearch, accountFilter, messageStatus]);
 
     useEffect(() => {
         fetchConversations(search, activeTab, false);
-    }, [activeTab, search]); // Re-fetch on tab or search change
+    }, [activeTab, search, accountFilter]); // Re-fetch on tab, search, or account change
 
     useEffect(() => {
         fetchTabCounts();
@@ -380,7 +391,7 @@ export const ConversationProvider = ({ children }) => {
         selectedConversation?.id,
         messageSearch,
         messageStatus,
-        messageAccount,
+        accountFilter,
     ]);
 
     useEffect(() => {
@@ -397,6 +408,10 @@ export const ConversationProvider = ({ children }) => {
     const ensureHandoffRow = useCallback(async (id) => {
         if (!id || activeTabRef.current !== "humanHandoff") return;
         if (conversationsRef.current.some((c) => c.id === id)) return;
+        if (accountFilterRef.current !== "all") {
+            await fetchConversations(search, activeTabRef.current, false);
+            return;
+        }
         try {
             const res = await api.get(`/conversation/${id}`);
             const conv = res.data;
@@ -412,7 +427,7 @@ export const ConversationProvider = ({ children }) => {
         } catch (error) {
             console.error("Failed to load handed-off conversation:", error);
         }
-    }, []);
+    }, [fetchConversations, search]);
 
     const applyConversationAi = useCallback((id, next) => {
         if (Object.prototype.hasOwnProperty.call(next, "humanHandoff")) {
@@ -504,6 +519,7 @@ export const ConversationProvider = ({ children }) => {
     useEffect(() => {
         const unsubConversation = subscribe("WHATSAPP_CONVERSATION_NEW", (payload) => {
             if (!payload?.conversation) return;
+            if (accountFilterRef.current !== "all") return;
             const newConv = payload.conversation;
             if (!lastUnreadRef.current.has(newConv.id)) {
                 lastUnreadRef.current.set(newConv.id, 0);
@@ -524,6 +540,7 @@ export const ConversationProvider = ({ children }) => {
         const unsubConversationAi = subscribe("WHATSAPP_CONVERSATION_AI", (payload) => {
             const conversationId = payload?.conversationId;
             if (!conversationId) return;
+            if (accountFilterRef.current !== "all") void fetchTabCounts();
             applyConversationAi(conversationId, {
                 ...(Object.prototype.hasOwnProperty.call(payload, "humanHandoff")
                     ? { humanHandoff: payload.humanHandoff }
@@ -537,6 +554,8 @@ export const ConversationProvider = ({ children }) => {
         const unsubConversationRead = subscribe("WHATSAPP_CONVERSATION_READ", (payload) => {
             const conversationId = payload?.conversationId;
             if (!conversationId) return;
+            if (accountFilterRef.current !== "all") void fetchTabCounts();
+            if (accountFilterRef.current !== "all" && !conversationsRef.current.some((c) => c.id === conversationId)) return;
             const nextUnread = payload?.unreadCount ?? 0;
             rememberUnread(conversationId, nextUnread);
             setConversations((prev) => prev.map((c) =>
@@ -549,6 +568,11 @@ export const ConversationProvider = ({ children }) => {
             if (!payload?.message) return;
 
             const msg = payload.message;
+            if (accountFilterRef.current !== "all" && msg.accountId !== accountFilterRef.current) return;
+            if (accountFilterRef.current !== "all" && !conversationsRef.current.some((c) => c.id === msg.conversationId)) {
+                void fetchConversations(search, activeTabRef.current, false);
+                void fetchTabCounts();
+            }
             const agentPausedUntil = Object.prototype.hasOwnProperty.call(payload, "agentPausedUntil")
                 ? payload.agentPausedUntil
                 : undefined;
@@ -752,7 +776,7 @@ export const ConversationProvider = ({ children }) => {
             unsubMessage?.();
             unsubMessageUpdate?.();
         };
-    }, [subscribe, markAsRead, applyAccountFromMessage, applyConversationAi, rememberUnread, rememberHandoff, ensureHandoffRow]);
+    }, [subscribe, markAsRead, applyAccountFromMessage, applyConversationAi, rememberUnread, rememberHandoff, ensureHandoffRow, fetchConversations, fetchTabCounts, search]);
 
     const loadMoreConversations = useCallback(() => {
         if (!isLoading && !isLoadingMore && hasMore) {
@@ -1082,8 +1106,8 @@ export const ConversationProvider = ({ children }) => {
         setMessageSearch,
         messageStatus,
         setMessageStatus,
-        messageAccount,
-        setMessageAccount,
+        accountFilter,
+        setAccountFilter,
         replyTo,
         setReplyTo,
         prevScrollHeight,
@@ -1093,6 +1117,7 @@ export const ConversationProvider = ({ children }) => {
         currentUnreadCount,
         unreadCount,
         humanHandoffCount,
+        allCount,
         isAutoScrolling,
         checkIsNearBottom,
         bottomSentinelRef
@@ -1126,12 +1151,13 @@ export const ConversationProvider = ({ children }) => {
         loadMoreMessages,
         messageSearch,
         messageStatus,
-        messageAccount,
+        accountFilter,
         replyTo,
         isNearBottom,
         currentUnreadCount,
         unreadCount,
         humanHandoffCount,
+        allCount,
         checkIsNearBottom,
         scrollToBottom,
     ]);

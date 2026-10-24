@@ -1153,6 +1153,7 @@ export const ScanReason = {
 // ─────────────────────────────────────────────────────────────
 function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updateStatsAfterScanStart }) {
 	const t = useTranslations("warehouse.preparation");
+	const tOrders = useTranslations("orders");
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const pathname = usePathname();
@@ -1170,6 +1171,9 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 	const [justScanned, setJustScanned] = useState(null);
 	const [soundEnabled, setSoundEnabled] = useState(true);
 	const scanInputRef = useRef(null);
+	const pendingScansRef = useRef({});
+	const scanSessionRef = useRef(0);
+	const preparationStartedRef = useRef(false);
 	const showFeedback = useCallback((type, msg) => {
 		setFeedback({ type, msg }); setScanState(type);
 		setTimeout(() => { setFeedback(null); setScanState("idle"); }, 2200);
@@ -1209,6 +1213,22 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 			const res = await api.get(`/orders/${idOrCode}`);
 			const order = res.data;
 			if (order) {
+				const statusCode = String(order.status?.code || order.status || "").toLowerCase();
+				const currentStatus = order.status && typeof order.status === "object"
+					? order.status.system && order.status.code
+						? tOrders(`statuses.${order.status.code}`)
+						: order.status.name || order.status.code || "-"
+					: order.status || "-";
+				if (!["printed", "preparing"].includes(statusCode)) {
+					if (soundEnabled) playBeep("error");
+					showFeedback("error", t("scan.invalidOrderStatus", { currentStatus }));
+					setScanValue("");
+					return;
+				}
+
+				scanSessionRef.current += 1;
+				pendingScansRef.current = {};
+				preparationStartedRef.current = statusCode === "preparing";
 				setActiveOrder(order);
 				setLocalProducts((order.items || []).map((p) => ({
 					...p,
@@ -1232,7 +1252,7 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 		} finally {
 			setIsFetchingOrder(false);
 		}
-	}, [soundEnabled, showFeedback, t]);
+	}, [soundEnabled, showFeedback, t, tOrders]);
 
 	useEffect(() => {
 		if (!orderIdFromUrl) return;
@@ -1255,6 +1275,9 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 
 
 	const resetCurrentOrder = useCallback(() => {
+		scanSessionRef.current += 1;
+		pendingScansRef.current = {};
+		preparationStartedRef.current = false;
 		setScanStep("order"); setScanValue(""); setActiveOrder(null); setLocalProducts([]); setJustScanned(null);
 		setTimeout(() => scanInputRef.current?.focus(), 100);
 	}, []);
@@ -1272,17 +1295,14 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 		setErrorCount((c) => c + 1);
 		showFeedback("error", errorMsg);
 	}, [soundEnabled, showFeedback]);
-	const pendingScansRef = useRef({});
-
 	const handleScan = useCallback(async (value) => {
 		const val = value?.trim() || scanValue.trim();
 
 		setScanValue(val)
 		if (!val) return;
 
-		if (scanStep === "order" || isAllDone) {
+		if (scanStep === "order") {
 			await fetchActiveOrder(val);
-			pendingScansRef.current = {};
 		} else {
 
 			const orderNumberRegex = /^ORD[A-Z0-9]{7}$/;
@@ -1312,9 +1332,16 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 			if (!product) {
 				localErrorCode = "SKU_NOT_IN_ORDER";
 				errorMessage = t("scan.barcodeNotFound", { val });
-			} else if (product.scannedQuantity >= product.quantity) {
-				localErrorCode = "ALREADY_FULLY_SCANNED";
-				errorMessage = t("scan.alreadyScanned", { name: product.name });
+			} else {
+				const scanTracker = pendingScansRef.current[product.id];
+				const reservedQuantity = scanTracker
+					? scanTracker.serverScanned + scanTracker.pending
+					: product.scannedQuantity || 0;
+
+				if (reservedQuantity >= product.quantity) {
+					localErrorCode = "ALREADY_FULLY_SCANNED";
+					errorMessage = t("scan.alreadyScanned", { name: product.name });
+				}
 			}
 
 			if (localErrorCode) {
@@ -1334,12 +1361,14 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 				pendingScansRef.current[product.id] = { pending: 0, serverScanned: product?.scannedQuantity || 0 };
 			}
 			pendingScansRef.current[product.id].pending += 1;
+			const requestSession = scanSessionRef.current;
 
 			didOptimisticUpdate = true;
-			const optimisticProducts = localProducts.map((p, i) =>
-				p.id === product.id ? { ...p, scannedQuantity: p.scannedQuantity + 1 } : p
-			);
-			setLocalProducts(optimisticProducts);
+			setLocalProducts(prev => prev.map((p) =>
+				p.id === product.id
+					? { ...p, scannedQuantity: Math.min(p.quantity, (p.scannedQuantity || 0) + 1) }
+					: p
+			));
 			handleSuccessFeedback(product.name, product.id || product.variant?.sku);
 
 
@@ -1349,7 +1378,36 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 				const res = await api.post(`/orders/${activeOrder.id}/scan-preparation/${val}`, {
 					itemId: product.id
 				});
-				const { scanned, success, message, code, isOrderComplete } = res.data;
+				const { scanned, success, message, isOrderComplete } = res.data;
+
+				// A completion/reset invalidates every older request still in flight.
+				if (requestSession !== scanSessionRef.current) return;
+
+				// Update tracking before handling either a successful or failed response.
+				pendingScansRef.current[product.id].pending = Math.max(0, pendingScansRef.current[product.id].pending - 1);
+				if (success) {
+					pendingScansRef.current[product.id].serverScanned = Math.max(pendingScansRef.current[product.id].serverScanned, scanned);
+				}
+
+				const remainingPending = pendingScansRef.current[product.id].pending;
+
+				if (!success) {
+					// Restore the last confirmed quantity while preserving any scans still in flight.
+					if (didOptimisticUpdate) {
+						const confirmedScanned = pendingScansRef.current[product.id].serverScanned;
+						const fallbackScanned = Math.min(product.quantity, confirmedScanned + remainingPending);
+						setLocalProducts(prev => {
+							const rolledBack = prev.map((p, i) =>
+								p.id === product.id ? { ...p, scannedQuantity: fallbackScanned } : p
+							);
+							return rolledBack;
+						});
+						setSuccessCount((c) => Math.max(0, c - 1));
+					}
+
+					handleErrorFeedback(message || t("scan.errorScanning"));
+					return;
+				}
 
 				if (isOrderComplete) {
 					showFeedback("success", t("scan.orderComplete", { code: activeOrder.orderNumber }));
@@ -1358,14 +1416,7 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 					return;
 				}
 
-				// Update tracking state
-				pendingScansRef.current[product.id].pending = Math.max(0, pendingScansRef.current[product.id].pending - 1);
-				if (success) {
-					pendingScansRef.current[product.id].serverScanned = Math.max(pendingScansRef.current[product.id].serverScanned, scanned);
-				}
-
-				// Final synchronization only when all pending scans for this SKU are finished
-				const remainingPending = pendingScansRef.current[product.id].pending;
+				// Final synchronization only when all pending scans for this SKU are finished.
 				if (!!product && remainingPending === 0) {
 					const finalScanned = pendingScansRef.current[product.id].serverScanned;
 					setLocalProducts(prev => {
@@ -1376,41 +1427,23 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 					});
 				}
 
-
-				if (!success) {
-					// Rollback UI if we did an optimistic update
-					if (didOptimisticUpdate) {
-						setLocalProducts(prev => {
-							const rolledBack = prev.map((p, i) =>
-								p.id === product.id ? { ...p, scannedQuantity: Math.max(0, p.scannedQuantity - 1) } : p
-							);
-							return rolledBack;
-						});
-						setSuccessCount((c) => Math.max(0, c - 1));
-					}
-
-					if (code) {
-						handleErrorFeedback(message || t("scan.errorScanning"));
-				} else if (!code) {
-					toast.error(message)
-				}
-					return;
-				}
-
 				if (!didOptimisticUpdate) {
 					handleSuccessFeedback(product.name, product.id || product.variant?.sku);
 				}
 
 				// Update stats if it was printed (first scan for this order)
-				if (activeOrder.status?.code === 'printed') {
+				if (activeOrder.status?.code === 'printed' && !preparationStartedRef.current) {
+					preparationStartedRef.current = true;
 					updateStatsAfterScanStart?.();
-					setActiveOrder(prev => ({
-						...prev,
-						status: { ...prev.status, code: 'preparing' }
-					}));
+					setActiveOrder(prev => {
+						if (!prev || prev.id !== activeOrder.id) return prev;
+						return { ...prev, status: { ...prev.status, code: 'preparing' } };
+					});
 				}
 
 			} catch (error) {
+				if (requestSession !== scanSessionRef.current) return;
+
 				// Update tracking state on error
 				pendingScansRef.current[product.id].pending = Math.max(0, pendingScansRef.current[product.id].pending - 1);
 

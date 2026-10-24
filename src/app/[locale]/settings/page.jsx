@@ -157,11 +157,12 @@ function SectionHead({ title, subtitle }) {
 }
 
 // ── Setting card shell ────────────────────────────────────────────────────────
-function SettingCard({ children, className }) {
+function SettingCard({ children, className, flat = true }) {
   return (
     <div
       className={cn(
-        "relative rounded-2xl border border-border/50 main-card overflow-hidden",
+        "relative rounded-2xl main-card overflow-hidden",
+        flat ?  "border-none! shadow-none! p-0!" : " border border-border/50 ",
         "shadow-[0_1px_3px_rgba(0,0,0,0.05),0_4px_16px_rgba(0,0,0,0.04)]",
         className,
       )}
@@ -533,16 +534,56 @@ export default function SettingsPage() {
   ];
 
   const content = {
-    company: <CompanyTab />,
-    configuration: <SettingsTab />,
-    // categories: <CategoriesTab />,
-    account: <AccountTab />,
-    security: <SecurityTab />,
-    notifications: <NotificationsTab />,
-    whatsapp: <WhatsAppTab />,
-    automations: <AutomationsTab />,
-    language: <LanguageTab />,
-    cities: <CitiesTab />,
+    company: (
+      <SettingCard>
+        <CompanyTab />
+      </SettingCard>
+    ),
+    configuration: (
+      <SettingCard>
+        <SettingsTab />
+      </SettingCard>
+    ),
+    // categories: (
+    //   <SettingCard>
+    //     <CategoriesTab />
+    //   </SettingCard>
+    // ),
+    account: (
+      <SettingCard>
+        <AccountTab />
+      </SettingCard>
+    ),
+    security: (
+      <SettingCard>
+        <SecurityTab />
+      </SettingCard>
+    ),
+    notifications: (
+      <SettingCard>
+        <NotificationsTab />
+      </SettingCard>
+    ),
+    whatsapp: (
+      <SettingCard>
+        <WhatsAppTab />
+      </SettingCard>
+    ),
+    automations: (
+      <SettingCard>
+        <AutomationsTab />
+      </SettingCard>
+    ),
+    language: (
+      <SettingCard>
+        <LanguageTab />
+      </SettingCard>
+    ),
+    cities: (
+      <SettingCard>
+        <CitiesTab />
+      </SettingCard>
+    ),
   };
 
   return (
@@ -693,7 +734,7 @@ export function WhatsAppTab({ hideAccount = false, showAgentSettings = true, onS
       className={cn("space-y-6")}
     >
       {/* 1. Account Selection */}
-      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <Phone size={20} />
@@ -712,7 +753,7 @@ export function WhatsAppTab({ hideAccount = false, showAgentSettings = true, onS
       </div>
 
       {showAgentSettings ? (
-      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <Bot size={20} />
@@ -749,7 +790,7 @@ export function LanguageTab({ hideAccount = false, onSave }) {
       className={cn("space-y-6")}
     >
       {/* 1. Language Selection */}
-      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <Globe size={20} />
@@ -1216,7 +1257,7 @@ export function AutomationsTab({ hideAccount = false, onSave }) {
       animate={{ opacity: 1, x: 0 }}
       className={cn("space-y-6")}
     >
-      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <Zap size={20} />

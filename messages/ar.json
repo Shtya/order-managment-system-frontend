@@ -15939,13 +15939,12 @@
     "resetFilters": "إعادة ضبط",
     "sendNumber": "رقم الحساب",
     "messageStatuses": {
-      "accepted": "تم القبول",
+      "accepted": "قيد الإرسال",
       "sent": "تم الإرسال",
-      "delivered": "تم التسليم",
-      "read": "تمت القراءة",
+      "delivered": "وصلت للعميل",
+      "read": "قرأها العميل",
       "played": "تم التشغيل",
-      "replied": "تم رد العميل",
-      "failed": "فشل الإرسال"
+      "failed": "تعذر الإرسال"
     },
     "tabs": {
       "all": "الكل",

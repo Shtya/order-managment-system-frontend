@@ -15914,13 +15914,12 @@
     "sendNumber": "Account number",
     "MessageStatus": "Message status",
     "messageStatuses": {
-      "accepted": "Accepted",
+      "accepted": "Sending",
       "sent": "Sent",
-      "delivered": "Delivered",
-      "read": "Read",
+      "delivered": "Delivered to customer",
+      "read": "Read by customer",
       "played": "Played",
-      "replied": "Customer Replied",
-      "failed": "Failed"
+      "failed": "Could not be sent"
     },
     "tabs": {
       "all": "All",

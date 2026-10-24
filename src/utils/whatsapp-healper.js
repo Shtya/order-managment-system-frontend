@@ -174,7 +174,7 @@ export const MESSAGE_STATUS_LIST = [
     { value: MESSAGE_STATUS.DELIVERED, label: "Delivered", color: "text-blue-400" },
     { value: MESSAGE_STATUS.READ, label: "Read", color: "text-green-500" },
     // { value: MESSAGE_STATUS.PLAYED, label: "Played", color: "text-violet-500" },
-    { value: MESSAGE_STATUS.REPLIED, label: "Replied", color: "text-emerald-500" },
+    // { value: MESSAGE_STATUS.REPLIED, label: "Replied", color: "text-emerald-500" },
     { value: MESSAGE_STATUS.FAILED, label: "Failed", color: "text-red-500" },
 ];
 

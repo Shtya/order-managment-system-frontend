@@ -218,15 +218,15 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 }
 
 export function toLocalClientPhone(value) {
-    const original = String(value ?? "").trim();
-    if (!original) return "";
+	const original = String(value ?? "").trim();
+	if (!original) return "";
 
-    const digits = original.replace(/\D/g, "");
+	const digits = original.replace(/\D/g, "");
 
-    if (/^00201[0125]\d{8}$/.test(digits)) return `0${digits.slice(4)}`;
-    if (/^201[0125]\d{8}$/.test(digits)) return `0${digits.slice(2)}`;
+	if (/^00201[0125]\d{8}$/.test(digits)) return `0${digits.slice(4)}`;
+	if (/^201[0125]\d{8}$/.test(digits)) return `0${digits.slice(2)}`;
 
-    return original.replace(/^\+/, "");
+	return original.replace(/^\+/, "");
 }
 
 export function ClientPhoneLookup({ control, setValue, error, disabled = false }) {
@@ -289,8 +289,8 @@ export function ClientPhoneLookup({ control, setValue, error, disabled = false }
 
 	const selectClient = useCallback((client) => {
 		const contacts = Array.isArray(client.contacts) ? client.contacts : [];
-		const primary = client.primaryContact || contacts.find((contact) => contact.id === client.primaryContactId) || contacts[0];
-		const secondary = contacts.find((contact) => contact.id !== primary?.id);
+		const primary = contacts.length > 0 ? contacts[0] : client.primaryContact;
+		const secondary = contacts.length > 1 ? contacts[1] : null;
 
 		setSelectedClient(client);
 		setSearchActive(false);
@@ -1544,7 +1544,7 @@ export default function CreateOrderPageComplete({
 								</div>
 
 								{/* Phone Number / existing client lookup */}
-				<ClientPhoneLookup control={control} setValue={setValue} error={errors.phoneNumber} disabled={isEditMode} />
+								<ClientPhoneLookup control={control} setValue={setValue} error={errors.phoneNumber} disabled={isEditMode} />
 
 								{/* Email */}
 								<div className="space-y-2">

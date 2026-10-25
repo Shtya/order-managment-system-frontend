@@ -217,6 +217,18 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 	);
 }
 
+export function toLocalClientPhone(value) {
+    const original = String(value ?? "").trim();
+    if (!original) return "";
+
+    const digits = original.replace(/\D/g, "");
+
+    if (/^00201[0125]\d{8}$/.test(digits)) return `0${digits.slice(4)}`;
+    if (/^201[0125]\d{8}$/.test(digits)) return `0${digits.slice(2)}`;
+
+    return original.replace(/^\+/, "");
+}
+
 export function ClientPhoneLookup({ control, setValue, error, disabled = false }) {
 	const t = useTranslations("createOrder.clientLookup");
 	const tCreateOrder = useTranslations("createOrder");
@@ -285,8 +297,8 @@ export function ClientPhoneLookup({ control, setValue, error, disabled = false }
 		setOpen(false);
 		setValue("clientId", client.id, { shouldDirty: true });
 		setValue("customerName", client.name || primary?.name || "", { shouldValidate: true, shouldDirty: true });
-		setValue("phoneNumber", primary?.phoneNumber || client.phoneNumber || "", { shouldValidate: true, shouldDirty: true });
-		setValue("secondPhoneNumber", secondary?.phoneNumber || "", { shouldDirty: true });
+		setValue("phoneNumber", toLocalClientPhone(primary?.phoneNumber || client.phoneNumber), { shouldValidate: true, shouldDirty: true });
+		setValue("secondPhoneNumber", toLocalClientPhone(secondary?.phoneNumber), { shouldDirty: true });
 		setValue("email", client.email || "", { shouldValidate: true, shouldDirty: true });
 
 		const addresses = Array.isArray(client.addresses) ? client.addresses : [];

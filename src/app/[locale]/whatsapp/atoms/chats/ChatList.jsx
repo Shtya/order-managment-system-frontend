@@ -128,6 +128,7 @@ export default function ChatList() {
     const { hasPermission } = useAuth();
     const {
         conversations,
+        setConversations,
         isLoading,
         isLoadingMore,
         hasMore,
@@ -254,7 +255,7 @@ export default function ChatList() {
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="rounded-md!">
-                                        {hasPermission("conversation.create") && (
+                                        {hasPermission("contacts.create") && (
                                             <DropdownMenuItem onClick={() => setIsAddModalOpen(true)} className="gap-2 cursor-pointer">
                                                 <UserPlus className="w-4 h-4" />
                                                 {t("addContactPerson")}
@@ -360,6 +361,16 @@ export default function ChatList() {
             <CustomerModal
                 open={isAddModalOpen}
                 onOpenChange={setIsAddModalOpen}
+                onSave={(conversation) => {
+                    if (!conversation?.id) return;
+                    setAccountFilter("all");
+                    setConversations((current) => [
+                        conversation,
+                        ...current.filter((item) => item.id !== conversation.id),
+                    ]);
+                    setSelectedConversation(conversation);
+                    setMobileView("chat");
+                }}
             />
         </div>
     );

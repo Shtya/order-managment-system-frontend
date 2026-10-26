@@ -543,6 +543,7 @@ const {
 ## Permissions and authorization UI
 
 - Use `useAuth` permission helpers and the existing `permission` props on shared buttons and action components. Do not duplicate permission parsing or compare raw permission arrays throughout feature code.
+- When adding a permission module, add its localized group name under `roles-client.group.<module>` and localize each permission under `roles-client.permissionsItems` in every supported locale.
 - Apply the same permission consistently to every entry point for an action: sidebar item, page-header button, table toolbar action, row action, dialog submit button, and central Settings entry where applicable.
 - Hide actions that should not be discoverable to unauthorized users. Disable an action only when showing it communicates useful state; do not expose a functional unauthorized control.
 - Keep role checks (`isAdmin`, `isSuperAdmin`, `roles`, and `notRoles`) separate from capability checks and use each only when the business rule calls for it.

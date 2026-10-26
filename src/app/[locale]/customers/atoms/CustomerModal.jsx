@@ -127,7 +127,7 @@ export default function CustomerModal({
       const message =
         error.response?.data?.message ||
         error.message ||
-        "Failed to save customer";
+        t("chatFailed");
       handleApiError(error, Array.isArray(message) ? message[0] : message);
     } finally {
       setIsSaving(false);
@@ -156,7 +156,7 @@ export default function CustomerModal({
               onChange={handleFileChange}
             />
             <Avatar className="w-24 h-24 border-4 border-card shadow-lg">
-              <AvatarImage src={avatarSrc(previewImage)} alt="Preview" />
+              <AvatarImage src={avatarSrc(previewImage)} alt={t("contactName")} />
               <AvatarFallback className="bg-muted text-muted-foreground/60">
                 <User size={48} strokeWidth={1.5} />
               </AvatarFallback>
@@ -164,6 +164,7 @@ export default function CustomerModal({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              aria-label={t("editContact")}
               className="absolute bottom-0 right-0 p-1.5 bg-primary rounded-full text-primary-foreground shadow-md border-2 border-card cursor-pointer hover:bg-primary/90 transition-colors focus:outline-none"
             >
               <Camera size={14} />
@@ -245,6 +246,7 @@ export default function CustomerModal({
               type="submit"
               className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-20"
               disabled={isSaving}
+              permission={customer ? "contacts.update" : "contacts.create"}
               label={
                 isSaving ? (
                   <div className="flex items-center gap-2">

@@ -525,7 +525,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="rounded-md! bg-card border-border">
-                                {hasPermission("customer.update") && (
+                                {hasPermission("contacts.update") && (
                                     <DropdownMenuItem onClick={() => setIsEditModalOpen(true)} className="gap-2 cursor-pointer">
                                         <Edit className="w-4 h-4" />
                                         {t("editContact")}

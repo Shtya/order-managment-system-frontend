@@ -29,6 +29,7 @@ import api, { handleApiError } from "@/utils/api";
 import { COUNTRIES } from "../../dashboard/users/page";
 import PageHeader from "@/components/atoms/Pageheader";
 import { validatePhone } from "@/components/atoms/InputPhone";
+import WhatsappAccountAccessSelector from "../atoms/WhatsappAccountAccessSelector";
 
 
 
@@ -145,16 +146,25 @@ export default function AddEmployeePage() {
 
 	const [rolesLoading, setRolesLoading] = useState(false);
 	const [roles, setRoles] = useState([]);
+	const [whatsappAccess, setWhatsappAccess] = useState({
+		whatsappAccessMode: "selected",
+		whatsappAccountIds: [],
+	});
 
 	async function fetchRoles() {
 		setRolesLoading(true);
 		try {
-			const res = await api.get("/lookups/roles");
-			const raw = res?.data || [];
+			const [lookupRes, rolesRes] = await Promise.all([
+				api.get("/lookups/roles"),
+				api.get("/roles").catch(() => ({ data: [] })),
+			]);
+			const permissionMap = new Map((rolesRes?.data || []).map((role) => [String(role.id), role.permissionNames || []]));
+			const raw = lookupRes?.data || [];
 			const normalized = raw
 				.map((r) => ({
 					id: r?.id ?? r?.value ?? r?._id,
 					label: r?.name ?? r?.label ?? r?.title ?? String(r?.id ?? ""),
+					permissionNames: permissionMap.get(String(r?.id ?? r?.value ?? r?._id)) || [],
 				}))
 				.filter((r) => r.id != null);
 
@@ -215,6 +225,8 @@ export default function AddEmployeePage() {
 					: values.employeeType;
 
 			fd.append("employeeType", employeeTypeValue);
+			fd.append("whatsappAccessMode", whatsappAccess.whatsappAccessMode);
+			fd.append("whatsappAccountIds", JSON.stringify(whatsappAccess.whatsappAccountIds));
 
 			if (avatarFile) fd.append("avatar", avatarFile);
 
@@ -241,6 +253,7 @@ export default function AddEmployeePage() {
 
 			setValue("employeeType", "", { shouldValidate: false });
 			setValue("customType", "", { shouldValidate: false });
+			setWhatsappAccess({ whatsappAccessMode: "selected", whatsappAccountIds: [] });
 		} catch (e) {
 			const msg = getApiMsg(e, tCommon);
 
@@ -558,6 +571,23 @@ export default function AddEmployeePage() {
 							</div>
 						</div>
 
+					</motion.div>
+
+					<motion.div
+						className="main-card"
+						initial={{ opacity: 0, x: 20 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ delay: 0.35 }}
+					>
+						<div className="mb-4">
+							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200">{t("sections.whatsappAccess")}</h3>
+							<p className="mt-1 text-sm text-muted-foreground">{t("sections.whatsappAccessDescription")}</p>
+						</div>
+						<WhatsappAccountAccessSelector
+							value={whatsappAccess}
+							onChange={setWhatsappAccess}
+							role={roles.find((role) => String(role.id) === String(watch("roleId")))}
+						/>
 					</motion.div>
 				</div>
 

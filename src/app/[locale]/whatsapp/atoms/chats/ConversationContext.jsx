@@ -569,7 +569,7 @@ export const ConversationProvider = ({ children }) => {
 
             const msg = payload.message;
             if (accountFilterRef.current !== "all" && msg.accountId !== accountFilterRef.current) return;
-            if (accountFilterRef.current !== "all" && !conversationsRef.current.some((c) => c.id === msg.conversationId)) {
+            if (!conversationsRef.current.some((c) => c.id === msg.conversationId)) {
                 void fetchConversations(search, activeTabRef.current, false);
                 void fetchTabCounts();
             }

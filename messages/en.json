@@ -2246,6 +2246,37 @@
       "deleted": "Deleted successfully",
       "statusUpdated": "Status updated successfully"
     },
+    "whatsappAccess": {
+      "title": "WhatsApp number access",
+      "description": "Number access limits which WhatsApp accounts this employee can use. The assigned role still controls chat and send permissions.",
+      "canOpenChats": "Can open WhatsApp chats",
+      "cannotOpenChats": "Cannot open WhatsApp chats",
+      "readRequirement": "Requires conversation.read and whatsapp.read",
+      "canSendMessages": "Can send messages",
+      "readOnly": "Read only",
+      "sendRequirement": "Sending requires whatsapp.send",
+      "allNumbers": "All WhatsApp numbers",
+      "allNumbersDescription": "Includes numbers connected in the future",
+      "selectedNumbers": "Selected WhatsApp numbers",
+      "selectedNumbersDescription": "Choose one or more accounts",
+      "availableNumbers": "Available WhatsApp numbers",
+      "selectedCount": "{count} selected",
+      "clearAll": "Clear all",
+      "searchPlaceholder": "Search by account name or number",
+      "loading": "Loading WhatsApp numbers…",
+      "loadFailed": "Failed to load WhatsApp numbers.",
+      "retry": "Try again",
+      "noNumbersFound": "No WhatsApp numbers found.",
+      "noSelectionWarning": "The employee can be created, but will not see WhatsApp accounts or chats.",
+      "tableHeader": "WhatsApp access",
+      "allNumbersShort": "All numbers",
+      "numberCount": "{count, plural, one {# number} other {# numbers}}",
+      "noNumbers": "No numbers",
+      "manageAction": "Manage WhatsApp access",
+      "updateSuccess": "WhatsApp access updated successfully",
+      "cancel": "Cancel",
+      "save": "Save access"
+    },
     "loading": "Loading...",
     "empty": "No data",
     "errors": {
@@ -2345,7 +2376,9 @@
     "sections": {
       "employeeType": "Employee Type",
       "employeeInfo": "Employee Information",
-      "employeeImage": "Employee Image"
+      "employeeImage": "Employee Image",
+      "whatsappAccess": "WhatsApp number access",
+      "whatsappAccessDescription": "Choose the WhatsApp business numbers this employee can use."
     },
     "roles": {
       "dataEntry": "Data Entry",

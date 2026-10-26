@@ -19,6 +19,7 @@ import {
 	Loader2,
 	Info,
 	Download,
+	MessageSquareLock,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -74,6 +75,7 @@ import api from "@/utils/api";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import { ActionButtons } from "@/components/atoms/Actions";
+import WhatsappAccountAccessSelector from "./atoms/WhatsappAccountAccessSelector";
 
 /** =========================
  * Helpers
@@ -143,6 +145,10 @@ export default function EmployeesPage() {
 	const [editSaving, setEditSaving] = useState(false);
 
 	const [deleteOpen, setDeleteOpen] = useState(false);
+	const [whatsappAccessOpen, setWhatsappAccessOpen] = useState(false);
+	const [whatsappAccessSaving, setWhatsappAccessSaving] = useState(false);
+	const [whatsappAccessData, setWhatsappAccessData] = useState({ whatsappAccessMode: "selected", whatsappAccountIds: [] });
+	const [whatsappAccessRole, setWhatsappAccessRole] = useState(null);
 	const [selected, setSelected] = useState(null);
 
 	/** icons map for switcher */
@@ -406,6 +412,47 @@ export default function EmployeesPage() {
 		setDeleteOpen(true);
 	}
 
+	async function openWhatsappAccess(row) {
+		setSelected(row);
+		setWhatsappAccessOpen(true);
+		setRowActionLoading(row.id, "whatsapp", true);
+		try {
+			const [{ data: user }, { data: roles }] = await Promise.all([
+				api.get(`/users/${row.id}`),
+				api.get("/roles").catch(() => ({ data: [] })),
+			]);
+			setWhatsappAccessData({
+				whatsappAccessMode: user.whatsappAccessMode || "selected",
+				whatsappAccountIds: user.whatsappAccountIds || [],
+			});
+			setWhatsappAccessRole((roles || []).find((role) => String(role.id) === String(user.roleId)) || user.role || null);
+		} catch (e) {
+			setError(getApiMsg(e, t));
+			setWhatsappAccessOpen(false);
+		} finally {
+			setRowActionLoading(row.id, "whatsapp", false);
+		}
+	}
+
+	async function saveWhatsappAccess() {
+		if (!selected?.id) return;
+		setWhatsappAccessSaving(true);
+		try {
+			const { data } = await api.patch(`/users/${selected.id}/whatsapp-access`, whatsappAccessData);
+			setRecords((rows) => rows.map((row) => row.id === selected.id ? {
+				...row,
+				whatsappAccessMode: data.whatsappAccessMode,
+				whatsappAccountCount: data.whatsappAccountCount,
+			} : row));
+			setApiMsg(t("whatsappAccess.updateSuccess"));
+			setWhatsappAccessOpen(false);
+		} catch (e) {
+			setError(getApiMsg(e, t));
+		} finally {
+			setWhatsappAccessSaving(false);
+		}
+	}
+
 	async function confirmDelete() {
 		if (!selected?.id) return;
 		setRowActionLoading(selected.id, "del", true);
@@ -565,6 +612,22 @@ export default function EmployeesPage() {
 					),
 			},
 			{
+				key: "whatsappAccess",
+				header: t("whatsappAccess.tableHeader"),
+				cell: (row) =>
+					row.whatsappAccessMode === "all" || row.whatsappAccountCount ? (
+						<Badge variant="outline" className="rounded-xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/5">
+							{row.whatsappAccessMode === "all"
+								? t("whatsappAccess.allNumbersShort")
+								: t("whatsappAccess.numberCount", { count: row.whatsappAccountCount })}
+						</Badge>
+					) : (
+						<Badge className="rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+							{t("whatsappAccess.noNumbers")}
+						</Badge>
+					),
+			},
+			{
 				key: "options",
 				header: t("table.options"),
 				className: "w-[220px]",
@@ -588,6 +651,14 @@ export default function EmployeesPage() {
 									onClick: (r) => openEdit(r),
 									variant: "primary",
 									disabled: !!busy.edit,
+									permission: "users.update",
+								},
+								{
+									icon: busy.whatsapp ? <Loader2 size={16} className="animate-spin" /> : <MessageSquareLock size={16} />,
+									tooltip: t("whatsappAccess.manageAction"),
+									onClick: (r) => openWhatsappAccess(r),
+									variant: "emerald",
+									disabled: !!busy.whatsapp,
 									permission: "users.update",
 								},
 								{
@@ -726,6 +797,17 @@ export default function EmployeesPage() {
 				onConfirm={confirmDelete}
 				loading={!!(selected?.id && rowLoading[selected.id]?.del)}
 			/>
+
+			<WhatsappAccessDialog
+				open={whatsappAccessOpen}
+				onOpenChange={setWhatsappAccessOpen}
+				employee={selected}
+				role={whatsappAccessRole}
+				value={whatsappAccessData}
+				onChange={setWhatsappAccessData}
+				onSave={saveWhatsappAccess}
+				saving={whatsappAccessSaving}
+			/>
 		</div>
 	);
 }
@@ -849,6 +931,34 @@ function ViewEmployeeDialog({ t, open, onOpenChange, data, loading }) {
 	);
 }
 
+function WhatsappAccessDialog({ open, onOpenChange, employee, role, value, onChange, onSave, saving }) {
+	const t = useTranslations("employees.whatsappAccess");
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="max-w-4xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950">
+				<DialogHeader className="border-b border-border px-6 py-5 text-start">
+					<DialogTitle className="flex items-center gap-2"><MessageSquareLock size={20} className="text-primary" />{t("title")}</DialogTitle>
+					<DialogDescription>{employee?.name} {role?.name ? `· ${role.name}` : ""}</DialogDescription>
+				</DialogHeader>
+				<div className="min-h-0 flex-1 overflow-y-auto p-6">
+					<WhatsappAccountAccessSelector value={value} onChange={onChange} role={role} />
+				</div>
+				<div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
+					<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)} disabled={saving}>{t("cancel")}</Button>
+					<Button_
+						className="rounded-full btn-primary1"
+						onClick={onSave}
+						disabled={saving}
+						permission="users.update"
+						icon={saving ? <Loader2 className="animate-spin" size={18} /> : <MessageSquareLock size={18} />}
+						label={t("save")}
+					/>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) {
 	const tAdd = useTranslations("addEmployee");
 	const emptyForm = { name: "", email: "", phone: "", password: "", roleId: "", employeeType: "", customType: "" };
@@ -905,7 +1015,7 @@ function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) 
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl p-0 gap-0">
+			<DialogContent className="max-w-3xl! w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-950" >
 				<DialogHeader className="border-b border-border px-6 py-5 text-start">
 					<DialogTitle>{t("edit.title") || t("actions.edit")}</DialogTitle>
 					<DialogDescription>{initial ? `#${initial.id}` : ""}</DialogDescription>

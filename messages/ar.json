@@ -2248,6 +2248,37 @@
       "deleted": "تم الحذف بنجاح",
       "statusUpdated": "تم تحديث الحالة بنجاح"
     },
+    "whatsappAccess": {
+      "title": "صلاحية أرقام واتساب",
+      "description": "تحدد صلاحية الأرقام حسابات واتساب التي يمكن لهذا الموظف استخدامها، بينما يظل الدور المحدد هو المسؤول عن صلاحيات فتح المحادثات وإرسال الرسائل.",
+      "canOpenChats": "يمكنه فتح محادثات واتساب",
+      "cannotOpenChats": "لا يمكنه فتح محادثات واتساب",
+      "readRequirement": "يتطلب صلاحيتي conversation.read و whatsapp.read",
+      "canSendMessages": "يمكنه إرسال الرسائل",
+      "readOnly": "قراءة فقط",
+      "sendRequirement": "يتطلب الإرسال صلاحية whatsapp.send",
+      "allNumbers": "كل أرقام واتساب",
+      "allNumbersDescription": "يشمل الأرقام التي ستتم إضافتها مستقبلًا",
+      "selectedNumbers": "أرقام واتساب محددة",
+      "selectedNumbersDescription": "اختر حسابًا واحدًا أو أكثر",
+      "availableNumbers": "أرقام واتساب المتاحة",
+      "selectedCount": "تم تحديد {count}",
+      "clearAll": "مسح الكل",
+      "searchPlaceholder": "ابحث باسم الحساب أو الرقم",
+      "loading": "جارٍ تحميل أرقام واتساب…",
+      "loadFailed": "تعذر تحميل أرقام واتساب.",
+      "retry": "إعادة المحاولة",
+      "noNumbersFound": "لم يتم العثور على أرقام واتساب.",
+      "noSelectionWarning": "يمكن إنشاء الموظف، لكنه لن يرى حسابات أو محادثات واتساب.",
+      "tableHeader": "صلاحية واتساب",
+      "allNumbersShort": "كل الأرقام",
+      "numberCount": "{count} رقم",
+      "noNumbers": "لا توجد أرقام",
+      "manageAction": "إدارة صلاحية واتساب",
+      "updateSuccess": "تم تحديث صلاحية واتساب بنجاح",
+      "cancel": "إلغاء",
+      "save": "حفظ الصلاحية"
+    },
     "loading": "جارٍ التحميل...",
     "empty": "لا توجد بيانات",
     "errors": {
@@ -2347,7 +2378,9 @@
     "sections": {
       "employeeType": "نوع الموظف",
       "employeeInfo": "بيانات الموظف",
-      "employeeImage": "صورة الموظف"
+      "employeeImage": "صورة الموظف",
+      "whatsappAccess": "صلاحية أرقام واتساب",
+      "whatsappAccessDescription": "اختر أرقام واتساب للأعمال التي يمكن لهذا الموظف استخدامها."
     },
     "roles": {
       "dataEntry": "مدخل بيانات",

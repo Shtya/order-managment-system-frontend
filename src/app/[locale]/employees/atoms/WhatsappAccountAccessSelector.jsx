@@ -10,6 +10,48 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTranslations } from "next-intl";
 
+function SkeletonLine({ className = "" }) {
+  return <div className={cn("h-3 rounded bg-muted-foreground/15", className)} />;
+}
+
+function WhatsappAccountAccessSkeleton() {
+  return (
+    <div aria-busy="true" className="animate-pulse space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        {[0, 1].map((item) => (
+          <div key={item} className="flex items-center gap-3 rounded-xl border-2 border-border bg-card p-4">
+            <div className="h-10 w-10 shrink-0 rounded-xl bg-muted" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <SkeletonLine className="w-28" />
+              <SkeletonLine className="w-full max-w-48" />
+            </div>
+            <div className="h-4 w-4 shrink-0 rounded-full bg-muted" />
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-3">
+        <div className="space-y-2">
+          <SkeletonLine className="w-32" />
+          <SkeletonLine className="w-20" />
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {[0, 1, 2, 3].map((item) => (
+            <div key={item} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+              <div className="h-9 w-9 shrink-0 rounded-xl bg-muted" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <SkeletonLine className="w-24" />
+                <SkeletonLine className="w-32 max-w-full" />
+              </div>
+              <div className="h-5 w-5 shrink-0 rounded bg-muted" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function WhatsappAccountAccessSelector({ value, onChange, role }) {
   const t = useTranslations("employees.whatsappAccess");
   const [accounts, setAccounts] = useState([]);
@@ -70,6 +112,10 @@ export default function WhatsappAccountAccessSelector({ value, onChange, role })
         </div>
       )} */}
 
+      {loading ? (
+        <WhatsappAccountAccessSkeleton />
+      ) : (
+        <>
       <RadioGroup value={mode} onValueChange={setMode} className="grid gap-3 sm:grid-cols-2">
         {[
           { id: "all", icon: Globe2, title: t("allNumbers"), text: t("allNumbersDescription") },
@@ -95,14 +141,13 @@ export default function WhatsappAccountAccessSelector({ value, onChange, role })
           </div>
           {/* <Input startIcon={<Search size={16} className="text-muted-foreground" />} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("searchPlaceholder")} /> */}
           <div className="grid max-h-64 gap-2 overflow-y-auto sm:grid-cols-2">
-            {loading && <div className="col-span-full py-6 text-center text-sm text-muted-foreground">{t("loading")}</div>}
-            {!loading && loadFailed && (
+            {loadFailed && (
               <div className="col-span-full flex flex-col items-center gap-2 py-6 text-center text-sm text-muted-foreground">
                 <span>{t("loadFailed")}</span>
                 <Button type="button" variant="outline" size="sm" onClick={() => setReloadKey((key) => key + 1)}>{t("retry")}</Button>
               </div>
             )}
-            {!loading && !loadFailed && filtered.map((account) => {
+            {!loadFailed && filtered.map((account) => {
               const checked = selected.includes(account.id);
               return (
                 <label key={account.id} htmlFor={`whatsapp-account-${account.id}`} className={cn("flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-start", checked ? "border-primary/50 bg-primary/5" : "border-border bg-card")}>
@@ -112,10 +157,12 @@ export default function WhatsappAccountAccessSelector({ value, onChange, role })
                 </label>
               );
             })}
-            {!loading && !loadFailed && !filtered.length && <div className="col-span-full py-6 text-center text-sm text-muted-foreground">{t("noNumbersFound")}</div>}
+            {!loadFailed && !filtered.length && <div className="col-span-full py-6 text-center text-sm text-muted-foreground">{t("noNumbersFound")}</div>}
           </div>
           {/* {!selected.length && <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">{t("noSelectionWarning")}</div>} */}
         </div>
+      )}
+        </>
       )}
     </div>
   );

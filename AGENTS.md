@@ -554,6 +554,7 @@ const {
 
 - Every asynchronous screen or control must account for loading, empty, error, and populated states. Mutations must also communicate success or failure.
 - Reuse existing skeletons, loaders, table loading states, button loading props, and empty-state components before creating new ones. Keep layout dimensions stable enough to avoid disruptive content jumps.
+- For structured cards, forms, and selectors, render a shape-matched `animate-pulse` skeleton for the complete data-dependent UI until all required data is loaded. Follow the skeleton pattern in `src/app/[locale]/campaigns/atoms/wizard/StepMessage.jsx`: use `bg-muted`, `bg-muted-foreground/15`, matching responsive grids, and `aria-busy="true"`; do not briefly render empty or default interactive controls while their data is still loading.
 - Use separate loading states for independent requests such as table data, header stats, lookup options, exports, and row mutations. Do not block an entire page for a small background action.
 - Clear identity-dependent or query-dependent stale data when a request fails or its owner/filter changes and retaining it would mislead the user.
 - Use `handleApiError` for appropriate user-facing API failures, respect globally handled errors, and localize fallback messages. Console errors should contain diagnostic context but must not be the only user feedback for a failed user action.

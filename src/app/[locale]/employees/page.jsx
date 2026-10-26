@@ -654,20 +654,20 @@ export default function EmployeesPage() {
 									permission: "users.update",
 								},
 								{
-									icon: busy.whatsapp ? <Loader2 size={16} className="animate-spin" /> : <MessageSquareLock size={16} />,
-									tooltip: t("whatsappAccess.manageAction"),
-									onClick: (r) => openWhatsappAccess(r),
-									variant: "emerald",
-									disabled: !!busy.whatsapp,
-									permission: "users.update",
-								},
-								{
 									icon: busy.view ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />,
 									tooltip: t("actions.view"),
 									onClick: (r) => handleView(r),
 									variant: "primary",
 									disabled: !!busy.view,
 									permission: "users.read",
+								},
+								{
+									icon: busy.whatsapp ? <Loader2 size={16} className="animate-spin" /> : <MessageSquareLock size={16} />,
+									tooltip: t("whatsappAccess.manageAction"),
+									onClick: (r) => openWhatsappAccess(r),
+									variant: "emerald",
+									disabled: !!busy.whatsapp,
+									permission: "users.update",
 								},
 								{
 									icon: busy.del ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />,

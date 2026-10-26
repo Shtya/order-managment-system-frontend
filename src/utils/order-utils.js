@@ -1,5 +1,18 @@
 
 
+export function normalizeShippingProvider(value) {
+    const code = String(value ?? "").trim().toLowerCase();
+    if (!code || code === "none") return null;
+    return code;
+}
+
+export const EMPTY_PROVIDER_META = {
+    cityId: "",
+    zoneId: "",
+    districtId: "",
+    locationId: "",
+};
+
 export const GEO_CONFIG = {
     bosta: {
         needsGeo: true,

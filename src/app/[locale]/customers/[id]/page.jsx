@@ -59,7 +59,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useRouter } from "@/i18n/navigation";
@@ -71,14 +70,16 @@ import ClientModal from "../atoms/ClientModal";
 import { ClientTagsEditor } from "../atoms/ClientTagsEditor";
 import { Card } from "../../reports/order-analysis/page";
 import { Checkbox } from "@/components/ui/checkbox";
-
-const NONE_VALUE = "__none";
+import { AddressSection } from "../../orders/atoms/AddressSection";
+import { EMPTY_PROVIDER_META, GEO_CONFIG, normalizeShippingProvider } from "@/utils/order-utils";
 
 const createAddressSchema = (t) =>
   yup.object({
     label: yup.string().nullable().optional(),
     address: yup.string().required(t("addresses.validation.addressRequired")),
+    city: yup.string().required(t("addresses.validation.cityRequired")),
     cityId: yup.string().nullable().optional(),
+    area: yup.string().nullable().optional(),
     areaId: yup.string().nullable().optional(),
     landmark: yup.string().nullable().optional(),
     isDefault: yup.boolean().optional(),
@@ -136,19 +137,19 @@ function AddressDialog({
   onSaved,
 }) {
   const t = useTranslations("customers.details");
-  const locale = useLocale();
-  const [cities, setCities] = useState([]);
-  const [areas, setAreas] = useState([]);
-  const [citiesLoading, setCitiesLoading] = useState(false);
-  const [areasLoading, setAreasLoading] = useState(false);
+  const tCreateOrder = useTranslations("createOrder");
+  const tShipping = useTranslations("shipping");
+  const { shippingCompanies } = usePlatformSettings();
   const [saving, setSaving] = useState(false);
+  const [shippingProvider, setShippingProvider] = useState(null);
+  const [providerMeta, setProviderMeta] = useState({ ...EMPTY_PROVIDER_META });
+  const [providerErrors, setProviderErrors] = useState({});
   const schema = useMemo(() => createAddressSchema(t), [t]);
 
   const {
     control,
     handleSubmit,
     reset,
-    watch,
     setValue,
     formState: { errors },
   } = useForm({
@@ -156,77 +157,98 @@ function AddressDialog({
     defaultValues: {
       label: "",
       address: "",
-      cityId: NONE_VALUE,
-      areaId: NONE_VALUE,
+      city: "",
+      cityId: "",
+      area: "",
+      areaId: "",
       landmark: "",
       isDefault: false,
     },
   });
 
-  const selectedCityId = watch("cityId");
+  const providerOptions = useMemo(() => {
+    const seen = new Set();
+    const options = (shippingCompanies || []).filter((company) => {
+      const provider = normalizeShippingProvider(company?.provider);
+      if (!provider || seen.has(provider)) return false;
+      seen.add(provider);
+      return true;
+    });
+    if (shippingProvider && !seen.has(shippingProvider)) {
+      options.push({ provider: shippingProvider, name: shippingProvider });
+    }
+    return options;
+  }, [shippingCompanies, shippingProvider]);
 
   useEffect(() => {
     if (!open) return;
 
+    const provider = normalizeShippingProvider(address?.shippingProvider);
+    setShippingProvider(provider);
+    setProviderErrors({});
+    setProviderMeta({
+      cityId: address?.shippingMetadata?.cityId || "",
+      zoneId: address?.shippingMetadata?.zoneId || "",
+      districtId: address?.shippingMetadata?.districtId || "",
+      locationId: address?.shippingMetadata?.locationId || "",
+    });
     reset({
       label: address?.label || "",
       address: address?.address || "",
-      cityId: address?.cityId || address?.cityDetails?.id || NONE_VALUE,
-      areaId: address?.areaId || address?.areaDetails?.id || NONE_VALUE,
+      city: address?.city || address?.cityDetails?.nameEn || address?.cityDetails?.nameAr || "",
+      cityId: address?.cityId || address?.cityDetails?.id || "",
+      area: address?.area || address?.areaDetails?.nameEn || address?.areaDetails?.nameAr || "",
+      areaId: address?.areaId || address?.areaDetails?.id || "",
       landmark: address?.landmark || "",
       isDefault: Boolean(address?.isDefault),
     });
   }, [address, open, reset]);
 
-  useEffect(() => {
-    if (!open) return;
-
-    const fetchCities = async () => {
-      setCitiesLoading(true);
-      try {
-        const res = await api.get("/cities", { params: { limit: 500 } });
-        setCities(normalizeRecords(res.data));
-      } catch (error) {
-        console.error("Cities lookup failed:", error);
-        setCities([]);
-      } finally {
-        setCitiesLoading(false);
+  const validateGeo = () => {
+    const config = GEO_CONFIG[shippingProvider] || GEO_CONFIG.default;
+    const errs = {};
+    (config.fields || []).forEach((field) => {
+      if (!providerMeta[field]) {
+        const errorKey = field.replace("Id", "Required");
+        errs[field] = tCreateOrder(`validation.${errorKey}`);
       }
-    };
+    });
+    setProviderErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
-    fetchCities();
-  }, [open]);
-
-  useEffect(() => {
-    if (!open || !selectedCityId || selectedCityId === NONE_VALUE) {
-      setAreas([]);
-      return;
-    }
-
-    const fetchAreas = async () => {
-      setAreasLoading(true);
-      try {
-        const res = await api.get(`/cities/${selectedCityId}/areas`);
-        setAreas(Array.isArray(res.data) ? res.data : []);
-      } catch (error) {
-        console.error("Areas lookup failed:", error);
-        setAreas([]);
-      } finally {
-        setAreasLoading(false);
-      }
-    };
-
-    fetchAreas();
-  }, [selectedCityId, open]);
+  const handleProviderChange = (value) => {
+    const provider = normalizeShippingProvider(value);
+    setShippingProvider(provider);
+    setProviderErrors({});
+    setProviderMeta({ ...EMPTY_PROVIDER_META });
+    setValue("city", "");
+    setValue("cityId", "");
+    setValue("area", "");
+    setValue("areaId", "");
+  };
 
   const onSubmit = async (values) => {
+    if (!validateGeo()) return;
+
     const payload = {
       label: values.label?.trim() || undefined,
       address: values.address?.trim(),
-      cityId: values.cityId === NONE_VALUE ? undefined : values.cityId,
-      areaId: values.areaId === NONE_VALUE ? undefined : values.areaId,
+      city: values.city?.trim() || undefined,
+      cityId: values.cityId || undefined,
+      area: values.area?.trim() || undefined,
+      areaId: shippingProvider ? undefined : values.areaId || undefined,
       landmark: values.landmark?.trim() || undefined,
       isDefault: values.isDefault,
+      shippingProvider: shippingProvider || "none",
+      shippingMetadata: shippingProvider
+        ? {
+            cityId: providerMeta.cityId || undefined,
+            zoneId: providerMeta.zoneId || undefined,
+            districtId: providerMeta.districtId || undefined,
+            locationId: providerMeta.locationId || undefined,
+          }
+        : undefined,
     };
 
     setSaving(true);
@@ -249,8 +271,8 @@ function AddressDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl overflow-hidden rounded-2xl bg-card">
-        <DialogHeader className="pb-4 border-b border-border">
+      <DialogContent className="sm:max-w-4xl overflow-hidden rounded-2xl bg-card p-0">
+        <DialogHeader className="px-6 py-4 border-b border-border">
           <DialogTitle className="flex items-center gap-3 text-foreground">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <MapPin size={20} />
@@ -259,128 +281,72 @@ function AddressDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="address-label">{t("addresses.fields.label")}</Label>
-              <Controller
-                name="label"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    value={field.value || ""}
-                    id="address-label"
-                    placeholder={t("addresses.placeholders.label")}
-                  />
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address-landmark">{t("addresses.fields.landmark")}</Label>
-              <Controller
-                name="landmark"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    value={field.value || ""}
-                    id="address-landmark"
-                    placeholder={t("addresses.placeholders.landmark")}
-                  />
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("addresses.fields.city")}</Label>
-              <Controller
-                name="cityId"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value || NONE_VALUE}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      setValue("areaId", NONE_VALUE);
-                    }}
-                    disabled={citiesLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("addresses.placeholders.city")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={NONE_VALUE}>{t("addresses.placeholders.city")}</SelectItem>
-                      {cities.map((city) => (
-                        <SelectItem key={city.id} value={city.id}>
-                          {getLocalizedName(city, locale)}
+        <form onSubmit={handleSubmit(onSubmit)} className="flex max-h-[85vh] flex-col">
+          <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="address-label">{t("addresses.fields.label")}</Label>
+                <Controller
+                  name="label"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      id="address-label"
+                      placeholder={t("addresses.placeholders.label")}
+                    />
+                  )}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("addresses.fields.shippingCompany")}</Label>
+                <Select
+                  value={shippingProvider || "none"}
+                  onValueChange={handleProviderChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("addresses.placeholders.shippingCompany")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("addresses.systemProvider")}</SelectItem>
+                    {providerOptions.map((company) => {
+                      const provider = normalizeShippingProvider(company.provider);
+                      return (
+                        <SelectItem key={provider} value={provider}>
+                          {tShipping(`providers.${provider}`, { defaultValue: company.name || provider })}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>{t("addresses.fields.area")}</Label>
-              <Controller
-                name="areaId"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value || NONE_VALUE}
-                    onValueChange={field.onChange}
-                    disabled={areasLoading || selectedCityId === NONE_VALUE}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("addresses.placeholders.area")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={NONE_VALUE}>{t("addresses.placeholders.area")}</SelectItem>
-                      {areas.map((area) => (
-                        <SelectItem key={area.id} value={area.id}>
-                          {getLocalizedName(area, locale)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address-full">{t("addresses.fields.address")}</Label>
+            <AddressSection
+              key={shippingProvider || "none"}
+              shippingProvider={shippingProvider}
+              control={control}
+              errors={errors}
+              setValue={setValue}
+              providerMeta={providerMeta}
+              setProviderMeta={setProviderMeta}
+              providerErrors={providerErrors}
+            />
+
             <Controller
-              name="address"
+              name="isDefault"
               control={control}
               render={({ field }) => (
-                <Textarea
-                  {...field}
-                  value={field.value || ""}
-                  id="address-full"
-                  rows={4}
-                  placeholder={t("addresses.placeholders.address")}
-                  className={errors.address ? "border-red-500" : ""}
-                />
+                <div className="flex items-center gap-2">
+                  <Checkbox onCheckedChange={field.onChange} checked={Boolean(field.value)} />
+                  <span className="text-sm font-semibold text-foreground">{t("addresses.fields.isDefault")}</span>
+                </div>
               )}
             />
-            {errors.address && (
-              <p className="text-xs text-red-500">{errors.address.message}</p>
-            )}
           </div>
 
-          <Controller
-            name="isDefault"
-            control={control}
-            render={({ field }) => (
-              <div className="flex items-center gap-2">
-                <Checkbox onCheckedChange={field.onChange} checked={Boolean(field.value)} />
-                <span className="text-sm font-semibold text-foreground">{t("addresses.fields.isDefault")}</span>
-              </div>
-            )}
-          />
-
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 border-t border-border px-6 py-4">
             <Button
               type="button"
               variant="outline"
@@ -1145,6 +1111,17 @@ function AddressCard({
   onDelete,
   onSetDefault,
 }) {
+  const tShipping = useTranslations("shipping");
+  const { shippingCompanies } = usePlatformSettings();
+  const provider = normalizeShippingProvider(address?.shippingProvider);
+  const providerLabel = provider
+    ? tShipping(`providers.${provider}`, {
+        defaultValue:
+          shippingCompanies.find((company) => normalizeShippingProvider(company.provider) === provider)?.name
+          || provider,
+      })
+    : t("addresses.systemProvider");
+
   return (
     <div className={cn(
       "relative overflow-hidden rounded-2xl border bg-background p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
@@ -1162,23 +1139,26 @@ function AddressCard({
             <h3 className="truncate text-sm font-black text-foreground">
               {address.label || t("addresses.defaultLabel")}
             </h3>
-            {/* <p className="mt-1 text-xs text-muted-foreground">
-              {customer?.name || t("unknownCustomer")}
-            </p> */}
           </div>
         </div>
-        {address.isDefault ? (
-          <Badge className="rounded-full bg-primary/10 text-primary hover:bg-primary/10">
-            {t("addresses.defaultBadge")}
+        <div className="flex flex-col items-end gap-1">
+          <Badge className="rounded-full bg-muted text-muted-foreground hover:bg-muted">
+            {providerLabel}
           </Badge>
-        ) : null}
+          {address.isDefault ? (
+            <Badge className="rounded-full bg-primary/10 text-primary hover:bg-primary/10">
+              {t("addresses.defaultBadge")}
+            </Badge>
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-2 text-sm">
-        {/* <AddressLine label={t("fields.phone")} value={customer?.phoneNumber} /> */}
         <AddressLine label={t("addresses.fields.city")} value={getAddressCity(address, locale)} />
         <AddressLine label={t("addresses.fields.area")} value={getAddressArea(address, locale)} />
-        <AddressLine label={t("addresses.fields.district")} value={address.district || address.zone || address.landmark} />
+        {address.landmark ? (
+          <AddressLine label={t("addresses.fields.landmark")} value={address.landmark} />
+        ) : null}
         <div className="rounded-xl bg-muted/40 px-3 py-2">
           <p className="text-xs font-black text-muted-foreground">{t("addresses.fields.address")}</p>
           <p className="mt-1 text-sm font-semibold leading-6 text-foreground">{valueOrDash(address.address)}</p>

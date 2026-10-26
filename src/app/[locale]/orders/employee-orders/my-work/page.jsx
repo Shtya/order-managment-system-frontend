@@ -31,7 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/utils/cn";
-import { AddressSection } from "../../new/page";
+import { AddressSection } from "../../atoms/AddressSection";
 import { GEO_CONFIG } from "@/utils/order-utils";
 import { Input } from "@/components/ui/input";
 import { alarmToast } from "@/utils/healpers";

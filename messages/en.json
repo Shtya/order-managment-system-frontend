@@ -8656,6 +8656,7 @@
       "chooseAddressHint": "{name} has more than one saved address. Select one for this order.",
       "savedAddress": "Saved address",
       "defaultAddress": "Default",
+      "systemProvider": "System",
       "city": "City",
       "area": "Area",
       "streetAddress": "Street Address",
@@ -15112,24 +15113,29 @@
         "setDefault": "Set as default",
         "emptyTitle": "No addresses yet",
         "emptySubtitle": "Add the first delivery address for this customer.",
+        "systemProvider": "System address",
         "fields": {
           "label": "Label",
+          "shippingCompany": "Shipping company",
           "city": "City",
           "area": "Area",
           "district": "District",
+          "zone": "Zone",
           "address": "Full Address",
           "landmark": "Landmark",
           "isDefault": "Make this the default address"
         },
         "placeholders": {
           "label": "Home, work, branch...",
+          "shippingCompany": "Select shipping company",
           "city": "Select city",
           "area": "Select area",
           "address": "Write the full address",
           "landmark": "Nearby landmark or district"
         },
         "validation": {
-          "addressRequired": "Address is required"
+          "addressRequired": "Address is required",
+          "cityRequired": "City is required"
         },
         "toast": {
           "created": "Address added successfully",

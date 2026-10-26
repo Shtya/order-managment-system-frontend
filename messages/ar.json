@@ -8644,6 +8644,7 @@
       "chooseAddressHint": "لدى {name} أكثر من عنوان محفوظ. اختر عنواناً لهذا الطلب.",
       "savedAddress": "عنوان محفوظ",
       "defaultAddress": "الافتراضي",
+      "systemProvider": "النظام",
       "city": "المدينة",
       "area": "المنطقة",
       "streetAddress": "العنوان",
@@ -15137,24 +15138,29 @@
         "setDefault": "تعيين كافتراضي",
         "emptyTitle": "لا توجد عناوين بعد",
         "emptySubtitle": "أضف أول عنوان توصيل لهذا العميل.",
+        "systemProvider": "عنوان النظام",
         "fields": {
           "label": "الاسم",
+          "shippingCompany": "شركة الشحن",
           "city": "المدينة",
           "area": "المنطقة",
           "district": "الحي",
+          "zone": "المنطقة",
           "address": "العنوان الكامل",
           "landmark": "علامة مميزة",
           "isDefault": "اجعل هذا العنوان افتراضيًا"
         },
         "placeholders": {
           "label": "المنزل، العمل، الفرع...",
+          "shippingCompany": "اختر شركة الشحن",
           "city": "اختر المدينة",
           "area": "اختر المنطقة",
           "address": "اكتب العنوان الكامل",
           "landmark": "علامة مميزة أو حي قريب"
         },
         "validation": {
-          "addressRequired": "العنوان مطلوب"
+          "addressRequired": "العنوان مطلوب",
+          "cityRequired": "المدينة مطلوبة"
         },
         "toast": {
           "created": "تمت إضافة العنوان بنجاح",

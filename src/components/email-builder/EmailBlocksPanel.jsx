@@ -40,7 +40,7 @@ export const BLOCK_ICONS = {
 };
 
 const TILE =
-  "h-auto cursor-pointer gap-2.5 rounded-md border border-border bg-card px-2.5 py-2 text-start text-[12.5px] font-medium text-foreground transition hover:border-primary hover:bg-primary/5 hover:text-foreground";
+  "h-auto min-w-0 cursor-pointer gap-2.5 overflow-hidden rounded-md border border-border bg-card px-2.5 py-2 text-start text-[12.5px] font-medium text-foreground transition hover:border-primary hover:bg-primary/5 hover:text-foreground";
 
 function Tile({ icon: Icon, label, onClick, className, children }) {
   return (
@@ -55,7 +55,7 @@ function Tile({ icon: Icon, label, onClick, className, children }) {
           <Icon size={18} />
         </span>
       )}
-      <span>{label}</span>
+      <span className="min-w-0 truncate" title={label}>{label}</span>
       {children}
     </Button>
   );
@@ -410,13 +410,14 @@ const content = [
           {contentItems.length > 0 && (
             <div>
               <Title>{t("panel.content")}</Title>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2">
                 {contentItems.map(([type, icon]) => (
                   <Tile
                     key={type}
                     icon={icon}
                     label={t(`blockTypes.${type}`)}
                     onClick={() => onAdd(type)}
+                    className="w-full gap-1.5 px-2 text-[12px]"
                   />
                 ))}
               </div>

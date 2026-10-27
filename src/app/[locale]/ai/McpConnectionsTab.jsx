@@ -500,7 +500,7 @@ export default function McpConnectionsTab({ guideOpen = false, onGuideOpenChange
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="border border-border rounded-[14px] bg-white overflow-hidden shadow-[0_2px_10px_rgba(30,30,60,0.03)]"
+      className="border border-border rounded-[14px] bg-card overflow-hidden shadow-[0_2px_10px_rgba(30,30,60,0.03)] dark:shadow-none"
     >
       <div className="px-5 py-4 border-b border-border">
         <div className="flex items-center gap-2">

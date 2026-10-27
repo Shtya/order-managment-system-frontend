@@ -263,7 +263,7 @@ function StatusBadge({ connected, className }) {
         return (
             <span className={cn(
                 "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold",
-                "text-[#14945a] bg-[#e9f8f0]",
+                "text-[#14945a] bg-[#e9f8f0] dark:bg-emerald-950/60 dark:text-emerald-300",
                 className
             )}>
                 <span className="w-1.5 h-1.5 rounded-full bg-current" />
@@ -274,7 +274,7 @@ function StatusBadge({ connected, className }) {
     return (
         <span className={cn(
             "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold",
-            "text-[#c47a00] bg-[#fff6df]",
+            "text-[#c47a00] bg-[#fff6df] dark:bg-amber-950/60 dark:text-amber-300",
             className
         )}>
             <span className="w-1.5 h-1.5 rounded-full bg-current" />
@@ -676,13 +676,13 @@ function ConfigurationsTab({ provider, integration, loading, saving, onSave, onT
 
             {/* ── Provider Information Card ────────────────── */}
             <div className="border border-border rounded-[10px] overflow-hidden">
-                <div className="px-4 py-3 border-b border-border bg-white">
+                <div className="px-4 py-3 border-b border-border bg-muted/30">
                     <h3 className="text-[13px] font-semibold text-foreground">{t("tabs.configurations")}</h3>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                         {t("provider.infoSubtitle")}
                     </p>
                 </div>
-                <div className="p-4 bg-white">
+                <div className="p-4 bg-card">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
                             <label className="block text-[10px] text-muted-foreground mb-1">{t("provider.name")}</label>
@@ -728,7 +728,7 @@ function ConfigurationsTab({ provider, integration, loading, saving, onSave, onT
 
             {/* ── Integration Card ─────────────────────────── */}
             <div className="border border-border rounded-[10px] overflow-hidden">
-                <div className="px-4 py-3 border-b border-border bg-white">
+                <div className="px-4 py-3 border-b border-border bg-muted/30">
                     <h3 className="text-[13px] font-semibold text-foreground">{t("integration.title")}</h3>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                         {isConnected
@@ -737,7 +737,7 @@ function ConfigurationsTab({ provider, integration, loading, saving, onSave, onT
                         }
                     </p>
                 </div>
-                <div className="p-4 bg-white space-y-4">
+                <div className="p-4 bg-card space-y-4">
 
 
                     {/* Integration Form */}
@@ -810,21 +810,21 @@ function ConfigurationsTab({ provider, integration, loading, saving, onSave, onT
 
             {/* ── Default Model Card ───────────────────────── */}
             {defaultModelForProvider && (<div className="border border-border rounded-[10px] overflow-hidden">
-                <div className="px-4 py-3 border-b border-border bg-white">
+                <div className="px-4 py-3 border-b border-border bg-muted/30">
                     <h3 className="text-[13px] font-semibold text-foreground">{t("defaultModel.title")}</h3>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                         {t("defaultModel.subtitle")}
                     </p>
                 </div>
-                <div className="p-4 bg-white">
+                <div className="p-4 bg-card">
                     <div className="border border-primary/20 bg-primary/5 rounded-[9px] p-3.5">
                         <div className="text-[11px] font-bold text-foreground mb-2.5">{t("defaultModel.providerDefault")}</div>
                         {defaultModelForProvider ? (
-                            <div className="flex items-center justify-between p-3 border border-primary/30 rounded-lg bg-white">
+                            <div className="flex items-center justify-between p-3 border border-primary/30 rounded-lg bg-background">
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-bold text-foreground">{defaultModelForProvider.name || defaultModelForProvider.modelCode}</span>
-                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-[#14945a] bg-[#e9f8f0]">
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold text-[#14945a] bg-[#e9f8f0] dark:bg-emerald-950/60 dark:text-emerald-300">
                                             {t("status.default")}
                                         </span>
                                     </div>
@@ -1153,7 +1153,7 @@ function AddProviderDialog({ open, onClose, onSuccess }) {
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent dir={dir} className="sm:max-w-lg p-0 gap-0 overflow-hidden bg-white">
+            <DialogContent dir={dir} className="sm:max-w-lg p-0 gap-0 overflow-hidden bg-card">
                 <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
                     <DialogTitle className="text-[16px] font-bold text-foreground">{t("actions.addProvider")}</DialogTitle>
                 </DialogHeader>
@@ -1203,11 +1203,11 @@ function AddProviderDialog({ open, onClose, onSuccess }) {
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-foreground">{t("model.description")}</Label>
-                        <textarea rows={4} {...form.register("description")} className="flex w-full rounded-md border border-border bg-white px-3 py-2 text-[13px] ring-offset-white placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 resize-none" placeholder={t("modelPlaceholder.description")} />
+                        <textarea rows={4} {...form.register("description")} className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-[13px] text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 resize-none" placeholder={t("modelPlaceholder.description")} />
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-foreground">{t("model.descriptionAr")}</Label>
-                        <textarea rows={4} {...form.register("descriptionAr")} dir="rtl" className="flex w-full rounded-md border border-border bg-white px-3 py-2 text-[13px] ring-offset-white placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 resize-none text-right" placeholder={t("modelPlaceholder.descriptionAr")} />
+                        <textarea rows={4} {...form.register("descriptionAr")} dir="rtl" className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-[13px] text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 resize-none text-right" placeholder={t("modelPlaceholder.descriptionAr")} />
                     </div>
                 </form>
                 <DialogFooter className="px-6 py-4 border-t border-border bg-background">
@@ -1313,7 +1313,7 @@ function AddModelDialog({ open, onClose, onSuccess, providers, defaultProviderId
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent dir={dir} className="sm:max-w-lg p-0 gap-0 overflow-hidden bg-white">
+            <DialogContent dir={dir} className="sm:max-w-lg p-0 gap-0 overflow-hidden bg-card">
                 <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
                     <DialogTitle className="text-[16px] font-bold text-foreground">{t("actions.addCustomModel")}</DialogTitle>
                 </DialogHeader>
@@ -1346,11 +1346,11 @@ function AddModelDialog({ open, onClose, onSuccess, providers, defaultProviderId
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-foreground">{t("model.description")}</Label>
-                        <textarea {...form.register("description")} rows={4} className="flex w-full rounded-md border border-border bg-white px-3 py-2 text-[13px] ring-offset-white placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 resize-none" placeholder={t("modelPlaceholder.description")} />
+                        <textarea {...form.register("description")} rows={4} className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-[13px] text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 resize-none" placeholder={t("modelPlaceholder.description")} />
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-foreground">{t("model.descriptionAr")}</Label>
-                        <textarea {...form.register("descriptionAr")} rows={4} dir="rtl" className="flex w-full rounded-md border border-border bg-white px-3 py-2 text-[13px] ring-offset-white placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 resize-none text-right" placeholder={t("modelPlaceholder.descriptionAr")} />
+                        <textarea {...form.register("descriptionAr")} rows={4} dir="rtl" className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-[13px] text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 resize-none text-right" placeholder={t("modelPlaceholder.descriptionAr")} />
                     </div>
                 </form>
                 <DialogFooter className="px-6 py-4 border-t border-border bg-background">
@@ -1415,7 +1415,7 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
     };
 
     return (
-        <div className="border border-border rounded-[14px] bg-white overflow-hidden shadow-[0_2px_10px_rgba(30,30,60,0.03)]">
+        <div className="border border-border rounded-[14px] bg-card overflow-hidden shadow-[0_2px_10px_rgba(30,30,60,0.03)] dark:shadow-none">
             <div className="px-5 py-4 border-b border-border">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -1431,7 +1431,7 @@ function AllModelsTab({ models, loading, hasMore, onLoadMore, search, onSearchCh
                             value={search}
                             onChange={(e) => onSearchChange(e.target.value)}
                             placeholder={t("modelPlaceholder.search")}
-                            className="w-full h-[38px] rounded-lg border border-border ps-9 pe-3 text-xs outline-none focus:border-primary"
+                            className="w-full h-[38px] rounded-lg border border-input bg-background text-foreground ps-9 pe-3 text-xs outline-none placeholder:text-muted-foreground focus:border-primary"
                         />
                     </div>
                     <Select value={providerFilter} onValueChange={onProviderFilterChange}>
@@ -2175,11 +2175,11 @@ export default function AiPage() {
 
             {/* ── Main Workspace ───────────────────────────────── */}
             {mainTab === "providers" ? (
-                <div className="flex flex-col md:flex-row flex-1 min-h-0 mb-4 border border-border rounded-[14px] bg-white overflow-hidden shadow-[0_2px_10px_rgba(30,30,60,0.03)]">
+                <div className="flex flex-col md:flex-row flex-1 min-h-0 mb-4 border border-border rounded-[14px] bg-card overflow-hidden shadow-[0_2px_10px_rgba(30,30,60,0.03)] dark:shadow-none">
 
                     {/* ── Provider Sidebar ─────────────────────── */}
                     <div className={cn(
-                        "border-b md:border-b-0 md:border-r border-border flex flex-col bg-white shrink-0 overflow-hidden",
+                        "border-b md:border-b-0 md:border-r border-border flex flex-col bg-card shrink-0 overflow-hidden",
                         "w-full md:w-[43%] md:min-w-[280px]",
                         selectedProviderId ? "hidden md:flex" : "flex"
                     )}>
